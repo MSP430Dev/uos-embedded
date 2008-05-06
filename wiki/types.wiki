@@ -2,7 +2,7 @@
 
 = Types =
 
-[http://code.google.com/p/uos-embedded/wiki/types]
+[http://code.google.com/p/uos-embedded/wiki/runtime/types]
 
 
 = Details =
