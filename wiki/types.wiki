@@ -1,13 +1,22 @@
 #summary Description of runtime types.
 
-= Types =
+= Базовые целочисленные типы =
 
-[runtime_types]
+В файле runtime/lib.h определён ряд целочисленных типов данных. Основное их предназначение - помощь програмисту в создании переносимых программ.
 
+== Целые типы фиксированного размера ==
 
-= Details =
+ * int8_t -- 8 бит со знаком
+ * uint8_t 
+ * int16_t 
+ * uint16_t 
+ * int32_t 
+ * uint32_t 
+ * int64_t 
+ * uint64_t 
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+== Целые типы нежесткого размера ==
+
+|| tinyint_t ||
+|| smallint_t ||
+|| int_t ||
