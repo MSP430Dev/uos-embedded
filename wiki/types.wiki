@@ -2,7 +2,7 @@
 
 = Types =
 
-Add your content here.
+[runtime/types]
 
 
 = Details =
