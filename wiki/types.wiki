@@ -2,7 +2,7 @@
 
 = Types =
 
-[runtime/types]
+[runtime:types]
 
 
 = Details =
