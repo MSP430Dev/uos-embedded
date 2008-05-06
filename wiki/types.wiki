@@ -10,14 +10,18 @@
 Их рекомендуется использовать в структурах данных, а также при вычислениях,
 если результат зависит от количества разрядов.
 
- * int8_t -- 8 бит со знаком
- * uint8_t -- 8 бит без знака
- * int16_t -- 16 бит со знаком
- * uint16_t -- 16 бит без знака
- * int32_t -- 32 бит со знаком
- * uint32_t -- 32 бит без знака
- * int64_t -- 64 бит со знаком
- * uint64_t -- 64 бит без знака
+ * int8_t -- 8 бит, со знаком
+ * uint8_t -- 8 бит, без знака
+ * int16_t -- 16 бит, со знаком
+ * uint16_t -- 16 бит, без знака
+ * int32_t -- 32 бит, со знаком
+ * uint32_t -- 32 бит, без знака
+ * int64_t -- 64 бит, со знаком
+ * uint64_t -- 64 бит, без знака
+
+Типы int8_t, uint8_t, int16_t и uint16_t не очень актуальны, так как вместо них
+можно использовать стандартные signed char, unsigned char, signed short и
+unsigned short соответственно.
 
 == Целые типы нежесткого размера ==
 На некоторых RISC-архитектурах (например ARM) работа со однобайтными или
@@ -29,26 +33,25 @@
 Эти типы рекомендуется применять в случаях, когда точный размер целого
 числа не имеет большого значения.
 
- * tiny_int_t -- не менее 8 бит, со знаком
- * tiny_uint_t -- не менее 8 бит, со знаком
- * small_int_t -- не менее 16 бит, со знаком
- * small_uint_t -- не менее 16 бит, со знаком
- * int_t -- не менее 32 бит, со знаком
- * uint_t -- не менее 32 бит, со знаком
+ * small_int_t -- не менее 8 бит, со знаком
+ * small_uint_t -- не менее 8 бит, без знака
+ * big_int_t -- не менее 32 бит, со знаком
+ * big_uint_t -- не менее 32 бит, без знака
+
+Если требуется целочисленный тип, обеспечивающий не менее 16 бит, следует использовать
+обычный int или unsigned int.
 
 == Сравнение для разных архитектур ==
 || *Тип*        || *AVR*              || *MSP430*           || *ARM*               || *i386*             || *ia64*         ||
 || int8_t       || signed char        || signed char        || signed char         || signed char        || signed char    ||
 || uint8_t      || unsigned char      || unsigned char      || unsigned char       || unsigned char      || unsigned char  ||
-|| int16_t      || short              || short              || short               || short              || short          ||
-|| uint16_t     || unsigned short     || unsigned short     || unsigned short      || unsigned short     || unsigned short ||
-|| int32_t      || long               || long               || long                || long               || int            ||
-|| uint32_t     || unsigned long      || unsigned long      || unsigned long       || unsigned long      || unsigned int   ||
+|| int16_t      || int                || int                || short               || short              || short          ||
+|| uint16_t     || unsigned int       || unsigned int       || unsigned short      || unsigned short     || unsigned short ||
+|| int32_t      || long               || long               || int                 || int                || int            ||
+|| uint32_t     || unsigned long      || unsigned long      || unsigned int        || unsigned int       || unsigned int   ||
 || int64_t      || long long          || long long          || long long           || long long          || long           ||
 || uint64_t     || unsigned long long || unsigned long long || unsigned long long  || unsigned long long || unsigned long  ||
-|| tiny_int_t   || signed char        || signed int         || int                 || int                || int            ||
-|| tiny_uint_t  || unsigned char      || unsigned int       || unsigned int        || unsigned int       || unsigned int   ||
-|| small_int_t  || int                || int                || int                 || int                || int            ||
-|| small_uint_t || unsigned int       || unsigned int       || unsigned int        || unsigned int       || unsigned int   ||
-|| int_t        || long               || long               || int                 || int                || int            ||
-|| uint_t       || unsigned long      || unsigned long      || unsigned int        || unsigned int       || unsigned int   ||
+|| small_int_t  || signed char        || int                || int                 || int                || int            ||
+|| small_uint_t || unsigned char      || unsigned int       || unsigned int        || unsigned int       || unsigned int   ||
+|| big_int_t    || long               || long               || int                 || int                || int            ||
+|| big_uint_t   || unsigned long      || unsigned long      || unsigned int        || unsigned int       || unsigned int   ||
