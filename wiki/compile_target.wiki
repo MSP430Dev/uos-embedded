@@ -2,7 +2,28 @@
 
 = Компиляция uOS для конкретной целевой платформы =
 
-Для сборки UOS под конкретную целевую платформу необходимо создать рабочий каталог и поместить в него два файла: `Makefile` и `target.cfg`.
+Для сборки UOS под конкретную целевую платформу необходимо создать рабочий каталог и поместить в него два файла: `target.cfg` и `Makefile`.
+
+= target.cfg =
+Файл `target.cfg` задаёт архитектуру целевого процессора, список компилируемых модулей, стартовый файл, а также имя компилятора и все параметры, необходимые для сборки. 
+Пример для архитектуры ARM7:
+{{{
+ARCH            = arm
+MODULES         = runtime kernel timer uart stream random mem regexp \
+                  s3c4530 buf net crc snmp
+STARTUP         = startup.S
+
+CFLAGS          = -I$(OS)/sources -fno-builtin -fsigned-char -O3 -DARM_S3C4530
+ASFLAGS         = -I$(OS)/sources
+DEPFLAGS        = -MT $@ -MD -MP -MF .deps/$*.dep
+LDFLAGS         = -nostdlib -T $(OS)/targets/arm/ldscript.x $(TARGET)/startup.o
+LIBS            = -L$(TARGET) -luos -lgcc
+CC              = arm-elf-gcc -Wall
+AR              = arm-elf-ar
+SIZE            = arm-elf-size
+OBJDUMP         = arm-elf-objdump
+OBJCOPY         = arm-elf-objcopy
+}}}
 
 = Makefile =
 
@@ -27,24 +48,6 @@ clean:
 
 include $(OS)/targets/rules.cfg
 }}}
-
-= target.cfg =
-Файл `target.cfg` задаёт архитектуру целевого процессора, список компилируемых модулей, стартовый файл, а также имя компилятора и все параметры, необходимые для сборки. 
-Пример для архитектуры ARM7:
-{{{
-ARCH            = arm
-MODULES         = runtime kernel timer uart stream random mem regexp \
-                  s3c4530 buf net crc snmp
-STARTUP         = startup.S
-
-CFLAGS          = -I$(OS)/sources -fno-builtin -fsigned-char -O3 -DARM_S3C4530
-ASFLAGS         = -I$(OS)/sources
-DEPFLAGS        = -MT $@ -MD -MP -MF .deps/$*.dep
-LDFLAGS         = -nostdlib -T $(OS)/targets/arm/ldscript.x $(TARGET)/startup.o
-LIBS            = -L$(TARGET) -luos -lgcc
-CC              = arm-elf-gcc -Wall
-AR              = arm-elf-ar
-SIZE            = arm-elf-size
-OBJDUMP         = arm-elf-objdump
-OBJCOPY         = arm-elf-objcopy
-}}}
+По команде
+ $ make
+произойдет компиляция всех требуемых модулей, и будут созданы статовый файл startup.o и библиотека uOS `libuos.a`.
