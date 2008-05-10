@@ -2,7 +2,26 @@
 
 = Компиляция модулей uOS =
 
-Система состоит из набора модулей, которые компилируются независимо, в отдельных подкаталогах. При сборке пользователь указывает в файле [compile_target `target.cfg`] список модулей, которые необходимы для данного конкретного проекта.
+Система состоит из набора модулей, которые компилируются независимо, в отдельных подкаталогах. При сборке пользователь указывает в файле [compile_target target.cfg] список модулей, которые необходимы для данного конкретного проекта.
+
+= Параметры модуля =
+Параметры конкретного модуля содержатся в его каталоге в файле `module.cfg`. Необходимо определить:
+ * VPATH - список каталогов с исходными текстами модуля
+ * OBJS - список объектных файлов модуля
+
+Модуль получает параметры:
+ * MODULEDIR - имя каталога с текстами модуля
+ * ARCH - архитектура процессора для сборки
+
+Пример:
+{{{
+VPATH  = $(MODULEDIR) $(MODULEDIR)/$(ARCH)
+
+OBJS    = halt.o itake.o irelease.o lock.o lsignal.o ltry.o\
+          main.o tcreate.o tdelete.o texit.o tname.o tprio.o\
+          tsetprio.o tstack.o twait.o lgroup.o machdep.o\
+          tprivate.o tsetprivate.o tyield.o
+}}}
 
 Для сборки модуля вызывается утилита make, используя общий скрипт `uos/sources/module.cfg`:
 {{{
@@ -31,20 +50,3 @@ include $(OS)/targets/rules.cfg
  * OS - путь к текстам uOS
  * TARGET - путь к рабочему каталогу компиляции, содержащему `target.cfg`
  * MODULE - название компилируемого модуля
-
-= Параметры модуля =
-Параметры конкретного модуля содержатся в его каталоге в файле `module.cfg`. Необходимо определить:
- * VPATH - список каталогов с исходными текстами модуля
- * OBJS - список объектных файлов модуля
-
-Кроме указанных выше, модуль получает также параметр `MODULEDIR` - имя каталога с его текстами.
-
-Пример:
-{{{
-VPATH  = $(MODULEDIR) $(MODULEDIR)/$(ARCH)
-
-OBJS    = halt.o itake.o irelease.o lock.o lsignal.o ltry.o\
-          main.o tcreate.o tdelete.o texit.o tname.o tprio.o\
-          tsetprio.o tstack.o twait.o lgroup.o machdep.o\
-          tprivate.o tsetprivate.o tyield.o
-}}}
