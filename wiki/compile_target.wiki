@@ -1,0 +1,22 @@
+#summary Compilation of uOS for specific target.
+
+= Компиляция uOS для конкретной целевой платформы =
+
+Для сборки UOS под конкретную целевую платформу необходимо создать рабочий каталог и поместить в него два файла: `Makefile` и `target.cfg`.
+
+= Makefile =
+
+Пример простейшего файла `Makefile`:
+{{{
+TARGET          = $(CURDIR)
+OS              = $(HOME)/Project/uos
+
+include target.cfg
+
+all:            startup.o libuos.a
+
+clean:
+                rm -rf *.[oasi] *~ $(MODULES)
+
+include $(OS)/targets/rules.cfg
+}}}
