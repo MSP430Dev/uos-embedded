@@ -13,7 +13,7 @@
  * Включить содержимое файла `targets/rules.cfg` из каталога uOS
  * Задать цели all и clean.
 
-Пример простейшего файла `Makefile`:
+Пример:
 {{{
 TARGET          = $(CURDIR)
 OS              = $(HOME)/Project/uos
@@ -29,3 +29,21 @@ include $(OS)/targets/rules.cfg
 }}}
 
 = target.cfg =
+Пример для архитектуры ARM7:
+{{{
+ARCH            = arm
+MODULES         = runtime kernel timer uart stream random mem regexp \
+                  s3c4530 buf net crc snmp
+
+CC              = arm-elf-gcc -Wall
+CFLAGS          = -I$(OS)/sources -fno-builtin -fsigned-char -O3 -DARM_S3C4530
+ASFLAGS         = -I$(OS)/sources
+DEPFLAGS        = -MT $@ -MD -MP -MF .deps/$*.dep
+LDFLAGS         = -nostdlib -T $(TARGET)/ldscript.x $(TARGET)/startup.o
+LIBS            = -L$(TARGET) -luos -lgcc
+STARTUP         = startup.S
+AR              = arm-elf-ar
+SIZE            = arm-elf-size
+OBJDUMP         = arm-elf-objdump
+OBJCOPY         = arm-elf-objcopy
+}}}
