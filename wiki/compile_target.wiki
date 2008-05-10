@@ -42,15 +42,15 @@ OBJCOPY  = arm-elf-objcopy
 
 Пример:
 {{{
-TARGET          = $(CURDIR)
-OS              = $(HOME)/Project/uos
+TARGET  = $(CURDIR)
+OS      = $(HOME)/Project/uos
 
 include target.cfg
 
-all:            startup.o libuos.a
+all:    startup.o libuos.a
 
 clean:
-                rm -rf *.[oasi] *~ $(MODULES)
+        rm -rf *.[oasi] *~ $(MODULES)
 
 include $(OS)/targets/rules.cfg
 }}}
