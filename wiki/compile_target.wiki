@@ -8,22 +8,28 @@
 Файл `target.cfg` задаёт архитектуру целевого процессора, список компилируемых модулей, стартовый файл, а также имя компилятора и все параметры, необходимые для сборки. 
 Пример для архитектуры ARM7:
 {{{
-ARCH            = arm
-MODULES         = runtime kernel timer uart stream random mem regexp \
+ARCH     = arm
+MODULES  = runtime kernel timer uart stream random mem regexp \
                   s3c4530 buf net crc snmp
-STARTUP         = startup.S
+STARTUP  = startup.S
 
-CFLAGS          = -I$(OS)/sources -fno-builtin -fsigned-char -O3 -DARM_S3C4530
-ASFLAGS         = -I$(OS)/sources
-DEPFLAGS        = -MT $@ -MD -MP -MF .deps/$*.dep
-LDFLAGS         = -nostdlib -T $(OS)/targets/arm/ldscript.x $(TARGET)/startup.o
-LIBS            = -L$(TARGET) -luos -lgcc
-CC              = arm-elf-gcc -Wall
-AR              = arm-elf-ar
-SIZE            = arm-elf-size
-OBJDUMP         = arm-elf-objdump
-OBJCOPY         = arm-elf-objcopy
+CFLAGS   = -I$(OS)/sources -fno-builtin -fsigned-char -O3 -DARM_S3C4530
+ASFLAGS  = -I$(OS)/sources
+DEPFLAGS = -MT $@ -MD -MP -MF .deps/$*.dep
+LDFLAGS  = -nostdlib -T $(OS)/targets/arm/ldscript.x $(TARGET)/startup.o
+LIBS     = -L$(TARGET) -luos -lgcc
+CC       = arm-elf-gcc -Wall
+AR       = arm-elf-ar
+SIZE     = arm-elf-size
+OBJDUMP  = arm-elf-objdump
+OBJCOPY  = arm-elf-objcopy
 }}}
+Переменная `ARCH` может иметь значения `arm`, `avr` или `i386`.
+
+Переменная `MODULES` содержит список требуемых модулей из каталога uos/sources или uos/contrib. Если у Вас имеется свой каталог дополнительный модулей (вместо uos/contrib), Вы можете использовать его, установив переменную `CONTRIB`, например:
+  CONTRIB = $(HOME)/Project/mcu 
+
+Если для архитектуры имеется несколько разных стартовых файлов, Вы можете выбрать нужный, задав его имя в переменной `STARTUP`. 
 
 = Makefile =
 
