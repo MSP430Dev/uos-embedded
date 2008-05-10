@@ -12,6 +12,9 @@
 Модуль получает параметры:
  * MODULEDIR - имя каталога с текстами модуля
  * ARCH - архитектура процессора для сборки
+ * TARGET - путь к рабочему каталогу компиляции
+ * OS - путь к текстам uOS
+ * MODULE - название компилируемого модуля
 
 Пример:
 {{{
@@ -23,30 +26,4 @@ OBJS    = halt.o itake.o irelease.o lock.o lsignal.o ltry.o\
           tprivate.o tsetprivate.o tyield.o
 }}}
 
-Для сборки модуля вызывается утилита make, используя общий скрипт `uos/sources/module.cfg`:
-{{{
-include $(TARGET)/target.cfg
-
-CONTRIB ?= $(OS)/contrib
-ifeq ($(OS)/sources/$(MODULE), $(wildcard $(OS)/sources/$(MODULE)))
-    MODULEDIR = $(OS)/sources/$(MODULE)
-else
-    MODULEDIR = $(CONTRIB)/$(MODULE)
-endif
-include $(MODULEDIR)/module.cfg
-
-all:    $(TARGET)/libuos.a
-
-$(TARGET)/libuos.a: $(OBJS)
-        $(AR) $(ARFLAGS) $@ $?
-
-clean::
-        rm -rf *.[oai] *~ .deps
-
-include $(OS)/targets/rules.cfg
-}}}
-
-Скрипту передаются параметры в переменных:
- * OS - путь к текстам uOS
- * TARGET - путь к рабочему каталогу компиляции, содержащему `target.cfg`
- * MODULE - название компилируемого модуля
+Для сборки модуля вызывается утилита make, используя общий скрипт `uos/sources/module.cfg`.
