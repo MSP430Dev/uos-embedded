@@ -1,13 +1,13 @@
-#summary Installation of GCC cross-compiler for Intel 386 architecture
+#summary Installation of GCC cross-compiler for Atmel AVR architecture
 
-= Установка компилятора GCC для Intel 386 =
-Описана установка кросс-системы программирования для процессоров семейства
-[http://intel.com/design/intarch/ Intel 386/Pentium].
+= Установка компилятора GCC для AVR =
+Описана установка кросс-системы программирования для микроконтроллеров
+семейства [http://atmel.com/products/avr/ Atmel AVR].
 Устанавливается поддержка языков Си и Си++.
 Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.3.0].
 
 Готовый бинарный пакет можно скачать здесь:
- * [http://uos-embedded.googlecode.com/files/gcc430-intel.tgz gcc430-intel.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc430-avr.tgz gcc430-avr.tgz] -- для Linux
 
 == Установка под Linux или FreeBSD или Mac OS X ==
 
@@ -22,7 +22,7 @@
 }}}
 
 Устанавливать готовую систему программирования будем в каталог
-/usr/local/intel430 по номеру версии GCC 4.3.0. Это упростит в будущем
+/usr/local/avr430 по номеру версии GCC 4.3.0. Это упростит в будущем
 переход на новые версии компилятора.
 
 Для простоты предположим, что сборка производится в каталоге /src.
@@ -31,7 +31,7 @@
 
 Скачайте тексты в каталог /src:
   * [ftp://sourceware.org/pub/binutils/snapshots/binutils.tar.bz2 binutils.tar.bz2] (16 Мбайт) - самая свежая версия
-  * {http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2} (56 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2] (37 Мбайт)
 
 Распакуйте их:
 {{{
@@ -43,52 +43,63 @@
 Пакет binutils будет распакован в каталоге с номером последней версии,
 например binutils-2.18.50 или выше.
 
+=== Правка для GCC ===
+
+Рекомендуется использовать правку для AVR GCC, добавляющую возможность
+располагать текстовые константы в flash-памяти:
+[http://uos-embedded.googlecode.com/files/gcc43-avr-rodata.pch gcc43-avr-rodata.pch].
+Чтобы применить правку, выполните команды:
+{{{
+  cd /src/gcc-4.3.0/gcc/config/avr
+  patch < gcc43-avr-rodata.pch
+}}}
+
+У компилятора появится новый флаг -mrodata, указывающий имя секции
+для текстовых констант и других глобальных инициализированных переменных
+с атрибутом const. Например, чтобы поместить текстовые константы
+в flash-память, вызывайте GCC так:
+{{{
+  gcc -mrodata=.progmem ...
+}}}
+
 === Сборка binutils ===
 Пакет binutils содержит ассемблер AS, редактор связей LD,
 архиватор AR, а также набор утилит для работы с объектными файлами
 (SIZE, NM, RANLIB, STRIP, и прочие).
 
-Сборка производится в отдельном каталоге binutils-intel. Выполните команды:
+Сборка производится в отдельном каталоге binutils-avr. Выполните команды:
 {{{
-  mkdir /src/binutils-intel
-  cd /src/binutils-intel
-  /src/binutils-2.18.50/configure --target=i386-elf --prefix=/usr/local/intel430 --disable-nls
+  mkdir /src/binutils-avr
+  cd /src/binutils-avr
+  /src/binutils-2.18.50/configure --target=avr --prefix=/usr/local/avr430 --disable-nls
   make
 }}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
 {{{
-  mkdir /usr/local/intel430
+  mkdir /usr/local/avr430
 }}}
 
 Установите binutils:
 {{{
-  cd /src/binutils-intel
+  cd /src/binutils-avr
   make install
 }}}
 
 === Сборка gcc ===
-Для кросс-компилятора не нужны библиотеки libstdc++ и libmudflap.
-Чтобы они не вызывали ошибок при сборке, удалите их:
-{{{
-  cd /src/gcc-4.3.0
-  rm -rf libstdc++-v3
-  rm -rf libmudflap
-}}}
-
-Сборка компилятора производится в отдельном каталоге gcc-intel.
+Сборка компилятора производится в отдельном каталоге gcc-avr.
 Выполните команды:
 {{{
-  mkdir /src/gcc-intel
-  cd /src/gcc-intel
-  /src/gcc-4.3.0/configure --target=i386-elf --prefix=/usr/local/intel430 \
+  mkdir /src/gcc-avr
+  cd /src/gcc-avr
+  /src/gcc-4.3.0/configure --target=avr --prefix=/usr/local/avr430 \
     --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}
 
 Установите gcc:
 {{{
-  cd /src/gcc-intel
+  cd /src/gcc-avr
   make install
 }}}
 
