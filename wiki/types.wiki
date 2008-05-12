@@ -1,4 +1,4 @@
-#summary Description of runtime types.
+#summary Description of runtime types
 
 = Базовые целочисленные типы =
 

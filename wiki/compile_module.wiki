@@ -1,4 +1,4 @@
-#summary Compilation of uOS modules.
+#summary Compilation of uOS modules
 
 = Компиляция модулей uOS =
 

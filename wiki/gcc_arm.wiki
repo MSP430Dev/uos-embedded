@@ -9,7 +9,14 @@
 == Установка под Linux или FreeBSD или Mac OS X ==
 
 Мы будем собирать все из исходных текстов. Для этого в Вашей системе должен
-быть установлен компилятор GCC.
+быть установлен компилятор GCC. Также необходимо наличие пакета texinfo
+и библиотек GMP и MPFR. В Ubuntu Linux эти компоненты можно установить
+командами:
+{{{
+  apt-get install texinfo
+  apt-get install libgmp3-dev
+  apt-get install libmpfr-dev
+}}}
 
 Устанавливать готовую систему программирования будем в каталог
 /usr/local/arm430 по номеру версии GCC 4.3.0. Это упростит в будущем
@@ -20,15 +27,18 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [http://ftp.gnu.org/pub/gnu/binutils/binutils-2.18.tar.bz2 binutils-2.18.tar.bz2] (12 Мбайт)
+  * [ftp://sourceware.org/pub/binutils/snapshots/binutils.tar.bz2 binutils.tar.bz2] (16 Мбайт) - самая свежая версия
   * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2] (37 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils-2.18.tar.bz2
+  tar xvjf binutils.tar.bz2
   tar xvjf gcc-4.3.0.tar.bz2
 }}}
+
+Пакет binutils будет распакован в каталоге с номером последней версии,
+например binutils-2.18.50 или выше.
 
 === Сборка binutils ===
 Пакет binutils содержит ассемблер AS, редактор связей LD,
@@ -39,7 +49,7 @@
 {{{
   mkdir /src/binutils-arm
   cd /src/binutils-arm
-  /src/binutils-2.18/configure --target=arm-elf --prefix=/usr/local/arm430 --disable-nls
+  /src/binutils-2.18.50/configure --target=arm-elf --prefix=/usr/local/arm430 --disable-nls
   make
 }}}
 
@@ -69,13 +79,16 @@
   cd /src/gcc-arm
   /src/gcc-4.3.0/configure --target=arm-elf --prefix=/usr/local/arm430 \
     --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
-  make
+  make -k
 }}}
+При сборке будут ошибки в компиляции библиотеки libstdc++-v3, так как
+она пока недоступна в режиме кросс-компиляции. Поэтому необходимо вызывать
+make с флагом -k.
 
 Установите gcc:
 {{{
   cd /src/gcc-arm
-  make install
+  make -k install
 }}}
 
 == Установка под Windows ==
