@@ -1,3 +1,5 @@
+#summary Installation of GCC cross-compiler for ARM architecture
+
 = Установка компилятора GCC для ARM =
 Описана установка кросс-системы программирования для микроконтроллеров
 семейства [http://arm.com/products/CPUs/index.html ARM].
