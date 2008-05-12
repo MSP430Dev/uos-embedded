@@ -1,0 +1,73 @@
+= Установка компилятора GCC для ARM =
+Описана установка кросс-системы программирования для микроконтроллеров
+семейства [http://arm.com/products/CPUs/index.html ARM].
+Устанавливается поддержка языков Си и Си++.
+Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.3.0].
+
+== Установка под Linux или FreeBSD или Mac OS X ==
+
+Мы будем собирать все из исходных текстов. Для этого в Вашей системе должен
+быть установлен компилятор GCC.
+
+Устанавливать готовую систему программирования будем в каталог
+/usr/local/arm430 по номеру версии GCC 4.3.0. Это упростит в будущем
+переход на новые версии компилятора.
+
+Для простоты предположим, что сборка производится в каталоге /src.
+Вы можете использовать любой другой каталог по Вашему выбору,
+произведя соответствующие изменения в выполняемых командах.
+
+Скачайте тексты в каталог /src:
+  * [http://ftp.gnu.org/pub/gnu/binutils/binutils-2.18.tar.bz2 binutils-2.18.tar.bz2] (12 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2] (37 Мбайт)
+
+Распакуйте их:
+  cd /src
+  tar xvjf binutils-2.18.tar.bz2
+  tar xvjf gcc-4.3.0.tar.bz2
+
+=== Сборка binutils ===
+Пакет binutils содержит ассемблер AS, редактор связей LD,
+архиватор AR, а также набор утилит для работы с объектными файлами
+(SIZE, NM, RANLIB, STRIP, и прочие).
+
+Сборка производится в отдельном каталоге binutils-arm. Выполните команды:
+  mkdir /src/binutils-arm
+  cd /src/binutils-arm
+  /src/binutils-2.18/configure --target=arm-elf --prefix=/usr/local/arm430 --disable-nls
+  make
+
+Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
+  mkdir /usr/local/arm430
+
+Установите binutils:
+  cd /src/binutils-arm
+  make install
+
+=== Сборка gcc ===
+Для сборки потребуется команда arm-elf-ar. Её надо установить в каталог
+/usr/local/bin (возможно, потребуются полномочия суперпользователя):
+  cd /usr/local/bin
+  ln -s ../arm430/bin/arm-elf-ar .
+
+Сборка компилятора производится в отдельном каталоге gcc-arm.
+Библиотеку libssp компилировать не надо. Выполните команды:
+  mkdir /src/gcc-arm
+  cd /src/gcc-arm
+  /src/gcc-4.3.0/configure --target=arm-elf --prefix=/usr/local/arm430 \
+    --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
+  make
+
+Установите gcc:
+  cd /src/gcc-arm
+  make install
+
+
+== Установка под Windows ==
+
+Установите CygWin. Для этого на сайте www.cygwin.com щёлкните
+"Install Cygwin now". Это приведет к загрузке небольшого файла setup.exe,
+который надо будет после загрузки запустить и выбрать набор пакетов
+для установки. Достаточно выбрать пакеты bash, gcc, gmake.
+
+После установки Cygwin сборка GCC производится так же, как и в Linux.
