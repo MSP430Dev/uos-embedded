@@ -1,13 +1,10 @@
-#summary Installation of GCC cross-compiler for ARM architecture
+#summary Installation of GCC cross-compiler for Intel 386 architecture
 
-= Установка компилятора GCC для ARM =
-Описана установка кросс-системы программирования для микроконтроллеров
-семейства [http://arm.com/products/CPUs/index.html ARM].
+= Установка компилятора GCC для Intel 386 =
+Описана установка кросс-системы программирования для процессоров семейства
+[http://intel.com/design/intarch/ Intel 386/Pentium].
 Устанавливается поддержка языков Си и Си++.
 Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.3.0].
-
-Готовый бинарный пакет можно скачать здесь:
- * [http://uos-embedded.googlecode.com/files/gcc430-arm.tgz gcc430-arm.tgz] -- для Linux
 
 == Установка под Linux или FreeBSD или Mac OS X ==
 
@@ -22,7 +19,7 @@
 }}}
 
 Устанавливать готовую систему программирования будем в каталог
-/usr/local/arm430 по номеру версии GCC 4.3.0. Это упростит в будущем
+/usr/local/intel430 по номеру версии GCC 4.3.0. Это упростит в будущем
 переход на новые версии компилятора.
 
 Для простоты предположим, что сборка производится в каталоге /src.
@@ -31,7 +28,7 @@
 
 Скачайте тексты в каталог /src:
   * [ftp://sourceware.org/pub/binutils/snapshots/binutils.tar.bz2 binutils.tar.bz2] (16 Мбайт) - самая свежая версия
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2] (56 Мбайт)
+  * {http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2} (56 Мбайт)
 
 Распакуйте их:
 {{{
@@ -48,22 +45,22 @@
 архиватор AR, а также набор утилит для работы с объектными файлами
 (SIZE, NM, RANLIB, STRIP, и прочие).
 
-Сборка производится в отдельном каталоге binutils-arm. Выполните команды:
+Сборка производится в отдельном каталоге binutils-intel. Выполните команды:
 {{{
-  mkdir /src/binutils-arm
-  cd /src/binutils-arm
-  /src/binutils-2.18.50/configure --target=arm-elf --prefix=/usr/local/arm430 --disable-nls
+  mkdir /src/binutils-intel
+  cd /src/binutils-intel
+  /src/binutils-2.18.50/configure --target=i386-elf --prefix=/usr/local/intel430 --disable-nls
   make
 }}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
 {{{
-  mkdir /usr/local/arm430
+  mkdir /usr/local/intel430
 }}}
 
 Установите binutils:
 {{{
-  cd /src/binutils-arm
+  cd /src/binutils-intel
   make install
 }}}
 
@@ -76,19 +73,19 @@
   rm -rf libmudflap
 }}}
 
-Сборка компилятора производится в отдельном каталоге gcc-arm.
+Сборка компилятора производится в отдельном каталоге gcc-intel.
 Выполните команды:
 {{{
-  mkdir /src/gcc-arm
-  cd /src/gcc-arm
-  /src/gcc-4.3.0/configure --target=arm-elf --prefix=/usr/local/arm430 \
+  mkdir /src/gcc-intel
+  cd /src/gcc-intel
+  /src/gcc-4.3.0/configure --target=i386-elf --prefix=/usr/local/intel430 \
     --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}
 
 Установите gcc:
 {{{
-  cd /src/gcc-arm
+  cd /src/gcc-intel
   make install
 }}}
 
