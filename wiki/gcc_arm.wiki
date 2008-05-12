@@ -22,9 +22,11 @@
   * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2] (37 Мбайт)
 
 Распакуйте их:
+{{{
   cd /src
   tar xvjf binutils-2.18.tar.bz2
   tar xvjf gcc-4.3.0.tar.bz2
+}}}
 
 === Сборка binutils ===
 Пакет binutils содержит ассемблер AS, редактор связей LD,
@@ -32,36 +34,47 @@
 (SIZE, NM, RANLIB, STRIP, и прочие).
 
 Сборка производится в отдельном каталоге binutils-arm. Выполните команды:
+{{{
   mkdir /src/binutils-arm
   cd /src/binutils-arm
   /src/binutils-2.18/configure --target=arm-elf --prefix=/usr/local/arm430 --disable-nls
   make
+}}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
+{{{
   mkdir /usr/local/arm430
+}}}
 
 Установите binutils:
+{{{
   cd /src/binutils-arm
   make install
+}}}
 
 === Сборка gcc ===
 Для сборки потребуется команда arm-elf-ar. Её надо установить в каталог
 /usr/local/bin (возможно, потребуются полномочия суперпользователя):
+{{{
   cd /usr/local/bin
   ln -s ../arm430/bin/arm-elf-ar .
+}}}
 
 Сборка компилятора производится в отдельном каталоге gcc-arm.
 Библиотеку libssp компилировать не надо. Выполните команды:
+{{{
   mkdir /src/gcc-arm
   cd /src/gcc-arm
   /src/gcc-4.3.0/configure --target=arm-elf --prefix=/usr/local/arm430 \
     --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
+}}}
 
 Установите gcc:
+{{{
   cd /src/gcc-arm
   make install
-
+}}}
 
 == Установка под Windows ==
 
