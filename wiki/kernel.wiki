@@ -1,0 +1,8 @@
+#summary uOS kernel module
+
+= Ядро системы =
+
+  * [kernel_start Старт системы]
+  * [kernel_tasks Задачи]
+  * [kernel_locks Ресурсы]
+  * [kernel_irqs Прерывания]

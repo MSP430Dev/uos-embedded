@@ -1,0 +1,12 @@
+#summary Using uOS in a real project
+
+= Практический подход =
+
+  * [project_install_sources Установка текстов uOS]
+  * [project_create Создание проекта]
+  * [project_remote_debug Удаленная отладка с GDB]
+  * [project_using_asserts Применение assert]
+  * [project_memory_optimization Оптимизация памяти]
+  * [project_real_example Пример реального проекта]
+  * [avr_notes Особенности архитектуры AVR]
+  * [arm_notes Особенности архитектуры ARM]
