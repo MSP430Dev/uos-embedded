@@ -1,3 +1,5 @@
+#summary Kernel: using locks
+
 = Ресурсы =
 
 Ресурс представляет собой метод взаимодействия задач.
@@ -59,7 +61,7 @@ void lock_take (lock_t *lock);
 === Параметры ===
   * `lock` --- Ресурс, который требуется захватить.
 
-[http://uos-embedded.googlecode.com/svn/wiki/ltake.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/ltake.png]
 
 === Пример ===
 {{{
@@ -121,7 +123,7 @@ void lock_release (lock_t *lock);
 === Параметры ===
   * `lock` --- Ресурс, который требуется освободить.
 
-[http://uos-embedded.googlecode.com/svn/wiki/lrelease.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/lrelease.png]
 
 === Пример ===
 {{{
@@ -184,7 +186,7 @@ int lock_try (lock_t *lock);
 Возвращает 1 если ресурс успешно захвачен.
 В случае неуспеха возвращается 0.
 
-[http://uos-embedded.googlecode.com/svn/wiki/ltry.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/ltry.png]
 
 === Пример ===
 {{{
@@ -206,7 +208,7 @@ void lock_signal (lock_t *lock, void *message);
   * `lock` --- Ресурс, которому посылается сообщение.
   * `message` --- Сообщение -- произвольный указатель.
 
-[http://uos-embedded.googlecode.com/svn/wiki/lsignal.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/lsignal.png]
 
 === Пример ===
 {{{
@@ -284,7 +286,7 @@ void *lock_wait (lock_t *lock);
 
 Возвращает указатель-сообщение, посланное вызовом `lock_signal()`.
 
-[http://uos-embedded.googlecode.com/svn/wiki/lwait.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/lwait.png]
 
 === Пример ===
 {{{
