@@ -1,25 +1,28 @@
 #summary Links
 
 = Другие встраиваемые операционные системы =
-[http://marte.unican.es/contents.html#architecture MaRTE OS]
-- встраиваемая операционная система, написанная на Аде
-
 [http://microcross.com/html/uc_os-ii.html uC/OS-II]
 - embedded operating system
+
+[http://freertos.org/ FreeRTOS]
+- embedded operating system
+
+[http://marte.unican.es/ MaRTE OS]
+- встраиваемая операционная система, написанная на Аде
 
 [http://scmrtos.sourceforge.net/ scmRTOS]
 - embedded operating system
 
 = Ссылки =
+[http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html GCC inline assembly how-to] - как делать ассемблерные вставки в GCC
+
 [http://www.microwindows.org microwindows.org] - Nano-X Window System
 
 [http://www.gnu.org/software/grub GRUB] - GRand Unified Bootloader
 
 [http://www.geocities.com/lode_leroy/grubinstall/ GRUB installer for windows] - утилита для установки загрузчика GRUB из Windows
 
-[http://ftp2.skynet.be/pub/ftp.freebsd.org/tools/fdimage.exe fdimage.exe] - утилита записи образа дискеты
-
-[http://www.osdever.net/tutorials/gccasmtut.php A Brief Tutorial on GCC inline asm (x86 biased)] - как делать ассемблерные вставки в GCC
+[ftp://ftp.freebsd.org/pub/FreeBSD/tools/fdimage.exe fdimage.exe] - утилита записи образа дискеты
 
 [http://e2fsprogs.sourceforge.net/ext2intro.html Design and Implementation of the Second Extended Filesystem] - хорошее описание файловой системы EXT2
 
