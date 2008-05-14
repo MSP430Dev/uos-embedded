@@ -1,0 +1,5 @@
+#summary Driver of non-volatile memory
+
+= Драйвер неразрушаемой памяти =
+
+_(TODO)_

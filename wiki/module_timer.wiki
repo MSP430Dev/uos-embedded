@@ -1,0 +1,26 @@
+#summary Timer module
+
+= Драйвер таймера =
+{{{
+#include "dev/timer.h"
+
+typedef struct _timer_t {
+    ...
+} timer_t;
+
+void timer_init (timer_t *t, int prio, unsigned long khz,
+	unsigned char msec_per_tick);
+void timer_delay (timer_t *t, unsigned long msec);
+unsigned long timer_milliseconds (timer_t *t);
+unsigned short timer_days (timer_t *t);
+unsigned char timer_passed (timer_t *t, unsigned long t0, unsigned short msec);
+}}}
+
+_(TODO)_
+
+Для работы с таймером применяются следующие функции:
+|| timer_init ()		|| Инициализация таймера ||
+|| timer_delay ()		|| Задержка выполнения текущей задачи ||
+|| timer_milliseconds ()	|| Запрос времени в миллисекундах ||
+|| timer_days ()		|| Запрос времени в сутках ||
+|| timer_passed ()		|| Проверка временного события ||
