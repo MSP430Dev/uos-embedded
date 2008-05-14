@@ -1,0 +1,24 @@
+#summary Downloads
+
+= Файлы =
+[http://uos-embedded.googlecode.com/files/uOS-0.2.4.tgz uOS]
+- версия 0.2.4 от 2007-04-28.
+
+Кросс-компиляторы Си, Си++ (бинарная версия).
+Распаковывать в каталоге /usr/local.
+Для Cygwin это обычно C:\Cygwin\usr\local.
+ * [http://uos-embedded.googlecode.com/files/gcc430-intel.tgz gcc430-intel.tgz] - GCC 4.3.0 для Intel 386/Pentium (для Linux)
+ * [http://uos-embedded.googlecode.com/files/gcc410-intel.zip gcc410-intel.zip] - GCC 4.1.0 для Intel 386/Pentium (для Windows + Cygwin)
+ * [http://uos-embedded.googlecode.com/files/gcc430-avr.tgz gcc430-avr.tgz] - GCC 4.3.0 для Atmel AVR (для Linux)
+ * [http://uos-embedded.googlecode.com/files/gcc410-avr.zip gcc410-avr.zip] - GCC 4.1.0 для Atmel AVR (для Windows + Cygwin)
+ * [http://uos-embedded.googlecode.com/files/gcc430-arm.tgz gcc430-arm.tgz] - GCC 4.3.0 для ARM (для Linux)
+ * [http://uos-embedded.googlecode.com/files/gcc410-arm.zip gcc410-arm.zip] - GCC 4.1.0 для ARM (для Windows + Cygwin)
+
+Правка для gcc, добавляющая возможность располагать текстовые константы
+в flash-памяти:
+[http://uos-embedded.googlecode.com/files/gcc41-avr-rodata.pch для GCC 4.1.x],
+[http://uos-embedded.googlecode.com/files/gcc42-avr-rodata.pch для GCC 4.2.x],
+[http://uos-embedded.googlecode.com/files/gcc43-avr-rodata.pch для GCC 4.3.x].
+
+[http://uos-embedded.googlecode.com/files/nanox-0.91-nonetwork.pch nanox-0.91-nonetwork.pch]
+- правки для Nano-X версии 0.91.

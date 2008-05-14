@@ -1,3 +1,5 @@
+#summary Some thoughts about uOS future version
+
 = Проект uOS - версия 0.3 =
 Некоторые размышления, как бы это могло выглядеть.
 
