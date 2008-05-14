@@ -1,0 +1,292 @@
+= Ресурсы =
+
+Ресурс представляет собой метод взаимодействия задач.
+Можно считать ресурсы обобщением семафоров и почтовых ящиков.
+Рекомендуется использовать ресурсы для защиты структур данных,
+доступ к которым производится из нескольких задач
+(критические области).
+
+Кроме захвата и освобождения ресурсов, задачи имеют возможность
+обмениваться сообщениями. Задача (или несколько задач) может
+_*ожидать сообщения*_ от ресурса, при этом задача блокируется.
+Другая задача может _*послать сообщение*_ ресурсу,
+при этом все ожидающие сообщения задачи переходят в выполняемое состояние
+и получают посланное сообщение. Посылающая задача не блокируется.
+Если ни одна задача не ждет сообщения, оно теряется.
+
+В качестве сообщения используется произвольный указатель,
+обычно ссылающийся на структуру данных, содержащую требуемую информацию.
+
+== Тип lock_t ==
+{{{
+#include "kernel/uos.h"
+
+typedef struct _lock_t {
+    ...
+} lock_t;
+
+void lock_take (lock_t *lock);
+void lock_release (lock_t *lock);
+int lock_try (lock_t *lock);
+void lock_signal (lock_t *lock, void *message);
+void *lock_wait (lock_t *lock);
+}}}
+
+Для работы с ресурсами применяются следующие функции:
+|| *Функция*            || *Описание* ||
+|| lock_take ()		|| Захват ресурса ||
+|| lock_release ()	|| Освобождение ресурса ||
+|| lock_try ()		|| Попытка захвата ресурса ||
+|| lock_signal ()	|| Посылка сообщения ||
+|| lock_wait ()		|| Ожидание сообщения ||
+
+== Функция lock_take() ==
+{{{
+#include "kernel/uos.h"
+
+void lock_take (lock_t *lock);
+}}}
+
+Захват ресурса. Если ресурс свободен, переключение задач не происходит.
+Если ресурс занят другой задачей, текущая задача блокируется
+до освобождения ресурса.
+
+Если ресурс связан с аппаратным прерыванием (see section [[#2.4.1 Функция lock_take_irq()]]),
+обработка прерывания блокируется на время удержания ресурса.
+Отложенное прерывание будет обработано при освобождении ресурса
+вызовом `lock_release()` или `lock_wait()`.
+
+=== Параметры ===
+  * `lock` --- Ресурс, который требуется захватить.
+
+[http://uos-embedded.googlecode.com/svn/wiki/ltake.png]
+
+=== Пример ===
+{{{
+#include "runtime/lib.h"
+#include "kernel/uos.h"
+#include "timer/timer.h"
+
+lock_t lock;
+timer_t timer;
+char stack1 [4000], stack2 [4000];
+
+void main1 (void *data)
+{
+    /* Задача 1 имеет более высокий приоритет и стартует раньше */
+    debug_puts ("Task 1: taking the lock\n");
+    lock_take (&lock);
+
+    debug_puts ("Task 1: sleeping 1 second\n");
+    timer_delay (&timer, 1000);
+
+    debug_puts ("Task 1: releasing the lock\n");
+    lock_release (&lock);
+
+    task_exit (0);
+}
+
+void main2 (void *data)
+{
+    /* Задача 2 приостанавливается до освобождения ресурса */
+    debug_puts ("Task 2: taking the lock\n");
+    lock_take (&lock);
+
+    debug_puts ("Task 2: got the lock\n");
+    lock_release (&lock);
+    uos_halt ();
+}
+
+void uos_init (void)
+{
+    task_create (main1, 0, "task1", 2, stack1, sizeof (stack1));
+    task_create (main2, 0, "task2", 1, stack2, sizeof (stack2));
+    timer_init (&timer, 100, KHZ, 10);
+}
+}}}
+
+== Функция lock_release() ==
+{{{
+#include "kernel/uos.h"
+
+void lock_release (lock_t *lock);
+}}}
+
+Освобождение ресурса.
+Если ресурс связан с аппаратным прерыванием (see section [[#2.4.1 Функция lock_take_irq()]]),
+и за время удержания ресурса возникло прерывание,
+производится его обработка.
+Может произойти переключение задач.
+
+=== Параметры ===
+  * `lock` --- Ресурс, который требуется освободить.
+
+[http://uos-embedded.googlecode.com/svn/wiki/lrelease.png]
+
+=== Пример ===
+{{{
+#include "runtime/lib.h"
+#include "kernel/uos.h"
+#include "timer/timer.h"
+
+lock_t lock;
+timer_t timer;
+char stack1 [4000], stack2 [4000];
+
+void main1 (void *data)
+{
+    /* Задача 1 имеет более высокий приоритет и стартует раньше */
+    debug_puts ("Task 1: taking the lock\n");
+    lock_take (&lock);
+
+    debug_puts ("Task 1: sleeping 1 second\n");
+    timer_delay (&timer, 1000);
+
+    debug_puts ("Task 1: releasing the lock\n");
+    lock_release (&lock);
+
+    task_exit (0);
+}
+
+void main2 (void *data)
+{
+    /* Задача 2 приостанавливается до освобождения ресурса */
+    debug_puts ("Task 2: taking the lock\n");
+    lock_take (&lock);
+
+    debug_puts ("Task 2: got the lock\n");
+    lock_release (&lock);
+    uos_halt ();
+}
+
+void uos_init (void)
+{
+    task_create (main1, 0, "task1", 2, stack1, sizeof (stack1));
+    task_create (main2, 0, "task2", 1, stack2, sizeof (stack2));
+    timer_init (&timer, 100, KHZ, 10);
+}
+}}}
+
+== Функция lock_try() ==
+{{{
+#include "kernel/uos.h"
+
+int lock_try (lock_t *lock);
+}}}
+
+Попытка захвата ресурса. Если ресурс свободен, он захватывается.
+Переключение задач не происходит.
+
+=== Параметры ===
+  * `lock` --- Ресурс, который требуется захватить.
+
+=== Возвращаемое значение ===
+Возвращает 1 если ресурс успешно захвачен.
+В случае неуспеха возвращается 0.
+
+[http://uos-embedded.googlecode.com/svn/wiki/ltry.png]
+
+=== Пример ===
+{{{
+TODO example lock_try.c
+}}}
+
+
+== Функция lock_signal() ==
+{{{
+#include "kernel/uos.h"
+
+void lock_signal (lock_t *lock, void *message);
+}}}
+
+Посылка сообщения ресурсу. Может произойти переключение задач.
+Если ни одна задача не ждет сообщения, оно теряется.
+
+=== Параметры ===
+  * `lock` --- Ресурс, которому посылается сообщение.
+  * `message` --- Сообщение -- произвольный указатель.
+
+[http://uos-embedded.googlecode.com/svn/wiki/lsignal.png]
+
+=== Пример ===
+{{{
+#include "runtime/lib.h"
+#include "kernel/uos.h"
+
+lock_t lock;
+char stack1 [4000], stack2 [4000];
+struct signal1_t
+{
+    char str_val[10];
+    int int_val;
+};
+
+void main1 (void *data)
+{
+    /* Задача 1 имеет более высокий приоритет и стартует раньше */
+    struct signal1_t *sig; /* Здесь будет указатель на принятое сообщение (message) */
+    debug_puts ("Task 1: Waiting for signal\n");
+    sig = (struct signal1_t *) lock_wait (&lock);
+
+    debug_puts ("Task 1: Caught signal:\n");
+    debug_puts ("Task 1: str_val = ");
+    debug_puts (sig->str_val);
+    debug_puts ("\n");
+
+    uos_halt ();
+}
+
+void main2 (void *data)
+{
+    /* Задача 2 посылает сообщение */
+    struct signal_t sign; /* Сообщение для Task 1 */
+    sign.str_val = "Hi, Task 1";
+
+    debug_puts ("Task 2: Sending signal to Task 1\n");
+    lock_signal (&lock, (void *) &sign);
+
+    debug_puts ("Task 2: Sent signal to Task 1, exiting\n");
+    task_exit (0);
+}
+
+void uos_init (void)
+{
+    task_create (main1, 0, "task1", 2, stack1, sizeof (stack1));
+    task_create (main2, 0, "task2", 1, stack2, sizeof (stack2));
+}
+}}}
+
+== Функция lock_wait() ==
+{{{
+#include "kernel/uos.h"
+
+void *lock_wait (lock_t *lock);
+}}}
+
+Ожидание сообщения. Текущая задача блокируется до момента,
+пока другая задача не пошлет сообщение ресурсу вызовом `lock_signal()`.
+Если ресурс был захвачен текущей задачей, на время ожидания
+он освобождается. Происходит переключение задач.
+
+Для надежной доставки сообщений требуется, чтобы ожидающая задача
+предварительно захватила ресурс. Возможно ожидание сообщений на незахваченном
+ресурсе, но при этом надежная доставка сообщений не гарантируется.
+
+Если ресурс связан с аппаратным прерыванием (see section [[#2.4.1 Функция lock_take_irq()]]),
+и за время удержания ресурса возникло прерывание,
+производится его обработка, затем производится аппаратное разрешение
+(открытие маски) данного прерывания в контроллере прерываний.
+
+=== Параметры ===
+  * `lock` --- Ресурс, для которого ожидается сообщение.
+
+=== Возвращаемое значение ===
+
+Возвращает указатель-сообщение, посланное вызовом `lock_signal()`.
+
+[http://uos-embedded.googlecode.com/svn/wiki/lwait.png]
+
+=== Пример ===
+{{{
+TODO example lock_wait.c
+}}}

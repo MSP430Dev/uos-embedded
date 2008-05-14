@@ -1,4 +1,4 @@
-#summary Using uOS in a real project
+#summary Using uOS in your project
 
 = Практический подход =
 

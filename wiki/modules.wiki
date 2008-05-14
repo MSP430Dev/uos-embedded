@@ -1,4 +1,4 @@
-#summary Modules
+#summary Basic uOS modules
 
 = Модули =
 
@@ -29,7 +29,7 @@
   * Генератор случайных чисел.
   * Библиотека символьного ввода-вывода: printf, putchar, getchar.
 
-/[TODO]/
+/(TODO)/
   * [module_timer Драйвер таймера]
   * [module_uart Драйвер асинхронного порта]
   * [module_nvram Драйвер неразрушаемой памяти]
