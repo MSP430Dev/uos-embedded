@@ -1,0 +1,38 @@
+! Size of glass, min 2x5, max 32x64, default 6x18
+XColumns*glassWidth:    6
+XColumns*glassHeight:   18
+
+! Size of square, min 8x8, max 128x128, default 20x20
+XColumns*squareWidth:   22
+XColumns*squareHeight:  22
+
+! Length of bar, 1..5, default 3
+XColumns*barLength:     3
+
+! Length of squeezed chains, 1..5, default 3
+XColumns*squeezeLength: 3
+
+! Number of different colors, 1..8, default 6
+XColumns*colors:        6
+
+! Delay between bar moves in seconds*10, 1..50, default 6
+XColumns*timeout:       6
+
+! Background color of glass, default dim gray
+XColumns*background:    dim gray
+
+! Color of square background, default black
+XColumns*borderColor:   black
+
+! Color of squeezed squares, default white
+XColumns*squeezeColor:  white
+
+! Colors for squares, default red green blue cyan magenta yellow violet white
+XColumns*color1:        red
+XColumns*color2:        green
+XColumns*color3:        blue
+XColumns*color4:        cyan
+XColumns*color5:        magenta
+XColumns*color6:        yellow
+XColumns*color7:        violet
+XColumns*color8:        white

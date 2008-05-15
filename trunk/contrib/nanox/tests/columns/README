@@ -1,0 +1,196 @@
+                          COLUMNS - A Tetris-Like Game
+                                  Version 1.01
+
+   COLUMNS is a single-player game in which one attempts to manipulate multi-
+   colored tiles in order to form sequences of three boxes of the same color
+   -- arranged horizontally, vertically, or diagonally.
+
+   The COLUMNS game board is a 6 x 18 array of squares.  The playing tiles
+   drop from the top of the screen, and are comprised of 3 boxes arranged in a
+   column -- each box has one of 6 possible colors.
+
+   Tiles drop one at a time, and may be manipulated in one of four different
+   ways: 1) moving the tile one column to the left (the left command), 2)
+   moving the tile one column to the right (right), 3) cycling the colors
+   downward within the tile (cycle), and 4) dropping the tile straight down
+   into place (drop).  You can apply the right, left, and cycle commands as
+   often as you wish while the tile is falling.
+
+   The game ends when a tile is placed and -- after counting all sequences and
+   removing the boxes involved -- a box remains touching the ceiling line at
+   the top of the game board.
+
+                                 RUNNING COLUMNS
+
+   To run COLUMNS:
+
+                     COLUMNS [/T] [/G] [/S] [/M] [/C <num>]
+
+     /T: Force COLUMNS to run in text mode.  This is the default on the CGA
+         display
+
+     /G: Force COLUMNS to run in graphics mode.  This is the default on the
+         EGA and VGA displays.
+
+     /S: Silent.  Beep option is initially off.  When on, this option causes
+         COLUMNS to beep whenever points are scored.
+
+     /M: Monochrome.  Only meaningful in graphics mode.  Replaces the six
+         colors with six different monochrome crosshatch patterns.  This is
+         the only graphics mode available for COLUMNS on the CGA display.
+
+     /C: On COLUMNS startup, cut the Top Ten scores file to contain only the
+         top <num> scores per person.  For example, if player "jsmith"
+         occupies five of the Top Ten spots, "COLUMNS /C 3" will remove his
+         two lowest scores from the file.  The option does not affect
+         administration of the Top Ten file while COLUMNS is running -- only
+         what is done at startup time.
+
+
+
+
+
+
+
+
+
+
+
+
+                                COLUMNS - Page 1
+
+
+
+
+
+
+                                      KEYS
+
+   The following keys are active during the game:
+
+   4, 5, 6, 2:
+
+       These are the left, cycle, right, and drop commands as mapped onto
+       a numeric keypad.
+
+   J, K, L, <SPACE>:
+
+       These are the left, cycle, right, and drop keyboard commands for a
+       right-handed player.
+
+   S, D, F, <SPACE>:
+
+       These are the left, cycle, right, and drop keyboard commands for a
+       left-handed player.
+
+   Q:
+
+       Quit COLUMNS immediately.
+
+   R:
+
+       End the current game, reset the game board, and start over.
+
+   P:
+
+       Pause.  Pressing any key while paused resumes the game.
+
+   B:
+
+       Toggle the beep option.
+
+   +:
+
+       Increase the difficulty level by 1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                COLUMNS - Page 2
+
+
+
+
+
+
+                                     SCORING
+
+   The object of the game is to arrange the tiles on the game board such that
+   boxes of the same color line up in sequences of three or more boxes.  A
+   sequence may be formed horizontally, vertically, or diagonally.  Points are
+   earned when such a sequence is formed: the scoring is a function of the
+   number of boxes in the sequence, the current level of difficulty, and, if
+   the drop command is used, how far the current tile dropped.
+
+   Any time a sequence of three or more boxes is formed, the boxes in the
+   sequence are removed from the board, and all boxes located above those
+   removed collapse to occupy the vacated squares on the game board.  If the
+   new arrangement of boxes (after the collapse) forms more sequences, these
+   are also removed and points are scored.
+
+                                DIFFICULTY LEVELS
+
+   COLUMNS has ten difficulty levels -- the higher the level, the faster the
+   tiles fall.  You choose the starting level at the beginning of each game.
+   If you start at 0 (the easiest), the level will increase by one for every
+   fifty boxes removed.  If you start at a higher level, the difficulty will
+   remain the same until the appropriate number of boxes has been removed,
+   then will start increasing.  (For example, if you start at 2, the level
+   will stay there until 150 boxes have been removed.)
+
+                                   THE TOP TEN
+
+   COLUMNS keeps track of the top ten scores and displays them before each
+   game.  After a score that qualifies you to enter the top ten, COLUMNS
+   prompts for your name.  If you play more than one game during a session,
+   COLUMNS remembers the name and offers it as the default input on future
+   name input prompts.  If, when prompted for your name, you press the
+   backspace key before any other keys, COLUMNS will erase the default input
+   and give you a clear line on which to enter a new name.
+
+   The Top Ten record is kept in a plaintext file called COLUMNS.HIS.
+
+                                     AUTHORS
+
+   COLUMNS was invented for the X Windows system by Jay Geertsen of Hewlett-
+   Packard Co.  It was ported to DOS and enhanced by Nathan Meyers of Hewlett-
+   Packard Co.
+
+                                     LICENSE
+
+   Permission is granted to freely distribute this game without charge.
+
+    
+
+
+
+
+
+
+
+
+
+
+
+                                COLUMNS - Page 3
+
+
+
+

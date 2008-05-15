@@ -1,0 +1,50 @@
+#define IRCMD_8		0x14
+#define IRCMD_CH_PREV  	0x18
+#define IRCMD_DISP 	0x1c
+#define IRCMD_4    	0x24
+#define IRCMD_PLAY 	0x30
+#define IRCMD_REC  	0x33
+#define IRCMD_2    	0x44
+#define IRCMD_FF   	0x60
+#define IRCMD_6    	0x64
+#define IRCMD_LAST 	0x6c
+#define IRCMD_ENT  	0x7c
+#define IRCMD_1    	0x84
+#define IRCMD_9    	0x94
+#define IRCMD_CH_NEXT  	0x98
+#define IRCMD_5    	0xa4
+#define IRCMD_PAUSE	0xb0
+#define IRCMD_STOP 	0xc0
+#define IRCMD_3    	0xc4
+#define IRCMD_AB  	0xc8
+#define IRCMD_0    	0xcc
+#define IRCMD_POWER	0xd0
+#define IRCMD_REW  	0xe0
+#define IRCMD_7    	0xe4
+
+#define IRRPT_7    	0x12
+#define IRRPT_REW  	0x15
+#define IRRPT_0    	0x22
+#define IRRPT_AB  	0x25
+#define IRRPT_STOP 	0x2a
+#define IRRPT_3    	0x2d
+#define IRRPT_POWER	0x35
+#define IRRPT_CH_NEXT	0x45
+#define IRRPT_9    	0x4d
+#define IRRPT_1    	0x52
+#define IRRPT_5    	0x6d
+#define IRRPT_PAUSE	0x75
+#define IRRPT_REC  	0x88
+#define IRRPT_PLAY 	0x8a
+#define IRRPT_4    	0x92
+#define IRRPT_8    	0xb2
+#define IRRPT_CH_PREV	0xba
+#define IRRPT_DISP 	0xbd
+#define IRRPT_2    	0xd2
+#define IRRPT_LAST 	0xe2
+#define IRRPT_FF   	0xea
+#define IRRPT_6    	0xed
+#define IRRPT_ENT  	0xfd
+
+unsigned char irman_init (uart_t *uart, timer_t *timer);
+unsigned char irman_command (unsigned char byte);

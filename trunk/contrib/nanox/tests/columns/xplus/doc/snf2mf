@@ -1,0 +1,46 @@
+gawk '
+BEGIN {
+	print "mode_setup;"
+	print "def D = drawdot enddef;"
+	print "P# = 1/150 in#;"
+	print "define_pixels (P);"
+	inchar = 0
+	skip = 0
+}
+END {
+	if (inchar) {
+		print "endchar;"
+		inchar = 0
+	}
+	print "end."
+	printf "\r\n" > "/dev/stderr"
+}
+/character/ {
+	if ($2 % 2 != 0) {
+		skip = 1
+		next
+	}
+	skip = 0
+	if (inchar) {
+		print "endchar;"
+		inchar = 0
+	}
+	print "beginchar(" $2 ",16P#,16P#,0);"
+	print "pickup pencircle scaled 3/2 P;"
+	printf "[" $2 "] " > "/dev/stderr"
+	line = 15
+	inchar = 1
+	next
+}
+/#/ {
+	if (skip)
+		next;
+	for (i=0; i<16; ++i) {
+		sym = substr ($0, i, 1)
+		if (sym == "#")
+			printf "D(" i "P," line "P);"
+	}
+	printf "\n"
+	--line
+}
+'

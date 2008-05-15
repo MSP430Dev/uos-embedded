@@ -1,0 +1,13 @@
+#file test1.out
+set remotedebug 1
+set remotecasc 1
+set remotebaud 9600
+target avr /dev/ttyS1
+#b os_halt
+
+define as
+set $old = $pc*2
+si
+x/3i ($old+2==$pc*2 || $old+4==$pc*2) ? $old : $pc*2-2
+regs
+end

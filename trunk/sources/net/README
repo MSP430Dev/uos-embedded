@@ -1,0 +1,5 @@
+This implementation of TCP/IP protocol suite is based on lwIP package
+developed by Adam Dunkels. For more information, go to the lwIP homepage at
+http://savannah.nongnu.org/projects/lwip/
+
+To enable printing TCP debug info, define TCP_DEBUG in target.cfg.

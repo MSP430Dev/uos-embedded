@@ -1,0 +1,88 @@
+/* Return the offset of one string within another.
+   Copyright (C) 1994,1996,1997,2000,2001,2003 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+/*
+ * My personal strstr() implementation that beats most other algorithms.
+ * Until someone tells me otherwise, I assume that this is the
+ * fastest implementation of strstr() in C.
+ * I deliberately chose not to comment it.  You should have at least
+ * as much fun trying to understand it, as I had to write it :-).
+ *
+ * Stephen R. van den Berg, berg@pool.informatik.rwth-aachen.de	*/
+
+#undef strstr
+
+unsigned char *
+strstr (const unsigned char *phaystack, const unsigned char *pneedle)
+{
+	const unsigned char *haystack, *needle;
+	unsigned short a, b, c;
+	const unsigned char *rneedle;
+	const unsigned char *rhaystack;
+
+	haystack = (const unsigned char*) phaystack;
+	needle = (const unsigned char*) pneedle;
+	b = *needle;
+	if (! b)
+foundneedle:	return (unsigned char*) haystack;
+
+	haystack--;	/* possible ANSI violation */
+	do {
+		a = *++haystack;
+		if (! a)
+			return 0;
+	} while (a != b);
+
+	c = *++needle;
+	if (! c)
+		goto foundneedle;
+	++needle;
+	a = *++haystack;
+	if (a == c)
+		goto crest;
+	goto jin;
+
+	for (;;) {
+		a = *++haystack;
+jin:
+		do {
+			for (; a != b; a = *++haystack) {
+				if (!a)
+					return 0;
+				if ((a = *++haystack) == b)
+					break;
+				if (!a)
+					return 0;
+			}
+		} while ((a = *++haystack) != c);
+crest:
+		if (*(rhaystack = haystack-- + 1) == (a = *(rneedle = needle)))
+			do {
+				if (!a)
+					goto foundneedle;
+				if (*++rhaystack != (a = *++needle))
+					break;
+				if (!a)
+					goto foundneedle;
+			} while (*++rhaystack == (a = *++needle));
+		needle = rneedle;	/* took the register-poor aproach */
+		if (! a)
+			return 0;
+	}
+}

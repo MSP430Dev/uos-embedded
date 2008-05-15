@@ -1,0 +1,1479 @@
+%-------------------------------------------------
+% Описание XPLUS - инструментальной C++ библиотеки
+% для разработки программ в среде X Windows.
+%
+% Базовые классы:
+%       xWindow - обобщенное окно
+%       xScreen - экран
+%       xEvent  - событие
+%       xInput  - список принимаемых событий
+%       xOutput - вывод
+%       xColor  - цвет
+%       xFont   - шрифт
+%       xCursor - форма курсора
+%       xBitmap - растр
+%       xPixmap - цветной растр
+%
+%       xImage  - изображение
+%
+% Разное:
+%       slist
+%       textbuf
+%       ttable
+%       utils
+%-------------------------------------------------
+
+\vsize = 6.5in
+\hsize = 4in
+\pretolerance = 1000
+\tolerance = 2000
+\emergencystretch = 18pt
+\parindent = 0pt
+\parskip = 5pt
+%\raggedright
+\raggedbottom
+
+\font\partfont=cmr17
+\font\titleitfont=cmti12
+\font\titlefont=cmr12
+\font\cfont=cmtt8
+\font\capsfont=cmcsc10
+\font\headfont=cmti8
+
+\chardef \other = 12
+\def\deactivate{%
+%       \catcode`\\ = \other
+	\catcode`\{ = \other
+	\catcode`\} = \other
+	\catcode`\$ = \other
+	\catcode`\& = \other
+	\catcode`\# = \other
+	\catcode`\% = \other
+	\catcode`\~ = \other
+	\catcode`\^ = \other
+	\catcode`\_ = \other
+}
+\def\newline{\par\noindent}
+\def\removebox{\setbox0=\lastbox}
+\def\makeactive#1{\catcode`#1 = \active \ignorespaces}
+{%
+	\makeactive \^^M
+	\gdef\obeywhitespace{%
+		\makeactive \^^M
+		\let^^M = \newline
+		\aftergroup \removebox
+		\obeyspaces
+	}%
+}
+\def\cbegin {\begingroup \cfont
+	\parskip = 0pt
+	\baselineskip = 9pt
+	\makeactive \^^I
+	\deactivate \obeywhitespace
+}
+\def\cend {\endgroup\medbreak}
+{\makeactive\^^I\gdef^^I{\hskip8\fontdimen2\cfont\relax}}
+
+\def\dbegin{\begingroup\parindent=0pt\parskip=6pt\leftskip=0.5in\vskip-\parskip}
+\def\dend{\par\endgroup\medbreak}
+
+\def\part#1{\vfil\break\noindent{\partfont#1}\par\bigskip}
+\def\title#1{\bigbreak\noindent{\titlefont#1}\par\nobreak\medskip}
+
+\def\cline{\begingroup
+	\cfont \baselineskip=8pt
+	\noindent \parindent=4\fontdimen2\cfont \hang \raggedright
+	\hyphenpenalty=10000    % turn hyphenation off
+	\deactivate
+}
+\def\clend{\par\endgroup\nobreak}
+
+\def\itemI  {\par \hangafter=0 \hangindent=20pt \textindent}
+\def\itemII {\par \hangafter=0 \hangindent=40pt \textindent}
+\def\itemtag {$\bullet$}
+
+\def\XPLUS {{\capsfont Xplus}}
+\def\XWindows {{\capsfont X Windows}}
+\def\Xlib {{\capsfont Xlib}}
+
+\footline = {\hfil}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Титульный лист
+
+\hbox {\hfil}
+\vfill
+\centerline{{\partfont Xplus}}
+\vskip 0.1in
+\centerline{{\titlefont Инструментальная C++ библиотека}}
+\centerline{{\titlefont для X Windows}}
+\vskip 0.5in
+\centerline{{\titleitfont Предварительное описание}}
+\vskip 0.5in
+\centerline{{\tenrm Вакуленко С. В.}}
+\centerline{{\tentt vak@kiae.su}}
+\vfill
+\break
+
+\headline = {\hbox to 0pt{\vbox to 0pt{\vskip 1pt\hrule width\hsize\vss}\hss}%
+{\headfont XPLUS --- предварительное описание\hfill \folio}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\part{Предисловие}
+
+Построение графического интерфейса в оконной среде - непростая задача.
+Оконная система содержит большое количество взаимодействующих
+между собой объектов, таких как клавиатура, мышь, экран, цветовая
+палитра, шрифты.  Экран состоит из окон, которые взаимодействуют
+с клавиатурой, мышью и между собой посредством событий.
+События могут приводить к изменению изображения в окнах,
+а также к появлению новых окон или исчезновению старых.
+
+Фактически, графический интерфейс можно разбить на конечное число
+обьектов с хорошо определенным интерфейсом.  Все существующие в \XWindows\
+инструментальные библиотеки так или иначе реализуют эту идею.
+Однако использование для этой цели языка C сильно усложняет
+задачу.
+
+В связи с этим стоит упомянуть систему InterViews.  Она представляет
+библиотеку классов C++, реализующих богатый набор графических
+элементов. InterViews спроектирована ``сверху вниз'', программист
+работает с примитивами высокого уровня, абстрагированными от
+механизмов \Xlib, на которых они реализованы.
+
+Данная работа использует другой подход.  Сделана попытка,
+используя примитивы \Xlib, создать базовый набор графических
+объектов С++. Вторая важная сторона \XPLUS\ --- механизм наследования,
+который позволяет на базе имеющихся интеактивных обьектов создавать
+более сложные.
+
+Данное руководство имеет целью описать все классы \XPLUS\
+с подробностью, достаточной для поль\-зо\-ва\-те\-ля-про\-грам\-мис\-та.
+Оно 1) не описывает подробностей реализации, кроме тех случаев,
+где это важно для понимания механизма функционирования и 2)
+не может служить введением в \XWindows\ и/или C++.
+
+В настоящий момент библиотека находится в стадии активной разработки,
+и многие из описанных классов могут быть неполными или даже
+оказаться в дальнейшем ненужными.  Данное описание предназначено
+в основном для обсуждения.
+
+Многие термины здесь употребляются в несколько необычном смысле.
+Это связано с отсутствием в настоящий момент устоявшейся русской
+терминологии в области \XWindows\ и объектного программирования,
+и автору пришлось изобретать ее самому.  В конце приведен словарь
+некоторых выражений.
+
+\part{Введение}
+
+Пакет \XPLUS\ представляет собой инструментальную библиотеку
+общего назначения, служащую для разработки программ в среде
+\XWindows\ с использованием языка C++.
+
+Основу \XPLUS\ составляет набор базовых классов нижнего уровня,
+реализующих примитивы графического интерфейса.
+Посредством механизма наследования C++ можно определять новые
+классы на основе имеющихся, и таким образом строить
+сложные структуры графических элементов.
+
+В пакет \XPLUS\ входят следующие классы:
+\itemI{\itemtag} xWindow --- обобщенное окно
+\itemI{\itemtag} xScreen --- экран
+\itemI{\itemtag} xEvent --- событие
+\itemI{\itemtag} xInput --- ввод
+\itemI{\itemtag} xOutput --- вывод
+\itemI{\itemtag} xColor --- цвет
+\itemI{\itemtag} xFont --- шрифт
+\itemI{\itemtag} xCursor --- курсор
+\itemI{\itemtag} xBitmap --- черно-белый растр
+\itemI{\itemtag} xPixmap --- цветной растр
+
+Класс xWindow предназначен для создания на его основе
+путем наследования других интерактивных классов.
+Механизм виртуальных функций языка C++ позволяет
+задавать конкретные алгоритмы поведения определяемого класса,
+и наследовать функции, общие для всех окон.
+
+
+\part{Класс: xWindow}
+%%%%%%%%%%%%%%%%%%%%%
+
+Это основной класс для построения оконных элементов.
+Сам по себе класс xWindow большого смысла не имеет,
+но он используется в качестве базового при описании
+других интерактивных классов. Классы-потомки посредством
+переопределения виртуальных функций задают алгоритмы
+поведения данного конкретного класса.
+
+Везде в описании \XPLUS\ под термином ``окно'' понимается
+``объект класса xWindow или его потомка''.
+
+Окно может быть простым или составным.
+В последнем случае оно имеет несколько подчиненных окон.
+Фактически, все множество окон образует дерево,
+в корне которого находится ``экран'' --- объект класса xScreen.
+
+Важной характеристикой окна является его размер.
+В \XPLUS\ каждое окно имеет текущий размер, а также геометрию
+окна --- диапазон, шаг изменения и оптимальное значение размера. Простые окна
+вычисляют геометрию на основании своих внутренних параметров,
+составные --- на основании геометрии подокон.
+Окна самого верхнего уровня сообщают свою геометрию оконному менеджеру,
+который использует ее при изменении размеров окна-оболочки.
+
+Пользователь управляет характеристиками окон посредством
+задания атрибутов (ресурсов --- в терминах \Xlib).
+Каждому окну при создании приписывается имя класса и имя экземпляра.
+При запросе окном атрибута полное его имя образуется
+из названия и класса атрибута, имени и класса окна, имени и класса
+окна-родителя и т.д., до имени окна-экрана.
+
+Новое окно создается вызовом конструктора, в параметрах которого
+указывается окно-родитель.  После этого окно пребывает в фазе зародыша,
+до тех пор, пока не произойдет его инициализация вызовами ComputeSize,
+Initialize.  При инициализации создается окно \Xlib\ и оно начинает жить
+полноценной жизнью.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+class xWindow {
+public:
+	int x, y;
+	short width, height;
+
+	short min_width, min_height;
+	short max_width, max_height;
+	short opt_width, opt_height;
+	short width_inc, height_inc;
+
+	xScreen *screen;
+	xWindow *parent;
+
+	xWindow (xWindow *, char *, char *);
+	~xWindow ();
+
+	void Listen (xInput *);
+
+	void Insert (xWindow *);
+	void Delete (xWindow *);
+
+	virtual void ComputeSize ();
+	virtual void Initialize ();
+	virtual void Resize ();
+	virtual void Handle (xEvent &);
+	virtual void Redraw (int, int, int, int);
+	virtual void Redraw ();
+
+	int QueryPointer (int *, int *);
+
+	void Move (int, int);
+	void Map ();
+	void Map (int a, int b);
+	void Unmap ();
+
+	void SetBackground (xPixel);
+
+	void Clear ();
+	void Clear (int, int, int, int, int=0);
+
+	void Cursor (xCursor *);
+	void Cursor ();
+
+	void AdjustWidth ();
+	void AdjustHeight ();
+
+	char *GetAttribute (char *, char * = 0);
+
+protected:
+	long            xwin;
+	SimpleList      *childlist;
+
+private:
+	int mapflag;
+};
+\cend
+\cline short width, height\clend
+\dbegin
+	Текущая ширина и высота окна. При инициализации
+	они обычно устанавливаются в оптимальные значения.
+	В дальнейшем их значением управляет окно-родитель.
+\dend
+\cline int x, y\clend
+\dbegin
+	Координаты окна относительно окна-родителя.
+	Их значением управляет исключительно окно-родитель.
+\dend
+\cline short min_width, min_height\clend
+\cline short max_width, max_height\clend
+\cline short opt_width, opt_height\clend
+\cline short width_inc, height_inc\clend
+\dbegin
+	Минимальные, максимальные, оптимальные размеры окна
+	и приращения размеров.  Устанавливаются вызовом ComputeSize
+	при инициализации и в дальнейшем не изменяются.
+\dend
+\cline xScreen *screen\clend
+\dbegin
+	Указатель на объект-экран, на котором отображается окно.
+	Устанавливается при создании окна и в дальнейшем не изменяется.
+\dend
+\cline xWindow *parent\clend
+\dbegin
+	Указатель на объект-родитель, которому подчинено окно.
+	Устанавливается при создании окна и в дальнейшем не изменяется.
+\dend
+\cline long xwin\clend
+\dbegin
+	Идентификатор окна \Xlib.  Устанавливается при инициализации
+	и используется виртуальными функциями классов-потомков.
+\dend
+\cline SimpleList *childlist\clend
+\dbegin
+	Список подчиненных окон.  Для доступа к этому списку служат
+	функции Insert, Delete.
+\dend
+\cline int mapflag\clend
+\dbegin
+	Устанавливается в 1 если разрешено отображение окна (Map).
+\dend
+\cline xWindow (xWindow *, char *, char *)\clend
+\dbegin
+	Создание нового окна.  Параметры --- окно-родитель, имя класса
+	и имя экземпляра.  Расписывает некоторые поля, создает списки
+	кварков и пустой список подчиненных окон.  Добавляет окно
+	к списку подчиненных окон родителя.
+\dend
+\cline ~xWindow ()\clend
+\dbegin
+	Уничтожение окна.
+\dend
+\cline virtual void ComputeSize ()\clend
+\dbegin
+	Вычисление геометрии окна.  Для всех потомков вызывает
+	ComputeSize, затем исходя из их размеров вычисляет собственную
+	геометрию.  Вызывается непосредственно перед Initialize,
+	обычно из xScreen.Run.
+\dend
+\cline virtual void Initialize ()\clend
+\dbegin
+	Инициализация окна.  Создает окно \Xlib, регистрирует его
+	дешифраторе событий (xScreen.RegisterTarget), устанавливает пустую
+	маску событий, включает отображение окна (Map), если оно разрешено.
+	Затем вызывает Initialize для всех подокон.
+\dend
+\cline void Insert (xWindow *)\clend
+\cline void Delete (xWindow *)\clend
+\dbegin
+	Добавление и удаление указанного окна из списка подчиненных
+	окон.
+\dend
+\cline void Listen (xInput *)\clend
+\dbegin
+	Установка маски получаемых событий.
+\dend
+\cline virtual void Handle (xEvent &)\clend
+\dbegin
+	Обработка полученного события.
+\dend
+\cline virtual void Resize ()\clend
+\dbegin
+	Обработка изменения размера.  Окно-родитель изменило
+	размер данного окна $(width,height)$ и вызывает Resize
+	для этого окна, чтобы оно могло произвести необходимые
+	действия (например, переупорядочить подчиненные окна).
+\dend
+\cline virtual void Redraw ()\clend
+\dbegin
+	Перерисовка всего окна.
+\dend
+\cline virtual void Redraw (int x, int y, int w, int h)\clend
+\dbegin
+	Перерисовка части окна размером (w, h) с точки (x, y).
+\dend
+\cline int QueryPointer (int *, int *)\clend
+\dbegin
+	Запрос положения курсора относительно данного окна.
+	Координаты курсора $(x,y)$ записываются по указанным адресам.
+	Возвращает 1 если курсор находится на нужном экране.
+\dend
+\cline void Move (int newx, int newy)\clend
+\dbegin
+	Перемещение окна в новую позицию относительно родителя.
+\dend
+\cline void Map ()\clend
+\dbegin
+	Разрешение отображения окна.
+\dend
+\cline void Map (int, int)\clend
+\dbegin
+	Перемещение, затем разрешение отображения.
+\dend
+\cline void Unmap ()\clend
+\dbegin
+	Запрет отображения.
+\dend
+\cline void SetBackground (xPixel)\clend
+\dbegin
+	Установка фонового цвета окна. Параметр --- значение пиксела.
+\dend
+\cline void Clear ()\clend
+\dbegin
+	Стирание всего окна (заливка фоновым цветом).
+\dend
+\cline void Clear (int x, int y, int w, int h, int exp=0)\clend
+\dbegin
+	Стирание части окна размером $(w,h)$ с точки $(x,y)$.
+	Если параметр exp не равен нулю, происходит посылка
+	сообщения Exposure.
+\dend
+\cline void Cursor (xCursor *)\clend
+\dbegin
+	Установка курсора для окна.
+\dend
+\cline void Cursor ()\clend
+\dbegin
+	Установка курсора по умолчанию.
+\dend
+\cline void AdjustWidth ()\clend
+\cline void AdjustHeight ()\clend
+\dbegin
+	Вспомогательные функции --- корректировка размеров окна
+	в соответствии с геометрией.  Размеры должны удовлетворять
+	соотношению $dim = min + N*inc$.
+\dend
+\cline char *GetAttribute (char *classname, char *instname=0)\clend
+\dbegin
+	Запрос атрибута окна.  Параметры --- имя класса и
+	имя атрибута.  Если имя атрибута не указано, оно
+	образуется из имени класса преобразованием первой буквы
+	(большой) в маленькую.
+\dend
+
+
+\part{Класс: xScreen (xWindow)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Объект класса xScreen (экран) выполняет роль ``главного''
+окна, а также роль канала связи с X сервером.  Создание экрана
+обычно происходит в начале работы программы и означает
+установление связи с сервером.  Окна верхнего уровня
+подчиняются экрану.  Ширина, высота и глубина окна-экрана
+соответствуют параметрам физического экрана сервера.
+
+Одна из самых важных функций экрана --- получение, дешифровка
+и распределение событий по окнам.  Экран хранит таблицу соответствия
+номера окна \Xlib\ адресу окна \XPLUS.  При получении события \Xlib\
+происходит преобразование его из формата XEvent в формат xEvent.
+Затем вызывается функция Handle соответствующего окна \XPLUS.
+
+Все приходящие события делятся на три категории.
+\itemI{1.} Событие, передаваемое окну:
+    \itemII{\itemtag} нажатие кнопки на мыши (ButtonPress)
+    \itemII{\itemtag} отжатие кнопки на мыши (ButtonRelease)
+    \itemII{\itemtag} нажатие клавиши (KeyPress)
+    \itemII{\itemtag} движение мыши (MotionNotify)
+    \itemII{\itemtag} вход курсора в окно (EnterNotify)
+    \itemII{\itemtag} выход курсора из окна (LeaveNotify)
+   \itemI{} Эти события после дешифрации передаются соответствущему окну
+   посредством вызова Handle.
+\itemI{2.} Перерисовка части окна (Expose).
+   При получении этого события немедленно вызывается
+   функция Redraw (x, y, w, h) соответствующего окна,
+   которая должна перерисовать изображение на указанном
+   участке.
+\itemI{3.} Изменение размера окна (ConfigureNotify).
+   При получении этого события корректируются размеры
+   (width, height) соответствующего окна, затем вызывается
+   функция Resize.  Окно должно отреагировать на изменение
+   размера перевычислением положения и размера подокон и т.п.
+   Перерисовывать изображение при этом не нужно, поскольку
+   за изменением размера последует событие перерисовки.
+
+Экран также хранит базу данных атрибутов (XResources), которая
+инициализируется при создании экрана и используется функцией
+GetAttribute класса xWindow.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+class xScreen : public xWindow {
+public:
+	int depth;
+	xPixel fgpixel;
+	xPixel bgpixel;
+	xFont *font;
+
+	xScreen (char *, int *, char **);
+	~xScreen ();
+
+	void Read (xEvent&);
+	void Run ();
+
+	void WarpPointer (int, int);
+	void Flush ();
+
+	xPixel Pixel (char *);
+	xPixel Pixel (int, int, int);
+	xPixel Pixel (int);
+	xPixel Pixel (xColor);
+	xColor Color (xPixel);
+
+private:
+	Display *xdpy;
+	Screen *xscr;
+	long xcmap;
+	Visual *xvisual;
+};
+\cend
+\cline int depth\clend
+\dbegin
+	Содержит глубину (количество плоскостей) физического
+	экрана X-дисплея.
+\dend
+\cline xPixel fgpixel\clend
+\dbegin
+	Значение пиксела основного цвета, используемого по умолчанию.
+	Обычно это черный цвет.
+\dend
+\cline xPixel bgpixel\clend
+\dbegin
+	Значение пиксела фонового цвета, используемого по умолчанию.
+	Обычно это белый цвет.
+\dend
+\cline xFont *font\clend
+\dbegin
+	Шрифт, используемый по умолчанию.
+\dend
+\cline Display *xdpy\clend
+\dbegin
+	Идентификатор дисплея \Xlib.  Все прочие объекты \XPLUS,
+	имеющие отношение к \Xlib, ссылаются на соответствующий
+	экран, и используют это поля xdpy, xscr, xcmap для работы с \Xlib.
+\dend
+\cline Screen *xscr\clend
+\dbegin
+	Идентификатор экрана \Xlib.
+\dend
+\cline long xcmap\clend
+\dbegin
+	Идентификатор палитры \Xlib.
+\dend
+\cline xScreen (char *, int *, char **)\clend
+\dbegin
+	Создание экрана, подключение к X серверу.  Параметры --- имя
+	класса программы, указатель на количество аргументов программы,
+	таблица указателей на аргументы.
+	Имя класса программы --- это обобщенное название программы,
+	обычно начинается с большой буквы.  Используется при поиске
+	атрибутов.
+	Количество и таблица аргументов --- это параметры
+	функции main, используемые для обработки флагов,
+	характерных для \XWindows.  После обработки
+	нужных флагов они удаляются из таблицы и количество
+	аргументов уменьшается.  Из полученной таблицы программа
+	может извлекать собственные параметры.
+\dend
+\cline ~xScreen ()\clend
+\dbegin
+	Уничтожение экрана, отключение от X сервера.
+\dend
+\cline void Read (xEvent&)\clend
+\dbegin
+	Ожидание следующего события.  Полученное событие возвращается
+	в аргументе.  Возвращается только событие типа 1 (см. описание
+	класса xScreen).  Перерисовка и изменение размера обрабатываются
+	немедленно.
+\dend
+\cline void Run ()\clend
+\dbegin
+	``Сотворение мира''.  Это центральная функция в жизнедеятельности
+	программы на \XPLUS.  До этого момента программа занималась
+	подготовительной деятельностью: разбирала аргументы,
+	создавала иерархию окон, устанавливала необходимые атрибуты.
+	До сих пор окна существовали в зародыше.  Вызов Run производит
+	инициальзацию всего дерева окон, затем входит
+	в цикл чтения (xScreen.Read) и распределения событий
+	по окнам (xWindow.Handle).
+\dend
+\cline void WarpPointer (int dx, int dy)\clend
+\dbegin
+	Корректировка положения курсора.  Передвигает курсор
+	на интервал $(dx,dy)$.  Данную операцию рекомендуется
+	использовать только в случае крайней необходимости, так
+	как самовольные ``прыжки'' курсора воспринимаются пользователем
+	резко отрицательно.
+\dend
+\cline void Flush ()\clend
+\dbegin
+	``Выталкивание'' буфера запросов \Xlib.  Все выдаваемые
+	программой запросы к серверу буферизуются с целью уменьшения
+	количества пакетов, проходящих по сети.  В обычном режиме
+	буфер выталкивается запросами xScreen.Read, и это не сказывается
+	на работе программы.  Но иногда, например при отладке, бывает
+	нужно вытолкнуть буфер в некоторый момент, чтобы видеть
+	происходящие изменения.  Это можно сделать вызовом Flush.
+\dend
+\cline xPixel Pixel (char *)\clend
+\dbegin
+	Определение пиксела по имени цвета.  Если имя цвета
+	неизвестно, возвращается черный цвет.
+\dend
+\cline xPixel Pixel (int, int, int)\clend
+\dbegin
+	Определение пиксела по значениям R, G, B.
+	Интенстивность изменяется в диапазоне 0$\ldots$xColorMax.
+\dend
+\cline xPixel Pixel (int)\clend
+\dbegin
+	Определение пиксела серого цвета по значению интенсивности.
+\dend
+\cline xPixel Pixel (xColor)\clend
+\dbegin
+	Определение пиксела по цвету.
+\dend
+\cline xColor Color (xPixel)\clend
+\dbegin
+	Определение цвета по значению пиксела.  Если такой пиксел
+	не существует, возвращается черный цвет.
+\dend
+
+
+\part{Класс: xEvent}
+%%%%%%%%%%%%%%%%%%%%
+
+Объект класса xEvent (событие) представляет собой сообщение,
+получаемое окном, и несущие информацию о действиях
+пользователя (нажатие клавиш, движение мыши и т.п.).
+
+Фактически, смысл существования объекта-окна состоит в
+получении и обработке нужных событий.
+
+Все объекты типа xEvent создаются функцией xScreen.Read.
+
+Есть два способа обработки событий окном:
+\itemI{1.} Пассивный, или асинхронный способ.  В момент прихода
+события, предназначенного некоторому окну, происходит
+вызов функции Handle данного окна.  Функция Handle обычно
+представляет собой переключатель (switch) по типу события,
+который обрабатывает каждое событие характерным для
+него образом.  Каждое окно получает только свои события,
+не мешая остальным.  Большинство окон работает именно
+таким образом.
+\itemI{2.} Активный, или синхронный способ.  Окно принимает событие
+вызовом xScreen.Read, затем анализирует поле window.
+Если оно равно адресу данного окна, событие обрабатывается.
+Если же поле window содержит адрес другого окна, то событие
+игнорируется.  Этот способ производит эффект монопольного
+``захвата власти'' окном и приостановки действия других окон.
+
+События бывают следующего вида (тип xEventType):
+  \itemI{\itemtag} нажатие кнопки на мыши (xEventDown)
+  \itemI{\itemtag} отжатие кнопки на мыши (xEventUp)
+  \itemI{\itemtag} нажатие клавиши (xEventKey)
+  \itemI{\itemtag} вход курсора в окно (xEventEnter)
+  \itemI{\itemtag} выход курсора из окна (xEventLeave)
+  \itemI{\itemtag} движение мыши (xEventMotion)
+  \itemI{\itemtag} движение мыши с нажатой кнопкой (xEventButtonMotion)
+  \itemI{\itemtag} движение с нажатой 1-й кнопкой (xEventButton1Motion)
+  \itemI{\itemtag} движение с нажатой 2-й кнопкой (xEventButton2Motion)
+  \itemI{\itemtag} движение с нажатой 3-й кнопкой (xEventButton3Motion)
+
+В будущем планируется ввести типы событий для работы с таймером,
+межоконного и межпроцессного взаимодействия.
+
+Стоит отметить отличие событий в \XPLUS\ от событий в \Xlib:
+перерисовка окна (Expose) и изменение размера (ConfigureNotify)
+не считаются событиями в \XPLUS\ и обрабатываются особым образом.
+
+Некоторые поля структуры xEvent определены не для всех типов событий.
+В приведенной ниже таблице обозначены поля и события, для которых
+они имеют смысл.
+
+%---------------------------------------------------------------
+%                 Down    Up      Key     Enter   Leave   Motion
+%---------------------------------------------------------------
+% window          *       *       *       *       *       *
+% type            *       *       *       *       *       *
+% time            *       *       *       *       *       *
+% x, y            *       *       *       *       *       *
+% state           *       *       *       *       *       *
+% button          *       *       *
+% keystring                       *
+% len                             *
+%---------------------------------------------------------------
+
+\def\tabtag{$\bullet$}
+\bigbreak
+\halign to \hsize {%
+\strut#\tabskip = 10pt plus 1in \hfill
+ &\hfill #\hfill
+ &\hfill #\hfill
+ &\hfill #\hfill
+ &\hfill #\hfill
+ &\hfill #\hfill
+ &\hfill #\tabskip = 0pt\hfill\cr
+\noalign{\hrule}
+&Down&Up&Key&Enter&Leave&Motion\cr
+\noalign{\hrule}
+window&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag\cr
+type&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag\cr
+time&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag\cr
+x, y&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag\cr
+state&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag&\tabtag\cr
+button&\tabtag&\tabtag&\tabtag&&&\cr
+keystring&&&\tabtag&&&\cr
+len&&&\tabtag&&&\cr
+\noalign{\hrule}}
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+enum xEventType {
+	xEventDown, xEventUp, xEventKey, xEventEnter,
+	xEventLeave, xEventMotion, xEventButtonMotion,
+	xEventButton1Motion, xEventButton2Motion,
+	xEventButton3Motion,
+};
+
+enum xButtonType {
+	xButtonLeft, xButtonMiddle, xButtonRight,
+};
+
+static const xModShift, xModLock, xModControl, xModMeta,
+	xModLeftMouse, xModMiddleMouse, xModRightMouse;
+
+class xEvent {
+public:
+	xWindow* window;
+	xEventType type;
+	unsigned long time;
+	int x, y;
+	int state;
+	int button;
+	int len;
+	char keystring [8];
+
+	void Parse (XEvent &);
+	void Quit ();
+};
+\cend
+\cline enum xEventType\clend
+\dbegin
+	Тип события (см. описание xEvent).
+\dend
+\cline enum xButtonType\clend
+\dbegin
+	Номер кнопки на мыши.  Содержится в поле button событий
+	xEventDown и xEventUp:
+	  \itemI{\itemtag} xButtonLeft --- левая (1-я) кнопка
+	  \itemI{\itemtag} xButtonMiddle --- средняя (2-я) кнопка
+	  \itemI{\itemtag} xButtonRight --- правая (3-я) кнопка
+\dend
+\cline static const xModShift, xModLock, xModControl, xModMeta, xModLeftMouse, xModMiddleMouse, xModRightMouse\clend
+\dbegin
+	Маска модификаторов.  Комбинация этих значений
+	содержится в поле state всех событий и дает
+	информацию о состоянии клавиш Shift, CapsLock, Control,
+	Alt и кнопок мыши в момент возникновения события.
+\dend
+\cline xWindow* window\clend
+\dbegin
+	Указатель на окно, к которому относится данное событие.
+\dend
+\cline xEventType type\clend
+\dbegin
+	Тип события (см. xEventType).
+\dend
+\cline unsigned long time\clend
+\dbegin
+	Момент времени возникновения события, количество миллисекунд
+	с момента запуска X-сервера.
+\dend
+\cline int x, y\clend
+\dbegin
+	Координаты курсора относительно окна в момент возникновения
+	события.
+\dend
+\cline int state\clend
+\dbegin
+	Состояние клавиш-модификаторов в момент возникновения события.
+\dend
+\cline int button\clend
+\dbegin
+	Номер кнопки (xEventDown, xEventUp) или клавиши (xEventKey).
+	Кнопка задается константой типа xButtonType, номера клавиш
+	описаны в файле $<$X11/keysymdef.h$>$.
+\dend
+\cline char keystring []\clend
+\dbegin
+	Cтрока, содержащая ASCII-пред\-став\-ле\-ние
+	клавиши события xEventKey.
+\dend
+\cline int len\clend
+\dbegin
+	Длина строки keystring.
+\dend
+\cline void Parse (XEvent &)\clend
+\dbegin
+	Преобразование события \Xlib\ в событие \XPLUS.
+\dend
+\cline void Quit ()\clend
+\dbegin
+	Если при обработке некоторого события окно решает
+	самоликвидироваться, оно должно вызвать функцию
+	Quit от этого события и вернуть управление.
+	Когда управление вернется в диспетчер событий,
+	он уничтожит окно.
+\dend
+
+
+\part{Класс: xInput}
+%%%%%%%%%%%%%%%%%%%%
+
+Обьект класса xInput (ввод) хранит список событий, принимаемых некоторым окном.
+Чтобы установить список событий для окна, нужно
+создать его, вызовом xInput.Catch добавить нужные значения
+и вызовом xWindow.Listen приписать список окну.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+class xInput {
+public:
+	xInput ();
+	xInput (xInput *);
+
+	void Catch (xEventType);
+	void Ignore (xEventType);
+};
+\cend
+\cline xInput ()\clend
+\dbegin
+	Создание пустого списка событий.
+\dend
+\cline xInput (xInput *)\clend
+\dbegin
+	Создание копии указанного списка событий.
+\dend
+\cline void Catch (xEventType)\clend
+\dbegin
+	Добавление события к списку.
+\dend
+\cline void Ignore (xEventType)\clend
+\dbegin
+	Удаление события из списка.
+\dend
+
+
+\part{Класс: xOutput}
+%%%%%%%%%%%%%%%%%%%%%
+
+Объект класса xOutput (вывод) служит для выполнения базовых графических
+операций.  Он хранит информацию о цвете, способе заливки и т.п.,
+и использует ее при отрисовке.  Вывод --- довольно дешевая вещь,
+о обычно окна создают столько экземпляров выводов, сколько
+различных цветов, заливок и пр. им нужно.  Вывод во многом аналогичен
+графическому контексту \Xlib.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+enum xOutputFunction {
+	xOutputFunctionClear, xOutputFunctionAnd,
+	xOutputFunctionAndReverse, xOutputFunctionCopy,
+	xOutputFunctionAndInverted, xOutputFunctionNoop,
+	xOutputFunctionXor, xOutputFunctionOr,
+	xOutputFunctionNor, xOutputFunctionEquiv,
+	xOutputFunctionInvert, xOutputFunctionOrReverse,
+	xOutputFunctionCopyInverted,  xOutputFunctionOrInverted,
+	xOutputFunctionNand, xOutputFunctionSet,
+};
+
+class xOutput {
+public:
+	xScreen *screen;
+
+	xOutput (xScreen *);
+	xOutput (xOutput *);
+	~xOutput ();
+
+	void Foreground (xPixel);
+	void Background (xPixel);
+
+	void Function (xOutputFunction);
+	void PlaneMask (int);
+
+	void LineWidth (int);
+	void LineStyle (int);
+	void CapStyle (int);
+	void JoinStyle (int);
+	void Dashes (char *, int=0);
+
+	void Clip (int, int, int, int);
+	void Clip ();
+
+	void Tile (xPixmap *);
+	void Tile (xBitmap *, int=0);
+	void Tile (int, int);
+	void Tile ();
+
+	void Copy (xWindow *, xWindow *, int=0, int=0);
+	void Copy (xWindow *, xPixmap *, int=0, int=0);
+	void Copy (xPixmap *, xWindow *, int=0, int=0);
+	void Copy (xPixmap *, xPixmap *, int=0, int=0);
+	void Copy (xBitmap *, xWindow *, int=0, int=0);
+	void Copy (xBitmap *, xPixmap *, int=0, int=0);
+
+	void Copy (xWindow *, xWindow *, int,int,int,int,int,int);
+	void Copy (xWindow *, xPixmap *, int,int,int,int,int,int);
+	void Copy (xPixmap *, xWindow *, int,int,int,int,int,int);
+	void Copy (xPixmap *, xPixmap *, int,int,int,int,int,int);
+	void Copy (xBitmap *, xWindow *, int,int,int,int,int,int);
+	void Copy (xBitmap *, xPixmap *, int,int,int,int,int,int);
+
+	void Point (xWindow *, int, int);
+	void Point (xPixmap *, int, int);
+
+	void Points (xWindow *, int, int *);
+	void Points (xPixmap *, int, int *);
+
+	void Line (xWindow *, int, int, int, int);
+	void Line (xPixmap *, int, int, int, int);
+
+	void Lines (xWindow *, int, int *);
+	void Lines (xPixmap *, int, int *);
+
+	void Polyline (xWindow *, int, int *);
+	void Polyline (xPixmap *, int, int *);
+
+	void Rectangle (xWindow *, int, int, int, int);
+	void Rectangle (xPixmap *, int, int, int, int);
+
+	void Polygon (xWindow *, int, int *);
+	void Polygon (xPixmap *, int, int *);
+
+	void Circle (xWindow *, int, int, int);
+	void Circle (xPixmap *, int, int, int);
+	void Circle (xWindow *, int, int, int, int);
+	void Circle (xPixmap *, int, int, int, int);
+
+	void Arc (xWindow *, int, int, int, int, int);
+	void Arc (xPixmap *, int, int, int, int, int);
+	void Arc (xWindow *, int, int, int, int, int, int);
+	void Arc (xPixmap *, int, int, int, int, int, int);
+
+	void Box (xWindow *, int, int, int, int);
+	void Box (xPixmap *, int, int, int, int);
+
+	void Circumference (xWindow *, int, int, int);
+	void Circumference (xPixmap *, int, int, int);
+	void Circumference (xWindow *, int, int, int, int);
+	void Circumference (xPixmap *, int, int, int, int);
+
+	void PieSlice (xWindow *, int, int, int, int, int);
+	void PieSlice (xPixmap *, int, int, int, int, int);
+	void PieSlice (xWindow *, int, int, int, int, int, int);
+	void PieSlice (xPixmap *, int, int, int, int, int, int);
+
+	void Segment (xWindow *, int, int, int, int, int);
+	void Segment (xPixmap *, int, int, int, int, int);
+	void Segment (xWindow *, int, int, int, int, int, int);
+	void Segment (xPixmap *, int, int, int, int, int, int);
+
+	void FillPolygon (xWindow *, int, int *, int=0);
+	void FillPolygon (xPixmap *, int, int *, int=0);
+
+	void Text (xWindow *, xFont *, int, int, int, int=0);
+	void Text (xPixmap *, xFont *, int, int, int, int=0);
+	void Text (xWindow *, xFont *, int, int, char *, int=0);
+	void Text (xPixmap *, xFont *, int, int, char *, int=0);
+};
+\cend
+\cline enum xOutputFunction\clend
+\dbegin
+	Номер функции графики.  Предположим, вы обновляете старое
+	содержимое окна (приемника) новым изображением (источником).
+	Функция графики определяет, как новое значение пикселов
+	приемника вычисляется из старого значения пикселов приемника
+	и значения пикселов источника.
+%---------------------------------------------------------------
+%название  |  формула  | комментарий
+%---------------------------------------------------------------
+
+\bigbreak
+\hskip 0pt \hbox {\vbox {
+{\settabs\+Copy Inverted \space&$(\lnot src)\wedge (\lnot dst)$\space&\cr
+\hrule
+\+\strut Функция&Формула&Описание\cr
+\hrule
+\+\strut Clear&$0$&Стирание\cr
+\+\strut And&$src\wedge dst$&И\cr
+\+\strut And Reverse&$src\wedge \lnot dst$&Обратное и\cr
+\+\strut Copy&$src$&Копирование\cr
+\+\strut And Inverted&$(\lnot src)\wedge dst$&Инвертированное и\cr
+\+\strut Noop&$dst$&Пустая операция\cr
+\+\strut Xor&$src\oplus dst$&Исключающее или\cr
+\+\strut Or&$src\vee dst$&Или\cr
+\+\strut Nor&$(\lnot src)\wedge (\lnot dst)$&Стрелка Пирса\cr
+\+\strut Equiv&$(\lnot src)\oplus dst$&Сравнение\cr
+\+\strut Invert&$\lnot dst$&Инвертирование\cr
+\+\strut Or Reverse&$src\vee \lnot dst$&Обратное или\cr
+\+\strut Copy Inverted&$\lnot src$&Инв. копирование\cr
+\+\strut Or Inverted&$(\lnot src)\vee dst$&Инвертированное или\cr
+\+\strut Nand&$(\lnot src)\vee (\lnot dst)$&Штрих Шеффера\cr
+\+\strut Set&$1$&Установка\cr
+\hrule}}}
+\dend
+
+\cline xOutput (xScreen *)\clend
+\dbegin
+	Создание вывода для экрана.  Устанавливаются
+	цвета и режимы по умолчанию.
+\dend
+\cline xOutput (xOutput *)\clend
+\dbegin
+	Создание копии вывода.  Вывод-копия получает те же цвета
+	и режимы, что и оригинал.
+\dend
+\cline ~xOutput ()\clend
+\dbegin
+	Уничтожение вывода.
+\dend
+\cline void Foreground (xPixel)\clend
+\dbegin
+	Установка основного цвета вывода по значению пиксела.
+\dend
+\cline void Background (xPixel)\clend
+\dbegin
+	Установка фонового цвета вывода по значению пиксела.
+\dend
+\cline void Function (xOutputFunction)\clend
+\dbegin
+	Установка функции графики.
+\dend
+\cline void SetStipple (xBitmap *, int=0)\clend
+\dbegin
+	Установка штриховки.  Параметры --- растр, задающий
+	изображение для штриховки, и флаг ``прозрачности''
+	штриховки.
+\dend
+\cline void CopyArea (xWindow *from, xWindow *to, int x1, int y1, int w, int h, int x2, int y2)\clend
+\cline void CopyArea (xWindow *from, xPixmap *to, int x1, int y1, int w, int h, int x2, int y2)\clend
+\cline void CopyArea (xPixmap *from, xWindow *to, int x1, int y1, int w, int h, int x2, int y2)\clend
+\cline void CopyArea (xPixmap *from, xPixmap *to, int x1, int y1, int w, int h, int x2, int y2)\clend
+\dbegin
+	Перепись участка изображения из окна в окно.
+\dend
+\cline void DrawPoint (xWindow *, int x, int y)\clend
+\cline void DrawPoint (xPixmap *, int x, int y)\clend
+\dbegin
+	Рисование точки.
+\dend
+\cline void DrawLine (xWindow *, int x1, int y1, int x2, int y2)\clend
+\cline void DrawLine (xPixmap *, int x1, int y1, int x2, int y2)\clend
+\dbegin
+	Рисование линии.
+\dend
+\cline void DrawRectangle (xWindow *, int x1, int y1, int w, int h)\clend
+\cline void DrawRectangle (xPixmap *, int x1, int y1, int w, int h)\clend
+\dbegin
+	Рисование прямоугольника.
+\dend
+\cline void DrawArc (xWindow *, int x, int y, int w, int h, int a1, int a2)\clend
+\cline void DrawArc (xPixmap *, int x, int y, int w, int h, int a1, int a2)\clend
+\dbegin
+	Рисование дуги эллипсоида. Центр эллипсоида находится в точке
+	$(x+w/2, y+h/2)$, полуоси равны $w/2$, $h/2$. Углы $a1$ и $a2$,
+	измеренные
+	в градусах $*64$ от $3$ час. против часовой стрелки, задают
+	начальный и конечный углы дуги.
+\dend
+\cline void FillRectangle (xWindow *, int, int, int, int)\clend
+\cline void FillRectangle (xPixmap *, int, int, int, int)\clend
+\dbegin
+	Рисование закрашенного прямоугольника.
+\dend
+\cline void FillArc (xWindow *, int, int, int, int, int, int)\clend
+\cline void FillArc (xPixmap *, int, int, int, int, int, int)\clend
+\dbegin
+	Рисование закрашенного сектора дуги.
+\dend
+\cline void FillPolygon (xWindow *, int ...)\clend
+\cline void FillPolygon (xPixmap *, int ...)\clend
+\dbegin
+	Рисование закрашенного многоугольника.
+\dend
+\cline void DrawText (xWindow *, xFont *, int x, int y, char *text, int len, int eraseflg=0)\clend
+\cline void DrawText (xPixmap *, xFont *, int x, int y, char *text, int len, int eraseflg=0)\clend
+\dbegin
+	Рисование текстовой строки.  Если задан eraseflg, область
+	под текстом закрашивается фоновым цветом.
+\dend
+\cline void PutImage (xWindow *, xImage *, int x1, int y1, int w, int h, int x2, int y2)\clend
+\cline void PutImage (xPixmap *, xImage *, int x1, int y1, int w, int h, int x2, int y2)\clend
+\dbegin
+	Рисование части изображения.
+\dend
+
+
+\part{Класс: xColor}
+%%%%%%%%%%%%%%%%%%%%
+
+Объект класса xColor (цвет) представляет собой хранилище RGB-координат
+и может использоваться для хранения изображений как массивов цветов.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+const int xColorMax = 255;
+
+class xColor {
+public:
+	unsigned char red, green, blue;
+
+	xColor (int, int, int);
+	xColor (int);
+	xColor ();
+};
+\cend
+\cline unsigned char red, green, blue\clend
+\dbegin
+	Компоненты цвета.  Доступны для изменения извне.
+\dend
+\cline xColor (int r, int g, int b)\clend
+\dbegin
+	Создание цвета по значению компонент.
+\dend
+\cline xColor (int gray)\clend
+\dbegin
+	Создание серого цвета по значению интенсивности.
+\dend
+\cline xColor ()\clend
+\dbegin
+	Создание неопределенного цвета.  Применяется для инициализации
+	массивов.
+\dend
+
+
+\part{Класс: xFont}
+%%%%%%%%%%%%%%%%%%%
+
+Шрифт --- это набор элементарных изо\-бра\-же\-ний-сим\-во\-лов,
+предназначенных для отрисовки текста.  Каждый символ имеет ширину,
+высоту (над базовой линией) и глубину (под базовой линией).
+Ширина, высота и глубина шрифта --- это наибольшие значения по
+всем символам.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+class xFont {
+public:
+	xScreen *screen;
+	int width, height, depth;
+
+	xFont (xScreen *, char *);
+	~xFont ();
+
+	int Width (char *, int);
+	int Width (int);
+	int Height (int);
+	int Depth (int);
+};
+\cend
+\cline xScreen *screen\clend
+\dbegin
+	Экран, к которому относится шрифт.
+\dend
+\cline int width, height, depth\clend
+\dbegin
+	Ширина, высота и глубина шрифта.
+\dend
+\cline xFont (xScreen *, char *name)\clend
+\dbegin
+	Загрузка шрифта по имени.
+\dend
+\cline ~xFont ();\clend
+\dbegin
+	Освобождение шрифта.
+\dend
+\cline int Width (char *str, int len)\clend
+\dbegin
+	Вычисление ширины текстовой строки в пикселах.
+\dend
+\cline int Width (int sym)\clend
+\cline int Height (int sym)\clend
+\cline int Depth (int sym)\clend
+\dbegin
+	Вычисление ширины, высоты и глубины символа в пикселах.
+\dend
+
+
+\part{Класс: xCursor}
+%%%%%%%%%%%%%%%%%%%%%
+
+Объект класса xCursor применяется для задания формы курсора.
+Каждое окно может иметь свой курсор.  При входе в окно курсор
+будет принимать указанную форму.  Для задания курсора
+нужно создать его и приписать окну вызовом xWindow.DefineCursor.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+enum CursorShape {
+	xCursorXCursor, xCursorArrow, xCursorBasedArrowDown,
+	xCursorBasedArrowUp, xCursorBoat, xCursorBogosity,
+	xCursorBottomLeftCorner, xCursorBottomRightCorner,
+	xCursorBottomSide, xCursorBottomTee, xCursorBoxSpiral,
+	xCursorCenterPtr, xCursorCircle, xCursorClock,
+	xCursorCoffeeMug, xCursorCross, xCursorCrossReverse,
+	xCursorCrosshair, xCursorDiamondCross, xCursorDot,
+	xCursorDotbox, xCursorDoubleArrow, xCursorDraftLarge,
+	xCursorDraftSmall, xCursorDrapedBox, xCursorExchange,
+	xCursorFleur, xCursorGobbler, xCursorGumby,
+	xCursorHand1, xCursorHand2, xCursorHeart, xCursorIcon,
+	xCursorIronCross, xCursorLeftPtr, xCursorLeftSide,
+	xCursorLeftTee, xCursorLeftButton,
+	xCursorLowerLeftAngle, xCursorLowerRightAngle,
+	xCursorMan, xCursorMiddlebutton, xCursorMouse,
+	xCursorPencil, xCursorPirate, xCursorPlus,
+	xCursorQuestionArrow, xCursorRightPtr,
+	xCursorRightSide, xCursorRightTee, xCursorRightButton,
+	xCursorRtlLogo, xCursorSailboat, xCursorSbDownArrow,
+	xCursorSbHorDoubleArrow, xCursorSbLeftArrow,
+	xCursorSbRightArrow, xCursorSbUpArrow,
+	xCursorSbVertDoubleArrow, xCursorShuttle,
+	xCursorSizing, xCursorSpider, xCursorSpraycan,
+	xCursorStar, xCursorTarget, xCursorTcross,
+	xCursorTopLeftArrow, xCursorTopLeftCorner,
+	xCursorTopRightCorner, xCursorTopSide, xCursorTopTee,
+	xCursorTrek, xCursorUpperLeftAngle, xCursorUmbrella,
+	xCursorUpperRightAngle, xCursorWatch, xCursorXterm,
+};
+
+class xCursor {
+public:
+	xScreen *screen;
+
+	xColor fgcolor, bgcolor;
+
+	xCursor (xScreen *, xCursorShape);
+	xCursor (xScreen *, xBitmap *, xBitmap *, int, int);
+	xCursor (xScreen *, int, int, char *, char *, int, int);
+	xCursor (xScreen *, char *, char *);
+	~xCursor ();
+
+	void Foreground (xColor);
+	void Background (xColor);
+	void Recolor (xColor, xColor);
+};
+\cend
+\cline enum xCursorhape\clend
+\dbegin
+	Типы курсоров.  Применяются при создании курсоров.
+\dend
+
+\medbreak
+\begingroup
+\hrule
+\input cursor.tex
+\hrule
+\endgroup
+\medbreak
+
+\cline xColor fgcolor, bgcolor\clend
+\dbegin
+	Основной и фоновый цвета курсора.  По умолчанию --- соответственно
+	черный и белый.
+\dend
+\cline xCursor (xScreen *, xCursorShape)\clend
+\dbegin
+	Создание курсора.  Параметр определяет форму курсора.
+\dend
+\cline xCursor (xScreen *, xBitmap *shape, xBitmap *mask, int hotx, int hoty)\clend
+\dbegin
+	Создание курсора по данным в формате XBM.  Форма задается
+	растром data, маска --- растром mask.
+\dend
+\cline xCursor (xScreen *, int w, int h, char *shape, char *mask, int hotx, int hoty)\clend
+\dbegin
+	Создание курсора по данным в формате XBM.  Форма задается
+	массивом shape, маска --- массивом mask.
+\dend
+\cline xCursor (xScreen *, char *shapefile, char *maskfile)\clend
+\dbegin
+	Загрузка курсора из файлов в формате XBM.
+\dend
+\cline ~xCursor ()\clend
+\dbegin
+	Уничтожение курсора.
+\dend
+\cline void Foreground (xColor fg)\clend
+\cline void Background (xColor bg)\clend
+\cline void Recolor (xColor fg, xColor bg)\clend
+\dbegin
+	Установка основного и фонового цветов курсора.
+\dend
+
+
+\part{Класс: xBitmap}
+%%%%%%%%%%%%%%%%%%%%%
+
+Объект xBitmap хранит черно-белое растровое изображение.
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+class xBitmap {
+public:
+	short width, height;
+	short xhot, yhot;
+
+	xBitmap (xScreen *, char *, int * =0, int * =0);
+	xBitmap (xScreen *, int, int, char *);
+	~xBitmap ();
+};
+\cend
+\cline short width, height\clend
+\dbegin
+	Ширина и высота растра.
+\dend
+\cline xBitmap (xScreen *, char *, int *photx=0, int *photy=0)\clend
+\dbegin
+	Загрузка растра из файла в формате XBM.
+	Поиск файла происходит сначала в текущем каталоге,
+	а затем в каталоге /usr/include/X11/bitmaps.
+	По указателям photx, photy записываются координаты
+	"центральной точки" растра.
+\dend
+\cline xBitmap (xScreen *, int w, int h, char *data)\clend
+\dbegin
+	Создание растра из данных в формате XBM.
+\dend
+\cline ~xBitmap ()\clend
+\dbegin
+	Уничтожение растра.
+\dend
+
+
+\part{Класс: xPixmap}
+%%%%%%%%%%%%%%%%%%%%%
+
+Объект xPixmap хранит цветное растровое изображение.
+Его можно использовать вместо окна в большинстве графических
+операций (см. xOutput).
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+class xPixmap {
+public:
+	short width, height;
+
+	xPixmap (xScreen *, int, int);
+	~xPixmap ();
+};
+\cend
+\cline short width, height\clend
+\dbegin
+	Ширина и высота растра.
+\dend
+\cline xPixmap (xScreen *, int w, int h)\clend
+\dbegin
+	Создание растра указанных размеров.  Начальное содержимое
+	пикселов растра не определено.
+\dend
+\cline ~xPixmap ()\clend
+\dbegin
+	Уничтожение растра.
+\dend
+
+
+\part{Класс: xImage}
+%%%%%%%%%%%%%%%%%%%
+
+\title{Интерфейс:}
+%%%%%%%%%%%%%%%%%%
+\cbegin
+class xImage {
+public:
+	short width, height;
+
+	xImage (xScreen *, char *);
+	xImage (xScreen *, char **);
+	~xImage ();
+
+	xPixel GetPixel (int, int);
+	void PutPixel (int, int, xPixel);
+};
+\cend
+
+
+\part{Словарь.}
+%%%%%%%%%%%%%%%
+
+{\bf Потомок} --- класс, построенный на основе уже
+имеющегося (базового) класса.
+
+{\bf Базовый класс} --- класс, используемый для построения
+других классов (потомков).
+
+{\bf Виртуальная функция} (virtual) --- функция, определенная как элемент
+базового класса, которая может переопределяться классами-потомками.
+
+{\bf Иерархия классов} --- логическая структура (дерево) классов в порядке
+их наследования.
+
+{\bf Дерево окон} --- структура (дерево) окон в порядке их подчинения.
+При создании окна оно подчиняется некоторому другому окну.
+Корень дерева --- экран --- подчинен самому себе.
+
+{\bf Окно} --- визуальный объект, обычно прямоугольной формы, с присущим ему
+``поведением''. Потомок класса xWindow. Может иметь несколько подчиненных
+окон и само подчинено окну-родителю.
+
+{\bf Подчиненное окно} --- окно, входящее в состав и являющееся частью изображения
+другого окна (родителя). В \XPLUS\ всякое окно имеет родителя.
+Сужествует специальное окно-экран, выполняющее роль родителя для окон
+верхнего уровня.  Окно-экран подчинено самому себе.
+
+{\bf Простое окно} --- окно, не имеющее подчиненных окон.
+
+{\bf Составное окно} --- окно, имеющее одно или несколько (состоящее из)
+подчиненных окон.
+
+{\bf Экран} --- окно класса xScreen, корень дерева окон.
+Ширина и высота экрана соответствует параметрам X-дисплея.
+
+{\bf Геометрия окна} --- максимальные, минимальные и оптимальные ширина и высота окна,
+а также шаг их изменения.  Составные окна вычисляют свою геометрию на
+основании геометрии подчиненных окон.
+
+{\bf Атрибут окна} --- именованный параметр, влияющий на функционирование окна.
+В терминологии \Xlib\ --- resource.
+
+{\bf Событие} --- объект класса xEvent. Представляет собой сообщение,
+которое устройство ввода (мышь или клавиатура) посылает окну .
+
+{\bf Вывод} --- объект класса xOutput.  Служит для выполнения графических
+операций и хранит информацию о цвете, заливке и т.п.
+
+{\bf Ввод} --- объект класса xInput.  Задает список типов событий,
+обрабатываемых окном.  Каждое окно получает только те события,
+которые оно задает для себя посредством ввода.
+
+{\bf Пиксел} --- целое число, представляющее точку определенного
+цвета на экране.  Цвет, заданный RGB-координатами,
+можно преобразовать в пиксел.  Цвет полученного пиксела
+может отличаться от требуемого, в зависимости от
+характеристик используемого X-дисплея.  Черный и белый
+цвета всегда отображаются без искажений.
+
+{\bf Цвет} --- объект класса xColor, задается тремя компонентами
+(RGB).  Может быть преобразован в пиксел, но при этом происходит
+некоторое огрубление цвета, зависящее от характеристик X-дисплея.
+
+\bye

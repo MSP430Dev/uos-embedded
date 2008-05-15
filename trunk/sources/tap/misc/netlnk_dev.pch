@@ -1,0 +1,96 @@
+Adding SIGIO support for /dev/tapX and other netlink-based drivers.
+
+Use the following program to test it:
+
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <unistd.h>
+	#include <signal.h>
+	
+	#define __USE_GNU
+	#include <fcntl.h>
+	
+	#define DEVNAME	"/dev/tap0"
+	#define SIGNUM	SIGIO
+	
+	void sigio (int signum)
+	{
+		printf ("Got signal %d\n", signum);
+		fflush (stdout);
+	}
+	
+	int main (int argc, char **argv)
+	{
+		int fd, flags;
+	
+		fd = open (DEVNAME, O_RDWR);
+		if (fd < 0) {
+			perror (DEVNAME);
+			exit (1);
+		}
+		signal (SIGNUM, sigio);
+		fcntl (fd, F_SETOWN, getpid());
+		fcntl (fd, F_SETSIG, SIGNUM);
+	
+		flags = fcntl (fd, F_GETFL, 0);
+		fcntl (fd, F_SETFL, flags | O_ASYNC);
+	
+		printf ("Waiting for i/o signal.\n");
+		printf ("Ping /dev/tap0 interface.\n");
+		for (;;)
+			pause ();
+	}
+___
+Best wishes,
+Serge Vakulenko <vak@cronyx.ru>
+
+
+--- /usr/src/linux-2.2.5/net/netlink/netlink_dev.c	Fri Aug 28 06:33:09 1998
++++ netlink_dev.c	Fri Mar  1 21:20:17 2002
+@@ -25,6 +25,7 @@
+ #include <linux/netlink.h>
+ #include <linux/poll.h>
+ #include <linux/init.h>
++#include <net/sock.h>
+ 
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
+@@ -148,11 +149,27 @@
+ 	return err;
+ }
+ 
++static int netlink_fasync(int fd, struct file *filp, int on)
++{
++	struct inode *inode = filp->f_dentry->d_inode;
++	struct socket *sock = netlink_user[MINOR(inode->i_rdev)];
++	int retval;
++
++	lock_sock(sock->sk);
++	retval = fasync_helper(fd, filp, on, &sock->fasync_list);
++	release_sock(sock->sk);
++
++	if (retval <= 0)
++		return retval;
++	return 0;
++}
++
+ static int netlink_release(struct inode * inode, struct file * file)
+ {
+ 	unsigned int minor = MINOR(inode->i_rdev);
+ 	struct socket *sock = netlink_user[minor];
+ 
++	netlink_fasync(-1, file, 0);
+ 	netlink_user[minor] = NULL;
+ 	open_map &= ~(1<<minor);
+ 	sock_release(sock);
+@@ -187,7 +204,9 @@
+ 	NULL,		/* netlink_mmap */
+ 	netlink_open,
+ 	NULL,		/* flush */
+-	netlink_release
++	netlink_release,
++	NULL,		/* no fsync */
++	netlink_fasync
+ };
+ 
+ __initfunc(int init_netlink(void))
