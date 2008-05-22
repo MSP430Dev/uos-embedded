@@ -1,0 +1,104 @@
+#summary Installation of GCC cross-compiler for MSP430 architecture
+
+= Установка компилятора GCC для MSP430 =
+Описана установка кросс-системы программирования для микроконтроллеров
+семейства [http://focus.ti.com/mcu/docs/mcuprodoverview.tsp?sectionId=95&tabId=140&familyId=342 TI MSP430].
+Устанавливается поддержка языков Си и Си++.
+Используется компилятор версии GCC-3.2.3 из CVS-репозитория проекта
+[http://sourceforge.net/projects/mspgcc/ MSPGCC].
+
+Готовый бинарный пакет можно скачать здесь:
+ * [http://uos-embedded.googlecode.com/files/gcc323-msp.tgz gcc323-msp.tgz] -- для Linux
+
+Описание архитектуры MSP430 и особенностей компилятора GCC
+можно [http://mspgcc.sourceforge.net/manual/ посмотреть здесь].
+
+== Установка под Linux или FreeBSD или Mac OS X ==
+
+Мы будем собирать все из исходных текстов. Для этого в Вашей системе должен
+быть установлен компилятор GCC.
+Устанавливать готовую систему программирования будем в каталог
+/usr/local/msp323 по номеру версии GCC 3.2.3. Это упростит в будущем
+переход на новые версии компилятора.
+
+Для простоты предположим, что сборка производится в каталоге /src.
+Вы можете использовать любой другой каталог по Вашему выбору,
+произведя соответствующие изменения в выполняемых командах.
+
+Скачайте тексты в каталог /src:
+  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.18.tar.bz2 binutils-2.18.tar.bz2] (14 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-3.2.3.tar.gz gcc-3.2.3.tar.gz] (26 Мбайт)
+
+Распакуйте их:
+{{{
+  cd /src
+  tar xvjf binutils-2.18.tar.bz2
+  tar xvzf gcc-3.2.3.tar.gz
+}}}
+
+Скачайте правки для MSP430 и перепишите нужные файлы в каталог GCC:
+{{{
+  mkdir /src/gcc-msp
+  cd /src/gcc-msp
+  cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
+  cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc checkout -P gcc
+  cp -a gcc/gcc-3.3/* ../gcc-3.2.3
+}}}
+
+=== Сборка binutils ===
+Пакет binutils содержит ассемблер AS, редактор связей LD,
+архиватор AR, а также набор утилит для работы с объектными файлами
+(SIZE, NM, RANLIB, STRIP, и прочие).
+
+Сборка производится в отдельном каталоге binutils-msp. Выполните команды:
+{{{
+  mkdir /src/binutils-msp
+  cd /src/binutils-msp
+  /src/binutils-2.18/configure --target=msp430 --prefix=/usr/local/msp323 --disable-nls
+  make
+}}}
+
+Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
+{{{
+  mkdir /usr/local/msp323
+}}}
+
+Установите binutils:
+{{{
+  cd /src/binutils-msp
+  make install
+}}}
+
+=== Сборка gcc ===
+Для кросс-компилятора не нужны библиотеки libstdc++ и libmudflap.
+Чтобы они не вызывали ошибок при сборке, удалите их:
+{{{
+  cd /src/gcc-3.2.3
+  rm -rf libstdc++-v3
+  rm -rf libmudflap
+}}}
+
+Сборка компилятора производится в отдельном каталоге gcc-msp.
+Выполните команды:
+{{{
+  mkdir /src/gcc-msp
+  cd /src/gcc-msp
+  /src/gcc-3.2.3/configure --target=msp430 --prefix=/usr/local/msp323 \
+    --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
+  make
+}}}
+
+Установите gcc:
+{{{
+  cd /src/gcc-msp
+  make install
+}}}
+
+== Установка под Windows ==
+
+Установите CygWin. Для этого на сайте [http://cygwin.com] щёлкните
+"Install Cygwin now". Это приведет к загрузке небольшого файла setup.exe,
+который надо будет после загрузки запустить и выбрать набор пакетов
+для установки. Достаточно выбрать пакеты bash, gcc, gmake.
+
+После установки Cygwin сборка GCC производится так же, как и в Linux.
