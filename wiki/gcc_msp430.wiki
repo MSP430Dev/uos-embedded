@@ -26,13 +26,13 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.18.tar.bz2 binutils-2.18.tar.bz2] (14 Мбайт)
+  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.16.1.tar.bz2 binutils-2.16.1.tar.bz2] (14 Мбайт)
   * [http://ftp.gnu.org/pub/gnu/gcc/gcc-3.2.3.tar.gz gcc-3.2.3.tar.gz] (26 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils-2.18.tar.bz2
+  tar xvjf binutils-2.16.1.tar.bz2
   tar xvzf gcc-3.2.3.tar.gz
 }}}
 
@@ -54,7 +54,7 @@
 {{{
   mkdir /src/binutils-msp
   cd /src/binutils-msp
-  /src/binutils-2.18/configure --target=msp430 --prefix=/usr/local/msp323 --disable-nls
+  /src/binutils-2.16.1/configure --target=msp430 --prefix=/usr/local/msp323 --disable-nls
   make
 }}}
 
