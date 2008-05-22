@@ -38,8 +38,8 @@
 
 Скачайте правки для MSP430 и перепишите нужные файлы в каталог GCC:
 {{{
-  mkdir /src/gcc-msp
-  cd /src/gcc-msp
+  mkdir /src/gcc-msp-patches
+  cd /src/gcc-msp-patches
   cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
   cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc checkout -P gcc
   cp -a gcc/gcc-3.3/* ../gcc-3.2.3
