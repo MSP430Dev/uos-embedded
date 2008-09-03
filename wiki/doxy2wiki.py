@@ -5,13 +5,15 @@
 
 #import os
 #import sys
-import string
+import sys, string, getopt
 import xml.dom.minidom
+
+verbose = 0
 
 #
 # Data to be collected from doxygen.
 #
-module_name = "timer"
+module_name = "unknown"
 module_brief = "Module \"" + module_name + "\""
 module_descr = ""
 module_files = []
@@ -37,26 +39,6 @@ def fetch_element (compound, name):
 				val = val + n.nodeValue
 	return string.strip (val)
 
-#
-# Get brief and detailed descriptions of a module.
-#
-def parse_namespace (c):
-	global module_brief, module_descr
-
-	name = fetch_element (c, "compoundname")
-	#print "Namespace:", name
-	if name != module_name:
-		raise SystemError, "Namespace name '" + name +\
-			"' differs from module name '" + module_name + "'"
-	brief = fetch_element (c, "briefdescription")
-	if brief:
-		#print "Brief: ", brief
-		if brief[-1:] == ".":
-			brief = brief[:-1]
-		module_brief = brief
-	module_descr = fetch_element (c, "detaileddescription")
-	#print "Description: ", module_descr
-
 def print_xml_element (elem):
 	print elem.nodeName + ":",
 	for c in elem.childNodes:
@@ -67,8 +49,11 @@ def print_xml_element (elem):
 # Get documentation from a file structure.
 #
 def parse_file (c):
-	print "*** File ",
-	print_xml_element (c)
+	global module_files
+
+	if verbose:
+		print "*** File ",
+		print_xml_element (c)
 
 	# Collect a list of file names
 	elem = c.getElementsByTagName ("location")
@@ -83,15 +68,43 @@ def parse_file (c):
 	elem = c.getElementsByTagName ("sectiondef")
 	if elem and elem[0].attributes["kind"].value == "func":
 		funcs = elem[0].childNodes
-		for f in funcs:
-			print f.nodeValue,
-		print
+		if verbose:
+			for f in funcs:
+				print f.nodeValue,
+			print
 
 #
-# Read doxygen data file.
+# Read doxygen namespace XML file.
+# Extract brief and detailed descriptions of a required module.
+#
+def parse_doxygen_namespace (filename):
+	global module_brief, module_descr, module_name
+
+	doc = xml.dom.minidom.parse("xml/" + filename + ".xml").documentElement
+	if doc.tagName != "doxygen":
+		raise SystemError, "Unknown file node (%s)" % doc.tagName
+
+	compounds = doc.getElementsByTagName ("compounddef")
+	for c in compounds:
+		if c.attributes["kind"].value != "namespace":
+			continue
+		name = fetch_element (c, "compoundname")
+		if name != module_name:
+			continue
+
+		# Get brief and detailed descriptions of a module.
+		brief = fetch_element (c, "briefdescription")
+		if brief:
+			if brief[-1:] == ".":
+				brief = brief[:-1]
+			module_brief = brief
+		module_descr = fetch_element (c, "detaileddescription")
+
+#
+# Read doxygen XML file.
 #
 def parse_doxygen_file (filename):
-	print "File", filename
+	if verbose: print "File", filename
 	doc = xml.dom.minidom.parse("xml/" + filename + ".xml").documentElement
 	if doc.tagName != "doxygen":
 		raise SystemError, "Unknown file node (%s)" % doc.tagName
@@ -99,38 +112,39 @@ def parse_doxygen_file (filename):
 	compounds = doc.getElementsByTagName ("compounddef")
 	for c in compounds:
 		if c.attributes["kind"].value == "file":
-			print filename + ": file", c
+			if verbose: print filename + ": file", c
 			parse_file (c)
 		elif c.attributes["kind"].value == "page":
-			print filename + ": page", c
+			if verbose: print filename + ": page", c
 		elif c.attributes["kind"].value == "dir":
-			print filename + ": dir", c
-		elif c.attributes["kind"].value == "namespace":
-			parse_namespace (c)
+			if verbose: print filename + ": dir", c
 		else:
 			raise SystemError, "Unrecognised compound type (%s)" % c.attributes["kind"].value
 
 #
-# Read doxygen index file, and for all file references,
-# call parse_doxygen_file().
+# File index.XML contains references to all other XML files.
+# For all namespaces, call parse_doxygen_namespace().
+# For all files, call parse_doxygen_file().
 #
 def parse_doxygen_index ():
 	doc = xml.dom.minidom.parse("xml/index.xml").documentElement
 	if doc.tagName != "doxygenindex":
 		raise SystemError, "Unknown index file node (%s)" % doc.tagName
-
 	compounds = doc.getElementsByTagName ("compound")
+
 	namespaces = [node.attributes["refid"].value for node in compounds
 		if node.attributes["kind"].value == "namespace"]
 	for f in namespaces:
-		parse_doxygen_file (f)
+		parse_doxygen_namespace (f)
 
 	files = [node.attributes["refid"].value for node in compounds
 		if node.attributes["kind"].value == "file"]
 	for f in files:
 		parse_doxygen_file (f)
 
-def print_wiki_page ():
+def build_wiki_page ():
+	global module_files
+
 	print "#summary [doxygen]", module_brief
 	print
 	print "=", module_brief, "="
@@ -143,5 +157,37 @@ def print_wiki_page ():
 			print "[http://code.google.com/p/uos-embedded/source/browse/trunk/" + f,
 			print f + "]"
 
-parse_doxygen_index ()
-print_wiki_page()
+def usage ():
+	print """doxy2wiki.py: Create wiki page from Doxygen XML data.
+
+Usage:
+	doxy2wiki.py [-v] <module>...
+Options:
+	-v           verbose mode
+         <module>    name of module
+"""
+
+try:
+	opts, args = getopt.getopt (sys.argv[1:], "hp:v", ["help", "parameter="])
+except getopt.GetoptError:
+	usage()
+	sys.exit(2)
+for opt, arg in opts:
+	if opt in ("-h", "--help"):
+		usage()
+		sys.exit()
+	elif opt == '-v':
+		verbose = 1
+	elif opt in ("-p", "--parameter"):
+		parameter = arg
+
+if args == []:
+	usage()
+	sys.exit(2)
+
+for module_name in args:
+	module_brief = "Module \"" + module_name + "\""
+	module_descr = ""
+	module_files = []
+	parse_doxygen_index ()
+	build_wiki_page()

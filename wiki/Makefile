@@ -22,7 +22,7 @@ all:
 			echo "WARNINGS = YES";\
 			echo "ENABLE_PREPROCESSING = NO") |\
 			doxygen -;\
-			: python doxy2wiki.py -v -d xml -p $$m;\
+			: python doxy2wiki.py -v $$m;\
 		done
 
 clean:
