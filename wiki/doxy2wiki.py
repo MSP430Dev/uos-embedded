@@ -17,6 +17,9 @@ module_name = "unknown"
 module_brief = "Module \"" + module_name + "\""
 module_descr = ""
 module_files = []
+module_functions = {}
+module_defines = []
+module_typedefs = []
 
 #
 # Fetch an element from XML compound structure.
@@ -36,7 +39,8 @@ def fetch_element (compound, name):
 		else:
 			for n in line.childNodes:
 				#print "n value = ", n.nodeValue
-				val = val + n.nodeValue
+				if n.nodeValue:
+					val = val + n.nodeValue
 	return string.strip (val)
 
 def print_xml_element (elem):
@@ -44,34 +48,6 @@ def print_xml_element (elem):
 	for c in elem.childNodes:
 		print c.nodeName + ",",
 	print "\n---"
-
-#
-# Get documentation from a file structure.
-#
-def parse_file (c):
-	global module_files
-
-	if verbose:
-		print "*** File ",
-		print_xml_element (c)
-
-	# Collect a list of file names
-	elem = c.getElementsByTagName ("location")
-	if elem:
-		location = elem[0].attributes["file"].value
-		n = location.find ("/trunk/");
-		if n >= 0:
-			location = location [n+7:]
-		#print "*** Location: ", location
-		module_files.append (location)
-
-	elem = c.getElementsByTagName ("sectiondef")
-	if elem and elem[0].attributes["kind"].value == "func":
-		funcs = elem[0].childNodes
-		if verbose:
-			for f in funcs:
-				print f.nodeValue,
-			print
 
 #
 # Read doxygen namespace XML file.
@@ -84,8 +60,7 @@ def parse_doxygen_namespace (filename):
 	if doc.tagName != "doxygen":
 		raise SystemError, "Unknown file node (%s)" % doc.tagName
 
-	compounds = doc.getElementsByTagName ("compounddef")
-	for c in compounds:
+	for c in doc.getElementsByTagName ("compounddef"):
 		if c.attributes["kind"].value != "namespace":
 			continue
 		name = fetch_element (c, "compoundname")
@@ -102,24 +77,46 @@ def parse_doxygen_namespace (filename):
 
 #
 # Read doxygen XML file.
+# Get documentation about functions, defines, typedefs.
 #
 def parse_doxygen_file (filename):
-	if verbose: print "File", filename
+	global module_files
+
+	if verbose: print "*** File", filename
 	doc = xml.dom.minidom.parse("xml/" + filename + ".xml").documentElement
 	if doc.tagName != "doxygen":
 		raise SystemError, "Unknown file node (%s)" % doc.tagName
 
-	compounds = doc.getElementsByTagName ("compounddef")
-	for c in compounds:
-		if c.attributes["kind"].value == "file":
-			if verbose: print filename + ": file", c
-			parse_file (c)
-		elif c.attributes["kind"].value == "page":
-			if verbose: print filename + ": page", c
-		elif c.attributes["kind"].value == "dir":
-			if verbose: print filename + ": dir", c
-		else:
-			raise SystemError, "Unrecognised compound type (%s)" % c.attributes["kind"].value
+	for c in doc.getElementsByTagName ("compounddef"):
+		if c.attributes["kind"].value != "file":
+			continue
+
+		# Collect a list of file names
+		elem = c.getElementsByTagName ("location")
+		if elem:
+			location = elem[0].attributes["file"].value
+			n = location.find ("/trunk/");
+			if n >= 0:
+				location = location [n+7:]
+			#print "*** Location: ", location
+			module_files.append (location)
+
+		# Get functions, defines, typedefs.
+		for section in c.getElementsByTagName ("sectiondef"):
+			if section.attributes["kind"].value == "func":
+				for member in section.getElementsByTagName ("memberdef"):
+					if member.attributes["static"].value != "no":
+						continue
+					name = fetch_element (member, "name")
+					if name in module_functions:
+						continue
+					module_functions[name] = member
+			elif section.attributes["kind"].value == "define":
+				for member in section.getElementsByTagName ("memberdef"):
+					module_defines.append (member)
+			elif section.attributes["kind"].value == "typedef":
+				for member in section.getElementsByTagName ("memberdef"):
+					module_typedefs.append (member)
 
 #
 # File index.XML contains references to all other XML files.
@@ -150,6 +147,36 @@ def build_wiki_page ():
 	print "=", module_brief, "="
 	if module_descr:
 		print module_descr
+
+	if module_defines:
+		print "\n== Макросы =="
+		for f in module_defines:
+			name = fetch_element (f, "name")
+			brief = fetch_element (f, "briefdescription")
+			detailed = fetch_element (f, "detaileddescription")
+			if not brief:
+				brief = detailed
+			print "||", name, "||", brief, "||"
+
+	if module_typedefs:
+		print "\n== Определения типов =="
+		for f in module_typedefs:
+			name = fetch_element (f, "name")
+			definition = fetch_element (f, "definition")
+			brief = fetch_element (f, "briefdescription")
+			detailed = fetch_element (f, "detaileddescription")
+			if not brief:
+				brief = detailed
+			print "||", name, "||", definition, "||", brief, "||"
+
+	if module_functions:
+		print "\n== Функции =="
+		for name in module_functions.keys():
+			f = module_functions [name]
+			brief = fetch_element (f, "briefdescription")
+			detailed = fetch_element (f, "detaileddescription")
+			print "\n===", name, "==="
+			print detailed
 
 	if module_files:
 		print "\n== Файлы =="
@@ -189,5 +216,8 @@ for module_name in args:
 	module_brief = "Module \"" + module_name + "\""
 	module_descr = ""
 	module_files = []
+	module_functions = {}
+	module_defines = []
+	module_typedefs = []
 	parse_doxygen_index ()
 	build_wiki_page()

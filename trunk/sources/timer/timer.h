@@ -5,6 +5,13 @@
 extern "C" {
 #endif
 
+/** \def TIMER_STACKSZ
+ * \~english
+ * Size of stack for timer task in bytes.
+ *
+ * \~russian
+ * Размер стека для задачи таймера, в байтах.
+ */
 #ifndef TIMER_STACKSZ
 #   if __AVR__
 #      define TIMER_STACKSZ	256
@@ -18,14 +25,19 @@ extern "C" {
 #   if PDP11
 #      define TIMER_STACKSZ	256
 #   endif
-#   if LINUX386
-#      define TIMER_STACKSZ	6000
-#   endif
 #   if defined (__arm__) || defined (__thumb__)
 #      define TIMER_STACKSZ	300
 #   endif
 #endif
+#ifndef TIMER_STACKSZ
+#   define TIMER_STACKSZ	6000	/* LINUX386 */
+#endif
 
+/** \~english
+ *	Number of milliseconds per day.
+ * \~russian
+ *	Количество миллисекунд в дне.
+ */
 #define TIMER_MSEC_PER_DAY	(24UL*60*60*1000)
 
 /**

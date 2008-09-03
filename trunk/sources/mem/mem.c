@@ -1,6 +1,4 @@
 /*
- * Memory allocation routines.
- *
  * Copyright (C) 2000-2002 Serge Vakulenko <vak@cronyx.ru>
  * Originally based on sources of Liquorice operating system
  * by David J. Hudson <dave@humbug.demon.co.uk>, heavily rewritten.
@@ -14,10 +12,20 @@
  * Foundation; either version 2.1 of the License, or (at your discretion) any
  * later version.  See the accompanying file "copying-lgpl.txt" for more
  * details.
+ */
+/** \namespace mem \brief \~english
+ * Memory allocation routines.
  *
  * The strategy used within this memory allocator is to try and cause as
  * little waste as possible.  This can make things a little slower than
  * would be ideal, but does give the best chance of things keeping running.
+ */
+
+/** \namespace mem \brief \~russian
+ * Процедуры выделения памяти.
+ *
+ * Свободная память хранится в виде списка, упорядоченного по возрастанию адресов.
+ * Выделяется первый сегмент, подходящий по размеру.
  */
 #include <runtime/lib.h>
 #include <mem/mem.h>
@@ -61,7 +69,7 @@ typedef struct {
  */
 #define NEXT(h)			(*(mheader_t**) ((h) + 1))
 
-/*
+/**
  * Allocate a block of memory.
  * Fill it with zeroes.
  */
@@ -75,7 +83,7 @@ void *mem_alloc (mem_pool_t *m, mem_size_t required)
 	return p;
 }
 
-/*
+/**
  * Allocate a block of memory.
  * The memory may contain garbage.
  */
@@ -204,7 +212,7 @@ static void mem_make_hole (mheader_t *newh)
 	lock_release (&m->lock);
 }
 
-/*
+/**
  * Release a block of memory.
  */
 void mem_free (void *block)
@@ -305,7 +313,7 @@ void mem_truncate (void *block, mem_size_t required)
 	}
 }
 
-/*
+/**
  * Return the amount of heap space that's still available.
  */
 mem_size_t mem_available (mem_pool_t *m)
@@ -339,7 +347,7 @@ mem_size_t mem_size (void *block)
 	return h->size - sizeof(mheader_t);
 }
 
-/*
+/**
  * Return the pool pointer of the given block.
  */
 mem_pool_t *mem_pool (void *block)
@@ -375,7 +383,7 @@ void mem_print_free_list (mem_pool_t *m)
 }
 #endif
 
-/*
+/**
  * Initialize the memory for dynamic allocation.
  * In case of several separate memory chunks,
  * this must be called several times in decreasing start address order.

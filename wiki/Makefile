@@ -20,7 +20,7 @@ all:
 			echo "HIDE_UNDOC_CLASSES = YES";\
 			echo "QUIET = YES";\
 			echo "WARNINGS = YES";\
-			echo "ENABLE_PREPROCESSING = NO") |\
+			echo "ENABLE_PREPROCESSING = YES") |\
 			doxygen -;\
 			: python doxy2wiki.py -v $$m;\
 		done

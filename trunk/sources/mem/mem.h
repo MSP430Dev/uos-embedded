@@ -7,10 +7,6 @@
 extern "C" {
 #endif
 
-/*
- * A memory pool object.
- * The system can have several independent memory pools.
- */
 struct _mem_pool_t {
 	lock_t lock;		/* Lock used to avoid corruption problems. */
 
@@ -20,6 +16,10 @@ struct _mem_pool_t {
 				 * ordered lowest-addressed block first. */
 };
 
+/**
+ * A memory pool object.
+ * The system can have several independent memory pools.
+ */
 typedef struct _mem_pool_t mem_pool_t;
 
 /*
