@@ -28,12 +28,15 @@ extern "C" {
 
 #define TIMER_MSEC_PER_DAY	(24UL*60*60*1000)
 
+/**
+ * Data structure for holding a time value.
+ */
 typedef struct _timer_snap_t {
 	unsigned long milliseconds;
 	unsigned short days;
 } timer_snap_t;
 
-typedef struct _timer_t {
+struct _timer_t {
 	lock_t lock;
 	lock_t decisec;			/* every 0.1 second is signalled here */
 	unsigned long khz;		/* reference clock */
@@ -42,7 +45,12 @@ typedef struct _timer_t {
 	unsigned long last_decisec;	/* when decisecond was signalled */
 	unsigned short days;		/* days counter */
 	OPACITY (stack, TIMER_STACKSZ);	/* task stack */
-} timer_t;
+};
+
+/**
+ * Data structure of a timer driver.
+ */
+typedef struct _timer_t timer_t;
 
 void timer_init (timer_t *t, int_t prio, unsigned long khz,
 	uint_t msec_per_tick);

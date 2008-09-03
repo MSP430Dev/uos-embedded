@@ -1,3 +1,14 @@
+/** \namespace timer \brief \~english
+ * Module "timer" - system time management.
+ *
+ * Full description of file timer.c.
+ */
+
+/** \namespace timer \brief \~russian
+ * Модуль "timer" - управление системным временем.
+ *
+ * Полное описание файла timer.c.
+ */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <timer/timer.h>
@@ -29,7 +40,7 @@
 #   define TIMER_IRQ		SIGALRM
 #endif
 
-/*
+/**
  * Check that `msec' milliseconds have passed.
  * `Interval' is the time interval, probably rolled over the day.
  */
@@ -108,7 +119,7 @@ main_timer (void *arg)
 	}
 }
 
-/*
+/**
  * Return the (real) time in milliseconds since uOS start.
  */
 unsigned long
@@ -122,7 +133,7 @@ timer_milliseconds (timer_t *t)
 	return val;
 }
 
-/*
+/**
  * Return the (real) time in milliseconds since uOS start.
  */
 unsigned short
@@ -136,9 +147,9 @@ timer_days (timer_t *t)
 	return val;
 }
 
-/*
- * LY: return valid snap of both days and milliseconds;
-*/
+/**
+ * Return a valid snap of both days and milliseconds.
+ */
 void timer_snap (timer_t *t, timer_snap_t *v)
 {
 	lock_take (&t->lock);
@@ -147,7 +158,7 @@ void timer_snap (timer_t *t, timer_snap_t *v)
 	lock_release (&t->lock);
 }
 
-/*
+/**
  * Delay the current task by the given time in milliseconds.
  */
 void
@@ -163,7 +174,7 @@ timer_delay (timer_t *t, unsigned long msec)
 	lock_release (&t->lock);
 }
 
-/*
+/**
  * Check that `msec' milliseconds passed since the `t0' moment.
  */
 bool_t
@@ -178,7 +189,7 @@ timer_passed (timer_t *t, unsigned long t0, unsigned short msec)
 	return interval_greater_or_equal (now - t0, msec);
 }
 
-/*
+/**
  * Create timer task.
  */
 void
