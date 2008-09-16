@@ -2,9 +2,13 @@
 
 = Установка компилятора GCC для MIPS32 =
 Описана установка кросс-системы программирования для микроконтроллеров
-с архитектурой [http:// MIPS32].
-Устанавливается поддержка языков Си и Си++.
+с архитектурой [http://www.mips.com/products/processors/architectures/mips32/ MIPS32],
+little endian. Устанавливается поддержка языков Си и Си++.
 Используется компилятор версии [http://gcc.gnu.org/gcc-4.3.2/ GCC 4.3.2].
+
+Архитектура MIPS может быть реализована как с сериализацией big endian, так и little endian.
+Изначально MIPS предполагала big endian, поэтому для little endian используется
+термин MIPSel.
 
 Готовый бинарный пакет можно скачать здесь:
  * [http://uos-embedded.googlecode.com/files/gcc432-mipsel.tgz gcc432-mipsel.tgz] -- для Linux
@@ -14,11 +18,9 @@
 Мы будем собирать все из исходных текстов. Для этого в Вашей системе должен
 быть установлен компилятор GCC. Также необходимо наличие пакета texinfo
 и библиотек GMP и MPFR. В Ubuntu Linux эти компоненты можно установить
-командами:
+командой:
 {{{
-  apt-get install texinfo
-  apt-get install libgmp3-dev
-  apt-get install libmpfr-dev
+  sudo apt-get install texinfo libgmp3-dev libmpfr-dev
 }}}
 
 Устанавливать готовую систему программирования будем в каталог
@@ -30,18 +32,15 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://sourceware.org/pub/binutils/snapshots/binutils.tar.bz2 binutils.tar.bz2] (16 Мбайт) - самая свежая версия
+  * [ftp://gcc.gnu.org/pub/binutils/snapshots/binutils-2.19.50.tar.bz2 binutils-2.19.50.tar.bz2] (17 Мбайт)
   * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.2/gcc-4.3.2.tar.bz2 gcc-4.3.2.tar.bz2] (56 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils.tar.bz2
+  tar xvjf binutils-2.19.50.tar.bz2
   tar xvjf gcc-4.3.2.tar.bz2
 }}}
-
-Пакет binutils будет распакован в каталоге с номером последней версии,
-например binutils-2.18.50 или выше.
 
 === Сборка binutils ===
 Пакет binutils содержит ассемблер AS, редактор связей LD,
@@ -52,7 +51,7 @@
 {{{
   mkdir /src/binutils-mipsel
   cd /src/binutils-mipsel
-  /src/binutils-2.18.50/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel432 --disable-nls
+  /src/binutils-2.19.50/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel432 --disable-nls
   make
 }}}
 
