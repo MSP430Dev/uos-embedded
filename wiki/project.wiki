@@ -8,5 +8,5 @@
   * [project_using_asserts Применение assert]
   * [project_memory_optimization Оптимизация памяти]
   * [project_real_example Пример реального проекта]
-  * [avr_notes Особенности архитектуры AVR]
-  * [arm_notes Особенности архитектуры ARM]
+  * [arch_avr_notes Особенности архитектуры AVR]
+  * [arch_arm_notes Особенности архитектуры ARM]
