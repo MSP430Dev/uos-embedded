@@ -1,5 +1,7 @@
 = Особенности архитектуры MIPS32 =
 
+Особенности ассемблера GNU as для MIPS: http://sourceware.org/binutils/docs/as/MIPS_002dDependent.html
+
 ...TODO...
 
 Распределение регистров MIPS32:
