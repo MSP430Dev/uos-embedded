@@ -2,8 +2,6 @@
 
 Особенности ассемблера GNU as для MIPS: http://sourceware.org/binutils/docs/as/MIPS_002dDependent.html
 
-...TODO...
-
 Распределение регистров MIPS:
 || *Регистр* || *Номер* || *Применение* ||
 || $zero     || 0       || Константа 0 ||
@@ -30,6 +28,8 @@ $v0...$v1 (в случае `long long` или `double`).
 ||  i       || Константа целого типа		||
 
 Подробнее здесь: http://gcc.gnu.org/onlinedocs/gcc/Constraints.html
+
+...TODO...
 
 При прерывании, состояние регистров сохраняется в стеке текущей задачи:
 || *Стек* ||
