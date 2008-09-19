@@ -89,7 +89,7 @@ _gp = .;
 cd uos/sources/runtime/mips32/
 cp ../arm/types.h ../arm/stdlib.h ../arm/string.h 
 }}}
-В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/lib.h sources/runtime/lib.h] в соответствующее место добавляем фрагмент:
+В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/arch.h sources/runtime/arch.h] в соответствующее место добавляем фрагмент:
 {{{
 #elif defined (MIPS32)
 #       include <stdarg.h>
