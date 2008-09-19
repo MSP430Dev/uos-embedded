@@ -15,134 +15,136 @@
 _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
-		j	_init_			# Jump to _init_()
-		nop				# (delay slot)
+		la	$sp, 0xb8008000
+		j	_init_				# Jump to _init_()
+		nop					# (delay slot)
 
 #---------------------------------------
 # Macro: save all registers in stack
 #
 		.macro SAVE_ALL_REGS
-		addi    $sp, $sp, -32*4		# Allocate space for registers
+		addi	$sp, $sp, -CONTEXT_WORDS*4	# Allocate space for registers
 
-		.set    noat
-		sw      $1, (0 * 4) ($sp)	# Save general registers
-		sw      $2, (1 * 4) ($sp)
-		sw      $3, (2 * 4) ($sp)
-		sw      $4, (3 * 4) ($sp)
-		sw      $5, (4 * 4) ($sp)
-		sw      $6, (5 * 4) ($sp)
-		sw      $7, (6 * 4) ($sp)
-		sw      $8, (7 * 4) ($sp)
-		sw      $9, (8 * 4) ($sp)
-		sw      $10, (9 * 4) ($sp)
-		sw      $11, (10 * 4) ($sp)
-		sw      $12, (11 * 4) ($sp)
-		sw      $13, (12 * 4) ($sp)
-		sw      $14, (13 * 4) ($sp)
-		sw      $15, (14 * 4) ($sp)
-		sw      $16, (15 * 4) ($sp)
-		sw      $17, (16 * 4) ($sp)
-		sw      $18, (17 * 4) ($sp)
-		sw      $19, (18 * 4) ($sp)
-		sw      $20, (19 * 4) ($sp)
-		sw      $21, (20 * 4) ($sp)
-		sw      $22, (21 * 4) ($sp)
-		sw      $23, (22 * 4) ($sp)
-		sw      $24, (23 * 4) ($sp)
-		sw      $25, (24 * 4) ($sp)
+		.set	noat
+		sw	$1, (CONTEXT_R1 * 4) ($sp)	# Save general registers
+		sw	$2, (CONTEXT_R2 * 4) ($sp)
+		sw	$3, (CONTEXT_R3 * 4) ($sp)
+		sw	$4, (CONTEXT_R4 * 4) ($sp)
+		sw	$5, (CONTEXT_R5 * 4) ($sp)
+		sw	$6, (CONTEXT_R6 * 4) ($sp)
+		sw	$7, (CONTEXT_R7 * 4) ($sp)
+		sw	$8, (CONTEXT_R8 * 4) ($sp)
+		sw	$9, (CONTEXT_R9 * 4) ($sp)
+		sw	$10, (CONTEXT_R10 * 4) ($sp)
+		sw	$11, (CONTEXT_R11 * 4) ($sp)
+		sw	$12, (CONTEXT_R12 * 4) ($sp)
+		sw	$13, (CONTEXT_R13 * 4) ($sp)
+		sw	$14, (CONTEXT_R14 * 4) ($sp)
+		sw	$15, (CONTEXT_R15 * 4) ($sp)
+		sw	$16, (CONTEXT_R16 * 4) ($sp)
+		sw	$17, (CONTEXT_R17 * 4) ($sp)
+		sw	$18, (CONTEXT_R18 * 4) ($sp)
+		sw	$19, (CONTEXT_R19 * 4) ($sp)
+		sw	$20, (CONTEXT_R20 * 4) ($sp)
+		sw	$21, (CONTEXT_R21 * 4) ($sp)
+		sw	$22, (CONTEXT_R22 * 4) ($sp)
+		sw	$23, (CONTEXT_R23 * 4) ($sp)
+		sw	$24, (CONTEXT_R24 * 4) ($sp)
+		sw	$25, (CONTEXT_R25 * 4) ($sp)
 		# Skip $26 - K0
 		# Skip $27 - K1
-		sw      $28, (25 * 4) ($sp)	# GP
+		sw	$28, (CONTEXT_GP * 4) ($sp)
 		# Skip $29 - SP
-		sw      $30, (26 * 4) ($sp)	# FP
-		sw      $31, (27 * 4) ($sp)	# RA
-		.set    at
+		sw	$30, (CONTEXT_FP * 4) ($sp)
+		sw	$31, (CONTEXT_RA * 4) ($sp)
+		.set	at
 
-		mfhi    $a1			# Save special registers
-		mflo    $a0
-		mfc0    $a2, C0_STATUS
-		mfc0    $a3, C0_EPC
-		sw      $a0, (28 * 4) ($sp)	# LO
-		sw      $a1, (29 * 4) ($sp)	# HI
-		sw      $a2, (30 * 4) ($sp)	# STATUS
-		sw      $a3, (31 * 4) ($sp)	# EPC
+		mfhi	$a1				# Save special registers
+		mflo	$a0
+		mfc0	$a2, $C0_STATUS
+		mfc0	$a3, $C0_EPC
+		sw	$a0, (CONTEXT_LO * 4) ($sp)
+		sw	$a1, (CONTEXT_HI * 4) ($sp)
+		sw	$a2, (CONTEXT_STATUS * 4) ($sp)
+		sw	$a3, (CONTEXT_PC * 4) ($sp)
 		.endm
 
 #---------------------------------------
 # Hangle exceptions
 #
 exception:
-		SAVE_ALL_REGS			# Save all registers in stack
+		SAVE_ALL_REGS				# Save all registers in stack
+		la	$gp, _gp			# Set global pointer
 
 		.extern _exception_handler_
-		move    $a0, $sp		# Arg0: pointer to saved state
-		j	_exception_handler_	# Jump to C code, no return
-		addi    $sp, $sp, -16		# Make an arg frame (delay slot)
+		move	$a0, $sp			# Arg0: pointer to saved state
+		j	_exception_handler_		# Jump to C code, no return
+		addi	$sp, $sp, -16			# Make an arg frame (delay slot)
 
 #---------------------------------------
 # Restore CPU state and return from interrupt
 
 _restore_state_: .globl _restore_state_
 
-		addi	$sp, $sp, 16		# Deallocate an arg frame
+		addi	$sp, $sp, 16			# Deallocate an arg frame
 
-		.set    noat
-		lw      $1, (0 * 4) ($sp)	# Load general registers
-		lw      $2, (1 * 4) ($sp)
-		lw      $3, (2 * 4) ($sp)
-		lw      $4, (3 * 4) ($sp)
-		lw      $5, (4 * 4) ($sp)
-		lw      $6, (5 * 4) ($sp)
-		lw      $7, (6 * 4) ($sp)
-		lw      $8, (7 * 4) ($sp)
-		lw      $9, (8 * 4) ($sp)
-		lw      $10, (9 * 4) ($sp)
-		lw      $11, (10 * 4) ($sp)
-		lw      $12, (11 * 4) ($sp)
-		lw      $13, (12 * 4) ($sp)
-		lw      $14, (13 * 4) ($sp)
-		lw      $15, (14 * 4) ($sp)
-		lw      $16, (15 * 4) ($sp)
-		lw      $17, (16 * 4) ($sp)
-		lw      $18, (17 * 4) ($sp)
-		lw      $19, (18 * 4) ($sp)
-		lw      $20, (19 * 4) ($sp)
-		lw      $21, (20 * 4) ($sp)
-		lw      $22, (21 * 4) ($sp)
-		lw      $23, (22 * 4) ($sp)
-		lw      $24, (23 * 4) ($sp)
-		lw      $25, (24 * 4) ($sp)
+		.set	noat
+		lw	$1, (CONTEXT_R1 * 4) ($sp)	# Load general registers
+		lw	$2, (CONTEXT_R2 * 4) ($sp)
+		lw	$3, (CONTEXT_R3 * 4) ($sp)
+		lw	$4, (CONTEXT_R4 * 4) ($sp)
+		lw	$5, (CONTEXT_R5 * 4) ($sp)
+		lw	$6, (CONTEXT_R6 * 4) ($sp)
+		lw	$7, (CONTEXT_R7 * 4) ($sp)
+		lw	$8, (CONTEXT_R8 * 4) ($sp)
+		lw	$9, (CONTEXT_R9 * 4) ($sp)
+		lw	$10, (CONTEXT_R10 * 4) ($sp)
+		lw	$11, (CONTEXT_R11 * 4) ($sp)
+		lw	$12, (CONTEXT_R12 * 4) ($sp)
+		lw	$13, (CONTEXT_R13 * 4) ($sp)
+		lw	$14, (CONTEXT_R14 * 4) ($sp)
+		lw	$15, (CONTEXT_R15 * 4) ($sp)
+		lw	$16, (CONTEXT_R16 * 4) ($sp)
+		lw	$17, (CONTEXT_R17 * 4) ($sp)
+		lw	$18, (CONTEXT_R18 * 4) ($sp)
+		lw	$19, (CONTEXT_R19 * 4) ($sp)
+		lw	$20, (CONTEXT_R20 * 4) ($sp)
+		lw	$21, (CONTEXT_R21 * 4) ($sp)
+		lw	$22, (CONTEXT_R22 * 4) ($sp)
+		lw	$23, (CONTEXT_R23 * 4) ($sp)
+		lw	$24, (CONTEXT_R24 * 4) ($sp)
+		lw	$25, (CONTEXT_R25 * 4) ($sp)
 		# Skip $26 - K0
 		# Skip $27 - K1
-		lw      $28, (25 * 4) ($sp)	# GP
+		lw	$28, (CONTEXT_GP * 4) ($sp)
 		# Skip $29 - SP
-		lw      $30, (26 * 4) ($sp)	# FP
-		lw      $31, (27 * 4) ($sp)	# RA
-		.set    at
+		lw	$30, (CONTEXT_FP * 4) ($sp)
+		lw	$31, (CONTEXT_RA * 4) ($sp)
+		.set	at
 
-		lw	$k0, (28 * 4) ($sp)	# Load special registers
-		lw	$k1, (29 * 4) ($sp)
-		mthi    $k1
-		mtlo    $k0
-		lw      $k0, (30 * 4) ($sp)	# K0 = saved status
-		lw      $k1, (31 * 4) ($sp)	# K1 = return address
+		lw	$k0, (CONTEXT_LO * 4) ($sp)	# Load special registers
+		lw	$k1, (CONTEXT_HI * 4) ($sp)
+		mthi	$k1
+		mtlo	$k0
+		lw	$k0, (CONTEXT_STATUS * 4) ($sp)	# K0 = saved status
+		lw	$k1, (CONTEXT_PC * 4) ($sp)	# K1 = EPC
 
-		addi	$sp, $sp, 32*4		# Deallocate space for saved registers
+		addi	$sp, $sp, CONTEXT_WORDS*4	# Deallocate saved context
 
 		# Invoke CPU specific mechanism for returning from this exception
 		.set mips3
-		ori     $k0, $k0, 2		# prevent interrupts until eret
-		mtc0    $k0, C0_STATUS		# put SR back
+		ori	$k0, $k0, 2			# prevent interrupts until eret
+		mtc0	$k0, $C0_STATUS			# put SR back
 		nop
 		nop
 		nop
-		mtc0    $k1, C0_EPC		# put PC in EPC
+		mtc0	$k1, $C0_EPC			# put PC in EPC
 		nop
 		nop
 		nop
-		sync				# settle things down
-		eret				# return
-		nop				# just to be safe
+		sync					# settle things down
+		eret					# return
+		nop					# just to be safe
 		.set mips0
 
 #---------------------------------------
@@ -151,19 +153,20 @@ _restore_state_: .globl _restore_state_
 		.org	0x0200
 _pagefault_vector_: .globl _pagefault_vector_
 
-		SAVE_ALL_REGS			# Save all registers in stack
+		SAVE_ALL_REGS				# Save all registers in stack
+		la	$gp, _gp			# Set global pointer
 
 		.extern _pagefault_handler_
-		move    $a0, $sp		# Arg0: pointer to saved state
+		move	$a0, $sp			# Arg0: pointer to saved state
 		j	_pagefault_handler_		# Jump to C code, no return
-		addi    $sp, $sp, -16		# Make an arg frame (delay slot)
+		addi	$sp, $sp, -16			# Make an arg frame (delay slot)
 
 #---------------------------------------
 # Exception vector at 0xBFC00380
 #
 		.org	0x0380
 _exception_vector_: .globl _exception_vector_
-		j	exception		# Not enough space here
+		j	exception			# Not enough space here
 
 
 #---------------------------------------
@@ -172,9 +175,10 @@ _exception_vector_: .globl _exception_vector_
 		.org	0x0400
 _interrupt_vector_: .globl _interrupt_vector_
 
-		SAVE_ALL_REGS			# Save all registers in stack
+		SAVE_ALL_REGS				# Save all registers in stack
+		la	$gp, _gp			# Set global pointer
 
 		.extern _interrupt_handler_
-		move    $a0, $sp		# Arg0: pointer to saved state
-		j	_interrupt_handler_	# Jump to C code, no return
-		addi    $sp, $sp, -16		# Make an arg frame (delay slot)
+		move	$a0, $sp			# Arg0: pointer to saved state
+		j	_interrupt_handler_		# Jump to C code, no return
+		addi	$sp, $sp, -16			# Make an arg frame (delay slot)

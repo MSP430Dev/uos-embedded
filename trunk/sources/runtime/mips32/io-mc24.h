@@ -7,24 +7,24 @@
 /*
  * Coprocessor 0 registers.
  */
-#define C0_INDEX	$0	/* индекс доступа к TLB */
-#define C0_RANDOM	$1	/* индекс TLB для команды Write Random */
-#define C0_ENTRYLO0	$2	/* строки для чётных страниц TLB */
-#define C0_ENTRYLO1	$3	/* строки для нечётных страниц TLB */
-#define C0_CONTEXT	$4	/* указатель на таблицу PTE */
-#define C0_PAGEMASK	$5	/* маска размера страниц TLB */
-#define C0_WIRED	$6	/* граница привязанных строк TLB */
-#define C0_BADVADDR	$8	/* виртуальный адрес последнего исключения */
-#define C0_COUNT	$9	/* таймер */
-#define C0_ENTRYHI	$10	/* информация соответствия виртуального адреса */
-#define C0_COMPARE	$11	/* предельное значение для прерывания по таймеру */
-#define C0_STATUS	$12	/* режимы функционирования процессора */
-#define C0_CAUSE	$13	/* причина последнего исключения */
-#define C0_EPC		$14	/* адрес возврата из исключения */
-#define C0_PRID		$15	/* идентификатор процессора */
-#define C0_CONFIG	$16	/* информация о возможностях процессора */
-#define C0_LLADDR	$17	/* физический адрес последней команды LL */
-#define C0_ERROREPC	$30	/* адрес возврата из исключения ошибки */
+#define C0_INDEX	0	/* индекс доступа к TLB */
+#define C0_RANDOM	1	/* индекс TLB для команды Write Random */
+#define C0_ENTRYLO0	2	/* строки для чётных страниц TLB */
+#define C0_ENTRYLO1	3	/* строки для нечётных страниц TLB */
+#define C0_CONTEXT	4	/* указатель на таблицу PTE */
+#define C0_PAGEMASK	5	/* маска размера страниц TLB */
+#define C0_WIRED	6	/* граница привязанных строк TLB */
+#define C0_BADVADDR	8	/* виртуальный адрес последнего исключения */
+#define C0_COUNT	9	/* таймер */
+#define C0_ENTRYHI	10	/* информация соответствия виртуального адреса */
+#define C0_COMPARE	11	/* предельное значение для прерывания по таймеру */
+#define C0_STATUS	12	/* режимы функционирования процессора */
+#define C0_CAUSE	13	/* причина последнего исключения */
+#define C0_EPC		14	/* адрес возврата из исключения */
+#define C0_PRID		15	/* идентификатор процессора */
+#define C0_CONFIG	16	/* информация о возможностях процессора */
+#define C0_LLADDR	17	/* физический адрес последней команды LL */
+#define C0_ERROREPC	30	/* адрес возврата из исключения ошибки */
 
 /*
  * Status register.

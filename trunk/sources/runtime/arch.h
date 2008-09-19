@@ -18,6 +18,15 @@
 #	include <runtime/ctype.h>
 #	define __BYTE_ORDER __LITTLE_ENDIAN
 #	define __FLOAT_WORD_ORDER __BIG_ENDIAN
+#elif defined (MIPS32)
+#	include <stdarg.h>
+#	include <runtime/mips32/types.h>
+#	include <runtime/mips32/string.h>
+#	include <runtime/mips32/stdlib.h>
+#	include <runtime/mips32/io.h>
+#	include <runtime/ctype.h>
+#	define __BYTE_ORDER __LITTLE_ENDIAN
+#	define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
 #elif defined (I386)
 #	include <stdarg.h>
 #	include <runtime/i386/types.h>
