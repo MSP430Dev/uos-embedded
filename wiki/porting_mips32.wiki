@@ -87,7 +87,7 @@ _gp = .;
 Создаём файлы [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/types.h sources/runtime/mips32/types.h], [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/stdlib.h sources/runtime/mips32/stdlib.h] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/string.h sources/runtime/mips32/string.h]:
 {{{
 cd uos/sources/runtime/mips32/
-cp ../arm/types.h ../arm/stdlib.h ../arm/string.h 
+cp ../arm/types.h ../arm/stdlib.h ../arm/string.h .
 }}}
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/arch.h sources/runtime/arch.h] в соответствующее место добавляем фрагмент:
 {{{
@@ -101,7 +101,10 @@ cp ../arm/types.h ../arm/stdlib.h ../arm/string.h
 #       define __BYTE_ORDER __LITTLE_ENDIAN
 #       define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
 }}}
-
+Теперь можно проверить, что файл init.c правильно компилируется:
+{{{
+/usr/local/mipsel432/bin/mipsel-elf32-gcc -c -fno-builtin -DMIPS32 -DELVEES_MC24 -I../.. init.c
+}}}
 === 8. Делаем функции отладочной выдачи на консоль ===
 В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/debug.c uos/sources/runtime/mips32/debug.c] создаём функции отладочной
 выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`. Заключаем их в #ifdef ELVEES_MC24 ... #endif.
