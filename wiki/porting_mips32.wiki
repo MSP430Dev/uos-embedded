@@ -20,7 +20,7 @@ cp ../s3c4530/target.cfg .
 cp ../s3c4530/ldscript.x .
 }}}
 
-В файле target.cfg изменяем значения переменных:
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/targets/mc24/target.cfg target.cfg] изменяем значения переменных:
   * ARCH - mips32.
   * MODULES - необходимо убрать s3c4530.
   * CFLAGS - задаем тип платформы -DMIPS32 и модель конкретного микроконтроллера -DELVEES_MC24.
@@ -28,7 +28,7 @@ cp ../s3c4530/ldscript.x .
   * CC, AR и прочие - устанавливаем имена компонентов компилятора: mipsel-elf32-gcc и т.п.
   * STARTUP - стартовый код разместим в файле startup-mc24.S.
 
-В файле ldscript.x заменяем везде arm на mips,
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/targets/mc24/ldscript.x ldscript.x] заменяем везде arm на mips,
 а также в блоке MEMORY изменяем адреса и длины сегментов памяти:
   * Для text устанавливаем ORIGIN = 0xbfc00000, LENGTH = 2M
   * Для data устанавливаем ORIGIN = 0xb8000000, LENGTH = 32K
@@ -42,7 +42,7 @@ _gp = .;
 
 === 2. Создаём файл описания специальных регистров процессора ===
 
-Создаём каталог uos/sources/runtime/mips32 и в нём include-файл io.h с описанием регистров платформы MIPS32. Для конкретного процессора МС-24 делаем отдельный файл io-mc24.h. Файл io.h имеет вид:
+Создаём каталог uos/sources/runtime/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mc24/io.h io.h] с описанием регистров платформы MIPS32. Для конкретного процессора МС-24 делаем отдельный файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mc24/io-mc24.h io-mc24.h]. Файл io.h имеет вид:
 {{{
 #ifdef ELVEES_MC24
 #   include <runtime/mips32/io-mc24.h>
@@ -56,7 +56,7 @@ _gp = .;
 
 === 4. Создаём стартовый файл ===
 
-Создаём стартовый файл startup-mc24.S. Стартовый код размещаем в секции .init, которая будет находиться по адресу 0xbfc00000. Вектора прерываний:
+Создаём стартовый файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mc24/startup-mc24.S startup-mc24.S]. Стартовый код размещаем в секции .init, которая будет находиться по адресу 0xbfc00000. Вектора прерываний:
   * bfc00000 - аппаратный сброс, немаскируемое прерывание. Вызов Си-функции `_init_()`.
   * bfc00200 - обращение к отсутствующей странице. Сохранение регистров в стеке и вызов Си-функции `_pagefault_handler_(context)`.
   * bfc00380 - исключение. Сохранение регистров в стеке и вызов Си-функции `_exception_handler_(context)`.
