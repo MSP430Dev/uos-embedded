@@ -63,37 +63,12 @@ _gp = .;
   * bfc00400 - прерывание. Сохранение регистров в стеке и вызов Си-функции `_interrupt_handler_(context)`.
 Здесь `int *context` указывает на массив из 32-х сохранённых регистров.
 
-... TODO ...
-
-=== 2. Создаем файлы заголовков для AT91SAM ===
-Добавляем файлы заголовков для всех моделей семейства SAM: от `at91sam7a3.h`
-до `at91sam9xe512.h`. Эти файлы можно переписать из каталога
-"C:\Program Files\AT91-ISP v1.9\SAM-BA v2.5\monitors\" после установки
-пакета "Install AT91-ISP v1.9.exe". Размещаем их в каталоге
-uos/sources/runtime/arm/. Для удобства переименовываем строчными буквами.
-
-Создаем файл uos/sources/runtime/arm/io-at91sam.h:
-{{{
-#ifdef ARM_AT91SAM7A3
-#include <runtime/arm/at91sam7a3.h>
-#endif
-#ifdef ARM_AT91SAM7S128
-#include <runtime/arm/at91sam7s128.h>
-#endif
-... и так далее ...
-}}}
-
-В файле uos/sources/runtime/arm/io.h добавляем строки:
-{{{
-#ifdef ARM_AT91SAM
-#include <runtime/arm/io-at91sam.h>
-#endif
-}}}
-
-=== 3. Инициализируем начальное состояние микроконтроллера ===
-В файле uos/sources/runtime/arm/init.c в функции `_init_()` добавляем
+=== 5. Инициализируем начальное состояние микроконтроллера ===
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/init.c uos/sources/runtime/mips32/init.c] в функции `_init_()` добавляем
 код инициализации начального состояния регистров микроконтроллера.
-Заключаем его в #ifdef ARM_AT91SAM ... #endif.
+Заключаем его в `#ifdef ELVEES_MC24 ... #endif`.
+
+... TODO ...
 
 === 4. Делаем функции отладочной выдачи на консоль ===
 В файле uos/sources/runtime/arm/debug.c добавляем функции отладочной
