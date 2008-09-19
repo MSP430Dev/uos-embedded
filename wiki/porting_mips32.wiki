@@ -85,7 +85,7 @@ _gp = .;
 
 === 6. Делаем функции отладочной выдачи на консоль ===
 В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/debug.c uos/sources/runtime/mips32/debug.c] создаём функции отладочной
-выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`.
+выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`. Заключаем их в #ifdef ELVEES_MC24 ... #endif.
 
 ... TODO ...
 
