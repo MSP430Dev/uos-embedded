@@ -72,17 +72,22 @@ _gp = .;
   * bfc00400 - прерывание. Сохранение регистров в стеке и вызов Си-функции `_interrupt_handler_(context)`.
 Здесь `int *context` указывает на массив из 32-х сохранённых регистров.
 
-=== 5. Инициализируем начальное состояние микроконтроллера ===
-В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/init.c uos/sources/runtime/mips32/init.c] в функции `_init_()` добавляем
-код инициализации начального состояния регистров микроконтроллера.
-Заключаем его в `#ifdef ELVEES_MC24 ... #endif`.
+=== 5. Делаем функцию начальной инициализации ===
+Создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/init.c uos/sources/runtime/mips32/init.c], содержащий функцию `_init_()`. Она должна:
+  * устанавливать начальное состояние регистров микроконтроллера;
+  * копировать инициализированные данные из памяти Flash в ОЗУ;
+  * обнулять сегмент BSS;
+  * вызывать функцию `main()`.
+Как образец можно использовать аналогичный файл для архитектуры ARM: [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/arm/init.c runtime/arm/init.c].
+
+=== 5. Создаём обработчики исключений ===
+В файл init.c добавляем функции `_pagefault_handler_(context)` и `_exception_handler_(context)`. Они должны печатать на отладочную консоль значения регистров и выполнять аппаратный сброс системы.
+
+=== 6. Делаем функции отладочной выдачи на консоль ===
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/debug.c uos/sources/runtime/mips32/debug.c] создаём функции отладочной
+выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`.
 
 ... TODO ...
-
-=== 4. Делаем функции отладочной выдачи на консоль ===
-В файле uos/sources/runtime/arm/debug.c добавляем функции отладочной
-выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`.
-Заключаем их в #ifdef ARM_AT91SAM ... #endif.
 
 === 5. Добавляем обработку прерываний ===
 В файле uos/sources/kernel/arm/machdep.c в функциях `_irq_handler_()` и
