@@ -42,7 +42,7 @@ _gp = .;
 
 === 2. Создаём файл описания специальных регистров процессора ===
 
-Создаём каталог uos/sources/runtime/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mc24/io.h io.h] с описанием регистров платформы MIPS32. Для конкретного процессора МС-24 делаем отдельный файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mc24/io-mc24.h io-mc24.h]. Файл io.h имеет вид:
+Создаём каталог uos/sources/runtime/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/io.h io.h] с описанием регистров платформы MIPS32. Для конкретного процессора МС-24 делаем отдельный файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/io-mc24.h io-mc24.h]. Файл io.h имеет вид:
 {{{
 #ifdef ELVEES_MC24
 #   include <runtime/mips32/io-mc24.h>
@@ -56,7 +56,7 @@ _gp = .;
 
 === 4. Создаём стартовый файл ===
 
-Создаём стартовый файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mc24/startup-mc24.S startup-mc24.S]. Стартовый код размещаем в секции .init, которая будет находиться по адресу 0xbfc00000. Вектора прерываний:
+Создаём стартовый файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/startup-mc24.S startup-mc24.S]. Стартовый код размещаем в секции .init, которая будет находиться по адресу 0xbfc00000. Вектора прерываний:
   * bfc00000 - аппаратный сброс, немаскируемое прерывание. Вызов Си-функции `_init_()`.
   * bfc00200 - обращение к отсутствующей странице. Сохранение регистров в стеке и вызов Си-функции `_pagefault_handler_(context)`.
   * bfc00380 - исключение. Сохранение регистров в стеке и вызов Си-функции `_exception_handler_(context)`.
