@@ -1,0 +1,8 @@
+#summary Release notes.
+
+= Изменения в текущей версии =
+
+  * Недокументированная функция `_-arch_is_valid_ram_addr()` переименована в `arch_valid_memory address()` и объявлена штатной.
+  * `__arch_get_sp()` -> `arch_get_stack_pointer()`
+  * `__arch_set_sp()` -> `arch_set_stack_pointer()`
+  * 
