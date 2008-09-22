@@ -5,3 +5,7 @@
   * Недокументированная функция `_-arch_is_valid_ram_addr()` переименована в `arch_valid_memory address()` и объявлена штатной.
   * Макросы `__arch_get_sp()` и `__arch_set_sp()` сделаны обязательными и переименованы в `arch_get_stack_pointer()` и `arch_set_stack_pointer()`
   * Тип `mem_size_t` переименован в стандартный `size_t`
+  * Тип `MACHDEP_SAVED_STATE_T` переименован в `arch_state_t`
+  * Макрос `MACHDEP_BUILD_STACK_FRAME()` заменён на функцию `arch_build_stack_frame()`.
+  * Макрос `MACHDEP_TASK_SWITCH()` заменён на функцию `arch_task_switch()`.
+  * Макрос `MACHDEP_INTERRUPTS` переименован в `ARCH_INTERRUPTS`.
