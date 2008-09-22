@@ -45,7 +45,7 @@ QUICKREF
 #define DETECTNULL(X) (((X) - 0x01010101) & ~(X) & 0x80808080)
 
 sign_t
-strncmp(const unsigned char *s1, const unsigned char *s2, mem_size_t n)
+strncmp(const unsigned char *s1, const unsigned char *s2, size_t n)
 {
   unsigned long *a1;
   unsigned long *a2;

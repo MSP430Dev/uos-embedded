@@ -207,7 +207,7 @@ void task_tcl (void *arg)
 	Tcl_CmdBuf buffer;
 
 	configure_ram ();
-	mem_init (&pool, (mem_size_t) RAM_START, (mem_size_t) RAM_END);
+	mem_init (&pool, (size_t) RAM_START, (size_t) RAM_END);
 again:
 	debug_printf ("\nEmbedded TCL\n\n");
 

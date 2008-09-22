@@ -10,7 +10,7 @@
 #include <runtime/lib.h>
 
 void *
-memcpy(void *dest, const void *src, mem_size_t n)
+memcpy(void *dest, const void *src, size_t n)
 {
 	const unsigned char *csrc = (const unsigned char*) src;
 

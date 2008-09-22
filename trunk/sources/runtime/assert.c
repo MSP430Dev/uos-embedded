@@ -13,7 +13,7 @@ __assert_fail_nodebug ()
 	uint_t n;
 	task_t *t;
 	void *callee = __builtin_return_address (0);
-	void *sp = (void*) __arch_get_sp ();
+	void *sp = arch_get_stack_pointer ();
 
 #ifndef NDEBUG
 	debug_printf ("\nAssertion failed in function `%S':\n%S, %u: %S\n\n",
@@ -27,7 +27,7 @@ __assert_fail_nodebug ()
 	list_iterate_entry (t, &task_active, entry) {
 		if (t != task_idle && t != task_current)
 			debug_task_print (t);
-		if (! __arch_is_valid_ram_addr (t))
+		if (! uos_valid_memory_address (t))
 			break;
 		if (++n > 32 || t == list_entry (t->entry.f, task_t, entry)) {
 			debug_puts ("...\n");

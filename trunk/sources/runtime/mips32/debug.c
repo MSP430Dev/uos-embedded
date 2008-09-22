@@ -1,6 +1,4 @@
 #include <runtime/lib.h>
-#include <kernel/uos.h>
-#include <kernel/internal.h>
 
 static int debug_char = -1;
 

@@ -32,7 +32,6 @@ int vsnprintf (char *buf, int size, const char *fmt, va_list args);
 #define stdin			0
 #define stdout			0
 #define stderr			0
-#define size_t			mem_size_t
 
 static inline FILE *fopen (const char *path, const char *mode)
 	{ return 0; }

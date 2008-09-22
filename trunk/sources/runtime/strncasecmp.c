@@ -6,7 +6,7 @@
    than, equal to or greater than S2.  */
 
 sign_t
-strncasecmp (const unsigned char *s1, const unsigned char *s2, mem_size_t n)
+strncasecmp (const unsigned char *s1, const unsigned char *s2, size_t n)
 {
 	unsigned char c1, c2;
 	signed char result;

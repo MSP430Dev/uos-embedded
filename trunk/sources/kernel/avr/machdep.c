@@ -524,12 +524,14 @@ avr_build_stack_frame (task_t *t, unsigned short func, unsigned short arg,
 	t->stack_context = (unsigned short) sp;
 }
 
-/* LY: temporary, until full commit ----------------------------------------- */
-
-extern char __stack;
-
-bool_t __attribute__((weak)) __arch_is_valid_ram_addr (void *ptr)
+/*
+ * Check that the memory address is correct.
+ */
+bool_t __attribute__((weak))
+uos_valid_memory_address (void *ptr)
 {
 	unsigned u = (unsigned) ptr;
+	extern char __stack;
+
 	return u > 0x7FFF || (u > 0xFF && u <= (unsigned) &__stack);
 }

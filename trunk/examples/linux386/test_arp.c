@@ -38,7 +38,7 @@ void hello (void *data)
 
 void uos_init (void)
 {
-	mem_init (&pool, (mem_size_t) memory, (mem_size_t) memory + MEM_SIZE);
+	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);
 	arp = arp_init (arp_data, sizeof(arp_data), &ip);
 
 	/*

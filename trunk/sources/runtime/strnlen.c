@@ -9,11 +9,11 @@
 
 #include <runtime/lib.h>
 
-mem_size_t
-strnlen(const unsigned char *s, mem_size_t n)
+size_t
+strnlen(const unsigned char *s, size_t n)
 {
 	const unsigned char *s0 = s;
-	mem_size_t n0 = n;
+	size_t n0 = n;
 
 	if (n) {
 		do {

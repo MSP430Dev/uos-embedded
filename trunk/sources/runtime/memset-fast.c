@@ -41,7 +41,7 @@ QUICKREF
 #define TOO_SMALL(LEN)	((LEN) < LBLOCKSIZE)
 
 void *
-memset(void *m, unsigned char c, mem_size_t n)
+memset(void *m, unsigned char c, size_t n)
 {
   unsigned char *s;
   unsigned long buffer;

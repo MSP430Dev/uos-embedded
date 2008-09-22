@@ -10,7 +10,7 @@
 #include <runtime/lib.h>
 
 unsigned char *
-strncat(unsigned char *dest, const unsigned char *src, mem_size_t n)
+strncat(unsigned char *dest, const unsigned char *src, size_t n)
 {
 	register unsigned char *tmp = dest;
 

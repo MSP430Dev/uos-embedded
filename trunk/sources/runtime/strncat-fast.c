@@ -50,7 +50,7 @@ QUICKREF
 #define DETECTNULL(X) (((X) - 0x01010101) & ~(X) & 0x80808080)
 
 unsigned char *
-strncat(unsigned char *s1, const unsigned char *s2, mem_size_t n)
+strncat(unsigned char *s1, const unsigned char *s2, size_t n)
 {
   unsigned char *s = s1;
 

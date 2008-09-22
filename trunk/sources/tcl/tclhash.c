@@ -32,7 +32,7 @@
  */
 
 #define RANDOM_INDEX(tablePtr, i) \
-    (((((mem_size_t) (i))*1103515245) >> (tablePtr)->downShift) & (tablePtr)->mask)
+    (((((size_t) (i))*1103515245) >> (tablePtr)->downShift) & (tablePtr)->mask)
 
 /*
  * Procedure prototypes for static procedures in this file:

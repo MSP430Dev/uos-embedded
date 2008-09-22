@@ -8,8 +8,6 @@
 #define NULL 0
 #endif
 
-#define size_t         mem_size_t
-
 static inline char *strerror (int n)
 	{ return ""; }
 

@@ -26,7 +26,7 @@ typedef unsigned long long u_int64_t;
  * An integer type, large enough to keep a memory address.
  * On AVR, data pointers have 2-byte size.
  */
-typedef unsigned short mem_size_t;
+typedef unsigned short size_t;
 
 typedef char jmp_buf [30]; /* not implemented yet */
 

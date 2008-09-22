@@ -816,7 +816,7 @@ void task_tcl (void *arg)
 	Tcl_Interp *interp;
 	Tcl_CmdBuf buffer;
 
-	mem_init (&pool, (mem_size_t) 0x200000, (mem_size_t) 0x400000);
+	mem_init (&pool, (size_t) 0x200000, (size_t) 0x400000);
 again:
 	printf ("\nEmbedded TCL\n\n");
 	printf ("Enter \"help\" for a list of commands\n\n");

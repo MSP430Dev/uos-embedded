@@ -21,10 +21,10 @@
 /* Perform a binary search for KEY in BASE which has NMEMB elements
    of SIZE bytes each.  The comparisons are done by (*COMPAR)().  */
 void *
-bsearch (const void *key, const void *base, mem_size_t nmemb, mem_size_t size,
+bsearch (const void *key, const void *base, size_t nmemb, size_t size,
 	int (*compar) (const void*, const void*))
 {
-	mem_size_t l, u, idx;
+	size_t l, u, idx;
 	const void *p;
 	int comparison;
 

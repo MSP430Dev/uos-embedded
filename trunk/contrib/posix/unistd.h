@@ -8,8 +8,6 @@
 #include <errno.h>
 /*#include <dirent.h>*/
 
-#define size_t mem_size_t
-
 static inline int getpid()
 	{ return (int) task_current; }
 

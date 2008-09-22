@@ -2,7 +2,7 @@
 #include <mem/mem.h>
 
 unsigned char *mem_strndup (mem_pool_t *m, const unsigned char *str,
-	mem_size_t len)
+	size_t len)
 {
 	unsigned char *p;
 

@@ -39,11 +39,11 @@
 #elif defined (LINUX386)
 #	define __timer_t_defined 1
 #	include <stdarg.h>
+#	include <stdlib.h>
 #	include <runtime/linux386/types.h>
 #	include <runtime/i386/string.h>
 #	include <runtime/ctype.h>
 #	define __BYTE_ORDER __LITTLE_ENDIAN
-#	define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
 #elif defined (__MSDOS__)
 #	include <runtime/i86-dos/types.h>
 #	define __BYTE_ORDER __LITTLE_ENDIAN
@@ -55,11 +55,5 @@
 #	define __BYTE_ORDER __LITTLE_ENDIAN
 #	define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
 #endif
-
-bool_t __arch_is_valid_ram_addr (void *);
-
-#ifndef __LINUX__
-	typedef mem_size_t size_t;
-#endif /* __LINUX__ */
 
 #endif /* __UOS_LIB_ARCH_H_ */

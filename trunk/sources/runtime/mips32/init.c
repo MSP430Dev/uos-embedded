@@ -1,8 +1,7 @@
 #include <runtime/lib.h>
-/*#include <kernel/uos.h>*/
-/*#include <kernel/internal.h>*/
 
 extern unsigned long _etext, __data_start, _edata, _end;
+extern int main ();
 
 /*
  * Initialize the system configuration, cache, intermal SRAM,
@@ -29,6 +28,40 @@ void __attribute ((noreturn))_init_ (void)
 	/* Clear COMPARE register. */
 	mips32_write_c0_register (C0_COMPARE, 0);
 
+	/*
+	 * Setup all essential system registers.
+	 */
+	/* Fixed mapping, clock multiply by 5 (from 16 MHz to 80 MHz). */
+	MC_CSR = MC_CSR_FM | MC_CSR_CLK(5) | MC_CSR_CLKEN;
+	MC_MASKR = 0;
+	MC_ITCSR = 0;
+	MC_RTCSR = 0;
+	MC_WTCSR = 0;
+	MC_CSR_SPTX(0) = 0;
+	MC_CSR_SPTX(1) = 0;
+	MC_CSR_SPRX(0) = 0;
+	MC_CSR_SPRX(1) = 0;
+	MC_CSR_LPCH(0) = 0;
+	MC_CSR_LPCH(1) = 0;
+	MC_CSR_LPCH(2) = 0;
+	MC_CSR_LPCH(3) = 0;
+	MC_CSR_MEMCH(0) = 0;
+	MC_CSR_MEMCH(1) = 0;
+	MC_CSR_MEMCH(2) = 0;
+	MC_CSR_MEMCH(3) = 0;
+	MC_STCTL(0) = 0;
+	MC_STCTL(1) = 0;
+	MC_SRCTL(0) = 0;
+	MC_SRCTL(1) = 0;
+	MC_LCSR(0) = 0;
+	MC_LCSR(1) = 0;
+	MC_LCSR(2) = 0;
+	MC_LCSR(3) = 0;
+	MC_LDIR(0) = 0;
+	MC_LDIR(1) = 0;
+	MC_LDIR(2) = 0;
+	MC_LDIR(3) = 0;
+
 #endif /* ELVEES_MC24 */
 
 #ifndef EMULATOR /* not needed on emulator */
@@ -46,7 +79,22 @@ void __attribute ((noreturn))_init_ (void)
 	while (dest < limit)
 		*dest++ = 0;
 
-	for (;;) main ();
+	for (;;)
+		main ();
+}
+
+bool_t __attribute__((weak))
+uos_valid_memory_address (void *ptr)
+{
+	unsigned address = (unsigned) ptr;
+
+#ifdef ELVEES_MC24
+	/* Internal SRAM. */
+	if (address >= 0xb8000000 && address < 0xb8008000)
+		return 1;
+
+#endif /* ELVEES_MC24 */
+	return 0;
 }
 
 #if 0

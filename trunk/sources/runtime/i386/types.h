@@ -27,7 +27,7 @@ typedef unsigned long long u_int64_t;
 /*
  * An integer type, large enough to keep a memory address.
  */
-typedef unsigned int mem_size_t;
+typedef unsigned int size_t;
 
 typedef long jmp_buf [6];
 

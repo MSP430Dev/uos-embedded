@@ -5,7 +5,7 @@
 
 bool_t __debug_stack_is_codir (void *up, void *deep)
 {
-	if (__arch_is_valid_ram_addr (up) && __arch_is_valid_ram_addr (deep)) {
+	if (uos_valid_memory_address (up) && uos_valid_memory_address (deep)) {
 		/* Stack always grows down. */
 		if ((unsigned char*) up < (unsigned char*) deep)
 			return 1;
@@ -15,7 +15,8 @@ bool_t __debug_stack_is_codir (void *up, void *deep)
 
 void debug_dump_stack_current ()
 {
-	void *sp = (void*) __arch_get_sp ();
+	void *sp = arch_get_stack_pointer ();
+
 	debug_dump_stack (task_current->name, sp,
 		__builtin_frame_address (1),
 		__builtin_return_address (0));
@@ -29,9 +30,9 @@ void debug_dump_stack (const char *caption, void *sp, void* frame, void *callee)
 	bool_t flag;
 
 	to = frame; from = sp;
-	if (! __arch_is_valid_ram_addr (to) && __arch_is_valid_ram_addr (from))
+	if (! uos_valid_memory_address (to) && uos_valid_memory_address (from))
 		to = from;
-	if (__arch_is_valid_ram_addr (to) && ! __arch_is_valid_ram_addr (from))
+	if (uos_valid_memory_address (to) && ! uos_valid_memory_address (from))
 		from = to;
 
 	to -= 16 * sizeof (void*);
@@ -74,7 +75,7 @@ void debug_dump_stack (const char *caption, void *sp, void* frame, void *callee)
 		if (p == sp)
 			c = '>';
 
-		if (__arch_is_valid_ram_addr (p)) {
+		if (uos_valid_memory_address (p)) {
 			if (callee && __arch_read_return (p) == callee && (flag & 1) == 0) {
 				c = '*';
 				flag |= 1;

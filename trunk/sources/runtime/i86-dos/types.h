@@ -26,7 +26,7 @@ typedef unsigned uint_t;
  * We use small memory model of x86,
  * so pointers have 2-byte size.
  */
-typedef unsigned short mem_size_t;
+typedef unsigned short size_t;
 
 typedef short jmp_buf[10]; /* not implemented yet */
 

@@ -22,7 +22,7 @@ void uos_init (void)
 	int tasksz = 0x10000;
 
 	uos_memory = &pool;
-	mem_init (uos_memory, (mem_size_t) 0x200000, (mem_size_t) 0x400000);
+	mem_init (uos_memory, (size_t) 0x200000, (size_t) 0x400000);
 	debug_printf ("Free memory: %ld bytes\n", mem_available (uos_memory));
 
 	task = mem_alloc (uos_memory, tasksz);

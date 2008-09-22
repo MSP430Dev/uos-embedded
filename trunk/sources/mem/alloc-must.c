@@ -1,7 +1,7 @@
 #include <runtime/lib.h>
 #include <mem/mem.h>
 
-void *mem_alloc_must (mem_pool_t *region, mem_size_t bytes, const char *item)
+void *mem_alloc_must (mem_pool_t *region, size_t bytes, const char *item)
 {
 	void *p = mem_alloc (region, bytes);
 	if (unlikely (! p)) {

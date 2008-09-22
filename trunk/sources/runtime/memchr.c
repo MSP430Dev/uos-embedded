@@ -10,7 +10,7 @@
 #include <runtime/lib.h>
 
 void *
-memchr(const void *s, unsigned char c, mem_size_t n)
+memchr(const void *s, unsigned char c, size_t n)
 {
 	const unsigned char *cp = (const unsigned char*) s;
 

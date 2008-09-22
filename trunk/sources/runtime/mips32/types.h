@@ -26,7 +26,7 @@ typedef unsigned long long u_int64_t;
  * An integer type, large enough to keep a memory address.
  * On ARM, data pointers have 4-byte size.
  */
-typedef unsigned long mem_size_t;
+typedef unsigned long size_t;
 
 typedef long jmp_buf [10];
 

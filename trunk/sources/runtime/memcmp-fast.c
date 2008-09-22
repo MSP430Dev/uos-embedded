@@ -48,7 +48,7 @@ QUICKREF
 #define TOO_SMALL(LEN)  ((LEN) < LBLOCKSIZE)
 
 sign_t
-memcmp(const void *m1, const void *m2, mem_size_t n)
+memcmp(const void *m1, const void *m2, size_t n)
 {
   unsigned char *s1 = (unsigned char *) m1;
   unsigned char *s2 = (unsigned char *) m2;

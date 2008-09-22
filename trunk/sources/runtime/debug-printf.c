@@ -1,7 +1,5 @@
 #include <runtime/lib.h>
-#include <kernel/uos.h>
 #include <stream/stream.h>
-#include <kernel/internal.h>
 
 stream_interface_t debug_stream_interface = {
 	.putc = (void (*) (stream_t*, short)) debug_putchar,

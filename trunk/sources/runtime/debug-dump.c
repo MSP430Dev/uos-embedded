@@ -19,7 +19,7 @@ void debug_dump (const char *caption, void* data, unsigned len)
 
 		i = 17 * 3;
 		do {
-			if (__arch_is_valid_ram_addr (h))
+			if (uos_valid_memory_address (h))
 				debug_printf (" %02X", *h);
 			else
 				debug_puts (" __");
@@ -37,7 +37,7 @@ void debug_dump (const char *caption, void* data, unsigned len)
 
 		do {
 			unsigned char c = ' ';
-			if (__arch_is_valid_ram_addr (t)) {
+			if (uos_valid_memory_address (t)) {
 				c = *t;
 				if (c < ' ' || c > 127)
 					c = '.';

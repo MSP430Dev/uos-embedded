@@ -12,7 +12,7 @@
 #undef memcmp
 
 sign_t
-memcmp(const void *s1, const void *s2, mem_size_t n)
+memcmp(const void *s1, const void *s2, size_t n)
 {
 	const unsigned char *cs1 = (const unsigned char*) s1;
 	const unsigned char *cs2 = (const unsigned char*) s2;

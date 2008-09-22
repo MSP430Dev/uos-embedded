@@ -265,7 +265,7 @@ crc16_inet_byte (unsigned short sum, unsigned char data)
 
 /*
  * Compile with:
- * make crc16-inet CFLAGS=-DDEBUG_CRC16 -I.. -Dmem_size_t=int -U__i386__
+ * make crc16-inet CFLAGS=-DDEBUG_CRC16 -I.. -Dsize_t=int -U__i386__
  */
 int
 main ()

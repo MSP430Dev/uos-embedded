@@ -47,7 +47,7 @@ QUICKREF
 #define TOO_SMALL(LEN) ((LEN) < sizeof (long))
 
 unsigned char *
-strncpy(unsigned char *dst0, const unsigned char *src0, mem_size_t count)
+strncpy(unsigned char *dst0, const unsigned char *src0, size_t count)
 {
   unsigned char *dst = dst0;
   const unsigned char *src = src0;

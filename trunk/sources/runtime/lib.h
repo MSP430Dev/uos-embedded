@@ -36,9 +36,9 @@ extern "C" {
 #define BUILD_ONLY_LITTLE_ENDIAN BIULD_BUG_ON (_BYTE_ORDER != __LITTLE_ENDIAN)
 
 #ifndef __LINUX__
-void qsort (void *a, mem_size_t n, mem_size_t es,
+void qsort (void *a, size_t n, size_t es,
 	int (*cmp)(const void*, const void*));
-void *bsearch (const void *key, const void *base, mem_size_t nmemb, mem_size_t size,
+void *bsearch (const void *key, const void *base, size_t nmemb, size_t size,
 	int (*compar) (const void *, const void *));
 unsigned char *strstr (const char *haystack, const unsigned char *needle);
 int strspn (const unsigned char *s, const unsigned char *accept);
@@ -81,6 +81,9 @@ void debug_redirect (void (*func) (void*, short), void *arg);
  */
 void uos_call_global_initializers (void);
 void uos_call_global_destructors (void);
+
+/* Check memory address. */
+bool_t uos_valid_memory_address (void*);
 
 #ifndef __AVR__
 inline extern unsigned

@@ -52,7 +52,7 @@ QUICKREF
 #define TOO_SMALL(LEN)  ((LEN) < BIGBLOCKSIZE)
 
 void *
-memmove(void *dst_void, const void *src_void, mem_size_t length)
+memmove(void *dst_void, const void *src_void, size_t length)
 {
   unsigned char *dst = dst_void;
   const unsigned char *src = src_void;

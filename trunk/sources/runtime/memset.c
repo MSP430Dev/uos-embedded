@@ -12,7 +12,7 @@
 #undef memset
 
 void *
-memset(void *s, unsigned char c, mem_size_t n)
+memset(void *s, unsigned char c, size_t n)
 {
 	if (n) {
 		unsigned char *s1 = (unsigned char *) s;

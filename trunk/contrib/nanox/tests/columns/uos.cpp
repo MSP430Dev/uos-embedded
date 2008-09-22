@@ -30,7 +30,7 @@ void uos_init (void)
 
 	uos_memory = &pool;
 	if (i386_highmem_len)
-		mem_init (uos_memory, (mem_size_t) &_end,
+		mem_init (uos_memory, (size_t) &_end,
 			i386_highmem_addr + i386_highmem_len);
 
 	debug_printf ("Free memory: %ld bytes\n", mem_available (uos_memory));

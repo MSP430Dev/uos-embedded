@@ -54,7 +54,7 @@
  * Every memory block has a header.
  */
 typedef struct {
-	mem_size_t size;		/* Block size including the header */
+	size_t size;			/* Block size including the header */
 	mem_pool_t *pool;		/* Memory pool pointer */
 #if MEM_DEBUG
 	unsigned short magic;		/* For data curruption test */
@@ -73,7 +73,7 @@ typedef struct {
  * Allocate a block of memory.
  * Fill it with zeroes.
  */
-void *mem_alloc (mem_pool_t *m, mem_size_t required)
+void *mem_alloc (mem_pool_t *m, size_t required)
 {
 	void *p;
 
@@ -87,7 +87,7 @@ void *mem_alloc (mem_pool_t *m, mem_size_t required)
  * Allocate a block of memory.
  * The memory may contain garbage.
  */
-void *mem_alloc_dirty (mem_pool_t *m, mem_size_t required)
+void *mem_alloc_dirty (mem_pool_t *m, size_t required)
 {
 	mheader_t *h, **hprev, *newh;
 
@@ -137,7 +137,7 @@ void *mem_alloc_dirty (mem_pool_t *m, mem_size_t required)
 	 * as a new hole.  If we can't release any then allocate more than was
 	 * requested and remove this hole from the hole list. */
 	if (h->size >= required + sizeof(mheader_t) + 2*SIZEOF_POINTER) {
-		newh = (mheader_t*) ((mem_size_t)h + required);
+		newh = (mheader_t*) ((size_t)h + required);
 		newh->pool = h->pool;
 		newh->size = h->size - required;
 		h->size = required;
@@ -187,20 +187,20 @@ static void mem_make_hole (mheader_t *newh)
         		*hprev = newh;
         		NEXT(newh) = 0;
        			break;
-        	} else if ((mem_size_t)h > (mem_size_t)newh) {
+        	} else if ((size_t)h > (size_t)newh) {
 			/* Insert the new hole before the old one */
         		*hprev = newh;
-        		if (((mem_size_t)newh + newh->size) == (mem_size_t)h) {
+        		if (((size_t)newh + newh->size) == (size_t)h) {
         			newh->size += h->size;
         			NEXT(newh) = NEXT(h);
         		} else {
 	        		NEXT(newh) = h;
         		}
        			break;
-		} else if (((mem_size_t)h + h->size) == (mem_size_t)newh) {
+		} else if (((size_t)h + h->size) == (size_t)newh) {
 			/* Append the new hole at the end of the old one */
         		h->size += newh->size;
-        		if (((mem_size_t)h + h->size) == (mem_size_t)NEXT(h)) {
+        		if (((size_t)h + h->size) == (size_t)NEXT(h)) {
         			h->size += NEXT(h)->size;
         			NEXT(h) = NEXT(NEXT(h));
         		}
@@ -237,10 +237,10 @@ void mem_free (void *block)
 	mem_make_hole (h);
 }
 
-void *mem_realloc (void *old_block, mem_size_t bytes)
+void *mem_realloc (void *old_block, size_t bytes)
 {
 	mheader_t *h;
-	mem_size_t old_size;
+	size_t old_size;
 	void *block;
 
 	if (! old_block)
@@ -278,7 +278,7 @@ void *mem_realloc (void *old_block, mem_size_t bytes)
 	return block;
 }
 
-void mem_truncate (void *block, mem_size_t required)
+void mem_truncate (void *block, size_t required)
 {
         mheader_t *h, *newh;
 
@@ -304,7 +304,7 @@ void mem_truncate (void *block, mem_size_t required)
 	/* Is there enough space to split? */
 	if (h->size >= required + sizeof(mheader_t) + 2*SIZEOF_POINTER) {
 		/* Split into two blocks. */
-		newh = (mheader_t*) ((mem_size_t)h + required);
+		newh = (mheader_t*) ((size_t)h + required);
 		newh->pool = h->pool;
 		newh->size = h->size - required;
 		h->size = required;
@@ -316,9 +316,9 @@ void mem_truncate (void *block, mem_size_t required)
 /**
  * Return the amount of heap space that's still available.
  */
-mem_size_t mem_available (mem_pool_t *m)
+size_t mem_available (mem_pool_t *m)
 {
-	mem_size_t ret;
+	size_t ret;
 
 	lock_take (&m->lock);
 	ret = m->free_size;
@@ -329,7 +329,7 @@ mem_size_t mem_available (mem_pool_t *m)
 /*
  * Return the size of the given block.
  */
-mem_size_t mem_size (void *block)
+size_t mem_size (void *block)
 {
 	mheader_t *h;
 
@@ -391,7 +391,7 @@ void mem_print_free_list (mem_pool_t *m)
  * An example: using all memory from bss end to RAM end as dynamic memory.
  *	mem_init (&pool, &__bss_end, END_OF_RAM);
  */
-void mem_init (mem_pool_t *m, mem_size_t start, mem_size_t stop)
+void mem_init (mem_pool_t *m, size_t start, size_t stop)
 {
 	mheader_t *h = (mheader_t*) start;
 

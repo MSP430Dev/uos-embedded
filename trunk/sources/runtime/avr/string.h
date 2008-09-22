@@ -14,7 +14,7 @@
 
 /* Copy N bytes of SRC to DEST.  */
 inline extern void *
-memcpy (void *__to, const void *__from, mem_size_t __n)
+memcpy (void *__to, const void *__from, size_t __n)
 {
   register void *__dummy1, *__dummy2, *__dummy3;
   if (__n)
@@ -37,10 +37,10 @@ memcpy (void *__to, const void *__from, mem_size_t __n)
 /* Set N bytes of S to C.  */
 
 inline extern void *
-memset (void *__s, unsigned char __c, mem_size_t __n)
+memset (void *__s, unsigned char __c, size_t __n)
 {
   register void *__dummy1;
-  register mem_size_t __dummy2;
+  register size_t __dummy2;
   if (__n)
     __asm__ __volatile__ (
 			  "L_hi%=:\t"
@@ -55,10 +55,10 @@ memset (void *__s, unsigned char __c, mem_size_t __n)
 
 /* Compare N bytes of S1 and S2.  */
 inline extern sign_t
-__avr_memcmp (const void *__s1, const void *__s2, mem_size_t __n)
+__avr_memcmp (const void *__s1, const void *__s2, size_t __n)
 {
   register void *__dummy1, *__dummy2;
-  register mem_size_t __dummy3;
+  register size_t __dummy3;
   register signed char __res;
   if (__n)
     __asm__ ("cmp_loop%=:\t"
@@ -81,7 +81,7 @@ __avr_memcmp (const void *__s1, const void *__s2, mem_size_t __n)
  * as the count is constant.
  */
 inline extern sign_t
-__constant_memcmp (const void *__s1, const void *__s2, mem_size_t n)
+__constant_memcmp (const void *__s1, const void *__s2, size_t n)
 {
 	switch (n) {
 	case 0:
@@ -116,7 +116,7 @@ __constant_memcmp (const void *__s1, const void *__s2, mem_size_t n)
 }
 
 extern sign_t
-memcmp (const void *__s1, const void *__s2, mem_size_t n);
+memcmp (const void *__s1, const void *__s2, size_t n);
 
 #define memcmp(t, f, n)	(__builtin_constant_p(n) && ((n)==0 || (n)==1 || \
 			(n)==2 || (n)==3 || (n)==4 || (n)==6) ? \
@@ -125,17 +125,17 @@ memcmp (const void *__s1, const void *__s2, mem_size_t n);
 
 /* Copy N bytes of SRC to DEST, guaranteeing
    correct behavior for overlapping strings.  */
-extern void *memmove (void *__dest, const void * __src, mem_size_t __n);
+extern void *memmove (void *__dest, const void * __src, size_t __n);
 
 /* Search N bytes of S for C.  */
 inline extern void *
-memchr (const void *__s, unsigned char __c, mem_size_t __n)
+memchr (const void *__s, unsigned char __c, size_t __n)
 {
   if (!__n)
     return 0;
   {
     void *__ret;
-    mem_size_t __dummy;
+    size_t __dummy;
     __asm__ ("L_ho%=:\t"
 			  "ld __tmp_reg__,%a0+\n\t"
 			  "cp __tmp_reg__,%2\n\t"
@@ -153,7 +153,7 @@ memchr (const void *__s, unsigned char __c, mem_size_t __n)
 }
 
 /* Return the length of S.  */
-inline extern mem_size_t
+inline extern size_t
 strlen (const unsigned char *__s)
 {
   unsigned char *__tmp;
@@ -184,10 +184,10 @@ strcpy (unsigned char *__dest, const unsigned char *__src)
 
 /* Copy no more than N characters of SRC to DEST.  */
 inline extern unsigned char *
-strncpy (unsigned char *__dest, const unsigned char *__src, mem_size_t __n)
+strncpy (unsigned char *__dest, const unsigned char *__src, size_t __n)
 {
   register void *__dummy1, *__dummy2;
-  register mem_size_t __dummy3;
+  register size_t __dummy3;
   if (__n)
     __asm__ __volatile__ ("L_ho%=:\t"
 			  "ld __tmp_reg__,%a1+\n\t"
@@ -228,10 +228,10 @@ strcat (unsigned char *__dest, const unsigned char *__src)
 
 /* Append no more than N characters from SRC onto DEST.  */
 inline extern unsigned char *
-strncat (unsigned char *__dest, const unsigned char *__src, mem_size_t __n)
+strncat (unsigned char *__dest, const unsigned char *__src, size_t __n)
 {
   register void *__dummy1, *__dummy2;
-  register mem_size_t __dummy3;
+  register size_t __dummy3;
   __asm__ __volatile__ ("L_hi%=:\t"
 			"ld __tmp_reg__,%a1+\n\t"
 			"tst __tmp_reg__\n\t"
@@ -276,10 +276,10 @@ strcmp (const unsigned char *__s1, const unsigned char *__s2)
 
 /* Compare N characters of S1 and S2.  */
 inline extern sign_t
-strncmp (const unsigned char *__s1, const unsigned char *__s2, mem_size_t __n)
+strncmp (const unsigned char *__s1, const unsigned char *__s2, size_t __n)
 {
   register void *__dummy1, *__dummy2;
-  register mem_size_t __dummy3;
+  register size_t __dummy3;
   register signed char __res = 0;
   if (__n)
     __asm__ ("cmp_loop%=:\t"
@@ -345,8 +345,8 @@ strrchr (const unsigned char *__src, unsigned char __c)
 
 /* Find the length of STRING, but scan at most MAXLEN characters.
    If no '\0' terminator is found in that many characters, return MAXLEN.  */
-inline extern mem_size_t
-strnlen (const unsigned char *__string, mem_size_t __maxlen)
+inline extern size_t
+strnlen (const unsigned char *__string, size_t __maxlen)
 {
   const unsigned char *__end = (const unsigned char *) memchr (__string, '\0', __maxlen);
   return __end ? __end - __string : __maxlen;

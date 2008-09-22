@@ -30,7 +30,7 @@ return dest;
 }
 
 #define __HAVE_ARCH_STRNCPY
-static __inline unsigned char * strncpy(unsigned char * dest, const unsigned char *src, mem_size_t count)
+static __inline unsigned char * strncpy(unsigned char * dest, const unsigned char *src, size_t count)
 {
 int d0, d1, d2, d3;
 __asm__ __volatile__(
@@ -68,7 +68,7 @@ return dest;
 }
 
 #define __HAVE_ARCH_STRNCAT
-static __inline unsigned char * strncat(unsigned char * dest, const unsigned char * src, mem_size_t count)
+static __inline unsigned char * strncat(unsigned char * dest, const unsigned char * src, size_t count)
 {
 int d0, d1, d2, d3;
 __asm__ __volatile__(
@@ -114,7 +114,7 @@ return __res;
 }
 
 #define __HAVE_ARCH_STRNCMP
-static __inline sign_t strncmp(const unsigned char * cs, const unsigned char * ct, mem_size_t count)
+static __inline sign_t strncmp(const unsigned char * cs, const unsigned char * ct, size_t count)
 {
 register int __res;
 int d0, d1, d2;
@@ -176,7 +176,7 @@ return __res;
 }
 
 #define __HAVE_ARCH_STRLEN
-static __inline mem_size_t strlen(const unsigned char * s)
+static __inline size_t strlen(const unsigned char * s)
 {
 int d0;
 register int __res;
@@ -190,7 +190,7 @@ __asm__ (
 return __res;
 }
 
-static __inline void * __memcpy(void * to, const void * from, mem_size_t n)
+static __inline void * __memcpy(void * to, const void * from, size_t n)
 {
 int d0, d1, d2;
 __asm__ __volatile__(
@@ -213,7 +213,7 @@ return (to);
  * This looks horribly ugly, but the compiler can optimize it totally,
  * as the count is constant.
  */
-static __inline void * __constant_memcpy(void * to, const void * from, mem_size_t n)
+static __inline void * __constant_memcpy(void * to, const void * from, size_t n)
 {
 	switch (n) {
 		case 0:
@@ -286,7 +286,7 @@ __asm__ __volatile__( \
  __memcpy((t),(f),(n)))
 
 #define __HAVE_ARCH_MEMMOVE
-static __inline void *__memmove(void * dest,const void * src, mem_size_t n)
+static __inline void *__memmove(void * dest,const void * src, size_t n)
 {
 int d0, d1, d2;
 if (dest<src)
@@ -315,7 +315,7 @@ return dest;
 #define memcmp __builtin_memcmp
 
 #define __HAVE_ARCH_MEMCHR
-static __inline void * memchr(const void * cs, unsigned char c, mem_size_t count)
+static __inline void * memchr(const void * cs, unsigned char c, size_t count)
 {
 int d0;
 register void * __res;
@@ -332,7 +332,7 @@ __asm__ (
 return __res;
 }
 
-static __inline void * __memset_generic(void * s, unsigned char c, mem_size_t count)
+static __inline void * __memset_generic(void * s, unsigned char c, size_t count)
 {
 int d0, d1;
 __asm__ __volatile__(
@@ -353,7 +353,7 @@ return s;
  * things 32 bits at a time even when we don't know the size of the
  * area at compile-time..
  */
-static __inline void * __constant_c_memset(void * s, unsigned long c, mem_size_t count)
+static __inline void * __constant_c_memset(void * s, unsigned long c, size_t count)
 {
 int d0, d1;
 __asm__ __volatile__(
@@ -374,7 +374,7 @@ return (s);
 
 /* Added by Gertjan van Wingerde to make minix and sysv module work */
 #define __HAVE_ARCH_STRNLEN
-static __inline mem_size_t strnlen(const unsigned char * s, mem_size_t count)
+static __inline size_t strnlen(const unsigned char * s, size_t count)
 {
 int d0;
 register int __res;
@@ -398,7 +398,7 @@ return __res;
  * This looks horribly ugly, but the compiler can optimize it totally,
  * as we by now know that both pattern and count is constant..
  */
-static __inline void * __constant_c_and_count_memset(void * s, unsigned long pattern, mem_size_t count)
+static __inline void * __constant_c_and_count_memset(void * s, unsigned long pattern, size_t count)
 {
 	switch (count) {
 		case 0:
@@ -457,7 +457,7 @@ __asm__  __volatile__("cld\n\t" \
  * find the first occurrence of byte 'c', or 1 past the area if none
  */
 #define __HAVE_ARCH_MEMSCAN
-static __inline void * memscan(void * addr, unsigned char c, mem_size_t size)
+static __inline void * memscan(void * addr, unsigned char c, size_t size)
 {
 	if (!size)
 		return addr;
@@ -473,5 +473,5 @@ static __inline void * memscan(void * addr, unsigned char c, mem_size_t size)
 
 extern const unsigned char *strmatch (const unsigned char*, const unsigned char*);
 sign_t strcasecmp (const unsigned char*, const unsigned char*);
-sign_t strncasecmp (const unsigned char*, const unsigned char*, mem_size_t n);
+sign_t strncasecmp (const unsigned char*, const unsigned char*, size_t n);
 #endif

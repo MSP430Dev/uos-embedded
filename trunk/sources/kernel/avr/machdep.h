@@ -113,8 +113,8 @@ typedef unsigned short __arch_sp_t;
  */
 typedef unsigned char arch_flags_t;
 
-#define __arch_get_sp()		inw (SP)
-#define __arch_set_sp(addr)	outw (addr, SP)
+#define arch_get_stack_pointer()	inw (SP)
+#define arch_set_stack_pointer(addr)	outw (addr, SP)
 
 extern inline void* __arch_read_return (void *sp)
 {

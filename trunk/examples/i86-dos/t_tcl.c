@@ -217,6 +217,6 @@ again:
 void uos_init (void)
 {
 /*	uart_init (&uart, 0, 90, 10000, 9600);*/
-/*	mem_init (&pool, (mem_size_t) memory, (mem_size_t) memory + MEM_SIZE);*/
+/*	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);*/
 	task_create (task_tcl, 0, "tcl", 1, task, sizeof (task), 0);
 }

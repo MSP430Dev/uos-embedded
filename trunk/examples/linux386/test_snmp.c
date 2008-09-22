@@ -98,7 +98,7 @@ void uos_init (void)
 	lock_group_t *g;
 
 	timer_init (&timer, 100, KHZ, 10);
-	mem_init (&pool, (mem_size_t) memory, (mem_size_t) memory + MEM_SIZE);
+	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);
 
 	/*
 	 * Create a group of two locks: timer and tap.

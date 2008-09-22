@@ -9,7 +9,7 @@
 
 #include <runtime/lib.h>
 
-mem_size_t
+size_t
 strlen(const unsigned char *s)
 {
 	const unsigned char *s1 = s;

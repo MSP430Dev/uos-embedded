@@ -50,7 +50,7 @@ QUICKREF
 #define TOO_SMALL(LEN)  ((LEN) < BIGBLOCKSIZE)
 
 void *
-memcpy(void *dst0, const void *src0, mem_size_t len0)
+memcpy(void *dst0, const void *src0, size_t len0)
 {
   unsigned char *dst = dst0;
   const unsigned char *src = src0;

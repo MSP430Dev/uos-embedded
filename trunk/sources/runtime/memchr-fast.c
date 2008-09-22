@@ -49,7 +49,7 @@ QUICKREF
 #define DETECTNULL(X) (((X) - 0x01010101) & ~(X) & 0x80808080)
 
 void *
-memchr(const void *src_void, unsigned char c, mem_size_t length)
+memchr(const void *src_void, unsigned char c, size_t length)
 {
   const unsigned char *src = (const unsigned char *) src_void;
   unsigned long *asrc;

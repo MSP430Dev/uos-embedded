@@ -93,8 +93,8 @@ med3 (a, b, c, cmp)
 void
 qsort (a, n, es, cmp)
 	void *a;
-	mem_size_t n;
-	mem_size_t es;
+	size_t n;
+	size_t es;
 	int (*cmp)();
 {
 	char *pa, *pb, *pc, *pd, *pl, *pm, *pn;

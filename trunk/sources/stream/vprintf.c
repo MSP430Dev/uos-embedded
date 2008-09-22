@@ -208,7 +208,7 @@ reswitch:	switch (c = FETCH_BYTE (fmt++)) {
 			goto nosign;
 
 		case 'p':
-			ul = (mem_size_t) va_arg (ap, void*);
+			ul = (size_t) va_arg (ap, void*);
 			if (! ul) {
 				s = (const unsigned char*) "(nil)";
 				goto const_string;

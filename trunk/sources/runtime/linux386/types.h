@@ -4,17 +4,19 @@
 #ifndef __MACHINE_TYPES_H_
 #define __MACHINE_TYPES_H_ 1
 
+#include <stdlib.h>
 #define __timer_t_defined 1
 
-typedef char int8_t;
+/* Defined in stdlib.h: typedef char int8_t; */
 typedef unsigned char u_int8_t;
 
 typedef short int16_t;
 typedef unsigned short u_int16_t;
 
 #define INT_SIZE 4
-typedef long int32_t;
-typedef unsigned long u_int32_t;
+
+/* Defined in stdlib.h: typedef long int32_t; */
+/* Defined in stdlib.h: typedef unsigned long u_int32_t; */
 
 typedef int bool_t;
 typedef int sign_t;
@@ -23,11 +25,6 @@ typedef unsigned uint_t;
 
 typedef long long int64_t;
 typedef unsigned long long u_int64_t;
-
-/*
- * An integer type, large enough to keep a memory address.
- */
-typedef unsigned long mem_size_t;
 
 #include <setjmp.h>
 

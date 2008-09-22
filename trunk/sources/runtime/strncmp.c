@@ -10,7 +10,7 @@
 #include <runtime/lib.h>
 
 sign_t
-strncmp(const unsigned char *s1, const unsigned char *s2, mem_size_t n)
+strncmp(const unsigned char *s1, const unsigned char *s2, size_t n)
 {
 	if (n) {
 		register signed char ret;

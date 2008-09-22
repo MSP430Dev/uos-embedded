@@ -37,7 +37,7 @@ QUICKREF
 
 #define DETECTNULL(X) (((X) - 0x01010101) & ~(X) & 0x80808080)
 
-mem_size_t
+size_t
 strlen(const unsigned char *str)
 {
   const unsigned char *start = str;
