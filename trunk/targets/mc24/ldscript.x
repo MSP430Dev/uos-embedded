@@ -5,7 +5,7 @@
 OUTPUT_FORMAT("elf32-littlemips", "elf32-bigmips",
 	      "elf32-littlemips")
 OUTPUT_ARCH(mips)
-ENTRY(_start_)
+/* ENTRY(_start_) */
 MEMORY
 {
   text   (rx)   : ORIGIN = 0xbfc00000,	LENGTH = 2M

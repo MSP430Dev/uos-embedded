@@ -24,8 +24,6 @@
 #   define RECEIVE_IRQ		SIGUSR1	/* UART receive complete */
 #   define TRANSMIT_IRQ		SIGUSR2	/* UART transmit complete */
 
-#   define breakpoint()		abort()
-
 int uart_pid;
 #endif
 
@@ -272,7 +270,7 @@ uart_receiver (void *arg)
 #ifndef NDEBUG
 		if (c == 3) {
 			/* ^C - break and run into debugger */
-			breakpoint ();
+			abort ();
 			continue;
 		}
 #endif

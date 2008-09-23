@@ -13,19 +13,16 @@ debug_putchar (void *arg, short c)
 
 	mips32_intr_disable (&x);
 
-	/* Enable transmitter. */
-	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_TMODE_MASK) | ARM_UCON_TMODE_IRQ;
-
 	/* Wait for transmitter holding register empty. */
-	while (! (ARM_USTAT(0) & ARM_USTAT_TC))
+	while (! (MC_LSR & MC_LSR_TXRDY))
 		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	ARM_UTXBUF(0) = c;
+	MC_THR = c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (ARM_USTAT(0) & ARM_USTAT_TC))
+	while (! (MC_LSR & MC_LSR_TXRDY))
 		continue;
 
 /*	watchdog_alive ();*/
@@ -53,24 +50,16 @@ debug_getchar (void)
 	}
 	mips32_intr_disable (&x);
 
-	/* Enable receiver. */
-	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_RMODE_MASK) | ARM_UCON_RMODE_IRQ;
 	for (;;) {
 		/* Wait until receive data available. */
-		while (! (ARM_USTAT(0) & ARM_USTAT_RDV)) {
-			if (ARM_USTAT(0) & (ARM_USTAT_FER | ARM_USTAT_PER |
-			    ARM_USTAT_OER | ARM_USTAT_ROVFF)) {
-/*debug_printf ("ustat 0x%x\n", ARM_USTAT(0));*/
-				ARM_USTAT(0) = ARM_USTAT_FER | ARM_USTAT_PER |
-				    ARM_USTAT_OER | ARM_USTAT_ROVFF;
-			}
+		while (! (MC_LSR & MC_LSR_RXRDY)) {
 /*			watchdog_alive ();*/
 			mips32_intr_restore (x);
 			mips32_intr_disable (&x);
 			continue;
 		}
 		/* TODO: utf8 to unicode conversion. */
-		c = ARM_URXBUF(0);
+		c = MC_RBR;
 		break;
 	}
 	mips32_intr_restore (x);
@@ -91,20 +80,13 @@ debug_peekchar (void)
 
 	mips32_intr_disable (&x);
 
-	/* Enable receiver. */
-	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_RMODE_MASK) | ARM_UCON_RMODE_IRQ;
 	/* Wait until receive data available. */
-	if (! (ARM_USTAT(0) & ARM_USTAT_RDV)) {
-		if (ARM_USTAT(0) & (ARM_USTAT_FER | ARM_USTAT_PER |
-		    ARM_USTAT_OER | ARM_USTAT_ROVFF)) {
-			ARM_USTAT(0) = ARM_USTAT_FER | ARM_USTAT_PER |
-			    ARM_USTAT_OER | ARM_USTAT_ROVFF;
-		}
+	if (! (MC_LSR & MC_LSR_RXRDY)) {
 		mips32_intr_restore (x);
 		return -1;
 	}
 	/* TODO: utf8 to unicode conversion. */
-	c = ARM_URXBUF(0);
+	c = MC_RBR;
 	mips32_intr_restore (x);
 	debug_char = c;
 	return c;
@@ -114,8 +96,6 @@ debug_peekchar (void)
 void
 debug_puts (const char *p)
 {
-	int x;
-
 	for (; *p; ++p)
 		debug_putchar (0, *p);
 }

@@ -30,16 +30,4 @@ typedef unsigned long size_t;
 
 typedef long jmp_buf [10];
 
-/*
- * Stop a program and call debugger.
- */
-static inline void
-breakpoint ()
-{
-	for (;;)
-		continue;
-}
-
-#define abort() breakpoint()
-
 #endif /* __MACHINE_TYPES_H_ */

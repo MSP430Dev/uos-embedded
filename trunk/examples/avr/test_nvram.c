@@ -10,8 +10,6 @@ char task [200];
 uart_t uart;
 nvram_t nvram;
 
-extern void breakpoint (void);
-
 void test (void *data)
 {
 	int i;
@@ -41,7 +39,6 @@ void test (void *data)
 
 void uos_init (void)
 {
-/*breakpoint();*/
 	uart_init (&uart, 0, 90, KHZ, 9600);
 	nvram_init (&nvram);
 	task_create (test, 0, "test", 1, task, sizeof (task));

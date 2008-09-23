@@ -49,6 +49,12 @@ void *task_private (task_t *task);
 void task_set_private (task_t *task, void *privatep);
 void task_yield ();
 
+struct _stream_t
+void debug_task_print (task_t *t);
+void task_print (struct _stream_t *stream, task_t *t);
+void debug_dump_stack_task (task_t *task);
+const char* __debug_task_name (task_t *task);
+
 /* Lock management. */
 void lock_take (lock_t *lock);
 void lock_release (lock_t *lock);
@@ -62,9 +68,6 @@ typedef bool_t (*handler_t) (void*);
 /* Interrupt management. */
 void lock_take_irq (lock_t*, int_t irq, handler_t func, void *arg);
 void lock_release_irq (lock_t*);
-
-/* Utility calls. */
-void uos_halt (void);
 
 /* User-supplied startup routine. */
 extern void uos_init (void);

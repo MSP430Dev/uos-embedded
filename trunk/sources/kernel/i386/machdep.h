@@ -20,7 +20,7 @@
 /*
  * Type for saving task stack context.
  */
-#define MACHDEP_SAVED_STATE_T	unsigned long
+typedef void *arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -72,10 +72,3 @@ void i386_intr_allow (int irq);
 				for (;;)		\
 					asm ("hlt");	\
 				}
-
-/*
- * Uncomment these lines for remote debugging.
- */
-#ifndef NDEBUG
-#define MACHDEP_HALT()		breakpoint()
-#endif

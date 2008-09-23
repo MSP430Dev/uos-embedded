@@ -43,7 +43,7 @@ struct _task_t {
 	const char *	name;		/* printable task name */
 	int_t		base_prio;	/* initial task priority */
 	int_t		prio;		/* current task priority */
-	MACHDEP_SAVED_STATE_T	stack_context;	/* saved sp when not running */
+	arch_state_t	stack_context;	/* saved sp when not running */
 	lock_t		finish;		/* lock to wait on for task finished */
 	unsigned long	ticks;		/* LY: кол-ов переключений на задачу, в будующем ее суммарное время выполнения */
 	unsigned char	stack [1]

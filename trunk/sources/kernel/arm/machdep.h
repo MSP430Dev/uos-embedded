@@ -18,9 +18,15 @@
  */
 
 /*
+ * The total number of different hardware interrupts.
+ */
+#define ARCH_INTERRUPTS		21
+
+/*
  * Type for saving task stack context.
  */
-#define MACHDEP_SAVED_STATE_T	unsigned long
+typedef void *arch_stack_t;
+typedef int arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -30,22 +36,13 @@
  *	a  - the function argument
  *	sz - stack size in bytes
  */
-#define MACHDEP_BUILD_STACK_FRAME(t,f,a,sz) arm_build_stack_frame (t, \
-	(unsigned long) f, (unsigned long) a, \
-	(unsigned long*) ((unsigned long)t + sz))
-void arm_build_stack_frame (task_t *t, unsigned long func,
-	unsigned long arg, unsigned long *stack);
+void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
+	unsigned stacksz);
 
 /*
  * Perform the task switch.
  */
-#define MACHDEP_TASK_SWITCH(target) arm_task_switch (target)
-void arm_task_switch (task_t *target);
-
-/*
- * The total number of different hardware interrupts.
- */
-#define MACHDEP_INTERRUPTS	21
+void arch_task_switch (task_t *target);
 
 /*
  * The global interrupt control.
@@ -73,10 +70,3 @@ void arm_intr_allow (uint_t irq);
 		for (;;) 				\
 			arm_bus_yield ();		\
 	} while (0)
-
-/*
- * Uncomment these lines for remote debugging.
- */
-#ifndef NDEBUG
-#	define MACHDEP_HALT()		breakpoint()
-#endif

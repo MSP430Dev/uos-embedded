@@ -1,5 +1,5 @@
 #include <runtime/lib.h>
-#include <kernel/uos.h>
+/*#include <kernel/uos.h>*/
 #include <runtime/time.h>
 #include "time.h"
 

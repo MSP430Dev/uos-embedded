@@ -24,7 +24,7 @@
 /*
  * Type for saving task stack context.
  */
-#define MACHDEP_SAVED_STATE_T	unsigned short
+typedef void *arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -84,14 +84,6 @@ void avr_intr_allow (unsigned char irq);
 				for (;;)			\
 					asm volatile ("sleep");	\
 				}
-
-/*
- * Uncomment these lines for remote debugging.
- */
-#ifndef NDEBUG
-#define MACHDEP_HALT()		breakpoint()
-void breakpoint (void);
-#endif
 
 #if FLASHEND > 0x1FFFF
 #	define ASM_GOTO "jmp "
@@ -166,11 +158,3 @@ extern inline void* __arch_read_return (void *sp)
 		for (;;)				\
 			__asm __volatile ("sleep");	\
 	} while (0)
-
-/*
- * Uncomment these lines for remote debugging.
- */
-#ifndef NDEBUG
-#	define __arch_halt() breakpoint()
-	void breakpoint (void);
-#endif

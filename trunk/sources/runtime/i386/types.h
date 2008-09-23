@@ -31,18 +31,6 @@ typedef unsigned int size_t;
 
 typedef long jmp_buf [6];
 
-/*
- * Stop a program and call debugger.
- */
-static inline void
-breakpoint ()
-{
-	for (;;)
-		continue;
-}
-
-#define abort() breakpoint()
-
 #define FLT_RADIX	2		/* b */
 /*#define FLT_ROUNDS	__flt_rounds()*/
 #define	FLT_EVAL_METHOD	(-1)		/* i387 semantics are...interesting */

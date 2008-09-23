@@ -49,7 +49,7 @@
  * Set value of stack pointer register.
  */
 static void inline __attribute__ ((always_inline))
-mips32_set_stack_pointer (void *x)
+arch_set_stack_pointer (void *x)
 {
 	asm volatile (
 	"move	$sp, %0"
@@ -60,7 +60,7 @@ mips32_set_stack_pointer (void *x)
  * Get value of stack pointer register.
  */
 static inline __attribute__ ((always_inline))
-void *mips32_get_stack_pointer ()
+void *arch_get_stack_pointer ()
 {
 	void *x;
 

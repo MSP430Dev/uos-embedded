@@ -1,6 +1,7 @@
 #include <runtime/lib.h>
 
-extern unsigned long _etext, __data_start, _edata, _end;
+extern void _etext();
+extern unsigned __data_start, _edata, _end;
 extern int main ();
 
 /*
@@ -11,9 +12,10 @@ extern int main ();
  */
 void __attribute ((noreturn))_init_ (void)
 {
-	unsigned long *src, *dest, *limit;
+	unsigned *src, *dest, *limit;
 
 #ifdef ELVEES_MC24
+	unsigned int divisor;
 
 	/* Clear CAUSE register. */
 	mips32_write_c0_register (C0_CAUSE, 0);
@@ -62,17 +64,42 @@ void __attribute ((noreturn))_init_ (void)
 	MC_LDIR(2) = 0;
 	MC_LDIR(3) = 0;
 
+	/*
+	 * Setup UART registers.
+	 * Compute the divisor for 115.2 kbaud.
+	 * Assume we have 80 MHz cpu clock.
+	 */
+	divisor = MC_DL_BAUD (80000000, 115200);
+
+	MC_LCR = MC_LCR_8BITS | MC_LCR_DLAB;
+	MC_DLM = divisor >> 8;
+	MC_DLL = divisor;
+	MC_LCR = MC_LCR_8BITS;
+	MC_SCLR = 0;
+	MC_SPR = 0;
+	MC_IER = 0;
+	MC_MSR = 0;
+	MC_MCR = MC_MCR_DTR | MC_MCR_RTS | MC_MCR_OUT2;
+	MC_FCR = MC_FCR_RCV_RST | MC_FCR_XMT_RST | MC_FCR_ENABLE;
+
+	/* Clear pending status, data and irq. */
+	(void) MC_LSR;
+	(void) MC_MSR;
+	(void) MC_RBR;
+	(void) MC_IIR;
+
 #endif /* ELVEES_MC24 */
 
 #ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
-	src = &_etext;
+	src = (unsigned*) &_etext;
 	dest = &__data_start;
 	limit = &_edata;
 	while (dest < limit)
 		*dest++ = *src++;
 #endif
+	src = 0;
 	/* Initialize .bss segment by zeroes. */
 	dest = &_edata;
 	limit = &_end;

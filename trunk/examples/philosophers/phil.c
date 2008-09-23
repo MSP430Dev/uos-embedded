@@ -108,7 +108,6 @@ void uos_init ()
 	int i;
 
 #if defined (__AVR__) || defined (ARM_SAMSUNG)
-	/*outb (25, UBRR); breakpoint();*/
 	uart_init (&uart, 0, 90, KHZ, 9600);
 #endif
 	timer_init (&timer, 100, KHZ, TIMER_MSEC);

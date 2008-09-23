@@ -135,19 +135,43 @@ typedef struct trapframe {
 } trapframe_t;
 
 /*
- * Handle stack pointer register.
+ * Set value of stack pointer register.
  */
-#define I386_SET_STACK_POINTER(x)				\
-	asm volatile (						\
-	"movl	%0, %%esp" : : "r" (x));
+static void inline __attribute__ ((always_inline))
+arch_set_stack_pointer (void *x)
+{
+	asm volatile (
+	"movl	%0, %%esp"
+	: : "r" (x));
+}
 
-#define I386_GET_STACK_POINTER() ({ unsigned long temp;		\
-	asm volatile (						\
-	"movl	%%esp, %0" : "=r" (temp)); temp; })
+/*
+ * Get value of stack pointer register.
+ */
+static inline __attribute__ ((always_inline))
+void *arch_get_stack_pointer ()
+{
+        void *x;
 
-#define I386_GET_STACK_SEGMENT() ({ unsigned long temp;		\
-	asm volatile (						\
-	"movl	%%ss, %0" : "=r" (temp)); temp; })
+	asm volatile (
+	"movl	%%esp, %0"
+	: "=r" (x));
+        return x;
+}
+
+/*
+ * Get value of stack segment register.
+ */
+static inline __attribute__ ((always_inline))
+unsigned int i386_get_stack_segment ()
+{
+	int x;
+
+	asm volatile (
+	"movl	%%ss, %0"
+	: "=r" (x));
+        return x;
+}
 
 /*
  * Disable and restore the hardware interrupts,

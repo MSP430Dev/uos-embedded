@@ -21,7 +21,7 @@
  * Type for saving task stack context.
  * We need 4 bytes for SS:SP.
  */
-#define MACHDEP_SAVED_STATE_T	long
+typedef short arch_state_t [2];
 
 /*
  * Build the initial task's stack frame.

@@ -43,7 +43,7 @@ void task_force_schedule ()
 	new = task_policy ();
 	if (new != task_current) {
 		new->ticks++;
-		MACHDEP_TASK_SWITCH (new);
+		arch_task_switch (new);
 	}
 }
 

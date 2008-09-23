@@ -15,7 +15,6 @@ static void main_console (void *data);
 void uos_init (void)
 {
 /*outb (25, UBRR);*/
-/*breakpoint();*/
 	uart_init (&uart, 90, KHZ, 9600);
 	timer_init (&timer, 100, KHZ, 10);
 

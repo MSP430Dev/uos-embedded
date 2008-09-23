@@ -32,7 +32,6 @@ void uos_init (void)
 	extern char __bss_end;
 
 /*outb (25, UBRR);*/
-/*breakpoint();*/
 	uart_init (&uart, 0, 90, KHZ, 9600);
 	timer_init (&timer, 100, KHZ, 10);
 

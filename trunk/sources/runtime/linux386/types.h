@@ -31,7 +31,6 @@ typedef unsigned long long u_int64_t;
 /*
  * Stop a program and call debugger.
  */
-#define breakpoint() abort ()
 void abort (void);
 void exit (int);
 
