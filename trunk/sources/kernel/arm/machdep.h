@@ -16,6 +16,9 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+#ifndef __UOS_ARCH_H_
+#	error "Don't include directly, use <kernel/arch.h> instead."
+#endif
 
 /*
  * The total number of different hardware interrupts.
@@ -26,6 +29,10 @@
  * Type for saving task stack context.
  */
 typedef void *arch_stack_t;
+
+/*
+ * Type for saving task interrupt mask.
+ */
 typedef int arch_state_t;
 
 /*
@@ -49,8 +56,17 @@ void arch_task_switch (task_t *target);
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.
  */
-#define MACHDEP_INTR_DISABLE(x)	arm_intr_disable (x)
-#define MACHDEP_INTR_RESTORE(x)	arm_intr_restore (x)
+static inline void
+arch_intr_disable (arch_state_t *x)
+{
+	arm_intr_disable (x);
+}
+
+static inline void
+arch_intr_restore (arch_state_t x)
+{
+	arm_intr_restore (x);
+}
 
 /*
  * Allow the given hardware interrupt,
@@ -58,15 +74,43 @@ void arch_task_switch (task_t *target);
  *
  * WARNING! MACHDEP_INTR_ALLOW(n) MUST be called when interrupt disabled
  */
-#define MACHDEP_INTR_ALLOW(n)	arm_intr_allow (n)
-void arm_intr_allow (uint_t irq);
+void arch_intr_allow (int irq);
+
+/*
+ * Bind the handler to the given hardware interrupt.
+ * (optional feature)
+ */
+static inline void
+arch_intr_bind (int irq)
+{
+}
+
+/*
+ * Unbind the interrupt handler.
+ * (optional feature)
+ */
+static inline void
+arch_intr_unbind (int irq)
+{
+}
 
 /*
  * Idle system activity.
  */
-#define MACHDEP_IDLE()					\
-	do {						\
-		arm_intr_enable ();			\
-		for (;;) 				\
-			arm_bus_yield ();		\
-	} while (0)
+static inline void
+arch_idle ()
+{
+	arm_intr_enable ();
+	for (;;) {
+		arm_bus_yield ();
+	}
+}
+
+/*
+ * Halt the system: unbind all interrupts and exit.
+ * (optional feature)
+ */
+static inline void
+arch_halt ()
+{
+}

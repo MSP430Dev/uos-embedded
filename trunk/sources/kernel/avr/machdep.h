@@ -16,15 +16,24 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-
 #ifndef __UOS_ARCH_H_
 #	error "Don't include directly, use <kernel/arch.h> instead."
 #endif
 
 /*
+ * The total number of different hardware interrupts.
+ */
+#define ARCH_INTERRUPTS		34
+
+/*
  * Type for saving task stack context.
  */
-typedef void *arch_state_t;
+typedef void *arch_stack_t;
+
+/*
+ * Type for saving task interrupt mask.
+ */
+typedef int arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -34,38 +43,57 @@ typedef void *arch_state_t;
  *	a  - the function argument
  *	sz - stack size in bytes
  */
-#define MACHDEP_BUILD_STACK_FRAME(t,f,a,sz) avr_build_stack_frame (t, \
-	(unsigned short) f, (unsigned short) a, (char*)t + sz-1)
-struct _task_t;
-void avr_build_stack_frame (struct _task_t *t, unsigned short func,
-	unsigned short arg, char *stack);
+void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
+	unsigned stacksz);
 
 /*
  * Perform the task switch.
  */
-#define MACHDEP_TASK_SWITCH(t)	avr_task_switch(t)
-void avr_task_switch (struct _task_t *target);
-
-/*
- * The total number of different hardware interrupts.
- */
-#define MACHDEP_INTERRUPTS	34
+void arch_task_switch (task_t *target);
 
 /*
  * The global interrupt control.
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.
  */
-#define MACHDEP_INTR_DISABLE(x)	{ *(uint_t*)(x) = inb (SREG); cli (); }
-#define MACHDEP_INTR_RESTORE(x)	{ outb ((uint_t) (x), SREG); }
-#define MACHDEP_INTR_IS_ENABLED() ((inb (SREG) & (1 << SREG_I)) != 0)
+static inline void
+arch_intr_disable (arch_state_t *x)
+{
+	*x = inb (SREG);
+	cli ();
+}
+
+static inline void
+arch_intr_restore (arch_state_t x)
+{
+	outb (x, SREG);
+}
 
 /*
  * Allow the given hardware interrupt,
  * unmasking it in the interrupt controller.
+ *
+ * WARNING! MACHDEP_INTR_ALLOW(n) MUST be called when interrupt disabled
  */
-#define MACHDEP_INTR_ALLOW(n)	avr_intr_allow (n)
-void avr_intr_allow (unsigned char irq);
+void arch_intr_allow (int irq);
+
+/*
+ * Bind the handler to the given hardware interrupt.
+ * (optional feature)
+ */
+static inline void
+arch_intr_bind (int irq)
+{
+}
+
+/*
+ * Unbind the interrupt handler.
+ * (optional feature)
+ */
+static inline void
+arch_intr_unbind (int irq)
+{
+}
 
 /*
  * Idle system activity.
@@ -78,12 +106,22 @@ void avr_intr_allow (unsigned char irq);
 #	define SLEEP_REG	MCUCR
 #endif
 
-#define MACHDEP_IDLE()		{				\
-				setb (SE, SLEEP_REG);		\
-				asm volatile ("sei");		\
-				for (;;)			\
-					asm volatile ("sleep");	\
-				}
+static inline void
+arch_idle ()
+{
+	setb (SE, SLEEP_REG);
+	asm volatile ("sei");
+	for (;;)
+		asm volatile ("sleep");
+}
+
+/*
+ * Halt the system: unbind all interrupts and exit.
+ * (optional feature)
+ */
+void arch_halt (int dump_flag);
+
+#if 0
 
 #if FLASHEND > 0x1FFFF
 #	define ASM_GOTO "jmp "
@@ -94,19 +132,6 @@ void avr_intr_allow (unsigned char irq);
 #endif
 
 /* LY: temporary, until full commit ----------------------------------------- */
-
-/*
- * Type for saving task stack context.
- */
-typedef unsigned short __arch_sp_t;
-
-/*
- * Type for saving cpu and/or irq flags.
- */
-typedef unsigned char arch_flags_t;
-
-#define arch_get_stack_pointer()	inw (SP)
-#define arch_set_stack_pointer(addr)	outw (addr, SP)
 
 extern inline void* __arch_read_return (void *sp)
 {
@@ -158,3 +183,4 @@ extern inline void* __arch_read_return (void *sp)
 		for (;;)				\
 			__asm __volatile ("sleep");	\
 	} while (0)
+#endif

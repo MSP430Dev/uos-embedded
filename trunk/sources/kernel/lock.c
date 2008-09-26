@@ -47,9 +47,9 @@ void __lock_alarm_init (lock_t *lock)
 void
 lock_take (lock_t *m)
 {
-	int_t x;
+	arch_state_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	assert (task_current != m->master);
 	__lock_check (m);
@@ -100,7 +100,7 @@ lock_take (lock_t *m)
 #if RECURSIVE_LOCKS
 	++m->deep;
 #endif
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }
 
 /*
@@ -187,12 +187,12 @@ lock_release (lock_t *m)
 	int_t x;
 
 	assert (STACK_GUARD (task_current));
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (m->master != 0);
 
 #if RECURSIVE_LOCKS
 	if (--m->deep > 0) {
-		MACHDEP_INTR_RESTORE (x);
+		arch_intr_restore (x);
 		return;
 	}
 #endif
@@ -227,5 +227,5 @@ lock_release (lock_t *m)
 	}
 
 	task_schedule ();
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }

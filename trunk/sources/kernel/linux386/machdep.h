@@ -17,13 +17,27 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+#ifndef __UOS_ARCH_H_
+#	error "Don't include directly, use <kernel/arch.h> instead."
+#endif
 #include <signal.h>
 #include <setjmp.h>
 
 /*
+ * The total number of different hardware interrupts.
+ * We are using signals for emulating interrupts.
+ */
+#define ARCH_INTERRUPTS		32
+
+/*
  * Type for saving task stack context.
  */
-typedef sigjmp_buf arch_state_t;
+typedef sigjmp_buf arch_stack_t;
+
+/*
+ * Type for saving task interrupt mask.
+ */
+typedef int arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -33,75 +47,88 @@ typedef sigjmp_buf arch_state_t;
  *	a  - the function argument
  *	sz - stack size in bytes
  */
-#define MACHDEP_BUILD_STACK_FRAME(t,f,a,sz) \
-	linux_build_stack_frame (t, (void*) f, a, (unsigned long*)t + (sz)/4)
-void linux_build_stack_frame (task_t *t, void *func, void *arg,
-	unsigned long *sp);
+void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
+	unsigned stacksz);
 
 /*
  * Perform the task switch.
  */
-#define MACHDEP_TASK_SWITCH()	{ \
-	if (sigsetjmp (task_current->stack_context, 1) == 0) { \
-		task_policy (); \
-		siglongjmp (task_current->stack_context, 1); \
-	} }
-
-/*
- * The total number of different hardware interrupts.
- * We are using signals for emulating interrupts.
- */
-#define MACHDEP_INTERRUPTS	32
+static inline void arch_task_switch (task_t *target)
+{
+	if (sigsetjmp (task_current->stack_context, 1) == 0) {
+		task_policy ();
+		siglongjmp (task_current->stack_context, 1);
+	}
+}
 
 /*
  * The global interrupt control.
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.
  */
-#define MACHDEP_INTR_DISABLE(x)	{ \
-		sigprocmask (SIG_BLOCK, &linux_sigall, &linux_sigtmp); \
-		*(x) = linux_sigtmp.__val [0]; \
-	}
-#define MACHDEP_INTR_RESTORE(x)	{ \
-		linux_sigtmp.__val[0] = (x); \
-		sigprocmask (SIG_SETMASK, &linux_sigtmp, 0); \
-	}
-extern __sigset_t linux_sigall, linux_sigtmp;
+static inline void
+arch_intr_disable (arch_state_t *x)
+{
+	extern __sigset_t linux_sigall, linux_sigtmp;
+
+	sigprocmask (SIG_BLOCK, &linux_sigall, &linux_sigtmp);
+	*x = linux_sigtmp.__val [0];
+}
+
+static inline void
+arch_intr_restore (arch_state_t x)
+{
+	extern __sigset_t linux_sigtmp;
+
+	linux_sigtmp.__val[0] = x;
+	sigprocmask (SIG_SETMASK, &linux_sigtmp, 0);
+}
 
 /*
  * Allow the given hardware interrupt,
  * unmasking it in the interrupt controller.
+ *
+ * WARNING! MACHDEP_INTR_ALLOW(n) MUST be called when interrupt disabled
  */
-#define MACHDEP_INTR_ALLOW(n)
+static inline void
+arch_intr_allow (int irq)
+{
+}
 
 /*
  * Bind the handler to the given hardware interrupt.
  * (optional feature)
  */
-#define MACHDEP_INTR_BIND(n)	linux_intr_bind (n)
-void linux_intr_bind (unsigned char irq);
+void arch_intr_bind (int irq);
 
 /*
  * Unbind the interrupt handler.
  * (optional feature)
  */
-#define MACHDEP_INTR_UNBIND(n)	linux_intr_unbind (n)
-void linux_intr_unbind (unsigned char irq);
+void arch_intr_unbind (int irq);
 
 /*
  * Idle system activity.
  * Enable interrupts and enter sleep mode.
  * (optional feature)
  */
-#define MACHDEP_IDLE()		{				\
-				extern int pause (void);	\
-				MACHDEP_INTR_RESTORE(0);	\
-				for (;;)			\
-					pause();		\
-				}
+static inline void
+arch_idle ()
+{
+	extern int pause (void);
+
+	arch_intr_restore (0);
+	for (;;) {
+		pause ();
+	}
+}
 
 /*
  * Halt the system: unbind all interrupts and exit.
  * (optional feature)
  */
-#define MACHDEP_HALT()		exit(0)
+static inline void
+arch_halt ()
+{
+	exit (0);
+}

@@ -29,13 +29,13 @@ lock_try (lock_t *m)
 {
 	int_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	__lock_check (m);
 
  	if (m->master && m->master != task_current) {
  		/* Monitor is locked. */
- 		MACHDEP_INTR_RESTORE (x);
+ 		arch_intr_restore (x);
  		return 0;
  	}
  	if (! m->master) {
@@ -57,6 +57,6 @@ lock_try (lock_t *m)
 #if RECURSIVE_LOCKS
 	++m->deep;
 #endif
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
  	return 1;
 }

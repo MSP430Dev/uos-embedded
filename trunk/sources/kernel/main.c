@@ -28,9 +28,9 @@ void *broken_stack			/* LY: SP value on reset/jmp0. */
 #endif
 
 list_t task_active;			/* list of tasks ready to run */
-task_t *task_current;				/* current running task */
-task_t *task_idle;				/* background system task */
-lock_irq_t lock_irq [MACHDEP_INTERRUPTS];	/* interrupt handlers */
+task_t *task_current;			/* current running task */
+task_t *task_idle;			/* background system task */
+lock_irq_t lock_irq [ARCH_INTERRUPTS];	/* interrupt handlers */
 
 static OPACITY (task_idle_data, sizeof(task_t) + sizeof(long));
 bool_t task_need_schedule;
@@ -90,8 +90,9 @@ lock_activate (lock_t *m, void *message)
 int
 main (void)
 {
+#ifdef DEFINE_DEVICE_ADDR
 	DEFINE_DEVICE_ADDR (task_stack_context_offset, offset_of (task_t, stack_context));
-
+#endif
 	/* Create the idle task. */
 	task_idle = (task_t*) task_idle_data;
 	task_idle->stack[0] = STACK_MAGIC;
@@ -111,8 +112,6 @@ main (void)
 
 	/* Idle task activity. */
 	for (;;) {
-#ifdef MACHDEP_IDLE
-		MACHDEP_IDLE ();
-#endif
+		arch_idle ();
 	}
 }

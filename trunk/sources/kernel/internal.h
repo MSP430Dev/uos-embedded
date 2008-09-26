@@ -43,7 +43,7 @@ struct _task_t {
 	const char *	name;		/* printable task name */
 	int_t		base_prio;	/* initial task priority */
 	int_t		prio;		/* current task priority */
-	arch_state_t	stack_context;	/* saved sp when not running */
+	arch_stack_t	stack_context;	/* saved sp when not running */
 	lock_t		finish;		/* lock to wait on for task finished */
 	unsigned long	ticks;		/* LY: кол-ов переключений на задачу, в будующем ее суммарное время выполнения */
 	unsigned char	stack [1]
@@ -77,13 +77,13 @@ extern list_t task_active;
 void task_force_schedule (void);
 
 /* Switch to most priority task if needed. */
-inline extern void task_schedule (void) {
+inline static void task_schedule (void) {
 	if (task_need_schedule)
 		task_force_schedule ();
 }
 
 /* LY: task policy, e.g. the scheduler */
-inline extern task_t* __attribute__ ((always_inline))
+inline static task_t* __attribute__ ((always_inline))
 task_policy (void)
 {
 	task_t *t, *r;
@@ -105,41 +105,41 @@ void task_recalculate_prio (task_t *t);
 void lock_recalculate_prio (lock_t *m);
 
 /* Utility functions. */
-inline extern bool_t task_is_waiting (task_t *task) {
+inline static bool_t task_is_waiting (task_t *task) {
 	return (task->lock || task->wait);
 }
 
-inline extern void task_move (list_t *list, task_t *task) {
+inline static void task_move (list_t *list, task_t *task) {
 	list_move_append (list, &task->entry);
 }
 
-inline extern void task_enqueue (list_t *list, task_t *task) {
+inline static void task_enqueue (list_t *list, task_t *task) {
 	list_append (list, &task->entry);
 }
 
-inline extern void task_dequeue (task_t *task) {
+inline static void task_dequeue (task_t *task) {
 	list_del (&task->entry);
 }
 
-inline extern void task_activate (task_t *task) {
+inline static void task_activate (task_t *task) {
 	assert (! task_is_waiting (task));
 	task_move (&task_active, task);
 	if (task_current->prio < task->prio)
 		task_need_schedule = 1;
 }
 
-inline extern void lock_enqueue (list_t *list, lock_t *lock) {
+inline static void lock_enqueue (list_t *list, lock_t *lock) {
 	list_append (list, &lock->entry);
 }
 
-inline extern void lock_dequeue (lock_t *lock) {
+inline static void lock_dequeue (lock_t *lock) {
 	list_del (&lock->entry);
 }
 
 //void __lock_alarm_init (lock_t *lock);
 void __lock_init (lock_t *);
 
-inline extern void __lock_check (lock_t *lock) {
+inline static void __lock_check (lock_t *lock) {
 	if (! lock->entry.f)
 		__lock_init (lock);
 }

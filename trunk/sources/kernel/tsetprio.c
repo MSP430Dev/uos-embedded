@@ -26,7 +26,7 @@ task_set_priority (task_t *t, int_t new_prio)
 {
 	int_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	t->base_prio = new_prio;
 
@@ -36,5 +36,5 @@ task_set_priority (task_t *t, int_t new_prio)
 	task_recalculate_prio (t);
 
 	task_schedule ();
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }

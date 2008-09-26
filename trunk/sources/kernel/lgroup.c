@@ -68,14 +68,14 @@ lock_group_listen (lock_group_t *g)
 	int_t x;
 	lock_slot_t *s;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	for (s = g->slot + g->num; --s >= g->slot; ) {
 		assert (! list_is_linked (&s->entry));
 		s->message = 0;
 		list_ahead (&s->lock->groups, &s->entry);
 	}
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }
 
 /*
@@ -90,14 +90,14 @@ lock_group_unlisten (lock_group_t *g)
 	int_t x;
 	lock_slot_t *s;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	for (s = g->slot + g->num; --s >= g->slot; ) {
 		assert (list_is_linked (&s->entry));
 		s->message = 0;
 		list_del (&s->entry);
 	}
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }
 
 /*
@@ -111,7 +111,7 @@ lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr)
 	int_t x;
 	lock_slot_t *s;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	assert (task_current->wait == 0);
 	assert (g->num > 0);
@@ -125,7 +125,7 @@ lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr)
 				if (msg_ptr)
 					*msg_ptr = s->message;
 				s->active = 0;
-				MACHDEP_INTR_RESTORE (x);
+				arch_intr_restore (x);
 				return;
 			}
 		}

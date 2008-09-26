@@ -138,7 +138,7 @@ typedef struct trapframe {
  * Set value of stack pointer register.
  */
 static void inline __attribute__ ((always_inline))
-arch_set_stack_pointer (void *x)
+i386_set_stack_pointer (void *x)
 {
 	asm volatile (
 	"movl	%0, %%esp"
@@ -149,7 +149,7 @@ arch_set_stack_pointer (void *x)
  * Get value of stack pointer register.
  */
 static inline __attribute__ ((always_inline))
-void *arch_get_stack_pointer ()
+void *i386_get_stack_pointer ()
 {
         void *x;
 

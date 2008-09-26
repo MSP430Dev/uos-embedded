@@ -102,26 +102,28 @@ static inline void list_eject (list_t *src, list_t *dst)
 	list_join (dst, src);
 }
 
-#define list_entry(ptr, type, member) \
-	container_of (ptr, type, member)
+#define list_entry(ptr, type, member) ({					\
+		const typeof (((type *)0)->member) *__mptr = (ptr);		\
+		(type *)((char *)__mptr - __builtin_offsetof (type, member));	\
+	})
 
 #define list_first_entry(ptr, type, member) \
 	list_entry ((ptr)->f, type, member)
 
-#define list_iterate(pos, head) \
-	for (pos = (head)->f; pos != (head); pos = pos->f)
+#define list_iterate(i, head) \
+	for (i = (head)->f; i != (head); i = i->f)
 
-#define list_iterate_backward(pos, head) \
-	for (pos = (head)->b; pos != (head); pos = pos->b)
+#define list_iterate_backward(i, head) \
+	for (i = (head)->b; i != (head); i = i->b)
 
-#define list_iterate_entry(pos, head, member)				\
-	for (pos = list_entry ((head)->f, typeof (*pos), member);	\
-	     &pos->member != (head); 					\
-	     pos = list_entry (pos->member.f, typeof (*pos), member))
+#define list_iterate_entry(i, head, member)				\
+	for (i = list_entry ((head)->f, typeof (*i), member);		\
+	     &i->member != (head); 					\
+	     i = list_entry (i->member.f, typeof (*i), member))
 
-#define list_iterate_entry_backward(pos, head, member)			\
-	for (pos = list_entry ((head)->b, typeof (*pos), member);	\
-	     &pos->member != (head); 					\
-	     pos = list_entry (pos->member.b, typeof (*pos), member))
+#define list_iterate_entry_backward(i, head, member)			\
+	for (i = list_entry ((head)->b, typeof (*i), member);		\
+	     &i->member != (head); 					\
+	     i = list_entry (i->member.b, typeof (*i), member))
 
 #endif /* __LIST_H_ */

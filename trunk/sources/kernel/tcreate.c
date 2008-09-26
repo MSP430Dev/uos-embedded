@@ -43,9 +43,9 @@ task_create (void (*func)(void*), void *arg, const char *name, int_t prio,
 	/* Build an interrupt frame on the task stack.
 	 * Set instruction pointer to func, argument to arg. */
 	arch_build_stack_frame (t, func, arg, stacksz);
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	task_enqueue (&task_active, t);
 	task_force_schedule ();
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 	return t;
 }

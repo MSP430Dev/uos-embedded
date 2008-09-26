@@ -27,7 +27,7 @@ lock_signal (lock_t *m, void *message)
 {
 	int_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	__lock_check (m);
 
@@ -35,7 +35,7 @@ lock_signal (lock_t *m, void *message)
 		lock_activate (m, message);
 		task_schedule ();
 	}
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }
 
 /*
@@ -51,7 +51,7 @@ lock_wait (lock_t *m)
 	int_t deep;
 #endif
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	assert (task_current->wait == 0);
 	__lock_check (m);
@@ -64,11 +64,11 @@ lock_wait (lock_t *m)
 				/* Unblock all tasks, waiting for irq. */
 				lock_activate (m, 0);
 				task_schedule ();
-				MACHDEP_INTR_RESTORE (x);
+				arch_intr_restore (x);
 				return 0;
 			}
 		}
- 		MACHDEP_INTR_ALLOW (m->irq->irq);
+ 		arch_intr_allow (m->irq->irq);
 	}
 
 	task_current->wait = m;
@@ -76,7 +76,7 @@ lock_wait (lock_t *m)
  	if (m->master != task_current) {
 		/* LY: мы не удерживаем lock, поэтому просто ждем сигнала. */
 		task_force_schedule ();
- 		MACHDEP_INTR_RESTORE (x);
+ 		arch_intr_restore (x);
  		return task_current->message;
  	}
 
@@ -143,6 +143,6 @@ lock_wait (lock_t *m)
 	if (task_current->prio < m->prio)
 		task_current->prio = m->prio;
 
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 	return task_current->message;
 }

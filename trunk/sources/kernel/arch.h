@@ -16,6 +16,9 @@ void task_exit_0 (void);
 #if I386
 #	include <kernel/i386/machdep.h>
 #endif
+#if MIPS32
+#	include <kernel/mips32/machdep.h>
+#endif
 #if LINUX386
 #	include <kernel/linux386/machdep.h>
 #endif

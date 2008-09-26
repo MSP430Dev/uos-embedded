@@ -26,7 +26,7 @@ task_yield ()
 {
 	int_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 
 	/* Enqueue always puts element at the tail of the list. */
 	task_move (&task_active, task_current);
@@ -36,5 +36,5 @@ task_yield ()
 	 * this will allow them to run round-robin. */
 	task_force_schedule ();
 
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }

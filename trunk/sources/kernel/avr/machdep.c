@@ -535,3 +535,36 @@ uos_valid_memory_address (void *ptr)
 
 	return u > 0x7FFF || (u > 0xFF && u <= (unsigned) &__stack);
 }
+
+/*
+ * Halt uOS, return to the parent operating system.
+ */
+void
+arch_halt (int dump_flag)
+{
+	uint_t n;
+	task_t *t;
+	void *callee = __builtin_return_address (0);
+	void *sp = inw (SP);
+
+	if (dump_flag) {
+		debug_task_print (0);
+		n = 0;
+		list_iterate_entry (t, &task_active, entry) {
+			if (t != task_idle && t != task_current)
+				debug_task_print (t);
+			if (! uos_valid_memory_address (t))
+				break;
+			if (++n > 32 || t == list_entry (t->entry.f, task_t, entry)) {
+				debug_puts ("...\n");
+				break;
+			}
+		}
+		if (task_current && task_current != task_idle)
+			debug_task_print (task_current);
+
+		debug_dump_stack (__debug_task_name (task_current), sp,
+			(void*) task_current->stack_context, callee);
+		debug_printf ("\n*** Please report this information\n");
+	}
+}

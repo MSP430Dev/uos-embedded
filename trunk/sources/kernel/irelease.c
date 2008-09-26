@@ -27,16 +27,16 @@
 void
 lock_release_irq (lock_t *m)
 {
-	int_t x;
+	arch_state_t x;
 
 	assert (STACK_GUARD (task_current));
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (m->master != 0);
 
 #if RECURSIVE_LOCKS
 	assert (m->deep > 0);
 	if (--m->deep > 0) {
-		MACHDEP_INTR_RESTORE (x);
+		arch_intr_restore (x);
 		return;
 	}
 #endif
@@ -60,9 +60,7 @@ lock_release_irq (lock_t *m)
 			if ((m->irq->handler) (m->irq->arg) == 0)
 				lock_activate (m, 0);
 		}
-#ifdef MACHDEP_INTR_UNBIND
-		MACHDEP_INTR_UNBIND (m->irq->irq);
-#endif
+		arch_intr_unbind (m->irq->irq);
 		m->irq->lock = 0;
 		m->irq = 0;
 	}
@@ -78,5 +76,5 @@ lock_release_irq (lock_t *m)
 	}
 
 	task_schedule ();
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }

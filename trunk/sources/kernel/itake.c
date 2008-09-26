@@ -27,9 +27,9 @@
 void
 lock_take_irq (lock_t *m, int_t irq, handler_t func, void *arg)
 {
-	int_t x;
+	arch_state_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	__lock_check (m);
 
@@ -78,14 +78,12 @@ lock_take_irq (lock_t *m, int_t irq, handler_t func, void *arg)
 #endif
 
 	m->irq = &lock_irq [irq];
-#ifdef MACHDEP_INTR_BIND
 	if (! m->irq->lock)
-		MACHDEP_INTR_BIND (irq);
-#endif
+		arch_intr_bind (irq);
 	m->irq->lock = m;
 	m->irq->irq = irq;
 	m->irq->handler = func;
 	m->irq->arg = arg;
 	m->irq->pending = 0;
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }

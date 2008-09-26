@@ -1,5 +1,5 @@
 /*
- * Machine-dependent uOS declarations for: Intel i86, DOS, Bruce CC.
+ * Machine-dependent uOS declarations for MIPS32.
  *
  * Copyright (C) 2000-2005 Serge Vakulenko, <vak@cronyx.ru>
  *
@@ -16,12 +16,36 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+#ifndef __UOS_ARCH_H_
+#	error "Don't include directly, use <kernel/arch.h> instead."
+#endif
+
+/*
+ * The total number of different hardware interrupts.
+ */
+#define ARCH_INTERRUPTS		32
 
 /*
  * Type for saving task stack context.
- * We need 4 bytes for SS:SP.
  */
-typedef short arch_state_t [2];
+typedef void *arch_stack_t;
+
+static inline arch_stack_t
+arch_get_stack_pointer ()
+{
+	return mips32_get_stack_pointer ();
+}
+
+static inline void
+arch_set_stack_pointer (arch_stack_t sp)
+{
+	mips32_set_stack_pointer (sp);
+}
+
+/*
+ * Type for saving task interrupt mask.
+ */
+typedef int arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -31,64 +55,74 @@ typedef short arch_state_t [2];
  *	a  - the function argument
  *	sz - stack size in bytes
  */
-#define MACHDEP_BUILD_STACK_FRAME(t,f,a,sz) \
-	dos_build_stack_frame (t, (void*) f, a, (unsigned short*)t + (sz)/2)
-void dos_build_stack_frame (task_t *t, void *func, void *arg,
-	unsigned short *sp);
+void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
+	unsigned stacksz);
 
 /*
  * Perform the task switch.
  */
-#define MACHDEP_TASK_SWITCH()	{ asm ("pushf\npush CS"); dos_task_switch(); }
-void dos_task_switch (void);
-
-/*
- * The total number of different hardware interrupts.
- */
-#define MACHDEP_INTERRUPTS	16
+void arch_task_switch (task_t *target);
 
 /*
  * The global interrupt control.
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.
  */
-#define MACHDEP_INTR_DISABLE(x)	{ asm ("pushf\npop AX\ncli"); *(x) = _AX; }
-#define MACHDEP_INTR_RESTORE(x)	{ _AX = (x); asm ("push AX\npopf"); }
+static inline void
+arch_intr_disable (arch_state_t *x)
+{
+	mips32_intr_disable (x);
+}
+
+static inline void
+arch_intr_restore (arch_state_t x)
+{
+	mips32_intr_restore (x);
+}
 
 /*
  * Allow the given hardware interrupt,
  * unmasking it in the interrupt controller.
+ *
+ * WARNING! MACHDEP_INTR_ALLOW(n) MUST be called when interrupt disabled
  */
-#define MACHDEP_INTR_ALLOW(n)	dos_intr_allow (n)
-void dos_intr_allow (int irq);
+void arch_intr_allow (int irq);
 
 /*
  * Bind the handler to the given hardware interrupt.
  * (optional feature)
  */
-#define MACHDEP_INTR_BIND(n)	dos_intr_bind (n)
-void dos_intr_bind (unsigned char irq);
+static inline void
+arch_intr_bind (int irq)
+{
+}
 
 /*
  * Unbind the interrupt handler.
  * (optional feature)
  */
-#define MACHDEP_INTR_UNBIND(n)	dos_intr_unbind (n)
-void dos_intr_unbind (unsigned char irq);
+static inline void
+arch_intr_unbind (int irq)
+{
+}
 
 /*
  * Idle system activity.
- * Enable interrupts and enter sleep mode.
- * (optional feature)
  */
-#define MACHDEP_IDLE()		{			\
-				asm ("sti");		\
-				for (;;)		\
-					asm ("hlt");	\
-				}
+static inline void
+arch_idle ()
+{
+	mips32_intr_enable ();
+	for (;;) {
+		asm volatile (".set mips4 \n	wait");
+	}
+}
 
 /*
- * Halt the system: unbind all interrupts and exit to DOS.
+ * Halt the system: unbind all interrupts and exit.
  * (optional feature)
  */
-#define MACHDEP_HALT()		dos_halt()
+static inline void
+arch_halt ()
+{
+}

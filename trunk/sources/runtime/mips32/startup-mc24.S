@@ -22,7 +22,7 @@ _reset_vector_:	.globl	_reset_vector_
 #---------------------------------------
 # Macro: save all registers in stack
 #
-		.macro SAVE_ALL_REGS
+		.macro SAVE_REGS
 		addi	$sp, $sp, -CONTEXT_WORDS*4	# Allocate space for registers
 
 		.set	noat
@@ -73,20 +73,18 @@ _reset_vector_:	.globl	_reset_vector_
 # Hangle exceptions
 #
 exception:
-		SAVE_ALL_REGS				# Save all registers in stack
+		SAVE_REGS				# Save all registers in stack
 		la	$gp, _gp			# Set global pointer
 
 		.extern _exception_handler_
 		move	$a0, $sp			# Arg0: pointer to saved state
 		j	_exception_handler_		# Jump to C code, no return
-		addi	$sp, $sp, -16			# Make an arg frame (delay slot)
+		addi	$sp, $sp, -4			# Make an arg frame (delay slot)
 
 #---------------------------------------
 # Restore CPU state and return from interrupt
 
-_restore_state_: .globl _restore_state_
-
-		addi	$sp, $sp, 16			# Deallocate an arg frame
+_restore_regs_: .globl _restore_regs_
 
 		.set	noat
 		lw	$1, (CONTEXT_R1 * 4) ($sp)	# Load general registers
@@ -153,13 +151,13 @@ _restore_state_: .globl _restore_state_
 		.org	0x0200
 _pagefault_vector_: .globl _pagefault_vector_
 
-		SAVE_ALL_REGS				# Save all registers in stack
+		SAVE_REGS				# Save all registers in stack
 		la	$gp, _gp			# Set global pointer
 
 		.extern _pagefault_handler_
 		move	$a0, $sp			# Arg0: pointer to saved state
 		j	_pagefault_handler_		# Jump to C code, no return
-		addi	$sp, $sp, -16			# Make an arg frame (delay slot)
+		addi	$sp, $sp, -4			# Make an arg frame (delay slot)
 
 #---------------------------------------
 # Exception vector at 0xBFC00380
@@ -167,6 +165,7 @@ _pagefault_vector_: .globl _pagefault_vector_
 		.org	0x0380
 _exception_vector_: .globl _exception_vector_
 		j	exception			# Not enough space here
+		nop					# (delay slot)
 
 
 #---------------------------------------
@@ -175,10 +174,9 @@ _exception_vector_: .globl _exception_vector_
 		.org	0x0400
 _interrupt_vector_: .globl _interrupt_vector_
 
-		SAVE_ALL_REGS				# Save all registers in stack
+		SAVE_REGS				# Save all registers in stack
 		la	$gp, _gp			# Set global pointer
 
 		.extern _interrupt_handler_
-		move	$a0, $sp			# Arg0: pointer to saved state
 		j	_interrupt_handler_		# Jump to C code, no return
-		addi	$sp, $sp, -16			# Make an arg frame (delay slot)
+		nop					# (delay slot)

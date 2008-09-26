@@ -26,10 +26,10 @@ task_set_private (task_t *t, void *new_private)
 {
 	int_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 
 	t->privatep = new_private;
 
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }

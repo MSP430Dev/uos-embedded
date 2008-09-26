@@ -16,11 +16,24 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+#ifndef __UOS_ARCH_H_
+#	error "Don't include directly, use <kernel/arch.h> instead."
+#endif
+
+/*
+ * The total number of different hardware interrupts.
+ */
+#define ARCH_INTERRUPTS		16
 
 /*
  * Type for saving task stack context.
  */
 typedef void *arch_state_t;
+
+/*
+ * Type for saving task interrupt mask.
+ */
+typedef int arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -30,45 +43,76 @@ typedef void *arch_state_t;
  *	a  - the function argument
  *	sz - stack size in bytes
  */
-#define MACHDEP_BUILD_STACK_FRAME(t,f,a,sz) i386_build_stack_frame (t, \
-	(unsigned long) f, (unsigned long) a, \
-	(unsigned long*) ((unsigned long)t + sz))
-void i386_build_stack_frame (task_t *t, unsigned long func,
-	unsigned long arg, unsigned long *stack);
+void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
+	unsigned stacksz);
 
 /*
  * Perform the task switch.
  */
-#define MACHDEP_TASK_SWITCH()	{ asm ("pushf\npush %cs"); i386_task_switch(); }
-void i386_task_switch (void);
-
-/*
- * The total number of different hardware interrupts.
- */
-#define MACHDEP_INTERRUPTS	16
+void arch_task_switch (task_t *target);
 
 /*
  * The global interrupt control.
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.
  */
-#define MACHDEP_INTR_DISABLE(x)	I386_INTR_DISABLE (x)
-#define MACHDEP_INTR_RESTORE(x)	I386_INTR_RESTORE (x)
+static inline void
+arch_intr_disable (arch_state_t *x)
+{
+	i386_intr_disable (x);
+}
+
+static inline void
+arch_intr_restore (arch_state_t x)
+{
+	i386_intr_restore (x);
+}
 
 /*
  * Allow the given hardware interrupt,
  * unmasking it in the interrupt controller.
+ *
+ * WARNING! MACHDEP_INTR_ALLOW(n) MUST be called when interrupt disabled
  */
-#define MACHDEP_INTR_ALLOW(n)	i386_intr_allow (n)
-void i386_intr_allow (int irq);
+void arch_intr_allow (int irq);
+
+/*
+ * Bind the handler to the given hardware interrupt.
+ * (optional feature)
+ */
+static inline void
+arch_intr_bind (int irq)
+{
+}
+
+/*
+ * Unbind the interrupt handler.
+ * (optional feature)
+ */
+static inline void
+arch_intr_unbind (int irq)
+{
+}
 
 /*
  * Idle system activity.
  * Enable interrupts and enter sleep mode.
  * (optional feature)
  */
-#define MACHDEP_IDLE()		{			\
-				I386_INTR_ENABLE ();	\
-				for (;;)		\
-					asm ("hlt");	\
-				}
+static inline void
+arch_idle ()
+{
+	i386_intr_enable ();
+	for (;;) {
+		asm ("hlt");
+	}
+}
+
+/*
+ * Halt the system: unbind all interrupts and exit.
+ * (optional feature)
+ */
+static inline void
+arch_halt ()
+{
+}

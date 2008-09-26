@@ -49,7 +49,7 @@
  * Set value of stack pointer register.
  */
 static void inline __attribute__ ((always_inline))
-arch_set_stack_pointer (void *x)
+mips32_set_stack_pointer (void *x)
 {
 	asm volatile (
 	"move	$sp, %0"
@@ -60,7 +60,7 @@ arch_set_stack_pointer (void *x)
  * Get value of stack pointer register.
  */
 static inline __attribute__ ((always_inline))
-void *arch_get_stack_pointer ()
+void *mips32_get_stack_pointer ()
 {
 	void *x;
 
@@ -124,6 +124,21 @@ mips32_intr_enable ()
 
 	status = mips32_read_c0_register (C0_STATUS);
 	mips32_write_c0_register (C0_STATUS, status | ST_IE);
+}
+
+/*
+ * Count a number of leading (most significant) zero bits in a word.
+ */
+static int inline __attribute__ ((always_inline))
+mips32_count_leading_zeroes (unsigned x)
+{
+	int n;
+
+	asm volatile (
+	"	.set	mips32 \n"
+	"	clz	%0, %1"
+	: "=r" (n) : "r" (x));
+	return n;
 }
 
 #endif /* __ASSEMBLER__ */

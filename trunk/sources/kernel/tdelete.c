@@ -26,7 +26,7 @@ task_delete (task_t *t, void *message)
 {
 	int_t x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arch_intr_disable (&x);
 
 	task_dequeue (t);
 	if (t == task_current)
@@ -54,5 +54,5 @@ task_delete (task_t *t, void *message)
 	lock_signal (&t->finish, message);
 
 	task_schedule ();
-	MACHDEP_INTR_RESTORE (x);
+	arch_intr_restore (x);
 }
