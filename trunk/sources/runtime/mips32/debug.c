@@ -49,10 +49,9 @@ debug_getchar (void)
 		return c;
 	}
 	mips32_intr_disable (&x);
-
 	for (;;) {
 		/* Wait until receive data available. */
-		while (! (MC_LSR & MC_LSR_RXRDY)) {
+		if (! (MC_LSR & MC_LSR_RXRDY)) {
 /*			watchdog_alive ();*/
 			mips32_intr_restore (x);
 			mips32_intr_disable (&x);

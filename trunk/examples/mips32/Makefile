@@ -2,7 +2,6 @@ OS		= $(shell cd ../..; pwd)
 TARGET		= $(OS)/targets/mc24
 include $(TARGET)/target.cfg
 
-CFLAGS		+= -DKHZ=80000 # IPMCE
 TESTS		= test_debug.sre
 OUTS		= $(TESTS:%.sre=%.out)
 
