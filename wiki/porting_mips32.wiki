@@ -109,6 +109,49 @@ cp ../arm/types.h ../arm/stdlib.h ../arm/string.h .
 В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/debug.c uos/sources/runtime/mips32/debug.c] создаём функции отладочной
 выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`. Заключаем их в #ifdef ELVEES_MC24 ... #endif.
 
+=== 9. Первый тест: отладочная выдача на консоль ===
+Создаём каталог uos/examples/mips32, а в нём файлы test_debug.c:
+{{{
+#include <runtime/lib.h>
+
+int main (void)
+{
+        for (;;) {
+                debug_printf ("Hello, World!\n");
+/*              debug_printf ("LSR=%02x, IIR=%02x, MSR=%02x\n", MC_LSR, MC_IIR, MC_MSR);*/
+                debug_getchar();
+        }
+}
+
+void _interrupt_handler_ ()
+{
+}
+}}}
+и Makefile:
+{{{
+OS              = $(shell cd ../..; pwd)
+TARGET          = $(OS)/targets/mc24
+include $(TARGET)/target.cfg
+
+TESTS           = test_debug.sre
+OUTS            = $(TESTS:%.sre=%.out)
+
+all:            .deps target $(OUTS) $(TESTS)
+                $(SIZE) $(OUTS)
+
+.deps:
+                mkdir .deps
+
+target:
+                $(MAKE) -C $(TARGET)
+
+clean:
+                rm -rf *.out *.hex *.sre *.[osi] *.lst *.dis *~ .deps
+
+include $(OS)/sources/rules.mak
+}}}
+Запускаем "make". В результате получаем файл `test_debug.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World" (скорость 115200, 8 бит, без чётности).
+
 ... TODO ...
 
 === 5. Добавляем обработку прерываний ===
