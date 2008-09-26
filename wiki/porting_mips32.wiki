@@ -148,12 +148,20 @@ include $(OS)/sources/rules.mak
 }}}
 Запускаем "make". В результате получаем файл `test_debug.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World" (скорость 115200, 8 бит, без чётности).
 
+=== 10. Перенос ядра ===
+Создаём каталог uos/sources/kernel/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.h machdep.h] с описанием регистров платформы MIPS32. В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/arch.h kernel/arch.h] добавляем строки:
+{{{
+#if MIPS32
+#   include <kernel/mips32/machdep.h>
+#endif
+}}}
+
 ... TODO ...
 
-=== 5. Добавляем обработку прерываний ===
+=== N. Добавляем обработку прерываний ===
 В файле uos/sources/kernel/arm/machdep.c в функциях `_irq_handler_()` и
 `arm_intr_allow()` добавляем работу с регистрами контроллера прерываний.
 Заключаем его в #ifdef ARM_AT91SAM ... #endif.
 
-=== 6. Обрабатываем таймер ===
+=== M. Обрабатываем таймер ===
 В файле uos/sources/timer/timer.c добавляем инициализацию регистров таймера.
