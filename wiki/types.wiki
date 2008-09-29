@@ -35,6 +35,7 @@ unsigned short соответственно.
 
  * small_int_t -- не менее 8 бит, со знаком
  * small_uint_t -- не менее 8 бит, без знака
+ * bool_t -- достаточный для хранения значений 0 и 1, со знаком
 
 Если требуется целочисленный тип, обеспечивающий не менее 16 бит, следует использовать
 обычный int или unsigned int.
@@ -54,3 +55,4 @@ int32_t или uint32_t.
 || uint64_t     || unsigned long long || unsigned long long || unsigned long long  || unsigned long long || unsigned long  ||
 || small_int_t  || int8_t             || int16_t            || int32_t             || int32_t            || int32_t        ||
 || small_uint_t || uint8_t            || uint16_t           || uint32_t            || uint32_t           || uint32_t       ||
+|| bool_t          || int8_t         || int16_t            || int32_t             || int32_t            || int32_t        ||
