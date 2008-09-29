@@ -568,3 +568,17 @@ arch_halt (int dump_flag)
 		debug_printf ("\n*** Please report this information\n");
 	}
 }
+
+/*
+ * Define assembler constant task_stack_context_offset,
+ * which is a byte offset of stack_context field in tast_t structure.
+ * Needed for _init_ for saving task_current.
+ */
+#define DEFINE_DEVICE_ADDR(name, val)                   \
+                __asm __volatile (                      \
+                ".globl " #name "\n\t"                  \
+                ".set " #name ", %0"                    \
+                :: "n" (val)                            \
+        )
+
+DEFINE_DEVICE_ADDR (task_stack_context_offset, offset_of (task_t, stack_context));

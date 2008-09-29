@@ -17,7 +17,7 @@ _reset_vector_:	.globl	_reset_vector_
 		.extern	_init_
 		la	$sp, 0xb8008000
 		j	_init_				# Jump to _init_()
-		nop					# (delay slot)
+		la	$gp, _gp			# Set global pointer (delay slot)
 
 #---------------------------------------
 # Macro: save all registers in stack

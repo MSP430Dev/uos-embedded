@@ -35,6 +35,7 @@ task_set_priority (task_t *t, int_t new_prio)
 	 * and all slave lock priorities. */
 	task_recalculate_prio (t);
 
-	task_schedule ();
+	if (task_need_schedule)
+		task_schedule ();
 	arch_intr_restore (x);
 }

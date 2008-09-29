@@ -5,17 +5,14 @@ include $(TARGET)/target.cfg
 TESTS		= test_debug.sre test_task.sre
 OUTS		= $(TESTS:%.sre=%.out)
 
-all:		.deps target $(OUTS) $(TESTS)
+all:		.deps startup.o libuos.a $(OUTS) $(TESTS)
 		$(SIZE) $(OUTS)
 
 .deps:
 		mkdir .deps
 
-target:
-		$(MAKE) -C $(TARGET)
-
 clean:
-		rm -rf *.out *.hex *.sre *.[osi] *.lst *.dis *~ .deps
+		rm -rf *~ *.[oasi] *.out *.hex *.sre *.lst *.dis .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 

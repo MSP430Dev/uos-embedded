@@ -35,7 +35,10 @@ lock_irq_t lock_irq [ARCH_INTERRUPTS];	/* interrupt handlers */
 static OPACITY (task_idle_data, sizeof(task_t) + sizeof(long));
 bool_t task_need_schedule;
 
-void task_force_schedule ()
+/*
+ * Switch to most priority task if needed.
+ */
+void task_schedule ()
 {
 	task_t *new;
 
@@ -90,15 +93,11 @@ lock_activate (lock_t *m, void *message)
 int
 main (void)
 {
-#ifdef DEFINE_DEVICE_ADDR
-	DEFINE_DEVICE_ADDR (task_stack_context_offset, offset_of (task_t, stack_context));
-#endif
 	/* Create the idle task. */
 	task_idle = (task_t*) task_idle_data;
 	task_idle->stack[0] = STACK_MAGIC;
 	task_idle->name = "idle";
 	list_init (&task_idle->slaves);
-	lock_init (&task_idle->finish);
 
 	list_init (&task_active);
 	task_enqueue (&task_active, task_idle);
@@ -106,9 +105,8 @@ main (void)
 
 	/* Create user tasks. */
 	uos_init ();
-
 	/* Switch to the most priority task. */
-	task_force_schedule ();
+	task_schedule ();
 
 	/* Idle task activity. */
 	for (;;) {

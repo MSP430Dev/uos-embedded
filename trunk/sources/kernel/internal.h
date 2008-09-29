@@ -74,13 +74,7 @@ extern task_t *task_idle;
 extern list_t task_active;
 
 /* Switch to most priority task. */
-void task_force_schedule (void);
-
-/* Switch to most priority task if needed. */
-inline static void task_schedule (void) {
-	if (task_need_schedule)
-		task_force_schedule ();
-}
+void task_schedule (void);
 
 /* LY: task policy, e.g. the scheduler */
 inline static task_t* __attribute__ ((always_inline))
@@ -136,7 +130,6 @@ inline static void lock_dequeue (lock_t *lock) {
 	list_del (&lock->entry);
 }
 
-//void __lock_alarm_init (lock_t *lock);
 void __lock_init (lock_t *);
 
 inline static void __lock_check (lock_t *lock) {

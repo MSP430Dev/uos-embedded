@@ -159,7 +159,7 @@ static void dump_of_death (unsigned int context[])
 		context [CONTEXT_R23], context [CONTEXT_RA]);
 
 	debug_printf ("\nHalt...\n\n");
-	asm volatile ("1: j 1b");
+	asm volatile ("1: j 1b; nop");
 }
 
 void _exception_handler_ (unsigned int context[])

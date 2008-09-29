@@ -33,7 +33,8 @@ lock_signal (lock_t *m, void *message)
 
 	if (! list_is_empty (&m->waiters) || ! list_is_empty (&m->groups)) {
 		lock_activate (m, message);
-		task_schedule ();
+		if (task_need_schedule)
+			task_schedule ();
 	}
 	arch_intr_restore (x);
 }
@@ -63,7 +64,8 @@ lock_wait (lock_t *m)
 			if ((m->irq->handler) (m->irq->arg) == 0) {
 				/* Unblock all tasks, waiting for irq. */
 				lock_activate (m, 0);
-				task_schedule ();
+				if (task_need_schedule)
+					task_schedule ();
 				arch_intr_restore (x);
 				return 0;
 			}
@@ -75,7 +77,7 @@ lock_wait (lock_t *m)
 	task_move (&m->waiters, task_current);
  	if (m->master != task_current) {
 		/* LY: мы не удерживаем lock, поэтому просто ждем сигнала. */
-		task_force_schedule ();
+		task_schedule ();
  		arch_intr_restore (x);
  		return task_current->message;
  	}
@@ -102,7 +104,7 @@ lock_wait (lock_t *m)
 		task_activate (t);
 	}
 	m->prio = 0;
-	task_force_schedule ();
+	task_schedule ();
 
 	/* Acquire the lock again. */
 	while (m->master) {
@@ -126,7 +128,7 @@ lock_wait (lock_t *m)
 				m->master->prio = m->prio;
 		}
 
-		task_force_schedule ();
+		task_schedule ();
 	}
 
 	/* Put this lock into the list of task slaves. */

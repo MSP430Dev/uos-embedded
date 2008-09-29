@@ -75,6 +75,7 @@ lock_release_irq (lock_t *m)
 		m->prio = 0;
 	}
 
-	task_schedule ();
+	if (task_need_schedule)
+		task_schedule ();
 	arch_intr_restore (x);
 }

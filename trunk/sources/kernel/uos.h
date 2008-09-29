@@ -109,10 +109,6 @@ struct _lock_t {
 	int_t		prio;		/* current lock priority */
 };
 
-inline extern void lock_init (lock_t *lock) {
-	// LY: пока оформлена как заглушка, __lock_init() вызывается автоматически.
-}
-
 /*
  * Slot: a group element.
  */

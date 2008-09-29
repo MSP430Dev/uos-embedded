@@ -54,7 +54,7 @@ lock_take_irq (lock_t *m, int_t irq, handler_t func, void *arg)
 				m->master->prio = m->prio;
 		}
 
-		task_force_schedule ();
+		task_schedule ();
 	}
 
 	if (! m->master) {

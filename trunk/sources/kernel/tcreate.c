@@ -35,7 +35,6 @@ task_create (void (*func)(void*), void *arg, const char *name, int_t prio,
 	t->prio = t->base_prio = prio;
 	list_init (&t->entry);
 	list_init (&t->slaves);
-	lock_init (&t->finish);
 
 	memset (t->stack, STACK_MAGIC, stacksz - sizeof(task_t));
 	assert (STACK_GUARD (t));
@@ -45,7 +44,6 @@ task_create (void (*func)(void*), void *arg, const char *name, int_t prio,
 	arch_build_stack_frame (t, func, arg, stacksz);
 	arch_intr_disable (&x);
 	task_enqueue (&task_active, t);
-	task_force_schedule ();
 	arch_intr_restore (x);
 	return t;
 }

@@ -31,7 +31,6 @@ lock_group_init (opacity_t *buf, unsigned buf_size)
 	assert (buf_size >= sizeof(lock_group_t));
 	g = (lock_group_t*) buf;
 	g->size = 1 + (buf_size - sizeof(lock_group_t)) / sizeof(lock_slot_t);
-	lock_init (&g->lock);
 	return g;
 }
 
@@ -133,6 +132,6 @@ lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr)
 		/* Suspend the task. */
 		task_dequeue (task_current);
 		g->waiter = task_current;
-		task_force_schedule ();
+		task_schedule ();
 	}
 }

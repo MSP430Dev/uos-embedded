@@ -5,6 +5,7 @@
  * Print debugging information and halt the system.
  */
 #ifdef NDEBUG
+void
 __assert_fail_ndebug ()
 {
 	debug_printf ("\nAssertion failed at address %p\n\n",

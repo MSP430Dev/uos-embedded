@@ -78,7 +78,7 @@ lock_take (lock_t *m)
 			}
 		}
 
-		task_force_schedule ();
+		task_schedule ();
 	}
 
 	if (! m->master) {
@@ -226,6 +226,7 @@ lock_release (lock_t *m)
 		m->prio = 0;
 	}
 
-	task_schedule ();
+	if (task_need_schedule)
+		task_schedule ();
 	arch_intr_restore (x);
 }

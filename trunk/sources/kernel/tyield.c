@@ -34,7 +34,7 @@ task_yield ()
 	/* Scheduler selects the first task.
 	 * If there are several tasks with equal priority,
 	 * this will allow them to run round-robin. */
-	task_force_schedule ();
+	task_schedule ();
 
 	arch_intr_restore (x);
 }

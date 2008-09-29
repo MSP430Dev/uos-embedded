@@ -53,6 +53,7 @@ task_delete (task_t *t, void *message)
 	t->base_prio = 0;
 	lock_signal (&t->finish, message);
 
-	task_schedule ();
+	if (task_need_schedule)
+		task_schedule ();
 	arch_intr_restore (x);
 }
