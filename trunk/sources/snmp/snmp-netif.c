@@ -556,7 +556,7 @@ snmp_next_ifOutQLen (snmp_t *snmp, bool_t nextflag, unsigned *nif, ...)
 	return asn_make_int (snmp->pool, u->out_qlen, ASN_GAUGE);
 }
 
-uint_t
+small_uint_t
 snmp_set_ifAdminStatus (snmp_t *snmp, asn_t *val, unsigned nif, ...)
 {
 	netif_t *u;

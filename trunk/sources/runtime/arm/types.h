@@ -1,5 +1,5 @@
 /*
- * Processor-dependent data types.
+ * Processor-dependent data types for ARM.
  */
 #ifndef __MACHINE_TYPES_H_
 #define __MACHINE_TYPES_H_ 1
@@ -14,13 +14,13 @@ typedef	unsigned short u_int16_t;
 typedef	long int32_t;
 typedef	unsigned long u_int32_t;
 
-typedef int bool_t;
-typedef int sign_t;
-typedef int int_t;
-typedef unsigned uint_t;
+typedef	long long int64_t;
+typedef	unsigned long long u_int64_t;
 
-typedef long long int64_t;
-typedef unsigned long long u_int64_t;
+typedef int small_int_t;
+typedef unsigned int small_uint_t;
+
+typedef int bool_t;
 
 /*
  * An integer type, large enough to keep a memory address.

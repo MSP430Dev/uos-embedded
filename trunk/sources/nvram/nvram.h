@@ -4,47 +4,19 @@
 #include "crc/crc32-vak.h"
 
 #ifndef NDEBUG
-#	include "kernel/internal.h"
+#   include "kernel/internal.h"
 #endif
 
 #ifndef NVRAM_BAD_ADDRESS
-#	define NVRAM_BAD_ADDRESS	((unsigned) -1l)
+#   define NVRAM_BAD_ADDRESS	((unsigned) -1l)
 #endif
 
 #define NVRAM_HEADER_SIZE	10
-
-/*
- LY: флаг NVRAM_ROBUST_FLIP включает механизм поддержки двух
-     копий содержимого NVRAM. При повреждении последней копии
-     nvram_begin_read() автоматически делает попытку открыть
-     предыдущую копию конфигурации.
-     !!!!!!!!!!! На данный момент не реализовано !!!!!!!!!!!
-*/
-#ifndef NVRAM_ROBUST_FLIP
-#	define NVRAM_ROBUST_FLIP 0
-#endif
-
-/*
- LY: флаги NVRAM_READ_TAINT и NVRAM_WRITE_TAINT включают
-     маркировку начала/окончания операций чтения и записи соответственно.
-     Если операция чтения/записи не будет завершена, то при содержимое
-     NVRAM будет отмечено как 'DEAD', т.е. nvram_begin_read() будет
-     возвращать NVRAM_DEAD до перезаписи или чистки.
-*/
-#ifndef NVRAM_READ_TAINT
-#	define NVRAM_READ_TAINT NVRAM_ROBUST_FLIP
-#endif
-#ifndef NVRAM_WRITE_TAINT
-#	define NVRAM_WRITE_TAINT NVRAM_ROBUST_FLIP
-#endif
 
 typedef struct {
 	lock_t lock;
 	unsigned long crc;
 	unsigned __addr, begin, limit, end, sign;
-#ifdef NVRAM_ROBUST_FLIP
-	unsigned flip, secondary;
-#endif
 #ifndef NDEBUG
 	task_t *owner;
 #endif
@@ -79,9 +51,9 @@ inline extern unsigned nvram_get_addr (nvram_t *nv)
 	return nv->__addr - nv->begin;
 }
 
-void __arch_nvram_init (nvram_t *nv);
-void __arch_nvram_write_byte (unsigned addr, unsigned char c);
-unsigned char __arch_nvram_read_byte (unsigned addr);
+void eeprom_init (nvram_t *nv);
+void eeprom_write_byte (unsigned addr, unsigned char c);
+unsigned char eeprom_read_byte (unsigned addr);
 
 void nvram_init (nvram_t *nv, unsigned region_begin, unsigned region_end);
 void nvram_protect (nvram_t *nv, struct _timer_t *timer);
@@ -108,13 +80,13 @@ unsigned long nvram_read_dword (nvram_t *nv);
 #define nvram_read_long(nv) nvram_read_dword(nv)
 
 void nvram_write_str (nvram_t *nv,
-	unsigned char *str, uint_t maxlen);
+	unsigned char *str, small_uint_t maxlen);
 void nvram_read_str (nvram_t *nv,
-	unsigned char *str, uint_t maxlen);
+	unsigned char *str, small_uint_t maxlen);
 void nvram_write_mem (nvram_t *nv,
-	unsigned char *buf, uint_t len);
+	unsigned char *buf, small_uint_t len);
 void nvram_read_mem (nvram_t *nv,
-	unsigned char *buf, uint_t len);
+	unsigned char *buf, small_uint_t len);
 
 #define NVRAM_OK	0
 #define NVRAM_EMPTY	-1
@@ -123,19 +95,19 @@ void nvram_read_mem (nvram_t *nv,
 #define NVRAM_INVALID	-4
 #define NVRAM_EOF	-5
 
-int_t nvram_begin_read (nvram_t *nv, unsigned ver_rev) __attribute__ ((warn_unused_result));
-int_t nvram_finalize_read (nvram_t *nv) __attribute__ ((warn_unused_result));
+small_int_t nvram_begin_read (nvram_t *nv, unsigned ver_rev) __attribute__ ((warn_unused_result));
+small_int_t nvram_finalize_read (nvram_t *nv) __attribute__ ((warn_unused_result));
 
 void nvram_begin_write (nvram_t *nv);
-int_t nvram_finalize_write (nvram_t *nv, unsigned ver_rev) __attribute__ ((warn_unused_result));
+small_int_t nvram_finalize_write (nvram_t *nv, unsigned ver_rev) __attribute__ ((warn_unused_result));
 
-int_t nvram_begin_load (nvram_t *nv, unsigned relative_addr) __attribute__ ((warn_unused_result));
-int_t nvram_finalize_load (nvram_t *nv) __attribute__ ((warn_unused_result));
+small_int_t nvram_begin_load (nvram_t *nv, unsigned relative_addr) __attribute__ ((warn_unused_result));
+small_int_t nvram_finalize_load (nvram_t *nv) __attribute__ ((warn_unused_result));
 
-int_t nvram_begin_update (nvram_t *nv, unsigned relative_addr) __attribute__ ((warn_unused_result));
-int_t nvram_finalize_update (nvram_t *nv);
-int_t nvram_update_str (nvram_t *nv, unsigned relative_addr,
-	unsigned char *str, uint_t maxlen);
+small_int_t nvram_begin_update (nvram_t *nv, unsigned relative_addr) __attribute__ ((warn_unused_result));
+small_int_t nvram_finalize_update (nvram_t *nv);
+small_int_t nvram_update_str (nvram_t *nv, unsigned relative_addr,
+	unsigned char *str, small_uint_t maxlen);
 
 extern bool_t nvram_is_compatible (unsigned nvram, unsigned soft);
 

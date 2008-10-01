@@ -13,30 +13,30 @@ labs (long __x)
 	return (__x < 0) ? -__x : __x;
 }
 
-extern unsigned long strtoul (const char *, char **, int);
+extern unsigned long strtoul (const unsigned char *, unsigned char **, int);
 
 static inline long
-strtol (const char *__p, char **__ep, int b)
+strtol (const unsigned char *__p, unsigned char **__ep, int b)
 {
 	return (long) strtoul (__p, __ep, b);
 }
 
 static inline int
-atoi (const char *__p)
+atoi (const unsigned char *__p)
 {
-	return (int) strtol(__p, (char **) 0, 10);
+	return (int) strtol(__p, (unsigned char **) 0, 10);
 }
 
 static inline long
-atol (const char *__p)
+atol (const unsigned char *__p)
 {
-	return strtol(__p, (char **) 0, 10);
+	return strtol(__p, (unsigned char **) 0, 10);
 }
 
-extern double strtod (const char *, char **);
+extern double strtod (const unsigned char *, unsigned char **);
 
 static inline double
-atof (const char *__p)
+atof (const unsigned char *__p)
 {
 	return strtod (__p, 0);
 }

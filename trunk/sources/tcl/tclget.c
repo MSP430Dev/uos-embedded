@@ -42,14 +42,14 @@ Tcl_GetInt(interp, string, intPtr)
 				 * integer in a form acceptable to strtol. */
     int *intPtr;		/* Place to store converted result. */
 {
-    char *end;
+    unsigned char *end;
     int i;
 
-    i = strtol(string, &end, 0);
+    i = strtol((unsigned char*) string, &end, 0);
     while ((*end != '\0') && isspace(*end)) {
 	end++;
     }
-    if ((end == string) || (*end != 0)) {
+    if (((char*) end == string) || (*end != 0)) {
 	Tcl_AppendResult(interp, "expected integer but got \"", string,
 		"\"", (char *) 0);
 	return TCL_ERROR;
@@ -88,7 +88,7 @@ Tcl_GetBoolean(interp, string, boolPtr)
 				 * will be 0 or 1. */
 {
     char c;
-    char lowerCase[10];
+    unsigned char lowerCase[10];
     int i, length;
 
     /*
@@ -113,18 +113,18 @@ Tcl_GetBoolean(interp, string, boolPtr)
 	*boolPtr = 0;
     } else if ((c == '1') && (lowerCase[1] == '\0')) {
 	*boolPtr = 1;
-    } else if ((c == 'y') && (strncmp(lowerCase, "yes", length) == 0)) {
+    } else if ((c == 'y') && (strncmp(lowerCase, (unsigned char*) "yes", length) == 0)) {
 	*boolPtr = 1;
-    } else if ((c == 'n') && (strncmp(lowerCase, "no", length) == 0)) {
+    } else if ((c == 'n') && (strncmp(lowerCase, (unsigned char*) "no", length) == 0)) {
 	*boolPtr = 0;
-    } else if ((c == 't') && (strncmp(lowerCase, "true", length) == 0)) {
+    } else if ((c == 't') && (strncmp(lowerCase, (unsigned char*) "true", length) == 0)) {
 	*boolPtr = 1;
-    } else if ((c == 'f') && (strncmp(lowerCase, "false", length) == 0)) {
+    } else if ((c == 'f') && (strncmp(lowerCase, (unsigned char*) "false", length) == 0)) {
 	*boolPtr = 0;
     } else if ((c == 'o') && (length >= 2)) {
-	if (strncmp(lowerCase, "on", length) == 0) {
+	if (strncmp(lowerCase, (unsigned char*) "on", length) == 0) {
 	    *boolPtr = 1;
-	} else if (strncmp(lowerCase, "off", length) == 0) {
+	} else if (strncmp(lowerCase, (unsigned char*) "off", length) == 0) {
 	    *boolPtr = 0;
 	}
     } else {

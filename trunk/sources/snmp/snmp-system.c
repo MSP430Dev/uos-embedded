@@ -34,7 +34,7 @@ asn_t *snmp_get_sysContact (snmp_t *snmp, ...)
 	return asn_make_string (snmp->pool, snmp->sys_contact);
 }
 
-uint_t
+small_uint_t
 snmp_set_sysContact (snmp_t *snmp, asn_t *val, ...)
 {
 	if (val->type != ASN_STRING || val->string.len <= 0
@@ -53,7 +53,7 @@ asn_t *snmp_get_sysName (snmp_t *snmp, ...)
 	return asn_make_string (snmp->pool, snmp->sys_name);
 }
 
-uint_t
+small_uint_t
 snmp_set_sysName (snmp_t *snmp, asn_t *val, ...)
 {
 	if (val->type != ASN_STRING || val->string.len <= 0
@@ -73,7 +73,7 @@ asn_t *snmp_get_sysLocation (snmp_t *snmp, ...)
 	return asn_make_string (snmp->pool, snmp->sys_location);
 }
 
-uint_t
+small_uint_t
 snmp_set_sysLocation (snmp_t *snmp, asn_t *val, ...)
 {
 	if (val->type != ASN_STRING || val->string.len <= 0

@@ -111,12 +111,12 @@ void *mem_alloc_dirty (mem_pool_t *m, size_t required)
 		if (h->magic != MEMORY_HOLE_MAGIC) {
 			debug_printf ("mem: bad hole magic at 0x%x\n", h);
 			debug_printf ("     size=%d, pool=%p\n", h->size, h->pool);
-			abort();
+			uos_halt(1);
 		}
 		if (h->pool != m) {
 			debug_printf ("mem: incorect pool pointer=%p, must be %p\n",
 				h->pool, m);
-			abort();
+			uos_halt(1);
 		}
 #endif
         	if (h->size >= required)
@@ -230,7 +230,7 @@ void mem_free (void *block)
 #if MEM_DEBUG
 	if (h->magic != MEMORY_BLOCK_MAGIC) {
 		debug_printf ("free: bad block magic\n");
-		abort();
+		uos_halt(1);
         }
 #endif
 	/* Convert our block into a hole. */
@@ -255,7 +255,7 @@ void *mem_realloc (void *old_block, size_t bytes)
 #if MEM_DEBUG
 	if (h->magic != MEMORY_BLOCK_MAGIC) {
 		debug_printf ("realloc: bad block magic\n");
-		abort();
+		uos_halt(1);
         }
 #endif
 	old_size = h->size - sizeof(mheader_t);
@@ -298,7 +298,7 @@ void mem_truncate (void *block, size_t required)
 #if MEM_DEBUG
 	if (h->magic != MEMORY_BLOCK_MAGIC) {
 		debug_printf ("truncate: bad block magic\n");
-		abort();
+		uos_halt(1);
         }
 #endif
 	/* Is there enough space to split? */
@@ -341,7 +341,7 @@ size_t mem_size (void *block)
 #if MEM_DEBUG
 	if (h->magic != MEMORY_BLOCK_MAGIC) {
 		debug_printf ("size: bad block magic\n");
-		abort();
+		uos_halt(1);
         }
 #endif
 	return h->size - sizeof(mheader_t);
@@ -362,7 +362,7 @@ mem_pool_t *mem_pool (void *block)
 #if MEM_DEBUG
 	if (h->magic != MEMORY_BLOCK_MAGIC) {
 		debug_printf ("pool: bad block magic\n");
-		abort();
+		uos_halt(1);
         }
 #endif
 	return h->pool;
@@ -401,7 +401,6 @@ void mem_init (mem_pool_t *m, size_t start, size_t stop)
 #if MEM_DEBUG
 	h->magic = MEMORY_HOLE_MAGIC;
 #endif
-	lock_init (&m->lock);
 	lock_take (&m->lock);
 	NEXT(h) = m->free_list;
 	m->free_list = h;

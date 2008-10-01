@@ -39,6 +39,6 @@ static inline int putenv (char *name)
 	{ return -1; }
 
 static inline void exit(int status)
-	{ abort(); }
+	{ uos_halt(0); }
 
 #endif

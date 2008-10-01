@@ -45,17 +45,17 @@ extern "C" {
  */
 typedef struct _timer_snap_t {
 	unsigned long milliseconds;
-	unsigned short days;
+	unsigned int days;
 } timer_snap_t;
 
 struct _timer_t {
 	lock_t lock;
 	lock_t decisec;			/* every 0.1 second is signalled here */
 	unsigned long khz;		/* reference clock */
-	unsigned char msec_per_tick;
+	small_uint_t msec_per_tick;
 	unsigned long milliseconds;	/* real time counter */
 	unsigned long last_decisec;	/* when decisecond was signalled */
-	unsigned short days;		/* days counter */
+	unsigned int days;		/* days counter */
 	OPACITY (stack, TIMER_STACKSZ);	/* task stack */
 };
 
@@ -64,16 +64,16 @@ struct _timer_t {
  */
 typedef struct _timer_t timer_t;
 
-void timer_init (timer_t *t, int_t prio, unsigned long khz,
-	uint_t msec_per_tick);
+void timer_init (timer_t *t, int prio, unsigned long khz,
+	small_uint_t msec_per_tick);
 
 /* Delay current task. */
 void timer_delay (timer_t *t, unsigned long msec);
 
 /* Query real time. */
 unsigned long timer_milliseconds (timer_t *t);
-bool_t timer_passed (timer_t *t, unsigned long t0, unsigned short msec);
-unsigned short timer_days (timer_t *t);
+bool_t timer_passed (timer_t *t, unsigned long t0, unsigned int msec);
+unsigned int timer_days (timer_t *t);
 bool_t interval_greater_or_equal (long interval, long msec);
 void timer_snap (timer_t *timer, timer_snap_t *snap);
 

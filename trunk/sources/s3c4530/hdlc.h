@@ -88,7 +88,7 @@ typedef struct _hdlc_t {
 
 	struct _buf_t *(*callback_receive) (struct _hdlc_t *, struct _buf_t *);
 	struct _buf_t *(*callback_transmit) (struct _hdlc_t *, struct _buf_t *);
-	void (*callback_error) (struct _hdlc_t *, uint_t error);
+	void (*callback_error) (struct _hdlc_t *, int error);
 
 	OPACITY (rstack, HDLC_STACKSZ);	 /* task receive stack */
 	OPACITY (tstack, HDLC_STACKSZ);	 /* task transmit stack */

@@ -1,9 +1,9 @@
 #include <runtime/lib.h>
 #include <stream/stream.h>
 
-uint_t stream_puts (stream_t *stream, const char *str)
+int stream_puts (stream_t *stream, const char *str)
 {
-	uint_t length;
+	int length;
 	unsigned char c;
 
 	for (length = 0; ; length++) {

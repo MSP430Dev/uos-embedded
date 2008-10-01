@@ -12,7 +12,7 @@ void nvram_write_byte (nvram_t *v, unsigned char c)
 {
 	assert (__nvram_is_valid_addr (v, v->__addr));
 	if (__nvram_is_valid_addr (v, v->__addr)) {
-		__arch_nvram_write_byte (v->__addr, c);
+		eeprom_write_byte (v->__addr, c);
 		v->crc = crc32_vak_byte (v->crc, c);
 		v->__addr++;
 		watchdog_alive ();
@@ -25,7 +25,7 @@ unsigned char nvram_read_byte (nvram_t *v)
 
 	assert (__nvram_is_valid_addr (v, v->__addr));
 	if (__nvram_is_valid_addr (v, v->__addr)) {
-		c = __arch_nvram_read_byte (v->__addr);
+		c = eeprom_read_byte (v->__addr);
 		v->crc = crc32_vak_byte (v->crc, c);
 		v->__addr++;
 		watchdog_alive ();
@@ -75,11 +75,11 @@ nvram_read_dword (nvram_t *v)
 	return val;
 }
 
-int_t
+small_int_t
 nvram_begin_read (nvram_t *v, unsigned sign)
 {
 	unsigned nvram_sign, len;
-	int_t reason;
+	small_int_t reason;
 
 	lock_take (&v->lock);
 #ifndef NDEBUG
@@ -158,12 +158,12 @@ ballout:
 	return reason;
 }
 
-int_t
+small_int_t
 nvram_finalize_read (nvram_t *v)
 {
 	unsigned len, nvram_len;
 	unsigned long crc, nvram_crc;
-	int_t reason = NVRAM_INVALID;
+	small_int_t reason = NVRAM_INVALID;
 
 	assert (nvram_is_owned (v) && v->__addr != NVRAM_BAD_ADDRESS);
 	if (! nvram_is_owned (v) || v->__addr == NVRAM_BAD_ADDRESS)
@@ -233,11 +233,11 @@ nvram_begin_write (nvram_t *v)
 	v->crc = 0x517CC1B7;
 }
 
-int_t
+small_int_t
 nvram_finalize_write (nvram_t *v, unsigned sign)
 {
 	unsigned len;
-	int_t reason;
+	small_int_t reason;
 
 	assert (nvram_is_owned (v) && v->__addr != NVRAM_BAD_ADDRESS);
 	if (! nvram_is_owned (v) || v->__addr == NVRAM_BAD_ADDRESS)
@@ -280,7 +280,6 @@ void nvram_init (nvram_t *v, unsigned region_begin, unsigned region_end)
 	assert (region_end > region_begin && region_end - region_begin > 255);
 	assert (region_end <= NVRAM_BAD_ADDRESS);
 
-	lock_init (&v->lock);
 	lock_take (&v->lock);
 #ifndef NDEBUG
 	v->owner = task_current;
@@ -289,7 +288,7 @@ void nvram_init (nvram_t *v, unsigned region_begin, unsigned region_end)
 	v->limit = region_end;
 	v->__addr = NVRAM_BAD_ADDRESS;
 	v->end = v->begin;
-	__arch_nvram_init (v);
+	eeprom_init (v);
 	assert (! nvram_is_valid_addr (v, NVRAM_BAD_ADDRESS));
 	assert (! nvram_is_valid_addr (v, 0));
 	assert (! __nvram_is_valid_addr (v, NVRAM_BAD_ADDRESS));

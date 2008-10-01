@@ -4,7 +4,7 @@
 #include <snmp/asn.h>
 
 void
-asn_print_type (uint_t type)
+asn_print_type (small_uint_t type)
 {
 	switch (type) {
 	case ASN_INTEGER:          debug_printf ("Integer");          break;

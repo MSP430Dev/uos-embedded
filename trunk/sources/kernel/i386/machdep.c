@@ -45,10 +45,10 @@
  * Total 14 words or 56 bytes.
  */
 void
-_i386_task_switch (void)
+_arch_task_switch (void)
 {
 	asm volatile (
-"i386_task_switch: .globl i386_task_switch \n"
+"arch_task_switch: .globl arch_task_switch \n"
 "	push	$0 \n"
 "	pushal \n"
 "	push	%%ds \n"
@@ -58,13 +58,13 @@ _i386_task_switch (void)
 	asm volatile (
 "switch_task:");
 	/* Save current task stack. */
-	task_current->stack_context = I386_GET_STACK_POINTER ();
+	task_current->stack_context = i386_get_stack_pointer ();
 
 	/* Compute new active task. */
 	task_policy ();
 
 	/* Switch to the new task. */
-	I386_SET_STACK_POINTER (task_current->stack_context);
+	i386_set_stack_pointer (task_current->stack_context);
 
 	/* Restore registers. */
 	asm volatile (
@@ -81,7 +81,7 @@ _i386_task_switch (void)
  * It never returns.
  */
 void
-i386_intr (trapframe_t *f)
+arch_intr (trapframe_t *f)
 {
 	lock_irq_t *h = &lock_irq [f->err];
 
@@ -92,7 +92,7 @@ i386_intr (trapframe_t *f)
 			 * Call fast handler later, in lock_release(). */
 			h->pending = 1;
 
-			I386_SET_STACK_POINTER (f);
+			i386_set_stack_pointer (f);
 			asm ("jmp restore_and_ret");
 		}
 		if ((h->handler) (h->arg) != 0) {
@@ -100,7 +100,7 @@ i386_intr (trapframe_t *f)
 			 * an interrupt. In this case there is no need to
 			 * wake up the interrupt handling task, stopped on
 			 * lock_wait. Task switching is not performed. */
-			I386_SET_STACK_POINTER (f);
+			i386_set_stack_pointer (f);
 			asm ("jmp restore_and_ret");
 		}
 	}
@@ -108,7 +108,7 @@ i386_intr (trapframe_t *f)
 	/* Signal the interrupt handler, if any. */
 	lock_activate (h->lock, 0);
 
-	I386_SET_STACK_POINTER (f);
+	i386_set_stack_pointer (f);
 	asm ("jmp switch_task");
 }
 
@@ -143,7 +143,7 @@ i386_trap (int trapno, trapframe_t *f)
 	 */
 	case I386_TRAP_STRAY:
 		debug_printf ("*** Stray interrupt ***\n");
-		I386_SET_STACK_POINTER (f);
+		i386_set_stack_pointer (f);
 		asm ("jmp restore_and_ret");
 	/*
 	 * Task-dependent traps.
@@ -160,7 +160,7 @@ i386_trap (int trapno, trapframe_t *f)
 		debug_printf (", task_current=%s\n\n",
 			task_current->name);
 
-	ss = I386_GET_STACK_SEGMENT();
+	ss = i386_get_stack_segment();
 	debug_printf ("cs:ip=%02x:%08x  ss:sp=%02x:%08x  ds=%02x  es=%02x  flags=%08x\n",
 		f->cs, f->eip, ss, f->esp, f->ds, f->es, f->eflags);
 	debug_printf ("ax=%08x  bx=%08x  cx=%08x  dx=%08x\n",
@@ -180,7 +180,7 @@ i386_trap (int trapno, trapframe_t *f)
  * unmasking it in the interrupt controller.
  */
 void
-i386_intr_allow (int irq)
+arch_intr_allow (int irq)
 {
 	if (irq < 8) {
 		outb (inb (PIC1_MASK) & ~(1 << irq), PIC1_MASK);
@@ -198,16 +198,16 @@ i386_intr_allow (int irq)
  * sp	- the pointer to (end of) stack space
  */
 void
-i386_build_stack_frame (task_t *t, unsigned long func, unsigned long arg,
-	unsigned long *sp)
+arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
+	unsigned stacksz)
 {
-	unsigned long oldsp;
+	unsigned oldsp, *sp = (unsigned*) ((char*) t + stacksz);
 
-	*--sp = arg;			/* task argument */
-	*--sp = func;			/* return address */
+	*--sp = (unsigned) arg;		/* task argument */
+	*--sp = (unsigned) func;	/* return address */
 	*--sp = 0x0200;			/* flags - enable interrupts */
 	*--sp = I386_CS;		/* cs */
-	*--sp = func;			/* ip */
+	*--sp = (unsigned) func;	/* ip */
 	*--sp = 0;			/* err */
 	oldsp = (unsigned long) sp;
 	*--sp = 0;			/* ax */
@@ -221,5 +221,5 @@ i386_build_stack_frame (task_t *t, unsigned long func, unsigned long arg,
 	*--sp = I386_DS;		/* ds */
 	*--sp = I386_DS;		/* es */
 
-	t->stack_context = (unsigned long) sp;
+	t->stack_context = (void*) sp;
 }

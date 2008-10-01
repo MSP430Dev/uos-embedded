@@ -20,9 +20,9 @@
 #define IIC_IRQ                      20	/* iic IRQ number */
 #define IICPS(mclk,rate) ((((((mclk) + (rate) - 1) / (rate)) + 12) >> 4) - 1)
 
-static uint_t inline iic_wait (lock_t* l)
+static small_uint_t inline iic_wait (lock_t* l)
 {
-	uint_t iiccon;
+	small_uint_t iiccon;
 	while (((iiccon = ARM_IICCON) & ARM_IICCON_BF) == 0)
 		lock_wait (l);
 	return iiccon;
@@ -39,10 +39,11 @@ static void inline iic_reset (u_int32_t ps)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 static bool_t
-iic_transfer (miic_t *c, uint_t sla, void *tb, uint_t ts, void *rb, uint_t rs)
+iic_transfer (miic_t *c, small_uint_t sla, void *tb, small_uint_t ts,
+	void *rb, small_uint_t rs)
 {
 	u_int8_t* ptr;
-	uint_t iiccon;
+	small_uint_t iiccon;
 	s3c4530a_iic_t* s = (s3c4530a_iic_t*) c;
 	bool_t need_write = tb && ts;
 	bool_t need_read  = rb && rs;

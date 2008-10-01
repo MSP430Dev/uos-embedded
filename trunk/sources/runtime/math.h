@@ -39,9 +39,9 @@ extern "C" {
 #if I386
 
 #define MAXFLOAT	3.40282347e+38F
-#define HUGE_VAL	(__extension__ 0x1.0p2047)
-#define HUGE_VALF	(__extension__ 0x1.0p255f)
-#define HUGE_VALL	(__extension__ 0x1.0p32767L)
+#define HUGE_VAL	(__builtin_huge_val())
+#define HUGE_VALF	(__builtin_huge_valf())
+#define HUGE_VALL	(__builtin_huge_vall())
 #define INFINITY	(__builtin_inff())
 
 #define NAN 		(__extension__ (( union { \

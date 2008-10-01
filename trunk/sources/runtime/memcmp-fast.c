@@ -47,7 +47,7 @@ QUICKREF
 /* Threshhold for punting to the byte copier.  */
 #define TOO_SMALL(LEN)  ((LEN) < LBLOCKSIZE)
 
-sign_t
+small_int_t
 memcmp(const void *m1, const void *m2, size_t n)
 {
   unsigned char *s1 = (unsigned char *) m1;

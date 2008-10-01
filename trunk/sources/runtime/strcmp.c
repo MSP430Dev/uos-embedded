@@ -9,7 +9,7 @@
 
 #include <runtime/lib.h>
 
-sign_t
+small_int_t
 strcmp(const unsigned char *s1, const unsigned char *s2)
 {
 	register signed char ret;

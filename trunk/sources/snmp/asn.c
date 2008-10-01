@@ -87,7 +87,7 @@ asn_get_int (mem_pool_t *pool, unsigned char *input, unsigned sz)
  */
 static asn_t *
 asn_get_uint (mem_pool_t *pool, unsigned char *input, unsigned sz,
-	uint_t type)
+	small_uint_t type)
 {
 	asn_t *b;
 
@@ -111,7 +111,7 @@ asn_get_uint (mem_pool_t *pool, unsigned char *input, unsigned sz,
  */
 static asn_t *
 asn_get_string (mem_pool_t *pool, unsigned char *input, unsigned sz,
-	uint_t type)
+	small_uint_t type)
 {
 	asn_t *b;
 
@@ -167,7 +167,7 @@ asn_get_oid (mem_pool_t *pool, unsigned char *input, unsigned sz)
 }
 
 static asn_t *
-asn_get_sequence (mem_pool_t *pool, unsigned char *input, unsigned sz, uint_t type)
+asn_get_sequence (mem_pool_t *pool, unsigned char *input, unsigned sz, small_uint_t type)
 {
 	asn_t *b;
 	unsigned nelem = 5;
@@ -334,7 +334,7 @@ asn_put_int (long val, unsigned char *p, unsigned sz)
 
 static unsigned char *
 asn_put_uint (unsigned long val, unsigned char *p, unsigned sz,
-	uint_t type)
+	small_uint_t type)
 {
 #if 1
 	 /* LY: "хитрая" версия, пишем минимальное кол-во байт. */
@@ -486,7 +486,7 @@ asn_put_oid (oid_t *v, unsigned char *p, unsigned sz)
 
 static unsigned char *
 asn_put_sequence (sequence_t *seq, unsigned char *p, unsigned sz,
-	uint_t type)
+	small_uint_t type)
 {
 	unsigned char *op, *bp;
 	unsigned i, len;
@@ -521,7 +521,7 @@ asn_put_sequence (sequence_t *seq, unsigned char *p, unsigned sz,
 unsigned char *
 asn_encode (asn_t *b, unsigned char *p, unsigned sz)
 {
-	uint_t type = ASN_NULL;
+	small_uint_t type = ASN_NULL;
 
 	if (b)
 		type = b->type;
@@ -642,7 +642,7 @@ asn_make_string_flash (mem_pool_t *pool, const char *str)
  * Return 0 on failure.
  */
 asn_t *
-asn_make_int (mem_pool_t *pool, unsigned long val, uint_t type)
+asn_make_int (mem_pool_t *pool, unsigned long val, small_uint_t type)
 {
 	asn_t *b;
 
@@ -655,7 +655,7 @@ asn_make_int (mem_pool_t *pool, unsigned long val, uint_t type)
 }
 
 asn_t *
-asn_make_seq (mem_pool_t *pool, unsigned size, uint_t type)
+asn_make_seq (mem_pool_t *pool, unsigned size, small_uint_t type)
 {
 	asn_t *b;
 

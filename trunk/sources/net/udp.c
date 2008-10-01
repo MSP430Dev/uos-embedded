@@ -292,7 +292,6 @@ udp_send (udp_socket_t *s, buf_t *p)
 void
 udp_socket (udp_socket_t *s, ip_t *ip, unsigned short port)
 {
-	lock_init (&s->lock);
 	lock_take (&s->lock);
 	s->ip = ip;
 	s->local_port = port;

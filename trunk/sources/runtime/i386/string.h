@@ -92,7 +92,7 @@ return dest;
 }
 
 #define __HAVE_ARCH_STRCMP
-static __inline sign_t strcmp(const unsigned char * cs, const unsigned char * ct)
+static __inline small_int_t strcmp(const unsigned char * cs, const unsigned char * ct)
 {
 int d0, d1;
 register int __res;
@@ -114,7 +114,7 @@ return __res;
 }
 
 #define __HAVE_ARCH_STRNCMP
-static __inline sign_t strncmp(const unsigned char * cs, const unsigned char * ct, size_t count)
+static __inline small_int_t strncmp(const unsigned char * cs, const unsigned char * ct, size_t count)
 {
 register int __res;
 int d0, d1, d2;
@@ -472,6 +472,6 @@ static __inline void * memscan(void * addr, unsigned char c, size_t size)
 }
 
 extern const unsigned char *strmatch (const unsigned char*, const unsigned char*);
-sign_t strcasecmp (const unsigned char*, const unsigned char*);
-sign_t strncasecmp (const unsigned char*, const unsigned char*, size_t n);
+small_int_t strcasecmp (const unsigned char*, const unsigned char*);
+small_int_t strncasecmp (const unsigned char*, const unsigned char*, size_t n);
 #endif

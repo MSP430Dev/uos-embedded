@@ -590,7 +590,6 @@ static keyboard_interface_t keyboard_ps2_interface = {
 void
 keyboard_ps2_init (keyboard_ps2_t *u, int prio)
 {
-	lock_init (&u->lock);
         u->interface = &keyboard_ps2_interface;
 	u->rate = 20;
 	u->delay = 500;

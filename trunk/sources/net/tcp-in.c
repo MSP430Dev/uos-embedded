@@ -700,7 +700,7 @@ find_listen_socket (ip_t *ip, tcp_hdr_t *h, ip_hdr_t *iph)
  * to tcp_process(), which implements the TCP finite state machine.
  * This function is called by the IP layer (in ip_input()).
  */
-void __weak
+void __attribute__((weak))
 tcp_input (ip_t *ip, buf_t *p, netif_t *netif, ip_hdr_t *iph)
 {
 	tcp_hdr_t *h;

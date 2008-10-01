@@ -26,16 +26,20 @@ static lock_t lock;
 #define PIN_SCK		10	/* P10 - output */
 #define PIN_NCS		11	/* P11 - output */
 
-// LY:	для решения конфликта и ликвидации частых ошибок
-//	номер пина вынесен во внешнюю переменную nvram_pin_so,
-//	которая должна быть определена в клиентском коде.
-extern const uint_t nvram_so_pin;
-//	Раньше было так:
-//	#if 0
-//	#	define PIN_SO	22	/* P22 - input, так на мостах ethernet */
-//	#else
-//	#	define PIN_SO	12	/* P12 - input: так на RMC2, на других может быть иначе */
-//	#endif
+/*
+ * Для решения конфликта и ликвидации частых ошибок
+ * номер пина вынесен во внешнюю переменную nvram_pin_so,
+ * которая должна быть определена в клиентском коде.
+ */
+extern const small_uint_t nvram_so_pin;
+/*
+ * Раньше было так:
+ * #if 0
+ * #	define PIN_SO	22	/ * P22 - input, так на мостах ethernet * /
+ * #else
+ * #	define PIN_SO	12	/ * P12 - input: так на RMC2, на других может быть иначе * /
+ * #endif
+ */
 
 static void
 chip_select (bool_t select)
@@ -60,7 +64,7 @@ chip_select (bool_t select)
 }
 
 static void
-send_byte (uint_t val)
+send_byte (small_uint_t val)
 {
 	int i;
 
@@ -74,11 +78,11 @@ send_byte (uint_t val)
 	}
 }
 
-static uint_t
+static small_uint_t
 get_byte (bool_t last)
 {
-	int_t i;
-	uint_t val;
+	small_int_t i;
+	small_uint_t val;
 
 	/* Receive 8 bit data */
 	val = 0;
@@ -94,10 +98,10 @@ get_byte (bool_t last)
 	return val;
 }
 
-static uint_t
+static small_uint_t
 read_status (void)
 {
-	uint_t val;
+	small_uint_t val;
 
 	chip_select (1);
 	send_byte (CMD_RDSR);
@@ -107,7 +111,7 @@ read_status (void)
 }
 
 static void
-write_status (uint_t val, timer_t *timer)
+write_status (small_uint_t val, timer_t *timer)
 {
 	while (read_status () != val) {
 
@@ -131,7 +135,7 @@ write_status (uint_t val, timer_t *timer)
  * Write a byte to NVRAM.
  */
 void
-__arch_nvram_write_byte (unsigned addr, unsigned char val)
+eeprom_write_byte (unsigned addr, unsigned char val)
 {
 	lock_take (&lock);
 
@@ -157,7 +161,7 @@ __arch_nvram_write_byte (unsigned addr, unsigned char val)
  * Read a byte from NVRAM.
  */
 unsigned char
-__arch_nvram_read_byte (unsigned addr)
+eeprom_read_byte (unsigned addr)
 {
 	unsigned val;
 
@@ -201,9 +205,8 @@ nvram_protect (nvram_t *v, timer_t *timer)
 }
 
 void
-__arch_nvram_init (nvram_t *v)
+eeprom_init (nvram_t *v)
 {
-	lock_init (&lock);
 	lock_take (&lock);
 
 	/* Set pins to initial state. */

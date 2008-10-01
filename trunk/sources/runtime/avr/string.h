@@ -54,7 +54,7 @@ memset (void *__s, unsigned char __c, size_t __n)
 }
 
 /* Compare N bytes of S1 and S2.  */
-inline extern sign_t
+inline extern small_int_t
 __avr_memcmp (const void *__s1, const void *__s2, size_t __n)
 {
   register void *__dummy1, *__dummy2;
@@ -80,7 +80,7 @@ __avr_memcmp (const void *__s1, const void *__s2, size_t __n)
  * This looks horribly ugly, but the compiler can optimize it totally,
  * as the count is constant.
  */
-inline extern sign_t
+inline extern small_int_t
 __constant_memcmp (const void *__s1, const void *__s2, size_t n)
 {
 	switch (n) {
@@ -115,7 +115,7 @@ __constant_memcmp (const void *__s1, const void *__s2, size_t n)
 	return 0;
 }
 
-extern sign_t
+extern small_int_t
 memcmp (const void *__s1, const void *__s2, size_t n);
 
 #define memcmp(t, f, n)	(__builtin_constant_p(n) && ((n)==0 || (n)==1 || \
@@ -253,7 +253,7 @@ strncat (unsigned char *__dest, const unsigned char *__src, size_t __n)
 }
 
 /* Compare S1 and S2.  */
-inline extern sign_t
+inline extern small_int_t
 strcmp (const unsigned char *__s1, const unsigned char *__s2)
 {
   register void *__dummy1, *__dummy2;
@@ -275,7 +275,7 @@ strcmp (const unsigned char *__s1, const unsigned char *__s2)
 }
 
 /* Compare N characters of S1 and S2.  */
-inline extern sign_t
+inline extern small_int_t
 strncmp (const unsigned char *__s1, const unsigned char *__s2, size_t __n)
 {
   register void *__dummy1, *__dummy2;

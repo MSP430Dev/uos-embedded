@@ -22,7 +22,7 @@ typedef struct _uart_t {
 	stream_interface_t *interface;
 	lock_t transmitter;
 	lock_t receiver;
-	uint_t port;
+	small_uint_t port;
 	unsigned short khz;
 	unsigned char out_buf [UART_OUTBUFSZ];
 	unsigned char *out_first, *out_last;
@@ -33,7 +33,7 @@ typedef struct _uart_t {
 	OPACITY (rstack, UART_STACKSZ);		/* task receive stack */
 } uart_t;
 
-void uart_init (uart_t *u, uint_t port, int_t prio, unsigned short khz,
+void uart_init (uart_t *u, small_uint_t port, int prio, unsigned short khz,
 	unsigned long baud);
 void uart_set_cts_poller (uart_t *u, bool_t (*) (uart_t*));
 void uart_cts_ready (uart_t *u);

@@ -18,13 +18,13 @@ typedef unsigned short u_int16_t;
 /* Defined in stdlib.h: typedef long int32_t; */
 /* Defined in stdlib.h: typedef unsigned long u_int32_t; */
 
-typedef int bool_t;
-typedef int sign_t;
-typedef int int_t;
-typedef unsigned uint_t;
-
 typedef long long int64_t;
 typedef unsigned long long u_int64_t;
+
+typedef int small_int_t;
+typedef unsigned int small_uint_t;
+
+typedef int bool_t;
 
 #include <setjmp.h>
 

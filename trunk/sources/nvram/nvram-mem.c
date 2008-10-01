@@ -7,7 +7,7 @@
  */
 void
 nvram_write_mem (nvram_t *v,
-	unsigned char *str, uint_t len)
+	unsigned char *str, small_uint_t len)
 {
 	while (len-- > 0)
 		nvram_write_byte (v, *str++);
@@ -18,7 +18,7 @@ nvram_write_mem (nvram_t *v,
  */
 void
 nvram_read_mem (nvram_t *v,
-	unsigned char *str, uint_t len)
+	unsigned char *str, small_uint_t len)
 {
 	while (len-- > 0)
 		*str++ = nvram_read_byte (v);

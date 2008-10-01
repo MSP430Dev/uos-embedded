@@ -14,13 +14,13 @@ typedef unsigned short u_int16_t;
 typedef long int32_t;
 typedef unsigned long u_int32_t;
 
-typedef char __attribute__((mode(__byte__))) bool_t;
-typedef signed char __attribute__((mode(__byte__))) sign_t;
-typedef signed char __attribute__((mode(__byte__))) int_t;
-typedef unsigned char __attribute__((mode(__byte__))) uint_t;
-
 typedef long long int64_t;
 typedef unsigned long long u_int64_t;
+
+typedef signed char small_int_t;
+typedef unsigned char small_uint_t;
+
+typedef signed char bool_t;
 
 /*
  * An integer type, large enough to keep a memory address.

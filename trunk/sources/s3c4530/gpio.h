@@ -6,7 +6,7 @@ void gpio_config (int pnum, int mode);
  * Get the value of N-th general purpose pin.
  * Returns 0 or 1. Pnum must be in range 0..25.
  */
-inline extern bool_t
+static inline bool_t
 gpio_get (int pnum)
 {
 	/* IOPDATA */
@@ -17,7 +17,7 @@ gpio_get (int pnum)
  * Set the value of N-th general purpose pin.
  * Val must be 0 or 1. Pnum must be in range 0..25.
  */
-inline extern void
+static inline void
 gpio_set_nocli (int pnum, bool_t val)
 {
 	volatile unsigned long *iopdata = (volatile unsigned long*) 0x07ff5008;
@@ -26,7 +26,7 @@ gpio_set_nocli (int pnum, bool_t val)
 	else	 *iopdata = (gpio_data &= ~(1ul << pnum));
 }
 
-inline extern void
+static inline void
 gpio_set (int pnum, bool_t val)
 {
 	int x;

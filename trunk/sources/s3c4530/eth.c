@@ -272,7 +272,7 @@ transmit_enqueue (eth_t *c, buf_t *p)
  * might be chained.
  */
 bool_t
-eth_output (eth_t *c, buf_t *p, uint_t prio)
+eth_output (eth_t *c, buf_t *p, small_uint_t prio)
 {
 	lock_take (&c->transmitter);
 
@@ -475,7 +475,7 @@ eth_handle_receive (eth_t *c, unsigned long st)
 }
 
 static void
-eth_handle_transmit (eth_t *c, int_t limit)
+eth_handle_transmit (eth_t *c, small_int_t limit)
 {
 	volatile eth_desc_t *desc;
 	unsigned long st = 0;
@@ -647,7 +647,7 @@ static void eth_prepare (eth_t *c)
 		q = buf_alloc (c->pool, ETH_MTU + ETH_EXTRA, 16);
 		if (! q) {
 			debug_printf ("eth_receiver: out of memory\n");
-			abort ();
+			uos_halt (1);
 		}
 		q = (buf_t*) ARM_NONCACHED (q);
 		q->payload = (unsigned char*) ARM_NONCACHED (q->payload);
@@ -732,7 +732,7 @@ eth_receiver (void *arg)
 }
 
 static netif_interface_t eth_interface = {
-	(bool_t (*) (netif_t*, buf_t*, uint_t))
+	(bool_t (*) (netif_t*, buf_t*, small_uint_t))
 						eth_output,
 	(buf_t *(*) (netif_t*)) 		eth_input,
 	(void (*) (netif_t*, unsigned char*))	eth_set_address,
@@ -747,8 +747,6 @@ eth_init (eth_t *c, const char *name, int rprio, int tprio, mem_pool_t *pool, ar
 	unsigned long id;
 	int i;
 
-	lock_init (&c->transmitter);
-	lock_init (&c->netif.lock);
 	c->netif.interface = &eth_interface;
 	c->netif.name = name;
 	c->netif.arp = arp;
@@ -779,7 +777,7 @@ eth_init (eth_t *c, const char *name, int rprio, int tprio, mem_pool_t *pool, ar
 		}
 	}
 	debug_printf ("eth_init: no PHY detected\n");
-	abort ();
+	uos_halt (0);
 ok:
 #ifndef NDEBUG
 	debug_printf ("eth_init: transceiver `%s' detected at address %d\n",

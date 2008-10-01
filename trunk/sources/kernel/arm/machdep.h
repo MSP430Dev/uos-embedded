@@ -16,8 +16,8 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-#ifndef __UOS_ARCH_H_
-#	error "Don't include directly, use <kernel/arch.h> instead."
+#ifndef __KERNEL_INTERNAL_H_
+#   error "Don't include directly, use <kernel/internal.h> instead."
 #endif
 
 /*

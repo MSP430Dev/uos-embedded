@@ -26,8 +26,8 @@
  * contained in the pbuf that is passed to the function. This pbuf
  * might be chained.
  */
-unsigned char
-tap_output (tap_t *u, buf_t *p, unsigned char prio)
+bool_t
+tap_output (tap_t *u, buf_t *p, small_uint_t prio)
 {
 	buf_t *q;
 	unsigned char buf [TAP_MTU], *bufptr;
@@ -156,7 +156,7 @@ tap_receiver (void *arg)
 }
 
 static netif_interface_t tap_interface = {
-	(unsigned char (*) (netif_t*, buf_t*, unsigned char))
+	(bool_t (*) (netif_t*, buf_t*, small_uint_t))
 						tap_output,
 	(buf_t *(*) (netif_t*))			tap_input,
 	(void (*) (netif_t*, unsigned char*))	tap_set_address,

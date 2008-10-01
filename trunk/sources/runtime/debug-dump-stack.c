@@ -1,6 +1,4 @@
 #include <runtime/lib.h>
-/*#include <kernel/uos.h>*/
-/*#include <kernel/internal.h>*/
 #include <stream/stream.h>
 
 /*
@@ -13,7 +11,7 @@
 void debug_dump_stack (const char *caption, void *sp, void* frame, void *callee)
 {
 	unsigned char *from, *to, *p;
-	uint_t len;
+	unsigned int len;
 	char c;
 	bool_t flag;
 

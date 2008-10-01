@@ -7,12 +7,12 @@
 #define SNMP_V1		0
 #define SNMP_V2		1
 
-static sign_t
+static small_int_t
 compare (const snmp_t *snmp,
-	const unsigned short *a_id, uint_t a_idlen,
-	const char *b_id, uint_t b_idlen)
+	const unsigned short *a_id, small_uint_t a_idlen,
+	const char *b_id, small_uint_t b_idlen)
 {
-	uint_t i, len;
+	small_uint_t i, len;
 
 #if 0
 	debug_printf ("compare: ");
@@ -114,7 +114,7 @@ found:
  * NO_SUCH_NAME or BAD_VALUE.
  * The retrieved value should be placed into val.
  */
-static uint_t
+static small_uint_t
 get_set (snmp_t *snmp, const asn_t *name,
 	asn_t **val, bool_t setflag)
 {
@@ -234,7 +234,7 @@ load_req_idx (unsigned short *req_id,
  * The function should return the error code as NO_ERROR or NO_SUCH_NAME.
  * The retrieved name/value should be placed into name/val.
  */
-static uint_t
+static small_uint_t
 next (snmp_t *snmp, asn_t **name, asn_t **val)
 {
 	const snmp_var_t *vp;
@@ -253,8 +253,9 @@ next (snmp_t *snmp, asn_t **name, asn_t **val)
 		vp = snmp->tab;
 	} else {
 		const char* vid = FETCH_PTR (&vp->id);
-		uint_t vlen = FETCH_BYTE (&vp->idlen);
+		small_uint_t vlen = FETCH_BYTE (&vp->idlen);
 		unsigned min_len = vlen < id_len ? vlen : id_len;
+
 		if (! FETCH_BYTE (&vp->nargs) ||
 		    compare (snmp, id, min_len, vid, min_len) != 0) {
 			++vp;
@@ -456,7 +457,7 @@ snmp_execute (snmp_t *snmp, unsigned char *input, unsigned insz,
 {
 	asn_t *b, *pdu, *inbind, *outbind = 0;
 	unsigned char *community, *output;
-	int_t error_code;
+	small_int_t error_code;
 	unsigned i, nonrepeaters, repetitions;
 
 	/* debug_printf ("snmp_execute: received %d bytes, source %d.%d.%d.%d\n",

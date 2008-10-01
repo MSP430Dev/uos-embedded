@@ -36,15 +36,15 @@ typedef struct _lock_group_t lock_group_t;
 typedef struct _lock_slot_t lock_slot_t;
 
 /* Task management. */
-task_t *task_create (void (*func)(void*), void *arg, const char *name, int_t priority,
+task_t *task_create (void (*func)(void*), void *arg, const char *name, int priority,
 	opacity_t *stack, unsigned stacksz);
 void task_exit (void *status);
 void task_delete (task_t *task, void *status);
 void *task_wait (task_t *task);
 int task_stack_avail (task_t *task);
 const char *task_name (task_t *task);
-int_t task_priority (task_t *task);
-void task_set_priority (task_t *task, int_t priority);
+int task_priority (task_t *task);
+void task_set_priority (task_t *task, int priority);
 void *task_private (task_t *task);
 void task_set_private (task_t *task, void *privatep);
 void task_yield ();
@@ -66,7 +66,7 @@ void *lock_wait (lock_t *lock);
 typedef bool_t (*handler_t) (void*);
 
 /* Interrupt management. */
-void lock_take_irq (lock_t*, int_t irq, handler_t func, void *arg);
+void lock_take_irq (lock_t*, int irq, handler_t func, void *arg);
 void lock_release_irq (lock_t*);
 
 /* User-supplied startup routine. */
@@ -100,13 +100,13 @@ struct _lock_t {
 	list_t		entry;		/* double linked list pointers */
 	task_t *	master;		/* task, acquired the lock */
 #if RECURSIVE_LOCKS
-	int_t		deep;		/* LY: recursive locking deep */
+	small_int_t	deep;		/* LY: recursive locking deep */
 #endif
 	list_t		waiters;	/* tasks, stopped on `wait' */
 	list_t		slaves;		/* tasks, waiting for lock */
 	list_t		groups;		/* group slots, waiting for signal */
 	lock_irq_t *	irq;		/* irq, associated with the lock */
-	int_t		prio;		/* current lock priority */
+	int		prio;		/* current lock priority */
 };
 
 /*
@@ -126,8 +126,8 @@ struct _lock_slot_t {
 struct _lock_group_t {
 	lock_t		lock;		/* lock to group_wait() on it */
 	task_t *	waiter;		/* the waiting task pointer */
-	uint_t		size;		/* size of slot[] array */
-	uint_t		num;		/* number of elements in slot[] */
+	small_uint_t	size;		/* size of slot[] array */
+	small_uint_t	num;		/* number of elements in slot[] */
 	lock_slot_t	slot [1];	/* array of slots is placed here */
 };
 

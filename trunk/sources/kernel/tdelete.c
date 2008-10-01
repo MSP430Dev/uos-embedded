@@ -24,7 +24,7 @@
 void
 task_delete (task_t *t, void *message)
 {
-	int_t x;
+	arch_state_t x;
 
 	arch_intr_disable (&x);
 

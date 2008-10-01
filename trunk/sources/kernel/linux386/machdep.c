@@ -26,6 +26,18 @@ __sigset_t linux_sigall = { { 0xffffffff } };
 /* Empty signal mask. */
 __sigset_t linux_sigtmp;
 
+/*
+ * Perform the task switch.
+ */
+void
+arch_task_switch (task_t *target)
+{
+	if (sigsetjmp (task_current->stack_context, 1) == 0) {
+		task_current = target;
+		siglongjmp (task_current->stack_context, 1);
+	}
+}
+
 static void
 interrupt_handler (int irq)
 {
@@ -52,14 +64,14 @@ interrupt_handler (int irq)
 		}
 	}
 	lock_activate (h->lock, 0);
-	MACHDEP_TASK_SWITCH();
+	arch_task_switch (task_policy ());
 }
 
 /*
  * Bind the handler to the given hardware interrupt.
  */
 void
-linux_intr_bind (unsigned char irq)
+arch_intr_bind (int irq)
 {
 	struct sigaction action;
 
@@ -75,7 +87,7 @@ linux_intr_bind (unsigned char irq)
  * Unbind the interrupt handler.
  */
 void
-linux_intr_unbind (unsigned char irq)
+arch_intr_unbind (int irq)
 {
 	struct sigaction action;
 
@@ -94,16 +106,18 @@ linux_intr_unbind (unsigned char irq)
  * sp	- pointer to the (end of) stack space
  */
 void
-linux_build_stack_frame (task_t *t, void *func, void *arg, unsigned long *sp)
+arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg, unsigned stacksz)
 {
-	*--sp = (unsigned long) arg;		/* task argument pointer */
-	*--sp = (unsigned long) func;		/* return address */
+	unsigned *sp = (unsigned*) ((char*) t + stacksz);
+
+	*--sp = (unsigned) arg;				/* task argument pointer */
+	*--sp = (unsigned) func;			/* return address */
 
 	memset (&t->stack_context, 0, sizeof (t->stack_context));
 
 	/* Calling environment. */
-	t->stack_context->__jmpbuf[4] = (unsigned long) sp;	/* SP */
-	t->stack_context->__jmpbuf[5] = (unsigned long) func;	/* PC */
+	t->stack_context->__jmpbuf[4] = (unsigned) sp;	/* SP */
+	t->stack_context->__jmpbuf[5] = (unsigned) func; /* PC */
 
 	/* Saved the signal mask? */
 	t->stack_context->__mask_was_saved = 1;

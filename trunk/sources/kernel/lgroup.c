@@ -64,7 +64,7 @@ lock_group_add (lock_group_t *g, lock_t *m)
 void
 lock_group_listen (lock_group_t *g)
 {
-	int_t x;
+	arch_state_t x;
 	lock_slot_t *s;
 
 	arch_intr_disable (&x);
@@ -86,7 +86,7 @@ lock_group_listen (lock_group_t *g)
 void
 lock_group_unlisten (lock_group_t *g)
 {
-	int_t x;
+	arch_state_t x;
 	lock_slot_t *s;
 
 	arch_intr_disable (&x);
@@ -107,7 +107,7 @@ lock_group_unlisten (lock_group_t *g)
 void
 lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr)
 {
-	int_t x;
+	arch_state_t x;
 	lock_slot_t *s;
 
 	arch_intr_disable (&x);

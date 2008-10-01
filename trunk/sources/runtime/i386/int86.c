@@ -1,8 +1,6 @@
 #include <runtime/lib.h>
 #include <runtime/i386/int86.h>
 #include <runtime/i386/i8259.h>
-#include <kernel/uos.h>
-#include <kernel/internal.h>
 
 /*
  * Small subroutine, to be placed at address 500 (see call86.S).
@@ -50,7 +48,7 @@ int86 (int intnum, int86_regs_t *inregs, int86_regs_t *outregs)
 	if (! int86_initialized)
 		int86_init ();
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 
 	/* Put parameters for INT86_CALL(). */
 	if (inregs)
@@ -87,7 +85,7 @@ int86 (int intnum, int86_regs_t *inregs, int86_regs_t *outregs)
 	if (outregs)
 		*outregs = INT86_REGS;
 
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 }
 
 /*
@@ -102,7 +100,7 @@ i386_reboot (int code)
 	if (! int86_initialized)
 		int86_init ();
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 
 	/* Opcode: ljmp $ffff, $0000 */
 	INT86_CODE[0] = 0xff0000ea;

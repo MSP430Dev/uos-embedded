@@ -1,6 +1,4 @@
 #include <runtime/lib.h>
-#include <kernel/uos.h>
-#include <kernel/internal.h>
 
 static int debug_char = -1;
 
@@ -13,7 +11,7 @@ debug_putchar (void *arg, short c)
 {
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arm_intr_disable (&x);
 
 	/* Enable transmitter. */
 	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_TMODE_MASK) | ARM_UCON_TMODE_IRQ;
@@ -45,7 +43,7 @@ again:
 		}
 	}
 #endif
-	MACHDEP_INTR_RESTORE (x);
+	arm_intr_restore (x);
 }
 
 /*
@@ -63,7 +61,7 @@ debug_getchar (void)
 /*debug_printf ("getchar -> 0x%02x\n", c);*/
 		return c;
 	}
-	MACHDEP_INTR_DISABLE (&x);
+	arm_intr_disable (&x);
 
 	/* Enable receiver. */
 	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_RMODE_MASK) | ARM_UCON_RMODE_IRQ;
@@ -77,8 +75,8 @@ debug_getchar (void)
 				    ARM_USTAT_OER | ARM_USTAT_ROVFF;
 			}
 			watchdog_alive ();
-			MACHDEP_INTR_RESTORE (x);
-			MACHDEP_INTR_DISABLE (&x);
+			arm_intr_restore (x);
+			arm_intr_disable (&x);
 			continue;
 		}
 		/* TODO: utf8 to unicode conversion. */
@@ -91,7 +89,7 @@ debug_getchar (void)
 #endif
 		break;
 	}
-	MACHDEP_INTR_RESTORE (x);
+	arm_intr_restore (x);
 	return c;
 }
 
@@ -107,7 +105,7 @@ debug_peekchar (void)
 	if (debug_char >= 0)
 		return debug_char;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arm_intr_disable (&x);
 
 	/* Enable receiver. */
 	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_RMODE_MASK) | ARM_UCON_RMODE_IRQ;
@@ -118,7 +116,7 @@ debug_peekchar (void)
 			ARM_USTAT(0) = ARM_USTAT_FER | ARM_USTAT_PER |
 			    ARM_USTAT_OER | ARM_USTAT_ROVFF;
 		}
-		MACHDEP_INTR_RESTORE (x);
+		arm_intr_restore (x);
 		return -1;
 	}
 	/* TODO: utf8 to unicode conversion. */
@@ -126,11 +124,11 @@ debug_peekchar (void)
 #if 0 /*ndef NDEBUG*/
 	if (c == 3) {
 		breakpoint ();
-		MACHDEP_INTR_RESTORE (x);
+		arm_intr_restore (x);
 		return -1;
 	}
 #endif
-	MACHDEP_INTR_RESTORE (x);
+	arm_intr_restore (x);
 	debug_char = c;
 	return c;
 }
@@ -145,7 +143,7 @@ debug_putchar (void *arg, short c)
 {
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arm_intr_disable (&x);
 
 	/* Enable transmitter. */
 	/* TODO */
@@ -164,7 +162,7 @@ again:
 		c = '\r';
 		goto again;
 	}
-	MACHDEP_INTR_RESTORE (x);
+	arm_intr_restore (x);
 }
 
 /*
@@ -182,7 +180,7 @@ debug_getchar (void)
 /*debug_printf ("getchar -> 0x%02x\n", c);*/
 		return c;
 	}
-	MACHDEP_INTR_DISABLE (&x);
+	arm_intr_disable (&x);
 
 	/* Enable receiver. */
 	/* TODO */
@@ -195,7 +193,7 @@ debug_getchar (void)
 		c = '?';
 		break;
 	}
-	MACHDEP_INTR_RESTORE (x);
+	arm_intr_restore (x);
 	return c;
 }
 
@@ -211,7 +209,7 @@ debug_peekchar (void)
 	if (debug_char >= 0)
 		return debug_char;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arm_intr_disable (&x);
 
 	/* Enable receiver. */
 	/* TODO */
@@ -224,7 +222,7 @@ debug_peekchar (void)
 	/* TODO */
 	c = 0;
 
-	MACHDEP_INTR_RESTORE (x);
+	arm_intr_restore (x);
 	debug_char = c;
 	return c;
 }
@@ -235,8 +233,8 @@ debug_puts (const char *p)
 {
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	arm_intr_disable (&x);
 	for (; *p; ++p)
 		debug_putchar (0, *p);
-	MACHDEP_INTR_RESTORE (x);
+	arm_intr_restore (x);
 }

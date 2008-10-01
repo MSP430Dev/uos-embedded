@@ -24,7 +24,7 @@
  * pins, caused by stub to simulate an interrupt.
  */
 
-#include <kernel/arch.h>
+#include <runtime/avr/io.h>
 
 #define NUMREGBYTES	37			/* Total bytes in registers */
 #define NUMBREAKS	8			/* Number of breakpoints */
@@ -35,76 +35,13 @@
 
 #define R_PC	*(unsigned short*)(regs+35)	/* Copy of PC register */
 
-#if 0
-
-/*
- * Macros for access to 8-bit I/O registers.
- */
-#define inb(port) ({				\
-	register unsigned char t;		\
-	asm volatile (				\
-		"in %0, %1"			\
-		: "=r" (t)			\
-		: "I" ((char)(port)));		\
-	t; })
-
-#define outb(val, port)				\
-	asm volatile (				\
-		"out %1, %0"			\
-		: /* no outputs */		\
-		: "r" ((char)(val)),		\
-		  "I" ((char)(port)))
-
-/*
- * Bit handling macros.
- */
-#define setb(bit, port) 			\
-	asm volatile (				\
-		"sbi %0, %1"			\
-		: /* no outputs */		\
-		: "I" ((char)(port)),		\
-		  "I" ((char)(bit)))
-
-#define clearb(bit, port) 			\
-	asm volatile (				\
-		"cbi %0, %1"			\
-		: /* no outputs */		\
-		: "I" ((char)(port)),		\
-		  "I" ((char)(bit)))
-
-#define testb(bit, port) ({			\
-	register unsigned char t;		\
-	asm volatile (				\
-		"clr %0" "\n"			\
-		"sbic %1, %2" "\n"		\
-		"inc %0"			\
-		: "=r" (t)			\
-		: "I" ((char)(port)),		\
-		  "I" ((char)(bit)));		\
-	t; })
-
-
-/*
- * AVR i/o registers.
- */
-#define ACSR		0x08			/* analog comparator */
-#   define ACIE		3			/* ac interrupt enable */
-#   define ACI		4			/* ac interrupt flag */
-
-#define UBRR		0x09			/* uart baud rate */
-
-#define UCR		0x0a			/* uart control */
-#   define TXEN		3			/* transmitter enable */
-#   define RXEN		4			/* receiver enable */
-
-#define USR		0x0b			/* uart status */
-#   define UDRE		5			/* transmitter empty */
-#   define RXC		7			/* receive complete */
-
-#define UDR		0x0c			/* uart data */
-#define RAMPZ		0x3b			/* flash page select */
-
-#endif /* 0 */
+#if FLASHEND > 0x1FFFF
+#       define ASM_GOTO "jmp "
+#elif FLASHEND > 0x2000
+#       define ASM_GOTO "jmp "
+#else
+#       define ASM_GOTO "rjmp "
+#endif
 
 /*
  * Analog comparator pins.

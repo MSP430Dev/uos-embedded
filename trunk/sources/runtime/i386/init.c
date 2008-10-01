@@ -2,8 +2,6 @@
 #include <runtime/i386/multiboot.h>
 #include <runtime/i386/i8259.h>
 #include <runtime/i386/int86.h>
-#include <kernel/uos.h>
-#include <kernel/internal.h>
 
 static const unsigned char gdt [] = {
 	0,    0,    0, 0, 0,    0,    0,    0,	/* Null descriptor */
@@ -25,6 +23,8 @@ static volatile i386_idt_t idt [256];
 unsigned long i386_highmem_addr;
 unsigned long i386_highmem_len;
 unsigned long i386_lowmem_len;
+
+extern void main (void);
 
 static void
 intr_setidt (int vector, int user, void (*proc) ())

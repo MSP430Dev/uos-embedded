@@ -8,6 +8,6 @@
 #define NULL 0
 #endif
 
-static inline char *strerror(int n) { return ""; }
+static inline char *strerror(int n) { static char s[] = ""; return s; }
 
 #endif

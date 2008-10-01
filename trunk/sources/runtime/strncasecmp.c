@@ -5,7 +5,7 @@
    greater than zero if S1 is lexicographically less
    than, equal to or greater than S2.  */
 
-sign_t
+small_int_t
 strncasecmp (const unsigned char *s1, const unsigned char *s2, size_t n)
 {
 	unsigned char c1, c2;

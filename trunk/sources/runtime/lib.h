@@ -8,10 +8,10 @@ extern "C" {
  * Reading a byte from flash memory.
  * By default - handle it like a simple pointer.
  */
-#define FETCH_BYTE(p) (*(unsigned char*)(p))
-#define FETCH_WORD(p) (*(unsigned short*)(p))
-#define FETCH_LONG(p) (*(unsigned long*)(p))
-#define FETCH_PTR(p) (*((void**)((void*)(p))))
+#define FETCH_BYTE(p)	(*(unsigned char*)(p))
+#define FETCH_WORD(p)	(*(unsigned short*)(p))
+#define FETCH_LONG(p)	(*(unsigned long*)(p))
+#define FETCH_PTR(p)	({ void *x = (void*)(p); *(void**)x; })
 
 #define ARRAY_LENGTH(array)	(sizeof (array) / sizeof ((array)[0]))
 #define ARRAY_END(array)	((array) + ARRAY_LENGTH (array))
@@ -69,32 +69,32 @@ bool_t uos_valid_memory_address (void*);
 void uos_halt (int);
 
 #ifndef __AVR__
-inline extern unsigned
+static inline unsigned
 strlen_flash (const char *str)
 {
 	return (unsigned) strlen ((const unsigned char*) str);
 }
 
-inline extern void
+static inline void
 memcpy_flash (void *dest, const char *src, unsigned char len)
 {
 	memcpy (dest, src, len);
 }
 
-inline extern void
+static inline void
 strcpy_flash (unsigned char *dest, const char *str)
 {
 	strcpy (dest, (const unsigned char*) str);
 }
 
-inline extern void
+static inline void
 strncpy_flash (unsigned char *dest, const char *str, unsigned char maxlen)
 {
 	strncpy (dest, (const unsigned char*) str, maxlen);
 }
 #endif /* __AVR__ */
 
-inline extern unsigned char
+static inline unsigned char
 flash_fetch (const char *p)
 {
 	return FETCH_BYTE (p);

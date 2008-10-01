@@ -22,8 +22,7 @@
 typedef struct _slip_t {
 	netif_t netif;			/* common network interface part */
 	lock_t transmitter;
-/*	lock_t receiver;*/
-	uint_t port;
+	small_uint_t port;
 	unsigned short khz;
 	struct _mem_pool_t *pool;	/* memory pool for allocating packets */
 
@@ -49,7 +48,7 @@ typedef struct _slip_t {
 	OPACITY (tstack, SLIP_STACKSZ);	/* task receive stack */
 } slip_t;
 
-void slip_init (slip_t *u, uint_t port, const char *name, int_t prio,
+void slip_init (slip_t *u, small_uint_t port, const char *name, int prio,
 	mem_pool_t *pool, unsigned short khz, unsigned long baud);
 void slip_set_cts_poller (slip_t *u, bool_t (*) (slip_t*));
 void slip_cts_ready (slip_t *u);

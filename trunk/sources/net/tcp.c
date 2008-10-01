@@ -16,7 +16,7 @@
  * removes PCBs that have been in TIME-WAIT for enough time. It also increments
  * various timers such as the inactivity timer in each PCB.
  */
-void __weak
+void __attribute__((weak))
 tcp_slowtmr (ip_t *ip)
 {
 	tcp_socket_t *s, *prev;
@@ -135,7 +135,7 @@ tcp_slowtmr (ip_t *ip)
 /*
  * Is called every TCP_FINE_TIMEOUT (100 ms) and sends delayed ACKs.
  */
-void __weak
+void __attribute__((weak))
 tcp_fasttmr (ip_t *ip)
 {
 	tcp_socket_t *s;
@@ -199,7 +199,6 @@ tcp_alloc (ip_t *ip)
 		return 0;
 	}
 
-	lock_init (&s->lock);
 	s->ip = ip;
 	s->snd_buf = TCP_SND_BUF;
 	s->snd_queuelen = 0;

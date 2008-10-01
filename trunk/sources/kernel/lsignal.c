@@ -25,7 +25,7 @@
 void
 lock_signal (lock_t *m, void *message)
 {
-	int_t x;
+	arch_state_t x;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
@@ -47,9 +47,9 @@ lock_signal (lock_t *m, void *message)
 void *
 lock_wait (lock_t *m)
 {
-	int_t x;
+	arch_state_t x;
 #if RECURSIVE_LOCKS
-	int_t deep;
+	small_int_t deep;
 #endif
 
 	arch_intr_disable (&x);

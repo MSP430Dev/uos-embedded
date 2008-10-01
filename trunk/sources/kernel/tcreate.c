@@ -22,11 +22,11 @@
  * Create new task.
  */
 task_t *
-task_create (void (*func)(void*), void *arg, const char *name, int_t prio,
+task_create (void (*func)(void*), void *arg, const char *name, int prio,
 	opacity_t *stack, unsigned stacksz)
 {
 	task_t *t;
-	int_t x;
+	arch_state_t x;
 
 	t = (task_t*) stack;
 	memset (t, 0, sizeof(task_t));

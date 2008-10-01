@@ -8,7 +8,7 @@
 typedef struct _keyboard_ps2_t {
 	keyboard_interface_t *interface;
 	lock_t lock;
-	char stack [KBD_STACKSZ];		/* task receive stack */
+	OPACITY (stack, KBD_STACKSZ);		/* task receive stack */
 	keyboard_event_t in_buf [KBD_INBUFSZ];	/* keyboard event queue */
 	keyboard_event_t *in_first, *in_last;	/* queue pointers */
 	int rate;				/* chars per second */

@@ -7,7 +7,7 @@
  */
 void
 nvram_write_str (nvram_t *v,
-	unsigned char *str, uint_t maxlen)
+	unsigned char *str, small_uint_t maxlen)
 {
 	while (maxlen-- > 0) {
 		assert (*str == 0 || ((signed char) *str) >= ' ');
@@ -22,7 +22,7 @@ nvram_write_str (nvram_t *v,
  */
 void
 nvram_read_str (nvram_t *v,
-	unsigned char *str, uint_t maxlen)
+	unsigned char *str, small_uint_t maxlen)
 {
 	while (maxlen-- > 0) {
 		*str = nvram_read_byte (v);

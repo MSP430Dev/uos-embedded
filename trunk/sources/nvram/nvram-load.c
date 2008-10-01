@@ -5,11 +5,11 @@
 /*
   LY: Начинает транзакцию частичного чтения NVRAM.
 */
-int_t nvram_begin_load (nvram_t *v, unsigned addr /* relative */)
+small_int_t nvram_begin_load (nvram_t *v, unsigned addr /* relative */)
 {
-	int_t reason;
-	
-	/* debug_printf ("begin-load: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X, addr=0x%04X\n", 
+	small_int_t reason;
+
+	/* debug_printf ("begin-load: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X, addr=0x%04X\n",
 		v->__addr, v->begin, v->end, addr); */
 	lock_take (&v->lock);
 #ifndef NDEBUG
@@ -31,12 +31,12 @@ int_t nvram_begin_load (nvram_t *v, unsigned addr /* relative */)
 		reason = NVRAM_EOF;
 		goto ballout;
 	}
-		
+
 #if NVRAM_READ_TAINT
 	/* Отмечаем начало процесса чтения. */
 	v->__addr = v->begin + 2; nvram_write_word (v, 0xDEAD);
 #endif
-	
+
 	/* Переходим на указанный адрес. */
 	v->__addr = addr + v->begin;
 	return NVRAM_OK;
@@ -52,11 +52,11 @@ ballout:
 /*
   LY: Завершает транзакцию частичного чтения NVRAM.
 */
-int_t nvram_finalize_load (nvram_t *v)
+small_int_t nvram_finalize_load (nvram_t *v)
 {
-	int_t reason;
-	
-	/* debug_printf ("finalize-update: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X\n", 
+	small_int_t reason;
+
+	/* debug_printf ("finalize-update: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X\n",
 		v->__addr, v->begin, v->end); */
 	assert (v->__addr != NVRAM_BAD_ADDRESS
 		&& nvram_is_owned (v)
@@ -71,13 +71,13 @@ int_t nvram_finalize_load (nvram_t *v)
 		reason = NVRAM_EOF;
 		goto ballout;
 	}
-	
+
 #if NVRAM_READ_TAINT
 	/* LY: отмечаем завершение процесса чтения. */
 	v->__addr = v->begin + 2; nvram_write_word (v, v->sign ^ 0xDEAD);
 #endif
 	reason = NVRAM_OK;
-	
+
 ballout:
 #ifndef NDEBUG
 	v->owner = 0;

@@ -1,8 +1,7 @@
 #include <runtime/lib.h>
-#include <kernel/uos.h>
-#include <kernel/internal.h>
 
 extern unsigned long _etext, __data_start, _edata, _end;
+extern void main (void);
 
 /*
  * Initialize the system configuration, cache, intermal SRAM,
@@ -65,7 +64,7 @@ _init_ (void)
 		*dest++ = 0;
 
 	/* Set stack to end of internal SRAM. */
-	arm_set_stack_pointer (ARM_SRAM_BASE + ARM_SRAM_SIZE);
+	arm_set_stack_pointer ((void*) (ARM_SRAM_BASE + ARM_SRAM_SIZE));
 
 	/*
 	 * Global interrupt enable.

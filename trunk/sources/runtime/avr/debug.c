@@ -9,7 +9,7 @@ static int debug_char;
 void
 debug_putchar (void *arg, short c)
 {
-	uint_t x;
+	small_uint_t x;
 
 	x = inb (SREG);
 	cli();
@@ -51,7 +51,7 @@ again:
 unsigned short
 debug_getchar (void)
 {
-	uint_t c, x;
+	small_uint_t c, x;
 
 	if (debug_char >= 0) {
 		c = debug_char;

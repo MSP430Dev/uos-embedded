@@ -1,7 +1,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <nvram/nvram.h>
-#include <kernel/arch.h>
+/*#include <kernel/arch.h>*/
 
 #ifdef __AVR_ATmega2561__
 #     define NVRAM_IRQ		29	/* EEPROM write complete */
@@ -15,7 +15,7 @@ static lock_t lock;
  * Write a byte to NVRAM.
  */
 void
-__arch_nvram_write_byte (unsigned addr, unsigned char c)
+eeprom_write_byte (unsigned addr, unsigned char c)
 {
 	assert (__arch_intr_is_enabled_now ());
 	lock_take (&lock);
@@ -26,10 +26,10 @@ __arch_nvram_write_byte (unsigned addr, unsigned char c)
 
 	outw (addr, EEAR);
 	outb (c, EEDR);
-	__arch_cli ();
+	asm volatile ("cli");
 	setb_const (EEMWE, EECR);
 	setb_const (EEWE, EECR);
-	__arch_sti ();
+	asm volatile ("sei");
 
 	lock_release (&lock);
 }
@@ -38,7 +38,7 @@ __arch_nvram_write_byte (unsigned addr, unsigned char c)
  * Read a byte from NVRAM.
  */
 unsigned char
-__arch_nvram_read_byte (unsigned addr)
+eeprom_read_byte (unsigned addr)
 {
 	unsigned char c;
 
@@ -57,10 +57,9 @@ __arch_nvram_read_byte (unsigned addr)
 }
 
 void
-__arch_nvram_init (nvram_t *v)
+eeprom_init (nvram_t *v)
 {
 	/* Associate the interrupt. */
-	lock_init (&lock);
 	lock_take_irq (&lock, NVRAM_IRQ, 0, 0);
 	lock_release (&lock);
 }

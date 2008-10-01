@@ -15,7 +15,7 @@ int
 debug_printf (const char *fmt, ...)
 {
 	va_list	args;
-	int_t err;
+	int err;
 
 	va_start (args, fmt);
 	err = vprintf (&debug_stream, fmt, args);
@@ -26,7 +26,7 @@ debug_printf (const char *fmt, ...)
 int
 debug_vprintf (const char *fmt, va_list args)
 {
-	int_t err;
+	int err;
 
 	err = vprintf (&debug_stream, fmt, args);
 	return err;

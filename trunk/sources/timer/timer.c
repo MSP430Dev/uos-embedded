@@ -44,7 +44,7 @@
  * Check that `msec' milliseconds have passed.
  * `Interval' is the time interval, probably rolled over the day.
  */
-bool_t
+small_int_t
 interval_greater_or_equal (long interval, long msec)
 {
 	if (interval < 0)
@@ -136,7 +136,7 @@ timer_milliseconds (timer_t *t)
 /**
  * Return the (real) time in milliseconds since uOS start.
  */
-unsigned short
+unsigned int
 timer_days (timer_t *t)
 {
 	unsigned short val;
@@ -178,7 +178,7 @@ timer_delay (timer_t *t, unsigned long msec)
  * Check that `msec' milliseconds passed since the `t0' moment.
  */
 bool_t
-timer_passed (timer_t *t, unsigned long t0, unsigned short msec)
+timer_passed (timer_t *t, unsigned long t0, unsigned int msec)
 {
 	unsigned long now;
 
@@ -193,11 +193,9 @@ timer_passed (timer_t *t, unsigned long t0, unsigned short msec)
  * Create timer task.
  */
 void
-timer_init (timer_t *t, int_t prio, unsigned long khz,
-	uint_t msec_per_tick)
+timer_init (timer_t *t, int prio, unsigned long khz,
+	small_uint_t msec_per_tick)
 {
-	lock_init (&t->lock);
-	lock_init (&t->decisec);
 	t->msec_per_tick = msec_per_tick;
 	t->khz = khz;
 	task_create (main_timer, t, "timer", prio, t->stack, sizeof (t->stack));

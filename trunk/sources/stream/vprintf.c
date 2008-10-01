@@ -66,7 +66,7 @@ stream_vprintf (stream_t *stream, char const *fmt, va_list ap)
 	unsigned char nbuf [MAXNBUF], padding, *q;
 	const unsigned char *s;
 	unsigned char c, base, lflag, ladjust, sharpflag, neg, dot, size;
-	int_t n, width, dwidth, retval, uppercase, extrazeros, sign;
+	small_int_t n, width, dwidth, retval, uppercase, extrazeros, sign;
 	unsigned long ul;
 
 	if (! stream)
@@ -438,8 +438,13 @@ number:		if (sign && ((long) ul != 0L)) {
 				*nbuf = 0;
 				size = cvt (d, dwidth, sharpflag, &neg, c,
 					nbuf, nbuf + sizeof(nbuf) - 1);
-				s = *nbuf ? nbuf : nbuf + 1;
-				s [size] = 0;
+				if (*nbuf) {
+					s = nbuf;
+					nbuf [size] = 0;
+				} else {
+					s = nbuf + 1;
+					nbuf [size + 1] = 0;
+				}
 			}
 			if (neg)
 				size++;

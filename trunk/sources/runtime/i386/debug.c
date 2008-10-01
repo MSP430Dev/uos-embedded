@@ -1,8 +1,6 @@
 #include <runtime/lib.h>
 #include <runtime/i386/int86.h>
 #include <i8042/i8042.h>
-#include <kernel/uos.h>
-#include <kernel/internal.h>
 
 #define SCAN_CTRL	0x1D	/* Control */
 #define SCAN_LSHIFT	0x2A	/* Left shift */
@@ -46,11 +44,11 @@ debug_putchar (void *arg, short c)
 {
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 
 	if (hook) {
 		hook (hook_arg, c);
-		MACHDEP_INTR_RESTORE (x);
+		i386_intr_restore (x);
 	}
 
 	if (! videomem) {
@@ -95,7 +93,7 @@ debug_putchar (void *arg, short c)
 	outb (14, port); outb (curs>>8, port+1);
 	outb (15, port); outb (curs, port+1);
 
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 }
 
 static int get_scancode (int waitflag)
@@ -262,7 +260,7 @@ debug_getchar (void)
 /*debug_printf ("getchar -> 0x%02x\n", c);*/
 		return c;
 	}
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 again:
 	c = get_scancode (1);
 
@@ -272,7 +270,7 @@ again:
 		goto again;
 	/*debug_printf ("getchar -> 0x%02x\n", c);*/
 
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 	return c;
 }
 
@@ -287,7 +285,7 @@ debug_peekchar (void)
 	if (debug_char >= 0)
 		return debug_char;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 
 	/* Get the scan code for the key. */
 	c = get_scancode (0);
@@ -296,7 +294,7 @@ debug_peekchar (void)
 	if (c >= 0)
 		c = scancode_to_unicode (c);
 
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 	debug_char = c;
 	return c;
 }

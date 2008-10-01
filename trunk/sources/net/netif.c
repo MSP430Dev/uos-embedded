@@ -6,7 +6,7 @@
 
 bool_t
 netif_output_prio (netif_t *netif, buf_t *p, unsigned char *ipdest,
-	unsigned char *ipsrc, uint_t prio)
+	unsigned char *ipsrc, small_uint_t prio)
 {
 	if (netif->arp && ipsrc) {	/* vch: для бриджуемых фреймов не нужен arp */
 		unsigned char *ethdest = 0;

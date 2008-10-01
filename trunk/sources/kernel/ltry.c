@@ -27,7 +27,7 @@
 bool_t
 lock_try (lock_t *m)
 {
-	int_t x;
+	arch_state_t x;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));

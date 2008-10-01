@@ -263,7 +263,6 @@ static mouse_interface_t mouse_ps2_interface = {
 void
 mouse_ps2_init (mouse_ps2_t *u, int prio)
 {
-	lock_init (&u->lock);
         u->interface = &mouse_ps2_interface;
 	u->count = 0;
 	u->wheel = 0;

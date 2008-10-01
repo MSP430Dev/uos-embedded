@@ -85,7 +85,11 @@ extern asn_t asn_null;
 asn_t *asn_parse (struct _mem_pool_t *pool, unsigned char **input,
 	unsigned *sz);
 
-__forceinline asn_t *asn_make_null (struct _mem_pool_t *pool) {return &asn_null;}
+static inline __attribute__((always_inline))
+asn_t *asn_make_null (struct _mem_pool_t *pool) {
+	return &asn_null;
+}
+
 asn_t *asn_make_oid (struct _mem_pool_t *pool, const char *str);
 asn_t *asn_make_string (struct _mem_pool_t *pool, const unsigned char *str);
 #ifdef __AVR__
@@ -97,9 +101,9 @@ asn_t *asn_make_string (struct _mem_pool_t *pool, const unsigned char *str);
 asn_t *asn_make_stringn (struct _mem_pool_t *pool, const unsigned char *str,
 	unsigned len);
 asn_t *asn_make_int (struct _mem_pool_t *pool, unsigned long val,
-	uint_t type);
+	small_uint_t type);
 asn_t *asn_make_seq (struct _mem_pool_t *pool, unsigned size,
-	uint_t type);
+	small_uint_t type);
 asn_t *asn_make_oidn (struct _mem_pool_t *pool, unsigned enterprise,
 	const char *data, unsigned char len, unsigned char cnt, ...);
 
@@ -107,28 +111,35 @@ unsigned char *asn_encode (asn_t*, unsigned char*, unsigned);
 void asn_free (asn_t*);
 
 void asn_print (asn_t*, unsigned);
-void asn_print_type (uint_t);
+void asn_print_type (small_uint_t);
 
 asn_t *asn_copy (asn_t*);
 
 /* LY: saturated counters, with UNKNOWN value. */
 asn_t *asn_make_cnt16 (struct _mem_pool_t *pool, unsigned val);
 asn_t *asn_make_cnt32 (struct _mem_pool_t *pool, unsigned long val);
-__forceinline asn_t *asn_make_cnt16_typecheck (struct _mem_pool_t *pool, unsigned short *ptr) {
+
+static inline __attribute__((always_inline))
+asn_t *asn_make_cnt16_typecheck (struct _mem_pool_t *pool, unsigned short *ptr) {
 	return asn_make_cnt16 (pool, *ptr);
 }
 
-__forceinline asn_t *asn_make_cnt32_typecheck (struct _mem_pool_t *pool, unsigned long *ptr) {
+static inline __attribute__((always_inline))
+asn_t *asn_make_cnt32_typecheck (struct _mem_pool_t *pool, unsigned long *ptr) {
 	return asn_make_cnt32 (pool, *ptr);
 }
+
 /* LY: some mad for MIB-evolition. */
 asn_t *asn_make_cnt32as16 (struct _mem_pool_t *pool, unsigned long val);
 asn_t *asn_make_cnt16as32 (struct _mem_pool_t *pool, unsigned val);
-__forceinline asn_t *asn_make_cnt32as16_typecheck (struct _mem_pool_t *pool, unsigned long *ptr) {
+
+static inline __attribute__((always_inline))
+asn_t *asn_make_cnt32as16_typecheck (struct _mem_pool_t *pool, unsigned long *ptr) {
 	return asn_make_cnt32as16 (pool, *ptr);
 }
 
-__forceinline asn_t *asn_make_cnt16as32_typecheck (struct _mem_pool_t *pool, unsigned short *ptr) {
+static inline __attribute__((always_inline))
+asn_t *asn_make_cnt16as32_typecheck (struct _mem_pool_t *pool, unsigned short *ptr) {
 	return asn_make_cnt16as32 (pool, *ptr);
 }
 

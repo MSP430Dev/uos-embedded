@@ -7,9 +7,9 @@ typedef struct _buf_queue_t buf_queue_t;
 
 struct _buf_queue_t {
 	struct _buf_t **tail;
-	uint_t count;
+	small_uint_t count;
 	struct _buf_t **queue;
-	uint_t size;
+	small_uint_t size;
 };
 
 void buf_queue_init (buf_queue_t *q, struct _buf_t **buf, int bytes);

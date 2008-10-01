@@ -35,7 +35,7 @@
  *	R0	- at SP-64
  * Total 16 words or 64 bytes.
  */
-void arm_task_switch (task_t *target)
+void arch_task_switch (task_t *target)
 {
 	/* Save all registers in stack. */ \
 	asm volatile (
@@ -111,7 +111,7 @@ _irq_handler_ (void)
 #ifdef ARM_AT91SAM
 		irq = *AT91C_AIC_ISR & 0x1f;
 #endif
-		if (irq >= MACHDEP_INTERRUPTS)
+		if (irq >= ARCH_INTERRUPTS)
 			break;
 
 		/* Disable the irq, to avoid loops */
@@ -189,7 +189,7 @@ _irq_handler_ (void)
  * Allow the given hardware interrupt,
  * unmasking it in the interrupt controller.
  */
-void arm_intr_allow (uint_t irq)
+void arch_intr_allow (int irq)
 {
 	if (irq == 4 || irq == 6) {
 		/* Do not enable UART transmit interrupt here. */
@@ -212,28 +212,30 @@ void arm_intr_allow (uint_t irq)
  * sp	- the pointer to (end of) stack space
  */
 void
-arm_build_stack_frame (task_t *t, unsigned long func, unsigned long arg,
-	unsigned long *sp)
+arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
+	unsigned stacksz)
 {
-	*--sp = func;	/* pc - callee address */
+	unsigned *sp = (unsigned*) ((char*) t + stacksz);
+
+	*--sp = (unsigned) func;	/* pc - callee address */
 #if __thumb__
-	*--sp = 0x73;	/* cpsr - thumb, enable interrupts, svc mode */
+	*--sp = 0x73;			/* cpsr - thumb, enable interrupts, svc mode */
 #else
-	*--sp = 0x53;	/* cpsr - enable interrupts, svc mode */
+	*--sp = 0x53;			/* cpsr - enable interrupts, svc mode */
 #endif
-	*--sp = 0;	/* lr */
-	*--sp = 0;	/* r12 */
-	*--sp = 0;	/* r11 */
-	*--sp = 0;	/* r10 */
-	*--sp = 0;	/* r9 */
-	*--sp = 0;	/* r8 */
-	*--sp = 0;	/* r7 */
-	*--sp = 0;	/* r6 */
-	*--sp = 0;	/* r5 */
-	*--sp = 0;	/* r4 */
-	*--sp = 0;	/* r3 */
-	*--sp = 0;	/* r2 */
-	*--sp = 0;	/* r1 */
-	*--sp = arg;	/* r0 - task argument */
-	t->stack_context = (unsigned long) sp;
+	*--sp = 0;			/* lr */
+	*--sp = 0;			/* r12 */
+	*--sp = 0;			/* r11 */
+	*--sp = 0;			/* r10 */
+	*--sp = 0;			/* r9 */
+	*--sp = 0;			/* r8 */
+	*--sp = 0;			/* r7 */
+	*--sp = 0;			/* r6 */
+	*--sp = 0;			/* r5 */
+	*--sp = 0;			/* r4 */
+	*--sp = 0;			/* r3 */
+	*--sp = 0;			/* r2 */
+	*--sp = 0;			/* r1 */
+	*--sp = (unsigned) arg;		/* r0 - task argument */
+	t->stack_context = (void*) sp;
 }

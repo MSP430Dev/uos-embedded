@@ -11,8 +11,8 @@
 /*
  * Handle stack pointer register.
  */
-static void inline __attribute__ ((always_inline))
-arm_set_stack_pointer (int x)
+static inline __attribute__ ((always_inline))
+void arm_set_stack_pointer (void *x)
 {
 	asm volatile (
 	"mov	sp, %0"
@@ -20,10 +20,10 @@ arm_set_stack_pointer (int x)
 }
 
 /* Save current task stack. */
-static int inline __attribute__ ((always_inline))
-arm_get_stack_pointer ()
+static inline __attribute__ ((always_inline))
+void *arm_get_stack_pointer ()
 {
-	int x;
+	void *x;
 
 	asm volatile (
 	"mov	%0, sp"
@@ -36,16 +36,16 @@ arm_get_stack_pointer ()
  * saving the interrupt enable flag into the supplied variable.
  */
 static void inline __attribute__ ((always_inline))
-arm_intr_disable (int_t *x)
+arm_intr_disable (int *x)
 {
-	int_t temp;
+	int temp;
 
 	asm volatile (
 #if __thumb__
 	".balignw 4, 0x46c0 \n"
 "	bx	pc \n"			/* switch to ARM mode */
 "	nop \n"
-"	.code	32 \n\t"
+"	.code	32 \n"
 #endif
 
 "	mrs	%1, cpsr \n"
@@ -59,15 +59,16 @@ arm_intr_disable (int_t *x)
 #if __thumb__
 "	ldr	%0, [pc] \n"		/* switch back to Thumb mode */
 "	bx	%0 \n"
-"	.word	.+5"
+"	.word	.+5 \n"
+"	.code	16"
 #endif
 	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
 }
 
 static void inline __attribute__ ((always_inline))
-arm_intr_restore (int_t x)
+arm_intr_restore (int x)
 {
-	int_t temp;
+	int temp;
 
 	asm volatile (
 #if __thumb__
@@ -80,7 +81,8 @@ arm_intr_restore (int_t x)
 #if __thumb__
 "\n	ldr	%0, [pc] \n"		/* switch back to Thumb mode */
 "	bx	%0 \n"
-"	.word	.+5"
+"	.word	.+5 \n"
+"	.code	16"
 #endif
 	: "=r" (temp) : "r" (x) : "memory", "cc");
 }
@@ -88,7 +90,7 @@ arm_intr_restore (int_t x)
 static void inline __attribute__ ((always_inline))
 arm_intr_enable ()
 {
-	int_t temp;
+	int temp;
 
 	asm volatile (
 #if __thumb__
@@ -103,7 +105,8 @@ arm_intr_enable ()
 #if __thumb__
 "\n	ldr	%0, [pc] \n"		/* switch back to Thumb mode */
 "	bx	%0 \n"
-"	.word	.+5"
+"	.word	.+5 \n"
+"	.code	16"
 #endif
 	: "=r" (temp) : : "memory", "cc");
 }
@@ -112,24 +115,20 @@ inline extern void console_enable_receiver ()
 {
 }
 
-#ifdef __thumb__
-#	define arm_bus_yield()				\
-	do {						\
-		unsigned dummy = 0xDEADBEEFul;		\
-		__asm__ __volatile (			\
-			"mul %0, %0, %0 \n\r"		\
-			"mul %0, %0, %0 \n\r"		\
-			"mul %0, %0, %0 \n\r"		\
-			: "+r" (dummy) : : "cc");	\
-	} while (0)
+static void inline __attribute__ ((always_inline))
+arm_bus_yield ()
+{
+	unsigned tmp1, tmp2;
+
+	asm volatile (
+#if __thumb__
+		"mul %1, %0 \n\t"
+	"	mul %1, %0 \n\t"
+	"	mul %1, %0"
 #else
-#	define arm_bus_yield()				\
-	do {						\
-		unsigned dummy = 0xDEADBEEFul;		\
-		__asm__ __volatile (			\
-			"mla %0, %1, %0, %0 \n\r"	\
-			"mla %0, %1, %0, %0 \n\r"	\
-			"mla %0, %1, %0, %0 \n\r"	\
-			: "+&r" (dummy) : "r" (dummy) : "cc");\
-	} while (0)
+		"mul %1, %0, %0 \n\t"
+	"	mul %1, %0, %0 \n\t"
+	"	mul %1, %0, %0"
 #endif
+	: "=r" (tmp1), "=r" (tmp2) : : "cc");
+}

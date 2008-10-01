@@ -203,17 +203,17 @@ typedef struct _icmp_hdr_t {
 struct _buf_t;
 struct _netif_t;
 
-void ip_init (ip_t *ip, struct _mem_pool_t *pool, int_t prio,
+void ip_init (ip_t *ip, struct _mem_pool_t *pool, int prio,
 	struct _timer_t *timer, struct _arp_t *arp, lock_group_t *g);
 void ip_input (ip_t *ip, struct _buf_t *p, struct _netif_t *inp);
 bool_t ip_output (ip_t *ip, struct _buf_t *p, unsigned char *dest,
-	unsigned char *src, uint_t proto);
+	unsigned char *src, small_uint_t proto);
 bool_t ip_output_netif (ip_t *ip, struct _buf_t *p, unsigned char *dest,
-	unsigned char *src, uint_t proto, unsigned char *gateway,
+	unsigned char *src, small_uint_t proto, unsigned char *gateway,
 	struct _netif_t *netif, unsigned char *netif_ipaddr);
 
 void icmp_echo_request (ip_t *ip, struct _buf_t *p, struct _netif_t *inp);
-void icmp_dest_unreach (ip_t *ip, struct _buf_t *p, uint_t op);
+void icmp_dest_unreach (ip_t *ip, struct _buf_t *p, small_uint_t op);
 void icmp_time_exceeded (ip_t *ip, struct _buf_t *p);
 
 #endif /* __IP_H_ */

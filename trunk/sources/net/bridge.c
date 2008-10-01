@@ -37,7 +37,7 @@ bridge_init (mem_pool_t *pool, int size, int msec)
 		(size - 1) * sizeof (bridge_entry_t));
 	if (! b) {
 		debug_printf ("bridge: out of memory\n");
-		abort ();
+		uos_halt (1);
 	}
 	b->size = size;
 	b->robin = b->table;

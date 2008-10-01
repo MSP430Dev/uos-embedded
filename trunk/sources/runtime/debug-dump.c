@@ -1,6 +1,4 @@
 #include <runtime/lib.h>
-/*#include <kernel/uos.h>*/
-/*#include <kernel/internal.h>*/
 #include <stream/stream.h>
 
 void debug_dump (const char *caption, void* data, unsigned len)

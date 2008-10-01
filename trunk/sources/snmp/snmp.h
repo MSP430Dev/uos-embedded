@@ -78,7 +78,7 @@ typedef struct _snmp_t {
 
 typedef union _asn_t *(snmp_get_t) (snmp_t *snmp, ...);
 typedef union _asn_t *(snmp_next_t) (snmp_t *snmp, bool_t nextflag, ...);
-typedef uint_t (snmp_set_t) (snmp_t *snmp, union _asn_t *v, ...);
+typedef small_uint_t (snmp_set_t) (snmp_t *snmp, union _asn_t *v, ...);
 
 typedef struct _snmp_var_t {
 	/* char *name; */			/* variable name */

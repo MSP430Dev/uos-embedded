@@ -11,7 +11,7 @@
 
 #undef memcmp
 
-sign_t
+small_int_t
 memcmp(const void *s1, const void *s2, size_t n)
 {
 	const unsigned char *cs1 = (const unsigned char*) s1;

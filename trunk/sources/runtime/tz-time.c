@@ -1,32 +1,6 @@
 #include <runtime/lib.h>
-/*#include <kernel/uos.h>*/
 #include <runtime/time.h>
 #include "time.h"
-
-/* LY: копия из time.h для удобства:
-
-	struct tz_rule_t {
-		uint_t month, week, day;
-		unsigned seconds;
-	};
-
-	struct tz_t {
-		unsigned char name_std[4];
-		unsigned char name_dst[4];
-		int offset_std, offset_dst;
-		struct tz_rule_t start, end;
-	};
-
-	struct tz_time_t {
-		unsigned year, yday;		// LY: year e.g. 2000, day of year 0..365;
-		int gmt_offset;			// LY: offset from GTM in seconds;
-		uint_t sec, min, hour;		// LY: time of day, seconds may be 60 if leap-second;
-		uint_t mday, mon, wday;		// LY: day of month 1..31, month 0..11, week day since Sunday 0...6;
-		unsigned char tz_name[4];	// LY: current tz-name (STD or DST from TZ);
-		sign_t isdst;			// LY: dayligth saving flag, e.g. indicate DST from TZ.
-	};
-
-*/
 
 #define TIME_DAY	86400L		/* LY: second in 24 hours. */
 #define TIME_YEAR	31536000L	/* LY: seconds in one year. */
@@ -41,17 +15,16 @@ static bool_t year_isleap (unsigned year)
 	if (year % 100 == 0 && year % 400 != 0)
 		return 0;
 #endif
-
 	return 1;
 }
 
 /* LY: return days in the month. */
-static uint_t get_mday (unsigned year, uint_t mon) {
+static small_uint_t get_mday (unsigned year, small_uint_t mon) {
 	static const char mdays[12] = {
 		31, 28, 31, 30, 31, 30,
 		31, 31, 30, 31, 30, 31
 	};
-	uint_t days;
+	small_uint_t days;
 
 	days = FETCH_BYTE (mdays + mon);
 	if (days == 28 && year_isleap (year))
@@ -61,25 +34,11 @@ static uint_t get_mday (unsigned year, uint_t mon) {
 
 struct parts_t {
 	unsigned year, weekday;
-	int_t leap_second;
+	small_int_t leap_second;
 };
 
 #if UOS_LEAP_SECONDS
 bool_t time_account_leap_seconds;
-
-#	if 0 /* LY: accounting leap seconds. */
-	!/bin/sh
-
-	LEAPS="1972-06-30 1972-12-31 1973-12-31 1974-12-31 1975-12-31 1976-12-31 1977-12-31 \
-		1978-12-31 1979-12-31 1981-06-30 1982-06-30 1983-06-30 1985-06-30 1987-12-31 \
-		1989-12-31 1990-12-31 1992-06-30 1993-06-30 1994-06-30 1995-12-31 1997-06-30 \
-		1998-12-31 2005-12-31"
-
-	for d in $LEAPS; do
-		s=`date -u -d "$d 23:59:59" +%s`
-		echo "\t/* $d 23:59:59 +1 ==" `expr $s + 1` "(unix) == */" `expr $s + 1 - 946684800`L,
-	done
-#	endif
 
 static const time_t leap_seconds_table[] = {
 	/* 1972-06-30 23:59:59 +1 == 78796800 (unix) == */ -867888000L,
@@ -175,7 +134,7 @@ static time_t tz_edge (time_t t, struct tz_rule_t *r)
 {
 	time_t e;
 	struct parts_t p;
-	int_t i, d;
+	small_int_t i, d;
 
 	/* LY: seek 't' to the 1.Jan of year. */
 	t -= time2year (t, &p);
@@ -239,7 +198,7 @@ void tz_time (time_t t, struct tz_t *tz, struct tz_time_t *l)
 {
 	unsigned char *s;
 	struct parts_t p;
-	uint_t d;
+	small_uint_t d;
 	unsigned v;
 
 	l->gmt_offset = 0;

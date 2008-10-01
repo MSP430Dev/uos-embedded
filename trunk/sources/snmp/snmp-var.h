@@ -34,24 +34,24 @@
  */
 #define READONLY_VARIABLE(n)    VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, ...);
 #define READWRITE_VARIABLE(n)   READONLY_VARIABLE(n)\
-				uint_t snmp_set_##n (snmp_t*, union _asn_t*, ...);
+				small_uint_t snmp_set_##n (snmp_t*, union _asn_t*, ...);
 
 #define READONLY_TABLE_1(n)     VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, unsigned, ...);\
 				union _asn_t *snmp_next_##n (snmp_t *snmp, bool_t nextflag, unsigned*, ...);
 #define READWRITE_TABLE_1(n)    READONLY_TABLE_1(n)\
-				uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned, ...);
+				small_uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned, ...);
 
 #define READONLY_TABLE_111(n)   VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, unsigned, unsigned, unsigned, ...);\
 				union _asn_t *snmp_next_##n (snmp_t *snmp, bool_t nextflag, unsigned*, unsigned*, unsigned*, ...);
 
 #define READONLY_TABLE_1S(n)    VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, unsigned, ...);
 #define READWRITE_TABLE_1S(n)   READONLY_TABLE_1S(n)\
-				uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned, ...);
+				small_uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned, ...);
 
 #define READONLY_TABLE_4(n)     VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, unsigned long, ...);\
 				union _asn_t *snmp_next_##n (snmp_t *snmp, bool_t nextflag, unsigned long*, ...);
 #define READWRITE_TABLE_4(n)    READONLY_TABLE_4(n)\
-				uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned long, ...);
+				small_uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned long, ...);
 
 #define READONLY_TABLE_41(n)    VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, unsigned long, unsigned, ...);\
 				union _asn_t *snmp_next_##n (snmp_t *snmp, bool_t nextflag, unsigned long*, unsigned*, ...);
@@ -59,12 +59,12 @@
 #define READONLY_TABLE_14(n)    VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, unsigned, unsigned long, ...);\
 				union _asn_t *snmp_next_##n (snmp_t *snmp, bool_t nextflag, unsigned*, unsigned long*, ...);
 #define READWRITE_TABLE_14(n)   READONLY_TABLE_14(n)\
-				uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned, unsigned long, ...);
+				small_uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned, unsigned long, ...);
 
 #define READONLY_TABLE_4141(n)  VAR_NAME(n); union _asn_t *snmp_get_##n (snmp_t*, unsigned long, unsigned,\
 						unsigned long, unsigned, ...);\
 				union _asn_t *snmp_next_##n (snmp_t *snmp, bool_t nextflag, unsigned long*, unsigned*,\
 						unsigned long*, unsigned*, ...);
 #define READWRITE_TABLE_4141(n) READONLY_TABLE_4141(n)\
-				uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned long, unsigned,\
+				small_uint_t snmp_set_##n (snmp_t*, union _asn_t*, unsigned long, unsigned,\
 						 unsigned long, unsigned, ...);

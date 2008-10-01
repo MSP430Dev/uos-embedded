@@ -47,7 +47,6 @@ adc_init (adc_t *v)
 	outb (0x87, ADCSR);
 
 	/* Get the interrupt. */
-	lock_init (&v->lock);
 	lock_take_irq (&v->lock, ADC_IRQ, 0, 0);
 	lock_release (&v->lock);
 }

@@ -212,7 +212,7 @@ transmit_enqueue (hdlc_t *c, buf_t *p)
  * might be chained.
  */
 bool_t
-hdlc_output (hdlc_t *c, buf_t *p, uint_t prio)
+hdlc_output (hdlc_t *c, buf_t *p, small_uint_t prio)
 {
 	int status;
 
@@ -409,7 +409,7 @@ error:
  * Process a pending interrupt.
  */
 static void
-hdlc_handle_receive (hdlc_t *c, int_t limit)
+hdlc_handle_receive (hdlc_t *c, small_int_t limit)
 {
 	unsigned long st;
 
@@ -475,7 +475,7 @@ hdlc_handle_receive (hdlc_t *c, int_t limit)
 }
 
 static void
-hdlc_handle_transmit (hdlc_t *c, int_t limit)
+hdlc_handle_transmit (hdlc_t *c, small_int_t limit)
 {
 	unsigned long st;
 	volatile hdlc_desc_t *desc;
@@ -635,7 +635,7 @@ static void hdlc_prepare (hdlc_t *c)
 		q = buf_alloc (c->pool, HDLC_MTU + HDLC_EXTRA, 16);
 		if (! q) {
 			debug_printf ("hdlc_receiver: out of memory\n");
-			abort ();
+			uos_halt (1);
 		}
 		q = (buf_t*) ARM_NONCACHED (q);
 		q->payload = (unsigned char*) ARM_NONCACHED (q->payload);
@@ -823,7 +823,7 @@ hdlc_get_dcd (hdlc_t *c)
 }
 
 static netif_interface_t hdlc_interface = {
-	(bool_t (*) (netif_t*, buf_t*, uint_t))
+	(bool_t (*) (netif_t*, buf_t*, small_uint_t))
 						hdlc_output,
 	(buf_t *(*) (netif_t*)) 		hdlc_input,
 };
@@ -835,8 +835,6 @@ void
 hdlc_init (hdlc_t *c, unsigned char port, const char *name, int rprio, int tprio,
 	mem_pool_t *pool, unsigned long hz)
 {
-	lock_init (&c->transmitter);
-	lock_init (&c->netif.lock);
 	c->netif.interface = &hdlc_interface;
 	c->netif.name = name;
 	c->netif.mtu = 1500;

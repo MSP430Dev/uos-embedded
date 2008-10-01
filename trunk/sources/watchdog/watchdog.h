@@ -19,7 +19,7 @@
 
 #endif /* __AVR__ */
 
-void watchdog_enable (uint_t timeout);
+void watchdog_enable (int timeout);
 void watchdog_disable (void);
 
 #endif

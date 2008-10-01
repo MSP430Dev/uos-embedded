@@ -33,14 +33,14 @@
 						ARM_UINTEN_RFREAIE))
 #define enable_transmit_interrupt(p) {		\
 	int x;					\
-	MACHDEP_INTR_DISABLE (&x);		\
+	arm_intr_disable (&x);		\
 	ARM_INTMSK &= ~(1 << TRANSMIT_IRQ(p));	\
-	MACHDEP_INTR_RESTORE (x); }
+	arm_intr_restore (x); }
 #define disable_transmit_interrupt(p) {		\
 	int x;					\
-	MACHDEP_INTR_DISABLE (&x);		\
+	arm_intr_disable (&x);		\
 	ARM_INTMSK |= (1 << TRANSMIT_IRQ(p));   \
-	MACHDEP_INTR_RESTORE (x); }
+	arm_intr_restore (x); }
 
 #define transmit_byte(p,c)		(ARM_UTXBUF(p) = (c))
 #define test_transmit_complete(p)	(ARM_USTAT(p) & ARM_USTAT_TC)

@@ -4,13 +4,13 @@
    greater than zero if S1 is lexicographically less than,
    equal to or greater than S2.  */
 
-sign_t
+small_int_t
 strcasecmp (const unsigned char *s1, const unsigned char *s2)
 {
 	unsigned char c1, c2;
 	signed char result;
 
-	if (p1 == p2)
+	if (s1 == s2)
 		return 0;
 
 	do {

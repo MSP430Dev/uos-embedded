@@ -16,8 +16,8 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-#ifndef __UOS_ARCH_H_
-#	error "Don't include directly, use <kernel/arch.h> instead."
+#ifndef __KERNEL_INTERNAL_H_
+#   error "Don't include directly, use <kernel/internal.h> instead."
 #endif
 
 /*
@@ -121,66 +121,17 @@ arch_idle ()
  */
 void arch_halt (int dump_flag);
 
-#if 0
-
-#if FLASHEND > 0x1FFFF
-#	define ASM_GOTO "jmp "
-#elif FLASHEND > 0x2000
-#	define ASM_GOTO "jmp "
-#else
-#	define ASM_GOTO "rjmp "
-#endif
-
-/* LY: temporary, until full commit ----------------------------------------- */
-
-extern inline void* __arch_read_return (void *sp)
+/*
+ * Handle stack pointer register.
+ */
+static void inline __attribute__ ((always_inline))
+arch_set_stack_pointer (arch_stack_t x)
 {
-	unsigned ret = *(unsigned*) sp;
-	return (void*) ((ret << 8) | (ret >> 8));
+	outw ((int) x, SP);
 }
 
-/*
- * The total number of different hardware interrupts.
- */
-#if defined (__AVR_ATmega103__)
-#	define __arch_max_irq	23
-#elif defined (__AVR_ATmega128__)
-#	define __arch_max_irq	34
-#elif defined (__IOM161)
-#	define __arch_max_irq	20
-#elif defined (__AVR_ATmega2561__)
-#	define __arch_max_irq	50
-#else
-#	error
-#endif
-
-/*
- * The global interrupt control.
- * Disable and restore the hardware interrupts,
- * saving the interrupt enable flag into the supplied variable.
- */
-
-#define __arch_cli()			\
-	__asm __volatile ("cli"		\
-		::: "memory")
-
-#define __arch_sti()			\
-	__asm __volatile ("sei"		\
-		::: "memory")
-
-#define __arch_flags_save(flags)	\
-		(*(flags) = inb (SREG))	\
-
-#define __arch_flags_restore(flags)	\
-		outb (flags, SREG)	\
-
-#define __arch_intr_is_enabled(flags)	\
-	(((flags) & (1 << SREG_I)) != 0)
-
-#define __arch_idle() do {				\
-		setb (SE, SLEEP_REG);			\
-		__arch_sti ();				\
-		for (;;)				\
-			__asm __volatile ("sleep");	\
-	} while (0)
-#endif
+static arch_stack_t inline __attribute__ ((always_inline))
+arch_get_stack_pointer ()
+{
+	return (void*) inw (SP);
+}

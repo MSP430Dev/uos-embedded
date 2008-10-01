@@ -7,7 +7,7 @@ extern stream_t debug_stream;
 
 const char* __debug_task_name (task_t *t)
 {
-	uint_t n;
+	small_uint_t n;
 	const char *str = t->name;
 
 	for (n = 0; n < 16; n++) {
@@ -39,7 +39,7 @@ void debug_dump_stack_task (task_t *t)
 
 void task_print (stream_t *stream, task_t *t)
 {
-	uint_t n;
+	small_uint_t n;
 
 	if (! t) {
 		puts (stream, "Task\t  Address\t Prio\t    Stack\tSpace    Msg\tTicks\n");

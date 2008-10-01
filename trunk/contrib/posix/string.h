@@ -9,7 +9,7 @@
 #endif
 
 static inline char *strerror (int n)
-	{ return ""; }
+	{ static char s[] = ""; return s; }
 
 static inline void bzero (void *s, size_t n)
 	{ memset (s, 0, n); }

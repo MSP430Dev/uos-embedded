@@ -9,7 +9,7 @@
 #include <runtime/lib.h>
 #include <watchdog/watchdog.h>
 
-void watchdog_enable (uint_t timeout)
+void watchdog_enable (int timeout)
 {
 #ifdef __AVR_ATmega2561__
         asm volatile (

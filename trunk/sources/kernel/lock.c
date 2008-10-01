@@ -112,7 +112,7 @@ void
 task_recalculate_prio (task_t *t)
 {
 	lock_t *m;
-	int_t old_prio;
+	small_int_t old_prio;
 
 	old_prio = t->prio;
 	t->prio = t->base_prio;
@@ -153,7 +153,7 @@ void
 lock_recalculate_prio (lock_t *m)
 {
 	task_t *t;
-	int_t old_prio;
+	small_int_t old_prio;
 
 	old_prio = m->prio;
 	m->prio = 0;
@@ -184,7 +184,7 @@ lock_recalculate_prio (lock_t *m)
 void
 lock_release (lock_t *m)
 {
-	int_t x;
+	arch_state_t x;
 
 	assert (STACK_GUARD (task_current));
 	arch_intr_disable (&x);

@@ -75,7 +75,7 @@ static unsigned long pcibios_find_entry (void)
 	 */
 	indirect.address = hdr->fields.entry;
 	indirect.segment = I386_CS;
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%edi); cld"
 		: "=a" (return_code),	/* %al */
 		  "=b" (address),	/* %ebx */
@@ -83,7 +83,7 @@ static unsigned long pcibios_find_entry (void)
 		: "0" (*(long*) "$PCI"),
 		  "1" (0),
 		  "D" (&indirect));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	switch (return_code) {
 	case 0:
@@ -106,7 +106,7 @@ static int pcibios_check (pcibios_t *pb)
 	unsigned char status;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%edi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -118,7 +118,7 @@ static int pcibios_check (pcibios_t *pb)
 		: "1" (PCIBIOS_PCI_BIOS_PRESENT),
 		  "D" (&pb->entry_address)
 		: "memory");
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	status = (eax >> 8) & 0xff;
 	pb->hw_mechanism = eax & 0xff;
@@ -163,7 +163,7 @@ int pcibios_read_byte (pcibios_t *pb, unsigned short busdevfn,
 	unsigned long result = 0;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%esi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -174,7 +174,7 @@ int pcibios_read_byte (pcibios_t *pb, unsigned short busdevfn,
 		  "b" (busdevfn),
 		  "D" ((long) reg),
 		  "S" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;
@@ -187,7 +187,7 @@ int pcibios_read_short (pcibios_t *pb, unsigned short busdevfn,
 	unsigned long result = 0;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%esi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -198,7 +198,7 @@ int pcibios_read_short (pcibios_t *pb, unsigned short busdevfn,
 		  "b" (busdevfn),
 		  "D" ((long) reg),
 		  "S" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;
@@ -211,7 +211,7 @@ int pcibios_read_long (pcibios_t *pb, unsigned short busdevfn,
 	unsigned long result = 0;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%esi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -222,7 +222,7 @@ int pcibios_read_long (pcibios_t *pb, unsigned short busdevfn,
 		  "b" (busdevfn),
 		  "D" ((long) reg),
 		  "S" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;
@@ -235,7 +235,7 @@ int pcibios_write_byte (pcibios_t *pb, unsigned short busdevfn,
 	unsigned long result = 0;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%esi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -246,7 +246,7 @@ int pcibios_write_byte (pcibios_t *pb, unsigned short busdevfn,
 		  "b" (busdevfn),
 		  "D" ((long)reg),
 		  "S" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;
@@ -259,7 +259,7 @@ int pcibios_write_short (pcibios_t *pb, unsigned short busdevfn,
 	unsigned long result = 0;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%esi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -270,7 +270,7 @@ int pcibios_write_short (pcibios_t *pb, unsigned short busdevfn,
 		  "b" (busdevfn),
 		  "D" ((long)reg),
 		  "S" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;
@@ -283,7 +283,7 @@ int pcibios_write_long (pcibios_t *pb, unsigned short busdevfn,
 	unsigned long result = 0;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%esi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -294,7 +294,7 @@ int pcibios_write_long (pcibios_t *pb, unsigned short busdevfn,
 		  "b" (busdevfn),
 		  "D" ((long)reg),
 		  "S" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;
@@ -308,7 +308,7 @@ int pcibios_find_device (pcibios_t *pb, unsigned short vendor,
 	unsigned long result = 0, bx;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%edi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -320,7 +320,7 @@ int pcibios_find_device (pcibios_t *pb, unsigned short vendor,
 		  "d" (vendor),
 		  "S" ((int) index),
 		  "D" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;
@@ -335,7 +335,7 @@ int pcibios_find_class_code (pcibios_t *pb, unsigned long class_code,
 	unsigned long result = 0, bx;
 	int x;
 
-	MACHDEP_INTR_DISABLE (&x);
+	i386_intr_disable (&x);
 	__asm__("lcall *(%%edi); cld\n\t"
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
@@ -346,7 +346,7 @@ int pcibios_find_class_code (pcibios_t *pb, unsigned long class_code,
 		  "c" (class_code),
 		  "S" ((int) index),
 		  "D" (&pb->entry_address));
-	MACHDEP_INTR_RESTORE (x);
+	i386_intr_restore (x);
 
 	if (result & 0xff00)
 		return 0;

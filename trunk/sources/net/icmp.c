@@ -47,7 +47,7 @@ icmp_echo_request (ip_t *ip, buf_t *p, netif_t *inp)
 }
 
 void
-icmp_dest_unreach (ip_t *ip, buf_t *p, uint_t op)
+icmp_dest_unreach (ip_t *ip, buf_t *p, small_uint_t op)
 {
 	buf_t *q;
 	icmp_hdr_t *h;

@@ -227,7 +227,7 @@ proto_unreach:
  */
 bool_t
 ip_output_netif (ip_t *ip, buf_t *p, unsigned char *dest, unsigned char *src,
-	uint_t proto, unsigned char *gateway, netif_t *netif,
+	small_uint_t proto, unsigned char *gateway, netif_t *netif,
 	unsigned char *netif_ipaddr)
 {
 	ip_hdr_t *iphdr;
@@ -283,7 +283,7 @@ ip_output_netif (ip_t *ip, buf_t *p, unsigned char *dest, unsigned char *src,
  */
 bool_t
 ip_output (ip_t *ip, buf_t *p, unsigned char *dest, unsigned char *src,
-	uint_t proto)
+	small_uint_t proto)
 {
 	netif_t *netif;
 	unsigned char *gateway, *netif_ipaddr;
@@ -361,10 +361,9 @@ ip_main (void *arg)
  * Initialize the IP layer.
  */
 void
-ip_init (ip_t *ip, mem_pool_t *pool, int_t prio,
+ip_init (ip_t *ip, mem_pool_t *pool, int prio,
 	timer_t *timer, arp_t *arp, lock_group_t *g)
 {
-	lock_init (&ip->lock);
 	ip->pool = pool;
 	ip->timer = timer;
 	ip->arp = arp;

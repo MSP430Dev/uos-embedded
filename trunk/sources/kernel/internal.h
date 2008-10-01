@@ -20,7 +20,24 @@
 #ifndef __KERNEL_INTERNAL_H_
 #define	__KERNEL_INTERNAL_H_ 1
 
-#include <kernel/arch.h>
+#if __AVR__
+#	include <kernel/avr/machdep.h>
+#endif
+#if defined (__arm__) || defined (__thumb__)
+#	include <kernel/arm/machdep.h>
+#endif
+#if I386
+#	include <kernel/i386/machdep.h>
+#endif
+#if MIPS32
+#	include <kernel/mips32/machdep.h>
+#endif
+#if LINUX386
+#	include <kernel/linux386/machdep.h>
+#endif
+#if __MSDOS__
+#	include <kernel/i86-dos/machdep.h>
+#endif
 
 /*
  * ----------
@@ -41,8 +58,8 @@ struct _task_t {
 	void *		message;	/* return value for lock_wait() */
 	void *		privatep;	/* private task data pointer */
 	const char *	name;		/* printable task name */
-	int_t		base_prio;	/* initial task priority */
-	int_t		prio;		/* current task priority */
+	small_int_t	base_prio;	/* initial task priority */
+	small_int_t	prio;		/* current task priority */
 	arch_stack_t	stack_context;	/* saved sp when not running */
 	lock_t		finish;		/* lock to wait on for task finished */
 	unsigned long	ticks;		/* LY: кол-ов переключений на задачу, в будующем ее суммарное время выполнения */
@@ -54,7 +71,7 @@ struct _lock_irq_t {
 	lock_t *	lock;		/* lock, associated with this irq */
 	handler_t	handler;	/* fast interrupt handler */
 	void *		arg;		/* argument for fast handler */
-	int_t		irq;		/* irq number */
+	small_int_t	irq;		/* irq number */
 	bool_t		pending;	/* interrupt is pending */
 };
 

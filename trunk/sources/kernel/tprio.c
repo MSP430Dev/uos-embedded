@@ -21,7 +21,7 @@
 /*
  * Get task priority.
  */
-int_t
+int
 task_priority (task_t *t)
 {
 	return t->base_prio;

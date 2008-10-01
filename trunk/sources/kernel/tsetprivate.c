@@ -24,7 +24,7 @@
 void
 task_set_private (task_t *t, void *new_private)
 {
-	int_t x;
+	arch_state_t x;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));

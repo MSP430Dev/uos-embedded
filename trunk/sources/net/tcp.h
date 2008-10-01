@@ -247,10 +247,10 @@ stream_t *tcp_stream_init (tcp_stream_t *u, tcp_socket_t *sock);
 /*
  * Lower layer interface to TCP:
  */
-void tcp_slowtmr (ip_t *ip) __weak;
-void tcp_fasttmr (ip_t *ip) __weak;
+void tcp_slowtmr (ip_t *ip) __attribute__((weak));
+void tcp_fasttmr (ip_t *ip) __attribute__((weak));
 void tcp_input (struct _ip_t *ip, struct _buf_t *p, struct _netif_t *inp,
-	struct _ip_hdr_t *iph) __weak;
+	struct _ip_hdr_t *iph) __attribute__((weak));
 
 /* Used within the TCP code only: */
 tcp_socket_t *tcp_alloc (ip_t *ip);

@@ -5,11 +5,11 @@
 /*
   LY: Начинает транзакцию частичного обновления NVRAM.
 */
-int_t nvram_begin_update (nvram_t *v, unsigned addr /* relative */)
+small_int_t nvram_begin_update (nvram_t *v, unsigned addr /* relative */)
 {
-	int_t reason;
-	
-	/* debug_printf ("begin-update: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X, addr=0x%04X\n", 
+	small_int_t reason;
+
+	/* debug_printf ("begin-update: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X, addr=0x%04X\n",
 		v->__addr, v->begin, v->end, addr); */
 	lock_take (&v->lock);
 #ifndef NDEBUG
@@ -28,12 +28,12 @@ int_t nvram_begin_update (nvram_t *v, unsigned addr /* relative */)
 		reason = NVRAM_EOF;
 		goto ballout;
 	}
-		
+
 #if NVRAM_WRITE_TAINT
 	/* Отмечаем начало процесса обновления. */
 	v->__addr = v->begin + 2; nvram_write_word (v, 0xDEAD);
 #endif
-	
+
 	/* Пропускаем заголовок. */
 	v->__addr = v->begin + NVRAM_HEADER_SIZE;
 
@@ -54,13 +54,13 @@ ballout:
 }
 
 /*
-  LY: Завершает транзакцию частичного обновления NVRAM.
-*/
-int_t nvram_finalize_update (nvram_t *v)
+ * Завершает транзакцию частичного обновления NVRAM.
+ */
+small_int_t nvram_finalize_update (nvram_t *v)
 {
-	int_t reason;
-	
-	/* debug_printf ("finalize-update: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X\n", 
+	small_int_t reason;
+
+	/* debug_printf ("finalize-update: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X\n",
 		v->__addr, v->begin, v->end); */
 	assert (v->__addr != NVRAM_BAD_ADDRESS
 		&& v->end != v->begin
@@ -75,11 +75,11 @@ int_t nvram_finalize_update (nvram_t *v)
 		reason = NVRAM_EOF;
 		goto ballout;
 	}
-	
+
 	/* LY: читаем байты до конца для пересчета CRC. */
 	while (v->__addr < v->end)
 		nvram_read_byte (v);
-	
+
 	/* LY: Добавляем к CRC сигнатуру и длину. */
 	v->crc = crc32_vak_byte (v->crc, (unsigned char) v->sign);
 	v->crc = crc32_vak_byte (v->crc, (unsigned char) (v->sign >> 8));

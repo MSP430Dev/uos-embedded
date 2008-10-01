@@ -17,8 +17,8 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-#ifndef __UOS_ARCH_H_
-#	error "Don't include directly, use <kernel/arch.h> instead."
+#ifndef __KERNEL_INTERNAL_H_
+#   error "Don't include directly, use <kernel/internal.h> instead."
 #endif
 #include <signal.h>
 #include <setjmp.h>
@@ -53,13 +53,7 @@ void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 /*
  * Perform the task switch.
  */
-static inline void arch_task_switch (task_t *target)
-{
-	if (sigsetjmp (task_current->stack_context, 1) == 0) {
-		task_policy ();
-		siglongjmp (task_current->stack_context, 1);
-	}
-}
+void arch_task_switch (task_t *target);
 
 /*
  * The global interrupt control.

@@ -147,7 +147,7 @@ asn_t *snmp_get_snmpEnableAuthenTraps (snmp_t *snmp, ...)
 		ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_snmpEnableAuthenTraps (snmp_t *snmp, asn_t *val, ...)
 {
 	if (val->type == ASN_INTEGER) {

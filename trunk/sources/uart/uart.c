@@ -237,11 +237,9 @@ static stream_interface_t uart_interface = {
 };
 
 void
-uart_init (uart_t *u, uint_t port, int_t prio, unsigned short khz,
+uart_init (uart_t *u, small_uint_t port, int prio, unsigned short khz,
 	unsigned long baud)
 {
-	lock_init (&u->receiver);
-	lock_init (&u->transmitter);
 	u->interface = &uart_interface;
 	u->port = port;
 	u->khz = khz;

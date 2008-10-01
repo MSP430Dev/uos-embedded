@@ -19,7 +19,7 @@ asn_t *snmp_get_ipForwarding (snmp_t *snmp, ...)
 	return asn_make_int (snmp->pool, snmp->ip->forwarding, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipForwarding (snmp_t *snmp, asn_t *val, ...)
 {
 	if (val->type != ASN_INTEGER)
@@ -42,7 +42,7 @@ asn_t *snmp_get_ipDefaultTTL (snmp_t *snmp, ...)
 	return asn_make_int (snmp->pool, snmp->ip->default_ttl, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipDefaultTTL (snmp_t *snmp, asn_t *val, ...)
 {
 	if (val->type != ASN_INTEGER ||
@@ -440,7 +440,7 @@ asn_t *snmp_next_ipRouteDest (snmp_t *snmp, bool_t nextflag, unsigned long *addr
 	return asn_make_int (snmp->pool, *addr, ASN_IP_ADDRESS);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteDest (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	route_t *u;
@@ -479,7 +479,7 @@ asn_t *snmp_next_ipRouteMask (snmp_t *snmp, bool_t nextflag, unsigned long *addr
 		ASN_IP_ADDRESS);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteMask (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	route_t *u;
@@ -522,7 +522,7 @@ asn_t *snmp_next_ipRouteNextHop (snmp_t *snmp, bool_t nextflag, unsigned long *a
 	return asn_make_int (snmp->pool, LONG (u->gateway), ASN_IP_ADDRESS);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteNextHop (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	route_t *u;
@@ -564,7 +564,7 @@ asn_t *snmp_next_ipRouteMetric1 (snmp_t *snmp, bool_t nextflag, unsigned long *a
 	return asn_make_int (snmp->pool, 0, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteMetric1 (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -588,7 +588,7 @@ asn_t *snmp_next_ipRouteMetric2 (snmp_t *snmp, bool_t nextflag, unsigned long *a
 	return asn_make_int (snmp->pool, 0, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteMetric2 (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -612,7 +612,7 @@ asn_t *snmp_next_ipRouteMetric3 (snmp_t *snmp, bool_t nextflag, unsigned long *a
 	return asn_make_int (snmp->pool, 0, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteMetric3 (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -636,7 +636,7 @@ asn_t *snmp_next_ipRouteMetric4 (snmp_t *snmp, bool_t nextflag, unsigned long *a
 	return asn_make_int (snmp->pool, 0, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteMetric4 (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -660,7 +660,7 @@ asn_t *snmp_next_ipRouteMetric5 (snmp_t *snmp, bool_t nextflag, unsigned long *a
 	return asn_make_int (snmp->pool, 0, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteMetric5 (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -711,7 +711,7 @@ asn_t *snmp_next_ipRouteIfIndex (snmp_t *snmp, bool_t nextflag, unsigned long *a
 		ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteIfIndex (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -735,7 +735,7 @@ asn_t *snmp_next_ipRouteType (snmp_t *snmp, bool_t nextflag, unsigned long *addr
 	return asn_make_int (snmp->pool, SNMP_ROUTE_TYPE_DIRECT, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteType (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -777,7 +777,7 @@ asn_t *snmp_next_ipRouteAge (snmp_t *snmp, bool_t nextflag, unsigned long *addr,
 	return asn_make_int (snmp->pool, 0, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipRouteAge (snmp_t *snmp, asn_t *val, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -926,7 +926,7 @@ asn_t *snmp_next_ipNetToMediaIfIndex (snmp_t *snmp, bool_t nextflag, unsigned *n
 		ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipNetToMediaIfIndex (snmp_t *snmp, asn_t *val, unsigned nif, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -950,7 +950,7 @@ asn_t *snmp_next_ipNetToMediaNetAddress (snmp_t *snmp, bool_t nextflag, unsigned
 	return asn_make_int (snmp->pool, *addr, ASN_IP_ADDRESS);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipNetToMediaNetAddress (snmp_t *snmp, asn_t *val, unsigned nif, unsigned long addr, ...)
 {
 	arp_entry_t *e;
@@ -982,7 +982,7 @@ asn_t *snmp_next_ipNetToMediaType (snmp_t *snmp, bool_t nextflag, unsigned *nif,
 	return asn_make_int (snmp->pool, SNMP_NTM_TYPE_DYNAMIC, ASN_INTEGER);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipNetToMediaType (snmp_t *snmp, asn_t *val, unsigned nif, unsigned long addr, ...)
 {
 	return SNMP_GEN_ERR;
@@ -1009,7 +1009,7 @@ asn_t *snmp_next_ipNetToMediaPhysAddress (snmp_t *snmp, bool_t nextflag, unsigne
 	return asn_make_stringn (snmp->pool, e->ethaddr, 6);
 }
 
-uint_t
+small_uint_t
 snmp_set_ipNetToMediaPhysAddress (snmp_t *snmp, asn_t *val, unsigned nif, unsigned long addr, ...)
 {
 	arp_entry_t *e;

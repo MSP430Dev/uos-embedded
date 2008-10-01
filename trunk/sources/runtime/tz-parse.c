@@ -1,26 +1,10 @@
 #include <runtime/lib.h>
-/*#include <kernel/uos.h>*/
 #include <runtime/time.h>
 #include "time.h"
 
-/* LY: копия из time.h для удобства:
-
-	struct tz_rule_t {
-		uint_t month, week, day;
-		unsigned seconds;
-	};
-
-	struct tz_t {
-		unsigned char name_std[4];
-		unsigned char name_dst[4];
-		int offset_std, offset_dst;
-		struct tz_rule_t start, end;
-	};
-*/
-
 static unsigned char* parse_hms (unsigned char *s, unsigned *seconds)
 {
-	uint_t len, hour, min, sec;
+	small_uint_t len, hour, min, sec;
 
 	hour = min = sec = 0;
 	/* LY: hours. */
@@ -68,7 +52,7 @@ ballout:
 
 static unsigned char* parse_offset (unsigned char *s, int *offset)
 {
-	sign_t sign;
+	small_int_t sign;
 
 	/* LY: parse sign of offset. */
 	sign = -1;
@@ -87,7 +71,7 @@ static unsigned char* parse_offset (unsigned char *s, int *offset)
 
 static unsigned char* parse_rule (unsigned char *s, struct tz_rule_t *r)
 {
-	uint_t value, len;
+	small_uint_t value, len;
 
 	/* LY: we accept only M-type, but not J0 or J1. */
 	if (*s++ != 'M')

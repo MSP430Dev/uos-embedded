@@ -62,21 +62,21 @@ static unsigned char ports, links;
 static unsigned char delay_ds;
 static unsigned char delay_limit_ds;
 
-uint_t trap_defer_delay_ds;
+small_uint_t trap_defer_delay_ds;
 
-bool_t trap_defer_init (uint_t max_delay_ds, uint_t links_count, uint_t ports_count)
+bool_t trap_defer_init (small_uint_t max_delay_ds, small_uint_t links_count,
+	small_uint_t ports_count)
 {
 	unsigned queue_size;
 
-	lock_init (&lock);
 	assert (trap_queue == 0);
-	queue_size = 4				// LY: trap-старт, alarm-on/off, auth.
-		+ links_count + links_count	// LY: link-up/down.
-		+ ports_count + ports_count;	// LY: port-up/down.
+	queue_size = 4				/* trap-старт, alarm-on/off, auth */
+		+ links_count + links_count	/* link-up/down */
+		+ ports_count + ports_count;	/* port-up/down */
 	trap_queue = mem_alloc (&pool,
-		queue_size * sizeof (trap_t)	// LY: кольцевая очередь trap-ов.
-		+ ports_count + links_count	// LY: буфер для trap-countdown.
-		+ (ports_count + links_count)	// LY: буфер для флагов up/down.
+		queue_size * sizeof (trap_t)	/* кольцевая очередь trap-ов */
+		+ ports_count + links_count	/* буфер для trap-countdown */
+		+ (ports_count + links_count)	/* буфер для флагов up/down */
 			* sizeof (trap_flag_t));
 	if (! trap_queue)
 		return 0;
@@ -98,7 +98,7 @@ bool_t trap_defer_init (uint_t max_delay_ds, uint_t links_count, uint_t ports_co
 }
 
 /*
- * LY: обновляем таймауты определяющите возможность отправки trap-ов.
+ * Обновляем таймауты определяющите возможность отправки trap-ов.
  * При превышении максимального времени ожидания, очередь очищается.
  */
 static inline void trap_delay_update (unsigned char since_ds)
@@ -117,7 +117,7 @@ static inline void trap_delay_update (unsigned char since_ds)
 		alarm_countdown = 0;
 
 	if (since_ds > delay_limit_ds - delay_ds) {
-		/* LY: Вышел тайм-аут отправки trap-ов, чистим очередь. */
+		/* Вышел тайм-аут отправки trap-ов, чистим очередь. */
 		last = first;
 		since_ds = 0;
 	} else
@@ -144,7 +144,9 @@ static inline bool_t trap_is_linkport (trap_t *t)
 	return t->type == TRAP_LINK || t->type == TRAP_PORT;
 }
 
-// LY: Выдает индекс для доступа к массивам trap_countdown и trap_flag.
+/*
+ * Выдает индекс для доступа к массивам trap_countdown и trap_flag.
+ */
 static inline unsigned trap_index (trap_t *t)
 {
 	unsigned index;
@@ -156,7 +158,9 @@ static inline unsigned trap_index (trap_t *t)
 	return index;
 }
 
-// LY: Ищем trap начиная с конца.
+/*
+ * Ищем trap начиная с конца.
+ */
 static inline trap_t *trap_lookup (trap_t *trap)
 {
 	trap_t *t;
@@ -172,7 +176,9 @@ static inline trap_t *trap_lookup (trap_t *trap)
 	return 0;
 }
 
-// LY: пора ли отправлять стоящий в очереди trap, или нет.
+/*
+ * Пора ли отправлять стоящий в очереди trap, или нет.
+ */
 static inline bool_t trap_should_delay (trap_t *t)
 {
 	if (trap_is_linkport (t) && trap_countdown [trap_index (t)])
@@ -182,14 +188,16 @@ static inline bool_t trap_should_delay (trap_t *t)
 	return 0;
 }
 
-// LY: решаем, что делать с поступившим trap'ом:
-//       > 0 - поставить в очередь, замещая трап в очереди;
-//       = 0 - игнорировать трап и почистить очередь;
-//       < 0 - игнорировать трап, и не трогать очередь;
-//     или:
-//       - чистить очередь если >= 0;
-//       - ставить трап в очередь если > 0;
-static sign_t trap_decide (trap_t *now, trap_t *queued)
+/*
+ * Решаем, что делать с поступившим trap'ом:
+ *       > 0 - поставить в очередь, замещая трап в очереди;
+ *       = 0 - игнорировать трап и почистить очередь;
+ *       < 0 - игнорировать трап, и не трогать очередь;
+ * или:
+ *       - чистить очередь если >= 0;
+ *       - ставить трап в очередь если > 0;
+ */
+static small_int_t trap_decide (trap_t *now, trap_t *queued)
 {
 	unsigned i;
 	assert (queued == 0 || now->type == queued->type);
@@ -197,8 +205,8 @@ static sign_t trap_decide (trap_t *now, trap_t *queued)
 	switch (now->type) {
 	case TRAP_AUTH:
 		if (queued) {
-			// LY: только один трап аутонтификации может находится в очереди,
-			//     обновляем данные и игнорируем новый трап.
+			/* Только один трап аутонтификации может находится в очереди,
+			 * обновляем данные и игнорируем новый трап. */
 			queued->auth_failure.user_addr = now->auth_failure.user_addr;
 			return -1;
 		}
@@ -206,20 +214,20 @@ static sign_t trap_decide (trap_t *now, trap_t *queued)
 
 	case TRAP_ALARM:
 		if ((int) alarm_state == now->alarm.state)
-			// LY: вернулись к уже индицированному состоянию,
-			//     чистим очередь и игнорируем новый трап.
+			/* Вернулись к уже индицированному состоянию,
+			 * чистим очередь и игнорируем новый трап. */
 			return 0;
 
 		if (queued && queued->alarm.state == now->alarm.state)
-			// LY: игнорируем повторный trap.
+			/* Игнорируем повторный trap. */
 			return -1;
 
-		// LY: переход в "хорошее" состояние индицируется с задержкой.
+		/* Переход в "хорошее" состояние индицируется с задержкой. */
 		alarm_countdown = trap_defer_delay_ds;
 
 		if (now->alarm.state > (int) alarm_state)
-			// LY: был не-alarm, а теперь alarm,
-			//     сбрасываем время, чтобы не задерживать отправку.
+			/* Был не-alarm, а теперь alarm,
+			 * сбрасываем время, чтобы не задерживать отправку. */
 			alarm_countdown = 0;
 		break;
 
@@ -229,27 +237,27 @@ static sign_t trap_decide (trap_t *now, trap_t *queued)
 		i = trap_index (now);
 		if (trap_flag[i].up == now->linkport.up
 			&& trap_flag[i].status == now->linkport.status)
-			// LY: вернулись к уже индицированному состоянию,
-			//     чистим очередь и игнорируем новый трап.
+			/* Вернулись к уже индицированному состоянию,
+			 * чистим очередь и игнорируем новый трап. */
 			return 0;
 
 		if (queued && now->linkport.up == queued->linkport.up) {
-			// LY: обновляем статус и удаляем повторный trap.
+			/* Обновляем статус и удаляем повторный trap. */
 			queued->linkport.status = now->linkport.status;
 			return -1;
 		}
 
-		// LY: переход в "хорошее" состояние индицируется с задержкой.
+		/* Переход в "хорошее" состояние индицируется с задержкой. */
 		trap_countdown[i] = trap_defer_delay_ds;
 
 		if (now->linkport.up < trap_flag[i].up)
-			// LY: был не down, а теперь down,
-			//     сбрасываем время, чтобы не задерживать отправку.
+			/* Был не down, а теперь down,
+			 * сбрасываем время, чтобы не задерживать отправку. */
 			trap_countdown[i] = 0;
 		break;
 	}
 
-	// LY: добавляем новый trap.
+	/* Добавляем новый trap. */
 	return 1;
 }
 
@@ -298,17 +306,16 @@ static inline bool_t send_trap (trap_t *t)
  *   >0 - успешная отсылка всех имеющихся trap-ов
  *   <0 - неудачная отсылка
  */
-static sign_t trap_try (void)
+static small_int_t trap_try (void)
 {
-	sign_t result = 0;
+	small_int_t result = 0;
 	trap_t* t, *e;
 
 	t = first; e = last;
 	while (t != e) {
 		if (trap_should_delay (t)) {
-			/* LY: trap должен быть задержен,
-			 * переставим его в конец очереди и продолжим.
-			 */
+			/* Trap должен быть задержен,
+			 * переставим его в конец очереди и продолжим. */
 			*last = *t;
 			last = trap_queue_next (last);
 		} else if (send_trap (t)) {
@@ -329,12 +336,12 @@ static sign_t trap_try (void)
 static void trap_enqueue_release (trap_t *trap)
 {
 	trap_t *t;
-	sign_t action;
+	small_int_t action;
 
 	action = trap_decide (trap, t = trap_lookup (trap));
 	if (action >= 0) {
 		if (t) {
-			// LY: удаляем trap, стоящий в очереди.
+			/* Удаляем trap, стоящий в очереди. */
 			for (;;) {
 				trap_t *p = trap_queue_next (t);
 				if (p == last) {
@@ -345,11 +352,11 @@ static void trap_enqueue_release (trap_t *trap)
 			}
 		}
 		if (action > 0) {
-			// LY: добавляем новый trap.
+			/* Добавляем новый trap. */
 			*last = *trap;
 			last = trap_queue_next (last);
 
-			// LY: если очередь полна, теряем самый "старый" trap.
+			/* Если очередь полна, теряем самый "старый" trap. */
 			if (last == first)
 				first = trap_queue_next (first);
 			trap_try ();
@@ -358,21 +365,22 @@ static void trap_enqueue_release (trap_t *trap)
 	lock_release (&lock);
 }
 
-sign_t trap_defer_poll (unsigned short since_ms)
+small_int_t trap_defer_poll (unsigned short since_ms)
 {
-	sign_t result;
+	small_int_t result;
 
 	result = 0;
 	if (snmp && trap_queue && since_ms) {
 		lock_take (&lock);
 		if (since_ms > 255 * 99)
-			// LY: чтобы небыло переполнения в байте после сложения и деления на 100.
+			/* Чтобы не было переполнения в байте после сложения
+			 * и деления на 100. */
 			since_ms = 255 * 99;
 		since_ms += since_acc_ms;
 		if (since_ms < since_acc_ms)
 			since_ms = 255 * 100;
 		if (since_ms >= 100) {
-			// LY: Не пытаемся отправлять TRAP'ы чаще чем 10 раз в секунду.
+			/* Не пытаемся отправлять TRAP'ы чаще чем 10 раз в секунду. */
 			trap_delay_update (since_ms / 100);
 			since_ms %= 100;
 			result = trap_try ();
@@ -412,7 +420,7 @@ void trap_defer_auth_failure (void)
 	trap_enqueue_release (&t);
 }
 
-void trap_defer_link (bool_t up, uint_t link_index, uint_t link_status)
+void trap_defer_link (bool_t up, small_uint_t link_index, small_uint_t link_status)
 {
 	trap_t t;
 
@@ -430,7 +438,7 @@ void trap_defer_link (bool_t up, uint_t link_index, uint_t link_status)
 	trap_enqueue_release (&t);
 }
 
-void trap_defer_port (bool_t up, uint_t port_index, uint_t port_status)
+void trap_defer_port (bool_t up, small_uint_t port_index, small_uint_t port_status)
 {
 	trap_t t;
 

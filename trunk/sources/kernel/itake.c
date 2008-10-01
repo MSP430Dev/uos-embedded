@@ -25,7 +25,7 @@
  * On interrupt, the signal message is sent to the lock.
  */
 void
-lock_take_irq (lock_t *m, int_t irq, handler_t func, void *arg)
+lock_take_irq (lock_t *m, int irq, handler_t func, void *arg)
 {
 	arch_state_t x;
 

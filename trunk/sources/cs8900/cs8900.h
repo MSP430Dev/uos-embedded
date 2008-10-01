@@ -23,7 +23,7 @@ typedef struct _cs8900_t {
 	unsigned char stack [CS8900_STACKSZ];	/* task receive stack */
 } cs8900_t;
 
-void cs8900_init (cs8900_t *u, const char *name, int_t prio, struct _mem_pool_t *pool,
+void cs8900_init (cs8900_t *u, const char *name, int prio, struct _mem_pool_t *pool,
 	arp_t *arp);
 void cs8900_poll (cs8900_t *u);
 bool_t cs8900_probe (void);

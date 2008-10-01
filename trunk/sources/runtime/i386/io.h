@@ -177,23 +177,38 @@ unsigned int i386_get_stack_segment ()
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.
  */
-#define I386_INTR_DISABLE(x)	({				\
-	asm volatile (						\
-"	pushf \n"						\
-"	pop %0 \n"						\
-"	cli \n"							\
-	: "=r" (*(x)) : : "memory"); })
+static void inline __attribute__ ((always_inline))
+i386_intr_disable (int *x)
+{
+	asm volatile (
+	"pushf \n"
+"	pop %0 \n"
+"	cli"
+	: "=r" (*(x)) : : "memory");
+}
 
-#define I386_INTR_RESTORE(x)	({				\
-	asm volatile (						\
-"	push %0 \n"						\
-"	popf \n"						\
-	: : "r" (x) : "memory"); })
+/*
+ * Restore the hardware interrupt mode using the saved interrupt state.
+ */
+static void inline __attribute__ ((always_inline))
+i386_intr_restore (int x)
+{
+	asm volatile (
+	"push %0 \n"
+"	popf"
+	: : "r" (x) : "memory");
+}
 
-#define I386_INTR_ENABLE()	({				\
-	asm volatile (						\
-"	sti \n"							\
-	: : : "memory"); })
+/*
+ * Enable hardware interrupts.
+ */
+static void inline __attribute__ ((always_inline))
+i386_intr_enable ()
+{
+	asm volatile (
+	"sti"
+	: : : "memory");
+}
 
 static __inline int
 ffs (int mask)

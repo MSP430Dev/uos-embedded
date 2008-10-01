@@ -118,7 +118,7 @@ slip_set_cts_poller (slip_t *u, bool_t (*func) (slip_t*))
  * might be chained.
  */
 bool_t
-slip_output (slip_t *u, buf_t *p, uint_t prio)
+slip_output (slip_t *u, buf_t *p, small_uint_t prio)
 {
 /*	debug_printf ("slip_output: transmit %d bytes\n", p->tot_len);*/
 	lock_take (&u->transmitter);
@@ -375,18 +375,15 @@ slip_transmitter (void *arg)
 }
 
 static netif_interface_t slip_interface = {
-	(bool_t (*) (netif_t*, buf_t*, uint_t))
+	(bool_t (*) (netif_t*, buf_t*, small_uint_t))
 						slip_output,
 	(buf_t *(*) (netif_t*))			slip_input,
 };
 
 void
-slip_init (slip_t *u, uint_t port, const char *name, int_t prio,
+slip_init (slip_t *u, small_uint_t port, const char *name, int prio,
 	mem_pool_t *pool, unsigned short khz, unsigned long baud)
 {
-	lock_init (&u->netif.lock);
-	//lock_init (&u->receiver);
-	lock_init (&u->transmitter);
 	u->netif.interface = &slip_interface;
 	u->netif.name = name;
 	u->netif.arp = 0;

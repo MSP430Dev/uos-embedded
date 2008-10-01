@@ -22,9 +22,9 @@
  * Set task priority.
  */
 void
-task_set_priority (task_t *t, int_t new_prio)
+task_set_priority (task_t *t, int new_prio)
 {
-	int_t x;
+	arch_state_t x;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));

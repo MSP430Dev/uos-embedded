@@ -273,7 +273,6 @@ pipe_t *pipe_init (char *buf, int bytes, stream_t **master, stream_t **slave)
 	memset (buf, 0, bytes);
 	u = (pipe_t*) buf;
 
-	lock_init (&u->lock);
 	*master = &u->master;
 	*slave = &u->slave;
 	u->slave.interface = &slave_interface;

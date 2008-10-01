@@ -78,7 +78,7 @@ typedef struct _netif_t {
 typedef struct _netif_interface_t {
 	/* Передача пакета. */
 	bool_t (*output) (netif_t *u, struct _buf_t *p,
-		uint_t prio);
+		small_uint_t prio);
 
 	/* Выборка пакета из очереди приема. */
 	struct _buf_t *(*input) (netif_t *u);
@@ -90,7 +90,7 @@ typedef struct _netif_interface_t {
 bool_t netif_output (netif_t *netif, struct _buf_t *p,
 	unsigned char *ipdest, unsigned char *ipsrc);
 bool_t netif_output_prio (netif_t *netif, struct _buf_t *p,
-	unsigned char *ipdest, unsigned char *ipsrc, uint_t prio);
+	unsigned char *ipdest, unsigned char *ipsrc, small_uint_t prio);
 struct _buf_t *netif_input (netif_t *netif);
 void netif_set_address (netif_t *netif, unsigned char *ethaddr);
 

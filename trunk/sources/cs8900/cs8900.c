@@ -25,7 +25,8 @@ extern volatile unsigned char device_cs8900[];
 /*
  * Output low byte first, then high byte.
  */
-void __forceinline cs_out (uint_t reg, unsigned val) {
+void inline __attribute__((always_inline))
+cs_out (small_uint_t reg, unsigned val) {
 #ifdef __AVR__
 	__asm __volatile (
 		"sts %1, %A0"		"\n\t"
@@ -40,7 +41,8 @@ void __forceinline cs_out (uint_t reg, unsigned val) {
 /*
  * Input high byte first, then low byte.
  */
-unsigned __forceinline cs_in (uint_t reg) {
+unsigned inline __attribute__((always_inline))
+cs_in (small_uint_t reg) {
 #ifdef __AVR__
 	unsigned v;
 	__asm __volatile (
@@ -49,7 +51,7 @@ unsigned __forceinline cs_in (uint_t reg) {
 		: "=r" (v) : "o" (device_cs8900[reg]));
 	return v;
 #else
-	uint_t l, h;
+	small_uint_t l, h;
 	h = device_cs8900[reg + 1];
 	l = device_cs8900[reg];
 	return ((unsigned) h << 8) | l;
@@ -412,10 +414,10 @@ cs8900_receiver (void *arg)
  * might be chained.
  */
 bool_t
-cs8900_output (cs8900_t *u, buf_t *p, uint_t prio)
+cs8900_output (cs8900_t *u, buf_t *p, small_uint_t prio)
 {
 	buf_t *q;
-	uint_t hilo;
+	small_uint_t hilo;
 	unsigned char *b;
 	unsigned len;
 
@@ -496,7 +498,7 @@ failed: 	++u->netif.out_errors;
 
 	/* LY: pad eth-frame tail, else cs8900 just repead last byte. */
 	if (! CS8900_RUNT && CS8900_PAD64 && p->tot_len < ETH_MIN - 1) {
-		uint_t pad = p->tot_len;
+		small_uint_t pad = p->tot_len;
 		pad = (ETH_MIN - pad) >> 1;
 		do {
 			cs_out (DATAREG, 0);
@@ -528,7 +530,7 @@ cs8900_probe ()
 }
 
 static netif_interface_t cs8900_interface = {
-	(bool_t (*) (netif_t*, buf_t*, uint_t))
+	(bool_t (*) (netif_t*, buf_t*, small_uint_t))
 						cs8900_output,
 	(buf_t *(*) (netif_t*))			cs8900_input,
 	(void (*) (netif_t*, unsigned char*))	cs8900_set_address,
@@ -541,7 +543,7 @@ extern timer_t timer;
  * Set up the network interface.
  */
 void
-cs8900_init (cs8900_t *u, const char *name, int_t prio, mem_pool_t *pool, arp_t *arp)
+cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *arp)
 {
 	u->netif.interface = &cs8900_interface;
 	u->netif.name = name;

@@ -16,7 +16,7 @@ extern void *
 memset (void *s, unsigned char c, size_t n);
 
 /* Compare N bytes of S1 and S2.  */
-extern sign_t
+extern small_int_t
 memcmp (const void *s1, const void *s2, size_t n);
 
 /* Copy N bytes of SRC to DEST, guaranteeing
@@ -49,11 +49,11 @@ extern unsigned char *
 strncat (unsigned char *dest, const unsigned char *src, size_t n);
 
 /* Compare S1 and S2.  */
-extern sign_t
+extern small_int_t
 strcmp (const unsigned char *s1, const unsigned char *s2);
 
 /* Compare N characters of S1 and S2.  */
-extern sign_t
+extern small_int_t
 strncmp (const unsigned char *s1, const unsigned char *s2, size_t n);
 
 /* Find the first occurrence of C in S.  */

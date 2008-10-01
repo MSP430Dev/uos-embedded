@@ -68,7 +68,7 @@ unsigned long crc32_rmon (unsigned const char *buf, unsigned short len)
 		"adc %D0, __zero_reg__"
 		: "+r" (sum), "+e" (buf) : : "cc", __tmp_reg__);
 #else
-		BUILD_ONLY_LITTLE_ENDIAN;
+/*		BUILD_ONLY_LITTLE_ENDIAN;*/
 		cyclic_add (sum, (*(unsigned long*) buf));
 		buf += 4;
 #endif
