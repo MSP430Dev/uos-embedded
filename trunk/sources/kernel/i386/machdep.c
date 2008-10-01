@@ -47,12 +47,15 @@
 void
 _arch_task_switch (void)
 {
+	task_t *target;
+
 	asm volatile (
 "arch_task_switch: .globl arch_task_switch \n"
+"	mov	4(%%esp), %0 \n"
 "	push	$0 \n"
 "	pushal \n"
 "	push	%%ds \n"
-"	push	%%es" : : : "sp");
+"	push	%%es" : "=r" (target) : : "sp");
 
 	/* Perform the context switch to the most priority task. */
 	asm volatile (
@@ -61,7 +64,7 @@ _arch_task_switch (void)
 	task_current->stack_context = i386_get_stack_pointer ();
 
 	/* Compute new active task. */
-	task_policy ();
+	task_current = target;
 
 	/* Switch to the new task. */
 	i386_set_stack_pointer (task_current->stack_context);
@@ -81,7 +84,7 @@ _arch_task_switch (void)
  * It never returns.
  */
 void
-arch_intr (trapframe_t *f)
+i386_intr (trapframe_t *f)
 {
 	lock_irq_t *h = &lock_irq [f->err];
 
@@ -107,6 +110,8 @@ arch_intr (trapframe_t *f)
 
 	/* Signal the interrupt handler, if any. */
 	lock_activate (h->lock, 0);
+
+	/* TODO: task_policy */
 
 	i386_set_stack_pointer (f);
 	asm ("jmp switch_task");

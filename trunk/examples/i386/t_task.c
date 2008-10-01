@@ -4,7 +4,7 @@
 #include "runtime/lib.h"
 #include "kernel/uos.h"
 
-char task [0x200];
+OPACITY (task, 0x200);
 
 void hello (void *arg)
 {

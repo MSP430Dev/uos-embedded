@@ -6,7 +6,7 @@
 #include "input/mouse.h"
 #include "i8042/mouse.h"
 
-char task [0x400];
+OPACITY (task, 0x400);
 mouse_ps2_t mouse;
 
 void hello (void *arg)
