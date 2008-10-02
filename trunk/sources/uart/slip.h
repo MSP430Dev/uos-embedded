@@ -8,8 +8,8 @@
 #   if defined (__arm__) || defined (__thumb__)
 #      define SLIP_STACKSZ	0x180
 #   endif
-#   if __MSDOS__
-#      define SLIP_STACKSZ	0x180
+#   if MIPS32
+#      define SLIP_STACKSZ	0x400
 #   endif
 #   if LINUX386
 #      define SLIP_STACKSZ	4000
@@ -23,7 +23,7 @@ typedef struct _slip_t {
 	netif_t netif;			/* common network interface part */
 	lock_t transmitter;
 	small_uint_t port;
-	unsigned short khz;
+	unsigned int khz;
 	struct _mem_pool_t *pool;	/* memory pool for allocating packets */
 
 	buf_queue_t inq;		/* queue of received packets */
@@ -49,7 +49,7 @@ typedef struct _slip_t {
 } slip_t;
 
 void slip_init (slip_t *u, small_uint_t port, const char *name, int prio,
-	mem_pool_t *pool, unsigned short khz, unsigned long baud);
+	mem_pool_t *pool, unsigned int khz, unsigned long baud);
 void slip_set_cts_poller (slip_t *u, bool_t (*) (slip_t*));
 void slip_cts_ready (slip_t *u);
 struct _buf_t *slip_recv (slip_t *u);

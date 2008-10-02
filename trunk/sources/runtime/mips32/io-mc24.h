@@ -33,33 +33,47 @@
 #define ST_EXL		0x00000002	/* уровень исключения */
 #define ST_ERL		0x00000004	/* уровень ошибки */
 #define ST_UM		0x00000010	/* режим пользователя */
-#define ST_IM		0x0000ff00	/* разрешение прерываний */
-
+#define ST_IM_SW0	0x00000100	/* программное прерывание 0 */
+#define ST_IM_SW1	0x00000200	/* программное прерывание 1 */
+#define ST_IM_IRQ0	0x00000400	/* внешнее прерывание 0 */
+#define ST_IM_IRQ1	0x00000800	/* внешнее прерывание 1 */
+#define ST_IM_IRQ2	0x00001000	/* внешнее прерывание 2 */
+#define ST_IM_IRQ3	0x00002000	/* внешнее прерывание 3 */
+#define ST_IM_MCU	0x00008000	/* от внутренних устройств микроконтроллера */
 #define ST_NMI		0x00080000	/* причина сброса - NMI */
 #define ST_TS		0x00200000	/* TLB-закрытие системы */
 #define ST_BEV		0x00400000	/* размещение векторов: начальная загрузка */
 
+#define ST_CU0		0x10000000	/* разрешение сопроцессора 0 */
+
 /*
  * Сause register.
  */
-#define CA_EXC_CODE	0x0000007c
-#define CA_Int		0
-#define CA_Mod		(1 << 2)
-#define CA_TLBL		(2 << 2)
-#define CA_TLBS		(3 << 2)
-#define CA_AdEL		(4 << 2)
-#define CA_AdES		(5 << 2)
-#define CA_Sys		(8 << 2)
-#define CA_Bp		(9 << 2)
-#define CA_RI		(10 << 2)
-#define CA_CpU		(11 << 2)
-#define CA_Ov		(12 << 2)
-#define CA_Tr		(13 << 2)
-#define CA_MCheck	(24 << 2)
+#define CA_EXC_CODE	0x0000007c	/* код исключения */
+#define CA_Int		0		/* прерывание */
+#define CA_Mod		(1 << 2)	/* TLB-исключение модификации */
+#define CA_TLBL		(2 << 2)	/* TLB-исключение, загрузка или вызов команды */
+#define CA_TLBS		(3 << 2)	/* TLB-исключение, сохранение */
+#define CA_AdEL		(4 << 2)	/* ошибка адресации, загрузка или вызов команды */
+#define CA_AdES		(5 << 2)	/* ошибка адресации, сохранение */
+#define CA_Sys		(8 << 2)	/* системное исключение */
+#define CA_Bp		(9 << 2)	/* breakpoint */
+#define CA_RI		(10 << 2)	/* зарезервированная команда */
+#define CA_CpU		(11 << 2)	/* недоступность сопроцессора */
+#define CA_Ov		(12 << 2)	/* целочисленное переполнение */
+#define CA_Tr		(13 << 2)	/* trap */
+#define CA_MCheck	(24 << 2)	/* аппаратный контроль */
 
-#define CA_IP		0x0000ff00
-#define CA_IV		0x00800000
-#define CA_BD		0x80000000
+#define CA_ID		0x00000080	/* прерывание от блока отладки OnCD */
+#define CA_IP_SW0	0x00000100	/* программное прерывание 0 */
+#define CA_IP_SW1	0x00000200	/* программное прерывание 1 */
+#define CA_IP_IRQ0	0x00000400	/* внешнее прерывание 0 */
+#define CA_IP_IRQ1	0x00000800	/* внешнее прерывание 1 */
+#define CA_IP_IRQ2	0x00001000	/* внешнее прерывание 2 */
+#define CA_IP_IRQ3	0x00002000	/* внешнее прерывание 3 */
+#define CA_IP_MCU	0x00008000	/* от внутренних устройств микроконтроллера */
+#define CA_IV		0x00800000	/* 1 - используется спец.вектор 0x200 */
+#define CA_BD		0x80000000	/* исключение в слоте задержки перехода */
 
 
 /*--------------------------------------
@@ -183,13 +197,44 @@
 							 * двухмерной адресации внешней памяти */
 #define MC_RUN(n)	MC_R (0x0818+(n<<8))	/* Псевдорегистр управления состоянием бита RUN */
 
-/*
+/*--------------------------------------
  * Системный регистр CSR
  */
-#define MC_CSR_FM	0x00000001	/* Fixed mapping */
-#define MC_CSR_CLK(n)	(n << 4)	/* PLL clock multiply, 1..31, 0=1/16 */
-#define MC_CSR_FLUSH	0x00001000	/* instriction cache invalidate */
-#define MC_CSR_CLKEN	0x00010000	/* PLL clock enable */
+#define MC_CSR_FM		0x00000001	/* Fixed mapping */
+#define MC_CSR_CLK(n)		(n << 4)	/* PLL clock multiply, 1..31, 0=1/16 */
+#define MC_CSR_FLUSH		0x00001000	/* instriction cache invalidate */
+#define MC_CSR_CLKEN		0x00010000	/* PLL clock enable */
+
+/*
+ * Системный регистр MASKR
+ */
+#define MC_MASKR_SRX0		0x00000001	/* SPORT0 receive */
+#define MC_MASKR_STX0		0x00000002	/* SPORT0 transmit */
+#define MC_MASKR_SRX1		0x00000004	/* SPORT0 receive */
+#define MC_MASKR_STX1		0x00000008	/* SPORT0 transmit */
+#define MC_MASKR_UART		0x00000010	/* UART */
+#define MC_MASKR_LTRX0		0x00000080	/* LPORT0 data */
+#define MC_MASKR_LSRQ0		0x00000100	/* LPORT0 service */
+#define MC_MASKR_LTRX1		0x00000200	/* LPORT1 data */
+#define MC_MASKR_LSRQ1		0x00000400	/* LPORT1 service */
+#define MC_MASKR_LTRX2		0x00000800	/* LPORT2 data */
+#define MC_MASKR_LSRQ2		0x00001000	/* LPORT2 service */
+#define MC_MASKR_LTRX3		0x00002000	/* LPORT3 data */
+#define MC_MASKR_LSRQ3		0x00004000	/* LPORT3 service */
+#define MC_MASKR_COMPARE	0x00080000	/* CPU timer */
+#define MC_MASKR_MEMCH0		0x00200000	/* DMA MemCh0 */
+#define MC_MASKR_MEMCH1		0x00400000	/* DMA MemCh0 */
+#define MC_MASKR_MEMCH2		0x00800000	/* DMA MemCh0 */
+#define MC_MASKR_MEMCH3		0x01000000	/* DMA MemCh0 */
+#define MC_MASKR_TIMER		0x20000000	/* timers IT, WDT, RTT */
+#define MC_MASKR_PI		0x40000000	/* DSP software interrupt */
+#define MC_MASKR_SBS		0x80000000	/* DSP status */
+
+/*--------------------------------------
+ * Интервальный таймер, регистр управления ITCSR
+ */
+#define MC_ITCSR_EN		0x00000001	/* разрешение работы таймера */
+#define MC_ITCSR_INT		0x00000002	/* признак срабатывания таймера */
 
 /*--------------------------------------
  * UART.

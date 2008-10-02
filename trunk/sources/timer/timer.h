@@ -19,11 +19,8 @@ extern "C" {
 #   if I386
 #      define TIMER_STACKSZ	0x400
 #   endif
-#   if __MSDOS__
-#      define TIMER_STACKSZ	200
-#   endif
-#   if PDP11
-#      define TIMER_STACKSZ	256
+#   if MIPS32
+#      define TIMER_STACKSZ	600
 #   endif
 #   if defined (__arm__) || defined (__thumb__)
 #      define TIMER_STACKSZ	300

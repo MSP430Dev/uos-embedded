@@ -294,7 +294,7 @@ static stream_interface_t uart_interface = {
 };
 
 void
-uart_init (uart_t *u, int prio, unsigned short khz, unsigned long baud)
+uart_init (uart_t *u, int prio, unsigned int khz, unsigned long baud)
 {
 	u->interface = &uart_interface;
 

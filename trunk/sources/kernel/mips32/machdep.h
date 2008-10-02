@@ -22,8 +22,10 @@
 
 /*
  * The total number of different hardware interrupts.
+ * 32 interrupts linked to MASKR[31:0] register.
+ * 8 interrupts linked to IP[7:0] bits of CP0_CAUSE register.
  */
-#define ARCH_INTERRUPTS		32
+#define ARCH_INTERRUPTS		(32+8)
 
 /*
  * Type for saving task stack context.

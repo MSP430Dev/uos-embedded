@@ -35,9 +35,6 @@
 #if LINUX386
 #	include <kernel/linux386/machdep.h>
 #endif
-#if __MSDOS__
-#	include <kernel/i86-dos/machdep.h>
-#endif
 
 /*
  * ----------

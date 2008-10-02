@@ -8,12 +8,6 @@
 #   if I386
 #      define IP_STACKSZ	0x800
 #   endif
-#   if __MSDOS__
-#      define IP_STACKSZ	300
-#   endif
-#   if PDP11
-#      define IP_STACKSZ	0x400
-#   endif
 #   if LINUX386
 #      define IP_STACKSZ	4000
 #   endif

@@ -15,9 +15,11 @@
 _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
-		la	$sp, 0xb8008000
+		la	$sp, 0xb8008000			# Stack at end of internal SRAM
+		la	$gp, _gp			# Set global pointer
+
 		j	_init_				# Jump to _init_()
-		la	$gp, _gp			# Set global pointer (delay slot)
+		nop					# (delay slot)
 
 #---------------------------------------
 # Macro: save all registers in stack

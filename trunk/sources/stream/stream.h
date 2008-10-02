@@ -45,7 +45,7 @@ typedef struct _stream_interface_t {
 #define vscanf(x,f,a)	stream_vscanf (to_stream (x), f, a)
 
 /* LY: умышленно вызываем ошибки там, где без необходимости вместо puts() используется printf() */
-#define printf(x,f,...) stream_printf (to_stream (x), f, __VA_ARGS__)
+#define printf(x,f,...) stream_printf (to_stream (x), f, ##__VA_ARGS__)
 
 void drain_input (stream_t *u); /* LY: чистит забуферизиронванный в потоке ввод. */
 int stream_puts (stream_t *u, const char *str);

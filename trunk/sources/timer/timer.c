@@ -13,10 +13,6 @@
 #include <kernel/uos.h>
 #include <timer/timer.h>
 
-#if __MSDOS__
-#   define TIMER_IRQ		0	/* IRQ0 */
-#endif
-
 #if I386
 #   include <runtime/i386/i8253.h>
 #   define TIMER_IRQ		0	/* IRQ0 */
@@ -32,6 +28,10 @@
 
 #if ARM_S3C4530
 #   define TIMER_IRQ		10	/* Timer 0 interrupt */
+#endif
+
+#if ELVEES_MC24
+#   define TIMER_IRQ		29	/* Interval Timer interrupt */
 #endif
 
 #if LINUX386
@@ -91,6 +91,12 @@ main_timer (void *arg)
 	ARM_TCNT(0) = 0;
 	ARM_TMOD |= ARM_TMOD_TE0 | ARM_TMOD_TMD0;
 #endif
+#if ELVEES_MC24
+	/* Use interval timer with prescale 1:1. */
+	MC_ITSCALE = 0;
+	MC_ITPERIOD = (t->khz * t->msec_per_tick) - 1;
+	MC_ITCSR = MC_ITCSR_EN;
+#endif
 #if LINUX386
 	{
 	struct itimerval itv;
@@ -104,6 +110,10 @@ main_timer (void *arg)
 	for (;;) {
 /*extern task_t *task_current; debug_printf ("t = %p, task_current = %p\n", t, task_current);*/
 /*debug_printf ("milliseconds = %ld\n", t->milliseconds);*/
+#if ELVEES_MC24
+		/* Clear interrupt. */
+		MC_ITCSR &= ~MC_ITCSR_INT;
+#endif
 		lock_wait (&t->lock);
 		t->milliseconds += t->msec_per_tick;
 		if (t->milliseconds >= t->last_decisec + 100) {

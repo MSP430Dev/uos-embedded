@@ -7,8 +7,8 @@
 #   if defined (__arm__) || defined (__thumb__)
 #      define UART_STACKSZ	0x200
 #   endif
-#   if __MSDOS__
-#      define UART_STACKSZ	0x100
+#   if MIPS32
+#      define UART_STACKSZ	0x400
 #   endif
 #   if LINUX386
 #      define UART_STACKSZ	4000
@@ -23,7 +23,7 @@ typedef struct _uart_t {
 	lock_t transmitter;
 	lock_t receiver;
 	small_uint_t port;
-	unsigned short khz;
+	unsigned int khz;
 	unsigned char out_buf [UART_OUTBUFSZ];
 	unsigned char *out_first, *out_last;
 	unsigned char in_buf [UART_INBUFSZ];
@@ -33,7 +33,7 @@ typedef struct _uart_t {
 	OPACITY (rstack, UART_STACKSZ);		/* task receive stack */
 } uart_t;
 
-void uart_init (uart_t *u, small_uint_t port, int prio, unsigned short khz,
+void uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 	unsigned long baud);
 void uart_set_cts_poller (uart_t *u, bool_t (*) (uart_t*));
 void uart_cts_ready (uart_t *u);

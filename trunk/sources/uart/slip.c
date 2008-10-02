@@ -5,15 +5,19 @@
 #include "uart/slip.h"
 
 #if __AVR__
-#	include "uart/avr.h"
+#   include "uart/avr.h"
 #endif
 
 #if ARM_S3C4530
-#	include "uart/samsung.h"
+#   include "uart/samsung.h"
+#endif
+
+#if ELVEES_MC24
+#   include "uart/elvees.h"
 #endif
 
 #if LINUX386
-#	include "uart/linux.h"
+#   include "uart/linux.h"
 #endif
 
 #define SLIP_FLAG		0300
@@ -346,11 +350,15 @@ slip_transmitter (void *arg)
 {
 	slip_t *u = arg;
 
+#ifdef TRANSMIT_IRQ
 	/* Start transmitter. */
 	lock_take_irq (&u->transmitter, TRANSMIT_IRQ (u->port),
 		(handler_t) slip_transmit_start, u);
 
 	enable_transmitter (u->port);
+#else
+	/* TODO */
+#endif
 
 	for (;;) {
 		/* Wait for the transmit interrupt. */
@@ -382,7 +390,7 @@ static netif_interface_t slip_interface = {
 
 void
 slip_init (slip_t *u, small_uint_t port, const char *name, int prio,
-	mem_pool_t *pool, unsigned short khz, unsigned long baud)
+	mem_pool_t *pool, unsigned int khz, unsigned long baud)
 {
 	u->netif.interface = &slip_interface;
 	u->netif.name = name;

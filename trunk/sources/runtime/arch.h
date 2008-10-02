@@ -44,16 +44,6 @@
 #	include <runtime/i386/string.h>
 #	include <runtime/ctype.h>
 #	define __BYTE_ORDER __LITTLE_ENDIAN
-#elif defined (__MSDOS__)
-#	include <runtime/i86-dos/types.h>
-#	define __BYTE_ORDER __LITTLE_ENDIAN
-#	define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
-#elif defined (PDP11)
-#	include <stdarg.h>
-#	include <runtime/pdp11/types.h>
-#	include <runtime/pdp11/assert.h>
-#	define __BYTE_ORDER __LITTLE_ENDIAN
-#	define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
 #endif
 
 #endif /* __UOS_LIB_ARCH_H_ */

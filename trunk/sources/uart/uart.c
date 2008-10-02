@@ -3,15 +3,19 @@
 #include "uart/uart.h"
 
 #if __AVR__
-#include "uart/avr.h"
+#   include "uart/avr.h"
 #endif
 
 #if ARM_S3C4530
-#include "uart/samsung.h"
+#   include "uart/samsung.h"
+#endif
+
+#if ELVEES_MC24
+#   include "uart/elvees.h"
 #endif
 
 #if LINUX386
-#include "uart/linux.h"
+#   include "uart/linux.h"
 #endif
 
 /*
@@ -164,11 +168,12 @@ uart_receiver (void *arg)
 	/*
 	 * Enable transmitter.
 	 */
+#ifdef TRANSMIT_IRQ
 	lock_take_irq (&u->transmitter, TRANSMIT_IRQ (u->port),
 		(handler_t) uart_transmit_start, u);
 	enable_transmitter (u->port);
 	lock_release (&u->transmitter);
-
+#endif
 	/*
 	 * Enable receiver.
 	 */
@@ -195,7 +200,10 @@ uart_receiver (void *arg)
 			/*debug_printf ("BREAK DETECTED\n");*/
 			clear_break_error (u->port);
 		}
-
+#ifndef TRANSMIT_IRQ
+		if (test_transmitter_enabled(u->port))
+			uart_transmit_start (u);
+#endif
 		/* Check that receive data is available,
 		 * and get the received byte. */
 		if (! test_get_receive_data (u->port, &c))
@@ -237,7 +245,7 @@ static stream_interface_t uart_interface = {
 };
 
 void
-uart_init (uart_t *u, small_uint_t port, int prio, unsigned short khz,
+uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 	unsigned long baud)
 {
 	u->interface = &uart_interface;

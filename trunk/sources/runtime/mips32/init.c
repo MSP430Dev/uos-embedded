@@ -17,18 +17,15 @@ void __attribute ((noreturn))_init_ (void)
 #ifdef ELVEES_MC24
 	unsigned int divisor;
 
-	/* Clear CAUSE register. */
-	mips32_write_c0_register (C0_CAUSE, 0);
+	/* Clear CAUSE register. Use special irq vector. */
+	mips32_write_c0_register (C0_CAUSE, CA_IV);
 
-	/* Initialize STATUS register: CP0 usable, interrupts disabled,
-	 * master interrupt disable, ROM vectors used. */
-	mips32_write_c0_register (C0_STATUS, 0x10000000 | ST_BEV);
+	/* Initialize STATUS register: CP0 usable, ROM vectors used,
+	 * internal interrupts enabled, master interrupt disable. */
+	mips32_write_c0_register (C0_STATUS, ST_CU0 | ST_BEV | ST_IM_MCU);
 
 	/* Disable cache for kseg0 segment. */
 	mips32_write_c0_register (C0_CONFIG, 2);
-
-	/* Clear COMPARE register. */
-	mips32_write_c0_register (C0_COMPARE, 0);
 
 	/*
 	 * Setup all essential system registers.
