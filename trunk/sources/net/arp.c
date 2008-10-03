@@ -15,7 +15,7 @@ static const char BROADCAST[6] = "\377\377\377\377\377\377";
  * processing incoming ARP requests.
  */
 arp_t *
-arp_init (opacity_t *buf, unsigned bytes, struct _ip_t *ip)
+arp_init (array_t *buf, unsigned bytes, struct _ip_t *ip)
 {
 	arp_t *arp;
 

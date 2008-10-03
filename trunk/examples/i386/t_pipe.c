@@ -6,8 +6,8 @@
 #include "stream/stream.h"
 #include "stream/pipe.h"
 
-OPACITY (task1, 0x1000);
-OPACITY (task2, 0x1000);
+ARRAY (task1, 0x1000);
+ARRAY (task2, 0x1000);
 
 void main_master (void *arg)
 {

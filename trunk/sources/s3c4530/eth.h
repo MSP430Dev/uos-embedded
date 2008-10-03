@@ -97,8 +97,8 @@ typedef struct _eth_t {
 	void (*callback_error) (struct _eth_t *);
 	void (*callback_collision) (struct _eth_t *, int);
 
-	OPACITY (rstack, ETH_STACKSZ);	/* task receive stack */
-	OPACITY (tstack, ETH_STACKSZ);	/* task transmit stack */
+	ARRAY (rstack, ETH_STACKSZ);	/* task receive stack */
+	ARRAY (tstack, ETH_STACKSZ);	/* task transmit stack */
 } eth_t;
 
 void eth_init (eth_t *c, const char *name, int rprio, int tprio,

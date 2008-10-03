@@ -53,7 +53,7 @@ struct _timer_t {
 	unsigned long milliseconds;	/* real time counter */
 	unsigned long last_decisec;	/* when decisecond was signalled */
 	unsigned int days;		/* days counter */
-	OPACITY (stack, TIMER_STACKSZ);	/* task stack */
+	ARRAY (stack, TIMER_STACKSZ);	/* task stack */
 };
 
 /**

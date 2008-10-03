@@ -5,7 +5,7 @@
 #include "kernel/uos.h"
 #include "timer/timer.h"
 
-OPACITY (task, 0x200);
+ARRAY (task, 0x200);
 timer_t timer;
 
 void hello (void *arg)

@@ -5,7 +5,7 @@
 #include "kernel/uos.h"
 #include "timer/timer.h"
 
-char task [0x100];
+ARRAY (task, 0x100);
 timer_t timer;
 
 void hello (void *arg)

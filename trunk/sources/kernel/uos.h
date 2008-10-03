@@ -22,11 +22,11 @@ extern "C" {
 #endif
 
 #ifndef RECURSIVE_LOCKS
-#	define RECURSIVE_LOCKS	1
+#   define RECURSIVE_LOCKS	1
 #endif
 
 /* System data structures. */
-typedef struct _opacity_t opacity_t;
+typedef struct _array_t array_t;
 typedef struct _task_t task_t;
 typedef struct _lock_t lock_t;
 typedef struct _lock_irq_t lock_irq_t;
@@ -37,7 +37,7 @@ typedef struct _lock_slot_t lock_slot_t;
 
 /* Task management. */
 task_t *task_create (void (*func)(void*), void *arg, const char *name, int priority,
-	opacity_t *stack, unsigned stacksz);
+	array_t *stack, unsigned stacksz);
 void task_exit (void *status);
 void task_delete (task_t *task, void *status);
 void *task_wait (task_t *task);
@@ -73,17 +73,11 @@ void lock_release_irq (lock_t*);
 extern void uos_init (void);
 
 /* Group management. */
-lock_group_t *lock_group_init (opacity_t *buf, unsigned buf_size);
+lock_group_t *lock_group_init (array_t *buf, unsigned buf_size);
 bool_t lock_group_add (lock_group_t*, lock_t*);
 void lock_group_listen (lock_group_t*);
 void lock_group_unlisten (lock_group_t*);
 void lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr);
-
-#if not_implemented_yet
-void lock_group_take (lock_t*);
-bool_t lock_group_try (lock_t*);
-void lock_group_release (lock_t*);
-#endif
 
 /*
  * ----------
@@ -99,14 +93,14 @@ void lock_group_release (lock_t*);
 struct _lock_t {
 	list_t		entry;		/* double linked list pointers */
 	task_t *	master;		/* task, acquired the lock */
-#if RECURSIVE_LOCKS
-	small_int_t	deep;		/* LY: recursive locking deep */
-#endif
 	list_t		waiters;	/* tasks, stopped on `wait' */
 	list_t		slaves;		/* tasks, waiting for lock */
 	list_t		groups;		/* group slots, waiting for signal */
 	lock_irq_t *	irq;		/* irq, associated with the lock */
 	int		prio;		/* current lock priority */
+#if RECURSIVE_LOCKS
+	small_int_t	deep;		/* recursive locking deep */
+#endif
 };
 
 /*
@@ -131,21 +125,16 @@ struct _lock_group_t {
 	lock_slot_t	slot [1];	/* array of slots is placed here */
 };
 
-struct _opacity_t {
-	void* opacity[1];
+/*
+ * Opaque array, well aligned.
+ * Used for allocating task stacks and lock groups.
+ */
+struct _array_t {
+	void *data;
 };
 
-#ifndef OPACITY_ALIGN
-#	define OPACITY_ALIGN sizeof(void*)
-#endif
-
-#define OPACITY(name, bytes) \
-	opacity_t name [((bytes) + sizeof (opacity_t) - 1) / sizeof (opacity_t)] \
-		__attribute__((aligned(OPACITY_ALIGN)))
-
-extern task_t *task_broken;
-extern void *task_broken_stack;
-extern void *broken_stack;
+#define ARRAY(name, bytes) \
+	array_t name [((bytes) + sizeof (array_t) - 1) / sizeof (array_t)]
 
 #ifdef __cplusplus
 }

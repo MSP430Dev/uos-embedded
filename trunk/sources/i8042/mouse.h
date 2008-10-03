@@ -8,7 +8,7 @@
 typedef struct _mouse_ps2_t {
 	mouse_interface_t *interface;
 	lock_t lock;
-	OPACITY (stack, MOUSE_STACKSZ);		/* task receive stack */
+	ARRAY (stack, MOUSE_STACKSZ);		/* task receive stack */
 	mouse_move_t in_buf [MOUSE_INBUFSZ];	/* mouse event queue */
 	mouse_move_t *in_first, *in_last;	/* queue pointers */
 	unsigned char buf [4];			/* raw mouse data */

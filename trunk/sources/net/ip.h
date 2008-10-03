@@ -127,7 +127,7 @@ typedef struct _ip_t {
 	unsigned long	tcp_in_discards; /* ignored input packets, due to
 					   lack of memory */
 
-	OPACITY (stack, IP_STACKSZ); /* task stack */
+	ARRAY (stack, IP_STACKSZ);	/* task stack */
 } ip_t;
 
 typedef struct _ip_hdr_t {

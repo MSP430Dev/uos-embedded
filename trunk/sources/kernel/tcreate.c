@@ -23,7 +23,7 @@
  */
 task_t *
 task_create (void (*func)(void*), void *arg, const char *name, int prio,
-	opacity_t *stack, unsigned stacksz)
+	array_t *stack, unsigned stacksz)
 {
 	task_t *t;
 	arch_state_t x;

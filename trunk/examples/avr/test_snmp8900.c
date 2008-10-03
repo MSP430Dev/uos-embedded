@@ -22,7 +22,7 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t *ip;
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 char arp_data [sizeof(arp_t) + 10 * sizeof(arp_entry_t)];
 arp_t *arp;
 cs8900_t eth;
@@ -30,8 +30,8 @@ route_t route;
 route_t default_route;
 snmp_t snmp;
 udp_socket_t sock;
-char task [0x180];
-char stack_poll [0x100];	/* Задача: опрос по таймеру */
+ARRAY (task, 0x180);
+ARRAY (stack_poll, 0x100);	/* Задача: опрос по таймеру */
 
 /*
  * Declare get/getnext/set functions.

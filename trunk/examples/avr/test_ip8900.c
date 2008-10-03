@@ -20,7 +20,7 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t ip;
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 char arp_data [sizeof(arp_t) + 10 * sizeof(arp_entry_t)];
 arp_t *arp;
 cs8900_t eth;

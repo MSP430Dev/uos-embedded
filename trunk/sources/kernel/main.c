@@ -18,21 +18,12 @@
 #include <kernel/uos.h>
 #include <kernel/internal.h>
 
-#ifdef __AVR__
-task_t *task_broken			/* LY: task_current value on reset/jmp0. */
-	__attribute__((section(".ly")));
-void *task_broken_stack			/* LY: stack_context value from task_current on reset/jmp0. */
-	__attribute__((section(".ly")));
-void *broken_stack			/* LY: SP value on reset/jmp0. */
-	__attribute__((section(".ly")));
-#endif
-
 list_t task_active;			/* list of tasks ready to run */
 task_t *task_current;			/* current running task */
 task_t *task_idle;			/* background system task */
 lock_irq_t lock_irq [ARCH_INTERRUPTS];	/* interrupt handlers */
 
-static OPACITY (task_idle_data, sizeof(task_t) + sizeof(long));
+static ARRAY (task_idle_data, sizeof(task_t) + sizeof(long));
 bool_t task_need_schedule;
 
 /*
@@ -105,6 +96,7 @@ main (void)
 
 	/* Create user tasks. */
 	uos_init ();
+
 	/* Switch to the most priority task. */
 	task_schedule ();
 

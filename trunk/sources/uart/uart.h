@@ -30,7 +30,7 @@ typedef struct _uart_t {
 	unsigned char *in_first, *in_last;
 	bool_t (*cts_query) (struct _uart_t*);
 
-	OPACITY (rstack, UART_STACKSZ);		/* task receive stack */
+	ARRAY (rstack, UART_STACKSZ);		/* task receive stack */
 } uart_t;
 
 void uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,

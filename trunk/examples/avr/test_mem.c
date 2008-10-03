@@ -6,8 +6,6 @@
 #include "random/rand15.h"
 #include "mem/mem.h"
 
-/*#include <time.h>*/
-
 /*
  * Установлена микросхема 16kx8 - имеем 60 килобайт памяти.
  */
@@ -17,7 +15,7 @@
 
 #define NPTR		40
 
-char task [0x400];
+ARRAY (task, 0x400);
 mem_pool_t pool;
 
 unsigned long allocated;

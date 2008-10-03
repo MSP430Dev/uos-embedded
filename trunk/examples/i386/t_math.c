@@ -5,7 +5,7 @@
 #include "runtime/math.h"
 #include "kernel/uos.h"
 
-char task [0x200];
+ARRAY (task, 0x200);
 
 void hello (void *arg)
 {

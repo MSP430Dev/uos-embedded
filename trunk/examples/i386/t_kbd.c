@@ -6,7 +6,7 @@
 #include "input/keyboard.h"
 #include "i8042/keyboard.h"
 
-OPACITY (task, 0x400);
+ARRAY (task, 0x400);
 keyboard_ps2_t keyboard;
 
 void hello (void *arg)

@@ -21,13 +21,13 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t *ip;
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 slip_t *slip;
 route_t route;
 route_t default_route;
 snmp_t *snmp;
 udp_socket_t sock;
-char task [0x180];
+ARRAY (task, 0x180);
 
 /*
  * Declare get/getnext/set functions.

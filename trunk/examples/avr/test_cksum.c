@@ -6,7 +6,7 @@
 #include "uart/uart.h"
 #include "crc/crc16-inet.h"
 
-char task [200];
+ARRAY (task, 200);
 uart_t uart;
 
 void test (unsigned const char *buf, unsigned char len)

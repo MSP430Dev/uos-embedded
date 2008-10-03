@@ -24,7 +24,7 @@
  * It must be zeroed before call to lock_group_init().
  */
 lock_group_t *
-lock_group_init (opacity_t *buf, unsigned buf_size)
+lock_group_init (array_t *buf, unsigned buf_size)
 {
 	lock_group_t *g;
 

@@ -93,9 +93,14 @@ main_timer (void *arg)
 #endif
 #if ELVEES_MC24
 	/* Use interval timer with prescale 1:1. */
-	MC_ITSCALE = 0;
-	MC_ITPERIOD = (t->khz * t->msec_per_tick) - 1;
+	MC_ITCSR = 0;
+	MC_ITSCALE = (t->khz + 500) / 1000;
+	MC_ITPERIOD = t->msec_per_tick * 1000 - 1;
+	MC_ITCOUNT = 0;
 	MC_ITCSR = MC_ITCSR_EN;
+debug_printf ("STATUS=%#x, CAUSE=%#x, QSTR=%#x, MASKR=%#x\n",
+mips32_read_c0_register (C0_STATUS), mips32_read_c0_register (C0_CAUSE),
+MC_QSTR, MC_MASKR);
 #endif
 #if LINUX386
 	{
@@ -113,6 +118,7 @@ main_timer (void *arg)
 #if ELVEES_MC24
 		/* Clear interrupt. */
 		MC_ITCSR &= ~MC_ITCSR_INT;
+debug_printf ("ITCSR=%#x, ITPERIOD=%d, ITSCALE=%d\n", MC_ITCSR, MC_ITPERIOD, MC_ITSCALE);
 #endif
 		lock_wait (&t->lock);
 		t->milliseconds += t->msec_per_tick;
@@ -160,7 +166,8 @@ timer_days (timer_t *t)
 /**
  * Return a valid snap of both days and milliseconds.
  */
-void timer_snap (timer_t *t, timer_snap_t *v)
+void
+timer_snap (timer_t *t, timer_snap_t *v)
 {
 	lock_take (&t->lock);
 	v->milliseconds = t->milliseconds;

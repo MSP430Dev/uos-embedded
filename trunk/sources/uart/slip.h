@@ -44,8 +44,8 @@ typedef struct _slip_t {
 
 	bool_t (*cts_query) (struct _slip_t*);
 
-	OPACITY (rstack, SLIP_STACKSZ);	/* task receive stack */
-	OPACITY (tstack, SLIP_STACKSZ);	/* task receive stack */
+	ARRAY (rstack, SLIP_STACKSZ);	/* task receive stack */
+	ARRAY (tstack, SLIP_STACKSZ);	/* task receive stack */
 } slip_t;
 
 void slip_init (slip_t *u, small_uint_t port, const char *name, int prio,

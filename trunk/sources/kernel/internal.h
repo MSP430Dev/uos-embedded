@@ -59,9 +59,9 @@ struct _task_t {
 	small_int_t	prio;		/* current task priority */
 	arch_stack_t	stack_context;	/* saved sp when not running */
 	lock_t		finish;		/* lock to wait on for task finished */
-	unsigned long	ticks;		/* LY: кол-ов переключений на задачу, в будующем ее суммарное время выполнения */
-	unsigned char	stack [1]
-		__attribute__((aligned(sizeof(void*)))); /* stack area is placed here */
+	unsigned long	ticks;		/* a number of switches to the task */
+	unsigned char	stack [1]	/* stack area is placed here */
+		__attribute__((aligned(sizeof(void*))));
 };
 
 struct _lock_irq_t {

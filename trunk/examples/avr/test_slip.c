@@ -13,7 +13,7 @@
 #define RAM_START	0x1000
 #define RAM_END		0xffff
 
-char task [0x200];
+ARRAY (task, 0x200);
 mem_pool_t pool;
 slip_t slip;
 

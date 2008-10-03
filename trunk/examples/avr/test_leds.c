@@ -9,7 +9,7 @@ uart_t uart;			/* Драйвер асинхронного порта */
 
 timer_t timer;			/* Драйвер таймера */
 
-char stack_poll [0x200];	/* Задача: опрос по таймеру */
+ARRAY (stack_poll, 0x200);	/* Задача: опрос по таймеру */
 void main_poll (void *data);
 
 /*

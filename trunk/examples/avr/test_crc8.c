@@ -8,7 +8,7 @@ timer_t timer;
 
 /*extern unsigned char crc8_slow (unsigned const char *buf, unsigned char len);*/
 
-char stack_console [0x200];		/* Задача: меню на консоли */
+ARRAY (stack_console, 0x200);		/* Задача: меню на консоли */
 
 static void main_console (void *data);
 

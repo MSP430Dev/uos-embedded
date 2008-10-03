@@ -6,7 +6,7 @@
 #include "uart/uart.h"
 #include "nvram/nvram.h"
 
-char task [200];
+ARRAY (task, 200);
 uart_t uart;
 nvram_t nvram;
 

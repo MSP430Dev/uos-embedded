@@ -45,6 +45,4 @@ typedef char jmp_buf [30]; /* not implemented yet */
 #define __tmp_reg__	"r0"
 #define __zero_reg__	"r1"
 
-#define OPACITY_ALIGN 1
-
 #endif /* __MACHINE_TYPES_H_ */

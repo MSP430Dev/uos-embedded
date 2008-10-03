@@ -16,8 +16,8 @@
 
 #define CTRL(c)  ((c) & 037)
 
-char stack_console [0x100];	/* Задача: меню на консоли */
-char stack_poll [0x100];	/* Задача: опрос по таймеру */
+ARRAY (stack_console, 0x100);	/* Задача: меню на консоли */
+ARRAY (stack_poll, 0x100);	/* Задача: опрос по таймеру */
 mem_pool_t pool;
 cs8900_t eth;
 

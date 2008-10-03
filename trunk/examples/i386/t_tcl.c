@@ -27,7 +27,7 @@
 #undef printf
 #define printf debug_printf
 
-char task [0xa00];
+ARRAY (task, 0xa00);
 char line [200];
 mem_pool_t pool;
 

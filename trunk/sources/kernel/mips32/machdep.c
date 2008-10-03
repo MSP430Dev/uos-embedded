@@ -110,6 +110,7 @@ _irq_handler_ (void)
 	asm volatile (
 "_interrupt_handler_: .globl _interrupt_handler_"
 	);
+debug_putchar (0, '~');
 	for (;;) {
 		/* Get the current irq number */
 #ifdef ELVEES_MC24
@@ -179,6 +180,7 @@ arch_intr_allow (int irq)
 {
 #ifdef ELVEES_MC24
 	MC_MASKR |= 1 << irq;
+debug_printf ("enable irq %d, MASKR=%#x\n", irq, MC_MASKR);
 #endif
 }
 
@@ -199,7 +201,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 
 	*--sp = 0;			/* space for saving arg0 */
 	*--sp = (unsigned) func;	/* epc - callee address */
-	*--sp = 0x1040ff00;		/* status - enable interrupts, BEV mode */
+	*--sp = mips32_read_c0_register (C0_STATUS) | ST_IE; /* enable interrupts */
 	*--sp = 0;			/* hi */
 	*--sp = 0;			/* lo */
 	*--sp = 0;			/* ra */

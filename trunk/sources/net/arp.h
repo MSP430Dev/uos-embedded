@@ -58,7 +58,7 @@ struct ethip_hdr {
 	unsigned char	ip_dst [4];
 } __attribute__ ((packed));
 
-arp_t *arp_init (opacity_t *buf, unsigned bytes, struct _ip_t *ip);
+arp_t *arp_init (array_t *buf, unsigned bytes, struct _ip_t *ip);
 struct _buf_t *arp_input (struct _netif_t *netif, struct _buf_t *p);
 bool_t arp_request (struct _netif_t *netif, struct _buf_t *p,
 	unsigned char *ipdest, unsigned char *ipsrc);

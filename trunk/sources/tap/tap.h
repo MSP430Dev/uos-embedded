@@ -11,7 +11,7 @@ struct _mem_pool_t;
 
 typedef struct _tap_t {
 	netif_t netif;			/* common network interface part */
-	OPACITY (stack, TAP_STACKSZ);	/* task receive stack */
+	ARRAY (stack, TAP_STACKSZ);	/* task receive stack */
 	struct _mem_pool_t *pool;	/* memory pool for allocating packets */
 	buf_queue_t inq;		/* queue of received packets */
 	struct _buf_t *inqdata[8];

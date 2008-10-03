@@ -17,8 +17,8 @@
 
 #define CTRL(c)  ((c) & 037)
 
-char stack_console [0x100];	/* Задача: меню на консоли */
-char stack_poll [0x100];	/* Задача: опрос по таймеру */
+ARRAY (stack_console, 0x100);	/* Задача: меню на консоли */
+ARRAY (stack_poll, 0x100);	/* Задача: опрос по таймеру */
 uart_t uart;
 timer_t timer;
 mem_pool_t pool;
