@@ -91,7 +91,7 @@ void lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr);
  * ---------- <-/----/----/
  */
 struct _lock_t {
-	list_t		entry;		/* double linked list pointers */
+	list_t		item;		/* double linked list pointers */
 	task_t *	master;		/* task, acquired the lock */
 	list_t		waiters;	/* tasks, stopped on `wait' */
 	list_t		slaves;		/* tasks, waiting for lock */
@@ -107,7 +107,7 @@ struct _lock_t {
  * Slot: a group element.
  */
 struct _lock_slot_t {
-	list_t		entry;		/* double linked list pointers */
+	list_t		item;		/* double linked list pointers */
 	lock_group_t *	group;		/* parent group */
 	lock_t *	lock;		/* link to the related lock */
 	void *		message;	/* return value for lock_group_wait() */

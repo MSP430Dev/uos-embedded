@@ -2,6 +2,7 @@
 #include <watchdog/watchdog.h>
 
 #ifdef __AVR__
+#include <kernel/uos.h>
 task_t *task_broken			/* LY: task_current value on reset/jmp0. */
 	__attribute__((section(".ly")));
 void *task_broken_stack			/* LY: stack_context value from task_current on reset/jmp0. */

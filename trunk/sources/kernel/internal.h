@@ -48,7 +48,7 @@
  * ---------- <-/----/----/
  */
 struct _task_t {
-	list_t		entry;		/* double linked list pointers */
+	list_t		item;		/* double linked list pointers */
 	lock_t *	lock;		/* lock, blocking the task */
 	lock_t *	wait;		/* lock, the task is waiting for */
 	list_t		slaves;		/* locks, acquired by task */
@@ -97,7 +97,7 @@ task_policy (void)
 	task_t *t, *r;
 
 	r = task_idle;
-	list_iterate_entry (t, &task_active, entry)
+	list_iterate (t, &task_active)
 		if (t->prio > r->prio)
 			r = t;
 	return r;
@@ -117,37 +117,33 @@ inline static bool_t task_is_waiting (task_t *task) {
 	return (task->lock || task->wait);
 }
 
-inline static void task_move (list_t *list, task_t *task) {
-	list_move_append (list, &task->entry);
-}
-
 inline static void task_enqueue (list_t *list, task_t *task) {
-	list_append (list, &task->entry);
+	list_append (list, &task->item);
 }
 
 inline static void task_dequeue (task_t *task) {
-	list_del (&task->entry);
+	list_remove (&task->item);
 }
 
 inline static void task_activate (task_t *task) {
 	assert (! task_is_waiting (task));
-	task_move (&task_active, task);
+	task_enqueue (&task_active, task);
 	if (task_current->prio < task->prio)
 		task_need_schedule = 1;
 }
 
 inline static void lock_enqueue (list_t *list, lock_t *lock) {
-	list_append (list, &lock->entry);
+	list_append (list, &lock->item);
 }
 
 inline static void lock_dequeue (lock_t *lock) {
-	list_del (&lock->entry);
+	list_remove (&lock->item);
 }
 
 void __lock_init (lock_t *);
 
 inline static void __lock_check (lock_t *lock) {
-	if (! lock->entry.f)
+	if (! lock->item.next)
 		__lock_init (lock);
 }
 

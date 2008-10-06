@@ -53,7 +53,7 @@ lock_activate (lock_t *m, void *message)
 	assert (m != 0);
 
 	while (! list_is_empty (&m->waiters)) {
-		t = list_first_entry (&m->waiters, task_t, entry);
+		t = (task_t*) list_first (&m->waiters);
 		assert (t->wait == m);
 		t->wait = 0;
 		t->message = message;
@@ -61,7 +61,7 @@ lock_activate (lock_t *m, void *message)
 	}
 
 	/* Activate groups. */
-	list_iterate_entry (s, &m->groups, entry) {
+	list_iterate (s, &m->groups) {
 		assert (s->lock == m);
 		s->message = message;
 		s->active = 1;
@@ -69,7 +69,7 @@ lock_activate (lock_t *m, void *message)
 /*debug_printf ("lock_activate: slot %p msg %s task %s\n", */
 /*s, message, t ? t->name : "<null>");*/
 		if (t) {
-			assert (! list_is_linked (&t->entry));
+			assert (list_is_empty (&t->item));
 			s->group->waiter = 0;
 			task_activate (t);
 		}

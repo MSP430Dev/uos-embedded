@@ -74,7 +74,7 @@ lock_wait (lock_t *m)
 	}
 
 	task_current->wait = m;
-	task_move (&m->waiters, task_current);
+	task_enqueue (&m->waiters, task_current);
  	if (m->master != task_current) {
 		/* LY: мы не удерживаем lock, поэтому просто ждем сигнала. */
 		task_schedule ();
@@ -98,7 +98,7 @@ lock_wait (lock_t *m)
 
 	m->master = 0;
 	while (! list_is_empty (&m->slaves)) {
-		task_t *t = list_first_entry (&m->slaves, task_t, entry);
+		task_t *t = (task_t*) list_first (&m->slaves);
 		assert (t->lock == m);
 		t->lock = 0;
 		task_activate (t);
@@ -116,7 +116,7 @@ lock_wait (lock_t *m)
 		task_current->lock = m;
 
 		/* Put this task into the list of lock slaves. */
-		task_move (&m->slaves, task_current);
+		task_enqueue (&m->slaves, task_current);
 
 		/* Update the value of lock priority.
 		 * It must be the maximum of all slave task priorities. */

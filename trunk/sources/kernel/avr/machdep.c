@@ -549,12 +549,12 @@ arch_halt (int dump_flag)
 	if (dump_flag) {
 		debug_task_print (0);
 		n = 0;
-		list_iterate_entry (t, &task_active, entry) {
+		list_iterate (t, &task_active) {
 			if (t != task_idle && t != task_current)
 				debug_task_print (t);
 			if (! uos_valid_memory_address (t))
 				break;
-			if (++n > 32 || t == list_entry (t->entry.f, task_t, entry)) {
+			if (++n > 32 || list_is_empty (&t->item)) {
 				debug_puts ("...\n");
 				break;
 			}

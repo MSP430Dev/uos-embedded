@@ -20,7 +20,7 @@
 
 void __lock_init (lock_t *lock)
 {
-	list_init (&lock->entry);
+	list_init (&lock->item);
 	list_init (&lock->waiters);
 	list_init (&lock->slaves);
 	list_init (&lock->groups);
@@ -63,7 +63,7 @@ lock_take (lock_t *m)
 		task_current->lock = m;
 
 		/* Put this task into the list of lock slaves. */
-		task_move (&m->slaves, task_current);
+		task_enqueue (&m->slaves, task_current);
 
 		/* Update the value of lock priority.
 		 * It must be the maximum of all slave task priorities. */
@@ -116,7 +116,7 @@ task_recalculate_prio (task_t *t)
 
 	old_prio = t->prio;
 	t->prio = t->base_prio;
-	list_iterate_entry (m, &t->slaves, entry)
+	list_iterate (m, &t->slaves)
 		if (t->prio < m->prio)
 			t->prio = m->prio;
 
@@ -157,7 +157,7 @@ lock_recalculate_prio (lock_t *m)
 
 	old_prio = m->prio;
 	m->prio = 0;
-	list_iterate_entry (t, &m->slaves, entry)
+	list_iterate (t, &m->slaves)
 		if (m->prio < t->prio)
 			m->prio = t->prio;
 
@@ -218,7 +218,7 @@ lock_release (lock_t *m)
 
 	if (! list_is_empty (&m->slaves)) {
 		do {
-			task_t *t = list_first_entry (&m->slaves, task_t, entry);
+			task_t *t = (task_t*) list_first (&m->slaves);
 			assert (t->lock == m);
 			t->lock = 0;
 			task_activate (t);

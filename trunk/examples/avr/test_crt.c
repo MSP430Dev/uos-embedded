@@ -4,7 +4,7 @@
  */
 #include <runtime/lib.h>
 
-int main (void)
+void uos_init (void)
 {
 	unsigned char val, old_val;
 

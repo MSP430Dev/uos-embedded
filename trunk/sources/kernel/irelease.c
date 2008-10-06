@@ -67,7 +67,7 @@ lock_release_irq (lock_t *m)
 
 	if (! list_is_empty (&m->slaves)) {
 		do {
-			task_t *t = list_first_entry (&m->slaves, task_t, entry);
+			task_t *t = (task_t*) list_first (&m->slaves);
 			assert (t->lock == m);
 			t->lock = 0;
 			task_activate (t);

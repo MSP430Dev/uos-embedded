@@ -47,7 +47,7 @@ lock_group_add (lock_group_t *g, lock_t *m)
 	if (g->num >= g->size)
 		return 0;
 	s = g->slot + g->num;
-	list_init (&s->entry);
+	list_init (&s->item);
 	s->group = g;
 	s->lock = m;
 	s->message = 0;
@@ -70,9 +70,9 @@ lock_group_listen (lock_group_t *g)
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	for (s = g->slot + g->num; --s >= g->slot; ) {
-		assert (! list_is_linked (&s->entry));
+		assert (list_is_empty (&s->item));
 		s->message = 0;
-		list_ahead (&s->lock->groups, &s->entry);
+		list_prepend (&s->lock->groups, &s->item);
 	}
 	arch_intr_restore (x);
 }
@@ -92,9 +92,9 @@ lock_group_unlisten (lock_group_t *g)
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	for (s = g->slot + g->num; --s >= g->slot; ) {
-		assert (list_is_linked (&s->entry));
+		assert (! list_is_empty (&s->item));
 		s->message = 0;
-		list_del (&s->entry);
+		list_remove (&s->item);
 	}
 	arch_intr_restore (x);
 }

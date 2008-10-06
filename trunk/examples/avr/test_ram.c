@@ -98,36 +98,6 @@ char get_cmd ()
 	return cmd;
 }
 
-void print_tasks ()
-{
-	task_t *t;
-	lock_t *m;
-
-	t = task_active.head;
-	if (t)
-		puts (&uart, "\n\nTask\tAddress\tPrio\tSP\tSt Av\tMsg\n");
-	else
-		puts (&uart, "\n\nNo tasks.\n");
-	for (; t; t=t->next) {
-		printf (&uart, "%s\t%p\t", t->name, t);
-		printf (&uart, t == task_current ? "*%d*" : "%d", t->prio);
-		printf (&uart, "\t%p\t%n\t%p\n",
-			t->stack_context, task_stack_avail (t),
-			t->message);
-		if (t->lock)
-			printf (&uart, "\tLocked by %p\n", t->lock);
-		if (t->wait)
-			printf (&uart, "\tWaiting for %p\n", t->lock);
-		if (t->slaves.head) {
-			puts (&uart, "\tOwning:");
-			for (m=t->slaves.head; m; m=m->next)
-				printf (&uart, " %p", m);
-			putchar (&uart, '\n');
-		}
-	}
-	putchar (&uart, '\n');
-}
-
 void print_item (unsigned char num, const char *name)
 {
 	printf (&uart, "\n  %d. ", num);
@@ -259,9 +229,8 @@ void menu ()
 	printf (&uart, "Free memory: %n bytes\n",
 		mem_available (&pool));
 
-	print_item (1, "Tasks");
-	print_item (2, "Test All RAM");
-	print_item (3, "Test Address 0xAAAA");
+	print_item (1, "Test All RAM");
+	print_item (2, "Test Address 0xAAAA");
 	print_item (0, "Reset\n\n");
 
 	for (;;) {
@@ -269,14 +238,10 @@ void menu ()
 		if (cmd == CTRL('R') || cmd == '\n')
 			break;
 		if (cmd == '1') {
-			print_tasks ();
-			break;
-		}
-		if (cmd == '2') {
 			test_ram ();
 			break;
 		}
-		if (cmd == '3') {
+		if (cmd == '2') {
 			test_address (0xAAAA);
 			break;
 		}

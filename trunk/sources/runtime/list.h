@@ -2,128 +2,110 @@
 #define __LIST_H_ 1
 
 /*
- * LY: some ideas comming from Linux's source code, but not the code.
+ * Extra fast implementation of doubly linked list, by LY.
+ * Some ideas comming from Linux's source code, but not the code.
  */
-
 typedef struct _list_t {
-	struct _list_t	*f /* forward */,
-			*b /* back */;
+	struct _list_t *next;
+	struct _list_t *prev;
 } list_t;
 
+/*
+ * Initialize an empty list, or an unlinked element.
+ * Both pointers are linked to the list header itself.
+ */
 static inline void list_init (list_t *l)
 {
-	l->f = l; l->b = l;
-}
-
-static inline void __list_ins (list_t *n, list_t *b, list_t *f)
-{
-	f->b = n; n->f = f;
-	n->b = b; b->f = n;
-}
-
-static inline void __list_del (list_t *b, list_t *f)
-{
-	f->b = b; b->f = f;
-}
-
-static inline void list_ahead (list_t *l, list_t *i)
-{
-	__list_ins (i, l, l->f);
-}
-
-static inline void list_append (list_t *l, list_t *i)
-{
-	__list_ins (i, l->b, l);
-}
-
-static inline void list_del (list_t *i)
-{
-	__list_del (i->b, i->f);
-	list_init (i);
-}
-
-static inline void list_replace (list_t *o, list_t *n)
-{
-	n->f = o->f; n->f->b = n;
-	n->b = o->b; n->b->f = n;
-	list_init (o);
-}
-
-static inline void list_move_ahead (list_t *l, list_t *i)
-{
-	__list_del (i->b, i->f);
-	list_ahead (l, i);
-}
-
-static inline void list_move_append (list_t *l, list_t *i)
-{
-	__list_del (i->b, i->f);
-	list_append (l, i);
-}
-
-static inline bool_t list_is_last (const list_t *l, const list_t *i)
-{
-	return i->f == l;
-}
-
-static inline bool_t list_is_empty (const list_t *l)
-{
-	return l->f == l;
-}
-
-static inline bool_t list_is_linked (const list_t *l)
-{
-	return l->f != l;
+	l->next = l;
+	l->prev = l;
 }
 
 /*
- * LY: append all items from src to dst, emptied src.
+ * Insert a new element between the two neigbour elements 'prev' and 'next'.
+ * Internal function.
  */
-static inline void list_join (list_t *dst, list_t *src)
+static inline void __list_put_in_between (list_t *elem, list_t *prev, list_t *next)
 {
-	if (! list_is_empty (src)) {
-		list_t *sf = src->f;
-		list_t *sl = src->b;
-		list_t *df = dst->f;
-
-		sf->b = dst;
-		sl->f = df;
-
-		dst->f = sf;
-		df->b = sl;
-
-		list_init (src);
-	}
+	next->prev = elem;
+	elem->next = next;
+	elem->prev = prev;
+	prev->next = elem;
 }
 
-static inline void list_eject (list_t *src, list_t *dst)
+/*
+ * Connect two elements together, thus removing all in between.
+ * Internal function.
+ */
+static inline void __list_connect_together (list_t *prev, list_t *next)
 {
-	list_init (dst);
-	list_join (dst, src);
+	next->prev = prev;
+	prev->next = next;
 }
 
-#define list_entry(ptr, type, member) ({					\
-		const typeof (((type *)0)->member) *__mptr = (ptr);		\
-		(type *)((char *)__mptr - __builtin_offsetof (type, member));	\
-	})
+/*
+ * Insert an element at the begginning of the list.
+ */
+static inline void list_prepend (list_t *l, list_t *elem)
+{
+	__list_connect_together (elem->prev, elem->next);
+	__list_put_in_between (elem, l, l->next);
+}
 
-#define list_first_entry(ptr, type, member) \
-	list_entry ((ptr)->f, type, member)
+/*
+ * Insert an element at the end of the list.
+ */
+static inline void list_append (list_t *l, list_t *elem)
+{
+	__list_connect_together (elem->prev, elem->next);
+	__list_put_in_between (elem, l->prev, l);
+}
 
-#define list_iterate(i, head) \
-	for (i = (head)->f; i != (head); i = i->f)
+/*
+ * Remove an element from any list.
+ */
+static inline void list_remove (list_t *elem)
+{
+	__list_connect_together (elem->prev, elem->next);
+	list_init (elem);
+}
 
-#define list_iterate_backward(i, head) \
-	for (i = (head)->b; i != (head); i = i->b)
+/*
+ * Check that list is empty.
+ */
+static inline bool_t list_is_empty (const list_t *l)
+{
+	return l->next == l;
+}
 
-#define list_iterate_entry(i, head, member)				\
-	for (i = list_entry ((head)->f, typeof (*i), member);		\
-	     &i->member != (head); 					\
-	     i = list_entry (i->member.f, typeof (*i), member))
+/*
+ * Get the first list item.
+ */
+static inline list_t *list_first (const list_t *l)
+{
+	return l->next;
+}
 
-#define list_iterate_entry_backward(i, head, member)			\
-	for (i = list_entry ((head)->b, typeof (*i), member);		\
-	     &i->member != (head); 					\
-	     i = list_entry (i->member.b, typeof (*i), member))
+/*
+ * Iterate through all list items, from first to last.
+ * Example:
+ *	struct my_list_type *i;
+ *	list_iterate (i, my_list) {
+ *		process_one_element (i);
+ *	}
+ */
+#define list_iterate(i, head)		for (i = (typeof(i)) (head)->next; \
+					     i != (typeof(i)) (head); \
+					     i = (typeof(i)) ((list_t*) i)->next)
+/*
+ * Iterate through all list items, from last to first.
+ * Example:
+ *	list_t *i;
+ *	list_iterate_backward (i, my_list) {
+ *		process_one_element (i);
+ *	}
+ */
+#define list_iterate_backward(i, head)	for (i = (typeof(i)) (head)->prev; \
+					     i != (typeof(i)) (head); \
+					     i = (typeof(i)) ((list_t*) i)->prev)
 
 #endif /* __LIST_H_ */

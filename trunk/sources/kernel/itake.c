@@ -42,7 +42,7 @@ lock_take_irq (lock_t *m, int irq, handler_t func, void *arg)
 		task_current->lock = m;
 
 		/* Put this task into the list of lock slaves. */
-		task_move (&m->slaves, task_current);
+		task_enqueue (&m->slaves, task_current);
 
 		/* Update the value of lock priority.
 		 * It must be the maximum of all slave task priorities. */

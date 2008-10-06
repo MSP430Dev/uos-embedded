@@ -19,13 +19,13 @@ void test (void *data)
 	for (;;) {
 		puts (&uart, "\nWriting: ");
 		for (i=0; i<=E2END; ++i) {
-			nvram_write (&nvram, i, ~i);
+			eeprom_write_byte (i, ~i);
 			if ((i & 63) == 63)
 				putchar (&uart, '.');
 		}
 		puts (&uart, "\nReading: ");
 		for (i=0; i<=E2END; ++i) {
-			c = nvram_read (&nvram, i);
+			c = eeprom_read_byte (i);
 			if (c != (unsigned char) ~i) {
 				printf (&uart, "error on byte 0x%x: written 0x%x, read 0x%x\n",
 					i, (unsigned char) ~i, c);
@@ -40,6 +40,6 @@ void test (void *data)
 void uos_init (void)
 {
 	uart_init (&uart, 0, 90, KHZ, 9600);
-	nvram_init (&nvram);
+	eeprom_init (&nvram);
 	task_create (test, 0, "test", 1, task, sizeof (task));
 }

@@ -29,7 +29,7 @@ task_yield ()
 	arch_intr_disable (&x);
 
 	/* Enqueue always puts element at the tail of the list. */
-	task_move (&task_active, task_current);
+	task_enqueue (&task_active, task_current);
 
 	/* Scheduler selects the first task.
 	 * If there are several tasks with equal priority,

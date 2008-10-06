@@ -33,7 +33,7 @@ task_create (void (*func)(void*), void *arg, const char *name, int prio,
 
 	t->name = name;
 	t->prio = t->base_prio = prio;
-	list_init (&t->entry);
+	list_init (&t->item);
 	list_init (&t->slaves);
 
 	memset (t->stack, STACK_MAGIC, stacksz - sizeof(task_t));

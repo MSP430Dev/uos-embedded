@@ -90,36 +90,6 @@ char get_cmd ()
 	return cmd;
 }
 
-void print_tasks ()
-{
-	task_t *t;
-	lock_t *m;
-
-	t = task_active.head;
-	if (t)
-		debug_puts ("\n\nTask\tAddress\tPrio\tSP\tSt Av\tMsg\n");
-	else
-		debug_puts ("\n\nNo tasks.\n");
-	for (; t; t=t->next) {
-		debug_printf ("%s\t%p\t", t->name, t);
-		debug_printf (t == task_current ? "*%d*" : "%d", t->prio);
-		debug_printf ("\t%p\t%n\t%p\t%p\n",
-			t->stack_context, task_stack_avail (t),
-			t->message);
-		if (t->lock)
-			debug_printf ("\tLocked by %p\n", t->lock);
-		if (t->wait)
-			debug_printf ("\tWaiting for %p\n", t->lock);
-		if (t->slaves.head) {
-			debug_puts ("\tOwning:");
-			for (m=t->slaves.head; m; m=m->next)
-				debug_printf (" %p", m);
-			debug_putchar (0, '\n');
-		}
-	}
-	debug_putchar (0, '\n');
-}
-
 void print_item (unsigned char num, const char *name)
 {
 	debug_printf ("\n  %d. ", num);
@@ -224,10 +194,9 @@ void menu ()
 	debug_printf ("Free memory: %n bytes\n",
 		mem_available (&pool));
 
-	print_item (1, "Tasks");
-	print_item (2, "Test All RAM");
-	print_item (3, "Test Address 0x5555");
-	print_item (4, "Test Ethernet CS8900A");
+	print_item (1, "Test All RAM");
+	print_item (2, "Test Address 0x5555");
+	print_item (3, "Test Ethernet CS8900A");
 	print_item (0, "Reset\n\n");
 
 	for (;;) {
@@ -235,18 +204,14 @@ void menu ()
 		if (cmd == CTRL('R') || cmd == '\n')
 			break;
 		if (cmd == '1') {
-			print_tasks ();
-			break;
-		}
-		if (cmd == '2') {
 			test_ram ();
 			break;
 		}
-		if (cmd == '3') {
+		if (cmd == '2') {
 			test_address (0x5555);
 			break;
 		}
-		if (cmd == '4') {
+		if (cmd == '3') {
 			test_eth ();
 			break;
 		}

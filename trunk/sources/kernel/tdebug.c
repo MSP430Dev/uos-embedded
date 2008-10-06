@@ -61,11 +61,11 @@ void task_print (stream_t *stream, task_t *t)
 		lock_t *m;
 		puts (stream, "\n\t\t\t\t\tOwning:");
 		n = 0;
-		list_iterate_entry (m, &t->slaves, entry) {
+		list_iterate (m, &t->slaves) {
 			printf (stream, " %p%S", m, __debug_ptr_name (m));
 			if (! uos_valid_memory_address (m))
 				break;
-			if (++n > 8 || m == list_entry (m->entry.f, lock_t, entry)) {
+			if (++n > 8 || list_is_empty (&m->item)) {
 				puts (stream, "...");
 				break;
 			}

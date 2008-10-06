@@ -44,7 +44,7 @@ task_delete (task_t *t, void *message)
 
 	t->wait = 0;
 	while (! list_is_empty (&t->slaves)) {
-		lock_t *m = list_first_entry (&t->slaves, lock_t, entry);
+		lock_t *m = (lock_t*) list_first (&t->slaves);
 		assert (t == m->master);
 		lock_release (m);
 	}
