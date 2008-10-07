@@ -97,9 +97,10 @@ task_policy (void)
 	task_t *t, *r;
 
 	r = task_idle;
-	list_iterate (t, &task_active)
+	list_iterate (t, &task_active) {
 		if (t->prio > r->prio)
 			r = t;
+	}
 	return r;
 }
 
@@ -117,27 +118,11 @@ inline static bool_t task_is_waiting (task_t *task) {
 	return (task->lock || task->wait);
 }
 
-inline static void task_enqueue (list_t *list, task_t *task) {
-	list_append (list, &task->item);
-}
-
-inline static void task_dequeue (task_t *task) {
-	list_remove (&task->item);
-}
-
 inline static void task_activate (task_t *task) {
 	assert (! task_is_waiting (task));
-	task_enqueue (&task_active, task);
+	list_append (&task_active, &task->item);
 	if (task_current->prio < task->prio)
 		task_need_schedule = 1;
-}
-
-inline static void lock_enqueue (list_t *list, lock_t *lock) {
-	list_append (list, &lock->item);
-}
-
-inline static void lock_dequeue (lock_t *lock) {
-	list_remove (&lock->item);
 }
 
 void __lock_init (lock_t *);

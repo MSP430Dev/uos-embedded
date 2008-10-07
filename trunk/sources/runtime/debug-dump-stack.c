@@ -8,7 +8,7 @@
  *		__builtin_frame_address (1),
  *		__builtin_return_address (0));
  */
-void debug_dump_stack (const char *caption, void *sp, void* frame, void *callee)
+void debug_dump_stack (const char *caption, void *sp, void *frame, void *callee)
 {
 	unsigned char *from, *to, *p;
 	unsigned int len;

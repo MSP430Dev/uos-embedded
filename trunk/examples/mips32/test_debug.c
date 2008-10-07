@@ -14,4 +14,5 @@ int main (void)
 
 void _interrupt_handler_ ()
 {
+	uos_halt (0);
 }

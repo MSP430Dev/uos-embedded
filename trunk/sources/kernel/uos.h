@@ -50,10 +50,8 @@ void task_set_private (task_t *task, void *privatep);
 void task_yield ();
 
 struct _stream_t;
-void debug_task_print (task_t *t);
 void task_print (struct _stream_t *stream, task_t *t);
-void debug_dump_stack_task (task_t *task);
-const char* __debug_task_name (task_t *task);
+void task_print_debug (task_t *t);
 
 /* Lock management. */
 void lock_take (lock_t *lock);

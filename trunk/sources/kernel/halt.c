@@ -19,10 +19,42 @@
 #include <kernel/internal.h>
 
 /*
- * Halt uOS, return to the parent operating system.
+ * Halt uOS, return to the parent operating system (if any).
+ * Optionally print debugging information about the system state.
  */
 void
 uos_halt (int dump_flag)
 {
-	arch_halt (dump_flag);
+#if LINUX386
+	exit (0);
+#else
+	unsigned char n;
+	task_t *t;
+
+	if (dump_flag) {
+		task_print_debug (0);
+		n = 0;
+		list_iterate (t, &task_active) {
+			if (t != task_idle && t != task_current)
+				task_print_debug (t);
+			if (! uos_valid_memory_address (t))
+				break;
+			if (++n > 32 || list_is_empty (&t->item)) {
+				debug_puts ("...\n");
+				break;
+			}
+		}
+		if (task_current && task_current != task_idle)
+			task_print_debug (task_current);
+
+		debug_dump_stack (task_name (task_current), arch_get_stack_pointer (),
+			(void*) task_current->stack_context, __builtin_return_address (0));
+		debug_printf ("\n*** Please report this information");
+	}
+
+	/* Halt CPU. */
+	debug_printf ("\n*** System halted.\n");
+	for (;;)
+		continue;
+#endif
 }

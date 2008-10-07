@@ -100,26 +100,18 @@ arch_intr_unbind (int irq)
  * Enable interrupts and enter sleep mode.
  * (optional feature)
  */
-#ifdef  SMCR
-#	define SLEEP_REG	SMCR
-#else
-#	define SLEEP_REG	MCUCR
-#endif
-
 static inline void
 arch_idle ()
 {
-	setb (SE, SLEEP_REG);
+#ifdef  SMCR
+	setb (SE, SMCR);
+#else
+	setb (SE, MCUCR);
+#endif
 	asm volatile ("sei");
 	for (;;)
 		asm volatile ("sleep");
 }
-
-/*
- * Halt the system: unbind all interrupts and exit.
- * (optional feature)
- */
-void arch_halt (int dump_flag);
 
 /*
  * Handle stack pointer register.

@@ -28,7 +28,7 @@ task_delete (task_t *t, void *message)
 
 	arch_intr_disable (&x);
 
-	task_dequeue (t);
+	list_remove (&t->item);
 	if (t == task_current)
 		task_need_schedule = 1;
 

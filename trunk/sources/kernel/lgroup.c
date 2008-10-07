@@ -130,7 +130,7 @@ lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr)
 		}
 
 		/* Suspend the task. */
-		task_dequeue (task_current);
+		list_remove (&task_current->item);
 		g->waiter = task_current;
 		task_schedule ();
 	}

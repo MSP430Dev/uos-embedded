@@ -119,12 +119,3 @@ arch_idle ()
 		asm volatile (".set mips4 \n	wait");
 	}
 }
-
-/*
- * Halt the system: unbind all interrupts and exit.
- * (optional feature)
- */
-static inline void
-arch_halt ()
-{
-}

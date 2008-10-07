@@ -116,13 +116,3 @@ arch_idle ()
 		pause ();
 	}
 }
-
-/*
- * Halt the system: unbind all interrupts and exit.
- * (optional feature)
- */
-static inline void
-arch_halt ()
-{
-	exit (0);
-}

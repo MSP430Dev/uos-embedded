@@ -46,7 +46,7 @@ lock_try (lock_t *m)
  		m->master = task_current;
 
 		/* Put this lock into the list of task slaves. */
-		lock_enqueue (&task_current->slaves, m);
+		list_append (&task_current->slaves, &m->item);
 
 		/* Update the value of task priority.
 		 * It must be the maximum of base priority,

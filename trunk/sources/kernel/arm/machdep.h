@@ -105,12 +105,3 @@ arch_idle ()
 		arm_bus_yield ();
 	}
 }
-
-/*
- * Halt the system: unbind all interrupts and exit.
- * (optional feature)
- */
-static inline void
-arch_halt ()
-{
-}

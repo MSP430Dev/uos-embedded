@@ -20,9 +20,28 @@
 
 /*
  * Get the task name.
+ * In case of system crash, the name could be damaged.
+ * The correctness of the name is always verified.
  */
 const char *
 task_name (task_t *t)
 {
-	return t->name;
+	small_uint_t n, c;
+	const char *p;
+
+	/* Task name could have up to 16 chars. */
+	p = t->name;
+	for (n=0; n<16; n++) {
+		/* On AVR, task name is stored in flash memory.
+		 * On other architectures, there is no difference.  */
+		c = flash_fetch (p++);
+		if (! c) {
+			if (n <= 2)
+				break;
+			return t->name;
+		}
+		if (c < ' ' || c > '~')
+			break;
+	}
+	return "(damaged)";
 }

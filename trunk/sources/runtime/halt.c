@@ -15,26 +15,26 @@
  * "COPY-UOS.txt" for details.
  */
 #include <runtime/lib.h>
-#include <kernel/uos.h>
-#include <kernel/internal.h>
 
 /*
- * Suspend the current task so that other tasks can run.
+ * Halt uOS, return to the parent operating system (if any).
+ * Optionally print debugging information about the system state.
  */
-void
-task_yield ()
+void __attribute__((weak))
+uos_halt (int dump_flag)
 {
-	arch_state_t x;
+#if LINUX386
+	exit (0);
+#else
+	if (dump_flag) {
+		debug_dump_stack ("halt", __builtin_alloca (0),
+			__builtin_frame_address (0), __builtin_return_address (0));
+		debug_printf ("\n*** Please report this information");
+	}
 
-	arch_intr_disable (&x);
-
-	/* Enqueue always puts element at the tail of the list. */
-	list_append (&task_active, &task_current->item);
-
-	/* Scheduler selects the first task.
-	 * If there are several tasks with equal priority,
-	 * this will allow them to run round-robin. */
-	task_schedule ();
-
-	arch_intr_restore (x);
+	/* Halt CPU. */
+	debug_printf ("\n*** System halted.\n");
+	for (;;)
+		continue;
+#endif
 }

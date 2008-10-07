@@ -51,21 +51,29 @@ void debug_puts (const char *str);
 int debug_printf (const char *fmt, ...);
 int debug_vprintf (const char *fmt, va_list args);
 void debug_dump (const char *caption, void* data, unsigned len);
-void debug_wait_enter (void);
-void debug_dump_stack_current (void);
 void debug_dump_stack (const char *caption, void *sp, void* frame, void *callee);
 void debug_redirect (void (*func) (void*, short), void *arg);
 
 /*
- * Call global C++ constructors and destructors.
+ * Call global C++ constructors.
+ * This must be done from user code after initializing a memory allocation pool.
  */
 void uos_call_global_initializers (void);
+
+/*
+ * Call global C++ destructors.
+ * Should be called from user code when the system is halted.
+ */
 void uos_call_global_destructors (void);
 
-/* Check memory address. */
+/*
+ * Check memory address.
+ */
 bool_t uos_valid_memory_address (void*);
 
-/* Halt the system. */
+/*
+ * Halt the system.
+ */
 void uos_halt (int);
 
 #ifndef __AVR__

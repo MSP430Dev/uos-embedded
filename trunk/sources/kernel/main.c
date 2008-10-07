@@ -90,9 +90,10 @@ main (void)
 	task_idle->name = "idle";
 	list_init (&task_idle->slaves);
 
+	/* Make list of active tasks. */
 	list_init (&task_active);
-	task_enqueue (&task_active, task_idle);
 	task_current = task_idle;
+	task_activate (task_idle);
 
 	/* Create user tasks. */
 	uos_init ();

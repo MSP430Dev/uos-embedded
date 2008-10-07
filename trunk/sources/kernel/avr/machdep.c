@@ -533,39 +533,7 @@ uos_valid_memory_address (void *ptr)
 	extern char __stack;
 
 	return u > 0x7FFF || (u > 0xFF && u <= (unsigned) &__stack);
-}
 
-/*
- * Halt uOS, return to the parent operating system.
- */
-void
-arch_halt (int dump_flag)
-{
-	unsigned char n;
-	task_t *t;
-	void *callee = __builtin_return_address (0);
-	void *sp = arch_get_stack_pointer (SP);
-
-	if (dump_flag) {
-		debug_task_print (0);
-		n = 0;
-		list_iterate (t, &task_active) {
-			if (t != task_idle && t != task_current)
-				debug_task_print (t);
-			if (! uos_valid_memory_address (t))
-				break;
-			if (++n > 32 || list_is_empty (&t->item)) {
-				debug_puts ("...\n");
-				break;
-			}
-		}
-		if (task_current && task_current != task_idle)
-			debug_task_print (task_current);
-
-		debug_dump_stack (__debug_task_name (task_current), sp,
-			(void*) task_current->stack_context, callee);
-		debug_printf ("\n*** Please report this information\n");
-	}
 	/*
 	 * Define assembler constant task_stack_context_offset,
 	 * which is a byte offset of stack_context field in tast_t structure.

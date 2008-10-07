@@ -63,7 +63,7 @@ lock_take (lock_t *m)
 		task_current->lock = m;
 
 		/* Put this task into the list of lock slaves. */
-		task_enqueue (&m->slaves, task_current);
+		list_append (&m->slaves, &task_current->item);
 
 		/* Update the value of lock priority.
 		 * It must be the maximum of all slave task priorities. */
@@ -73,8 +73,7 @@ lock_take (lock_t *m)
 			/* Increase the priority of master task. */
 			if (m->master->prio < m->prio) {
 				m->master->prio = m->prio;
-				// LY: взводить task_need_schedule не нужно,
-				//     он уже будет обязательно взведен.
+				/* No need to set task_need_schedule here. */
 			}
 		}
 
@@ -89,7 +88,7 @@ lock_take (lock_t *m)
 		m->master = task_current;
 
 		/* Put this lock into the list of task slaves. */
-		lock_enqueue (&task_current->slaves, m);
+		list_append (&task_current->slaves, &m->item);
 
 		/* Update the value of task priority.
 		 * It must be the maximum of base priority,
@@ -134,11 +133,11 @@ task_recalculate_prio (task_t *t)
 		} else {
 			if (t->prio > old_prio) {
 				if (task_current->prio < t->prio && ! task_is_waiting (t)) {
-					// LY: взводим флажок если приоритет поднялся и задача активна.
+					/* Active task increased priority - reschedule. */
 					task_need_schedule = 1;
 				}
 			} else if (t == task_current) {
-				// LY: взводим флажок если приоритет опустился и задача текущая.
+				/* Current task decreased priority - reschedule. */
 				task_need_schedule = 1;
 			}
 		}
@@ -198,7 +197,7 @@ lock_release (lock_t *m)
 #endif
 
 	/* Remove this lock from the list of task slaves. */
-	lock_dequeue (m);
+	list_remove (&m->item);
 
 	/* Recalculate the value of task priority.
 	 * It must be the maximum of base priority,

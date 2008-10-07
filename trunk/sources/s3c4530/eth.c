@@ -460,11 +460,6 @@ eth_handle_receive (eth_t *c, unsigned long st)
 			eth_receive_done (c);
 	}
 
-	//if (ARM_MAXRXSTAT & ARM_MACRXCON_ENRXPAR) {
-	//	/* LY: re-enable after the parity error */
-	//	ARM_BDMARXCON |= ARM_BDMARXCON_EN; /* DMA Rx enable */
-	//}
-
 	/* If the receive DMA halted - force it to continue. */
 	if (! (ARM_BDMARXCON & ARM_BDMARXCON_EN)) {
 		ARM_BDMARXPTR = (long) (c->rdesc + c->rn);
@@ -567,15 +562,10 @@ void eth_kick_tx (eth_t *c, bool_t force)
 
 void eth_poll_rx (eth_t *c)
 {
-	// LY: выбираем из очереди по одному пакету за раз.
+	/* Process a receive queue one packet per time. */
 	lock_take (&c->netif.lock);
 	if (! (c->rdesc[c->rn].data & EOWNER_DMA))
 		eth_receive_done (c);
-
-	//if (ARM_MAXRXSTAT & ARM_MACRXCON_ENRXPAR) {
-	//	/* LY: re-enable after the parity error */
-	//	ARM_BDMARXCON |= ARM_BDMARXCON_EN; /* DMA Rx enable */
-	//}
 
 	/* If the receive DMA halted - force it to continue. */
 	if (! (ARM_BDMARXCON & ARM_BDMARXCON_EN)) {
