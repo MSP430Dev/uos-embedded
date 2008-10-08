@@ -5,7 +5,7 @@ include target.cfg
 # Compile without kernel module in target.cfg.
 #TESTS		= test_debug.sre
 
-TESTS		= test_task.sre test_timer.sre test_uart.sre
+TESTS		= test_task.sre test_timer.sre test_uart.sre philosophers.sre
 OUTS		= $(TESTS:%.sre=%.out)
 
 all:		$(OUTS) $(TESTS)

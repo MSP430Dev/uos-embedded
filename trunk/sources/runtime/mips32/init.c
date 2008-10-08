@@ -87,7 +87,6 @@ void __attribute ((noreturn))_init_ (void)
 
 #endif /* ELVEES_MC24 */
 
-#ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
 	src = (unsigned*) &_etext;
@@ -95,7 +94,7 @@ void __attribute ((noreturn))_init_ (void)
 	limit = &_edata;
 	while (dest < limit)
 		*dest++ = *src++;
-#endif
+
 	src = 0;
 	/* Initialize .bss segment by zeroes. */
 	dest = &_edata;
