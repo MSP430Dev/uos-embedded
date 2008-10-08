@@ -14,7 +14,7 @@
 #define transmit_byte(p,c)		(MC_THR = (c))
 #define get_received_byte(p)		MC_RBR
 
-#define test_transmitter_enabled(p)	(MC_IER & MC_IER_ETXRDY)
+#define test_transmitter_enabled(p)	1
 #define test_transmitter_empty(p)	(MC_LSR & MC_LSR_TXRDY)
 #define test_get_receive_data(p,d)	((__uart_lsr & MC_LSR_RXRDY) ? \
 					((*d) = MC_RBR, 1) : 0)

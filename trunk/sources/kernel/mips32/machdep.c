@@ -115,6 +115,7 @@ _irq_handler_ (void)
 		irq = 31 - mips32_count_leading_zeroes (MC_QSTR & MC_MASKR);
 		if (irq < 0)
 			break;
+/*debug_printf ("<%d>", irq);*/
 #endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
