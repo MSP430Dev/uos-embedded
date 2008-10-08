@@ -90,20 +90,6 @@ extern list_t task_active;
 /* Switch to most priority task. */
 void task_schedule (void);
 
-/* LY: task policy, e.g. the scheduler */
-inline static task_t* __attribute__ ((always_inline))
-task_policy (void)
-{
-	task_t *t, *r;
-
-	r = task_idle;
-	list_iterate (t, &task_active) {
-		if (t->prio > r->prio)
-			r = t;
-	}
-	return r;
-}
-
 /* Activate all waiters of the lock. */
 void lock_activate (lock_t *m, void *message);
 
@@ -125,14 +111,28 @@ inline static void task_activate (task_t *task) {
 		task_need_schedule = 1;
 }
 
+/* Task policy, e.g. the scheduler.
+ * Task_active contains a list of all tasks, which are ready to run.
+ * Find a task with the biggest priority. */
+	__attribute__ ((always_inline))
+inline static task_t *task_policy (void)
+{
+	task_t *t, *r;
+
+	r = task_idle;
+	list_iterate (t, &task_active) {
+		if (t->prio > r->prio)
+			r = t;
+	}
+	return r;
+}
+
 void __lock_init (lock_t *);
 
 inline static void __lock_check (lock_t *lock) {
 	if (! lock->item.next)
 		__lock_init (lock);
 }
-
-int main (void) __attribute__ ((noreturn));
 
 #define STACK_MAGIC		0xaau
 

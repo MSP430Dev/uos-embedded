@@ -66,9 +66,9 @@ void debug_dump_stack (const char *caption, void *sp, void *frame, void *callee)
 				c = '*';
 				flag |= 1;
 			}
-			debug_printf (" %c%02X", c, *p);
+			debug_printf ("%c%02X", c, *p);
 		} else
-			debug_printf (" %c__", c);
+			debug_printf ("%c__", c);
 
 		if (p == to)
 			flag |= 2;

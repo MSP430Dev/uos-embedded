@@ -66,8 +66,6 @@ lock_activate (lock_t *m, void *message)
 		s->message = message;
 		s->active = 1;
 		t = s->group->waiter;
-/*debug_printf ("lock_activate: slot %p msg %s task %s\n", */
-/*s, message, t ? t->name : "<null>");*/
 		if (t) {
 			assert (list_is_empty (&t->item));
 			s->group->waiter = 0;

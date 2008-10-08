@@ -67,8 +67,17 @@ _reset_vector_:	.globl	_reset_vector_
 		mfc0	$a3, $C0_EPC
 		sw	$a0, (CONTEXT_LO * 4) ($sp)
 		sw	$a1, (CONTEXT_HI * 4) ($sp)
+		li	$k0, ~(ST_ERL | ST_EXL)
+		and	$a2, $a2, $k0			# Clear ERL and EXL bits
 		sw	$a2, (CONTEXT_STATUS * 4) ($sp)
 		sw	$a3, (CONTEXT_PC * 4) ($sp)
+
+		li	$k0, ~ST_IE
+		and	$a2, $a2, $k0			# Clear IE bit
+		mtc0	$a2, $C0_STATUS			# put SR back
+		nop
+		nop
+		nop
 		.endm
 
 #---------------------------------------

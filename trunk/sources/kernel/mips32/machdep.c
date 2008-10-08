@@ -74,11 +74,10 @@ _arch_task_switch_ ()
 	asm volatile ("mfhi	$a1" : : : "a1");
 	asm volatile ("mflo	$a0" : : : "a0");
 	asm volatile ("mfc0	$a2, $%0" : : "i" (C0_STATUS) : "a2");
-	asm volatile ("mfc0	$a3, $%0" : : "i" (C0_EPC) : "a3");
 	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_LO * 4));
 	asm volatile ("sw	$a1, %0 ($sp)" : : "i" (CONTEXT_HI * 4));
 	asm volatile ("sw	$a2, %0 ($sp)" : : "i" (CONTEXT_STATUS * 4));
-	asm volatile ("sw	$a3, %0 ($sp)" : : "i" (CONTEXT_PC * 4));
+	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4));
 
 	/* Save current task stack. */
 	task_current->stack_context = mips32_get_stack_pointer ();
@@ -110,11 +109,12 @@ _irq_handler_ (void)
 	asm volatile (
 "_interrupt_handler_: .globl _interrupt_handler_"
 	);
-debug_putchar (0, '~');
 	for (;;) {
 		/* Get the current irq number */
 #ifdef ELVEES_MC24
-		irq = 32 - mips32_count_leading_zeroes (MC_QSTR);
+		irq = 31 - mips32_count_leading_zeroes (MC_QSTR & MC_MASKR);
+		if (irq < 0)
+			break;
 #endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
@@ -180,7 +180,7 @@ arch_intr_allow (int irq)
 {
 #ifdef ELVEES_MC24
 	MC_MASKR |= 1 << irq;
-debug_printf ("enable irq %d, MASKR=%#x\n", irq, MC_MASKR);
+/*debug_printf ("enable irq %d, MASKR=%#x\n", irq, MC_MASKR);*/
 #endif
 }
 

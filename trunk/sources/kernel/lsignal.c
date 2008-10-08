@@ -76,7 +76,7 @@ lock_wait (lock_t *m)
 	task_current->wait = m;
 	list_append (&m->waiters, &task_current->item);
  	if (m->master != task_current) {
-		/* LY: мы не удерживаем lock, поэтому просто ждем сигнала. */
+		/* We do not keep this lock, so just wait for a signal. */
 		task_schedule ();
  		arch_intr_restore (x);
  		return task_current->message;
