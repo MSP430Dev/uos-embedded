@@ -1,5 +1,5 @@
 /*
- * Testing TCP protocol: client side.
+ * Testing TCP protocol: server side.
  */
 #include <runtime/lib.h>
 #include <mem/mem.h>

@@ -7,44 +7,40 @@
 #include <uart/uart.h>
 #include <random/rand15.h>
 
-#define N		5		/* Number of philosophers */
+#define N	5			/* Number of philosophers */
 
+uart_t uart;				/* Console driver */
+timer_t timer;				/* Timer driver */
 ARRAY (task [N], 0x400);		/* Task space */
 lock_t fork [N];			/* Forks */
 lock_t table;				/* Broadcast communication */
 lock_t screen;				/* Access to the screen */
-timer_t timer;				/* Timer driver */
-uart_t uart;				/* Console driver */
 
 typedef enum {
 	THINKING, EATING, WAITING,
 } state_t;
 
-const int xpos [] = { 35, 54, 47, 23, 16 };
-const int ypos [] = {  3, 10, 20, 20, 10 };
-int initialized = 0;
-
 void display (int i, state_t state)
 {
+	static const int xpos [] = { 35, 54, 47, 23, 16 };
+	static const int ypos [] = {  3, 10, 20, 20, 10 };
+	static int initialized = 0;
+
 	lock_take (&screen);
 	if (! initialized) {
-		/* Clear screen. */
-		puts (&uart, "\033[2J");
+		puts (&uart, "\033[2J");			/* Clear screen. */
 		initialized = 1;
 	}
-	printf (&uart, "\033[%d;%dH", ypos [i-1], xpos [i-1]);
+	printf (&uart, "\033[%d;%dH", ypos [i], xpos [i]);
 	switch (state) {
-	case THINKING:				/* Light blue */
-		puts (&uart, "\033[1;34m");
-		printf (&uart, "%d: thinking", i);
+	case THINKING:
+		printf (&uart, "\033[1;34m%d: thinking", i+1);	/* Light blue */
 		break;
-	case EATING:				/* Light green */
-		puts (&uart, "\033[1;32m");
-		printf (&uart, "%d: eating  ", i);
+	case EATING:
+		printf (&uart, "\033[1;32m%d: eating  ", i+1);	/* Light green */
 		break;
-	case WAITING:				/* Light red */
-		puts (&uart, "\033[1;31m");
-		printf (&uart, "%d: waiting ", i);
+	case WAITING:
+		printf (&uart, "\033[1;31m%d: waiting ", i+1);	/* Light red */
 		break;
 	}
 	lock_release (&screen);
@@ -88,9 +84,9 @@ void philosopher (void *data)
 	i = (int) data;
 	for (;;) {
 		think (i);
-		get_forks (i, &fork[i-1], &fork[i%N]);
+		get_forks (i, &fork [i], &fork [(i+1) % N]);
 		eat (i);
-		put_forks (&fork[i-1], &fork[i%N]);
+		put_forks (&fork [i], &fork [(i+1) % N]);
 	}
 }
 
@@ -103,6 +99,6 @@ void uos_init ()
 
 	/* Create N philosopher tasks. */
 	for (i=0; i<N; ++i)
-		task_create (philosopher, (void*) (i+1), "phil", 1,
+		task_create (philosopher, (void*) i, "phil", 1,
 			task[i], sizeof (task[i]));
 }
