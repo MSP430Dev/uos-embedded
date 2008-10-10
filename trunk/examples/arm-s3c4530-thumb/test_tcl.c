@@ -28,7 +28,7 @@
 #define REFRESH_USEC	8
 #define IO_START	0x03600000
 
-char task [0xa00];
+ARRAY (task, 0xa00);
 char line [200];
 mem_pool_t pool;
 

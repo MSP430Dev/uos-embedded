@@ -4,7 +4,7 @@
 #include "runtime/lib.h"
 #include "kernel/uos.h"
 
-char task [6000];
+ARRAY (task, 6000);
 
 void hello (void *arg)
 {

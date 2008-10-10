@@ -6,7 +6,7 @@
 int main (void)
 {
 	for (;;) {
-		debug_puts (CONST("Hello, World! (Press Enter)\n"));
+		debug_puts ("Hello, World! (Press Enter)\n");
 		debug_getchar();
 	}
 }

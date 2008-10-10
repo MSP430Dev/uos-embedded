@@ -16,6 +16,15 @@ extern "C" {
 #define ARRAY_LENGTH(array)	(sizeof (array) / sizeof ((array)[0]))
 #define ARRAY_END(array)	((array) + ARRAY_LENGTH (array))
 
+/*
+ * Define an external name with a given value.
+ */
+#define ASSIGN_VIRTUAL_ADDRESS(name, val)		\
+		asm volatile (				\
+		".globl " #name "\n\t"			\
+		".set " #name ", %0"			\
+		:: "n" (val))
+
 #include <runtime/byteorder.h>
 #define __LITTLE_ENDIAN 1234
 #define __BIG_ENDIAN    4321

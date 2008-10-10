@@ -9,7 +9,7 @@
 #define MEM_SIZE	15000
 #define NPTR		40
 
-char task [6000];
+ARRAY (task, 6000);
 mem_pool_t pool;
 char memory [MEM_SIZE];
 

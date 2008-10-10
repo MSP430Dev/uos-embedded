@@ -5,7 +5,7 @@
 #include "kernel/uos.h"
 #include "uart/uart.h"
 
-char task [0x200];
+ARRAY (task, 0x200);
 uart_t uart;
 
 void hello (void *data)

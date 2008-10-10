@@ -12,9 +12,9 @@
 
 #define MEM_SIZE	15000
 
-char task [6000];
+ARRAY (task, 6000);
 char memory [MEM_SIZE];
-char arp_data [sizeof(arp_t) + 10 * sizeof(arp_entry_t)];
+ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 arp_t *arp;
 mem_pool_t pool;
 tap_t tap;
@@ -38,6 +38,8 @@ void hello (void *data)
 
 void uos_init (void)
 {
+	unsigned char my_ip[] = "\310\0\0\1";
+
 	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);
 	arp = arp_init (arp_data, sizeof(arp_data), &ip);
 
@@ -45,7 +47,7 @@ void uos_init (void)
 	 * Create interface tap0 200.0.0.1 / 255.255.255.0
 	 */
 	tap_init (&tap, "tap0", 80, &pool, arp);
-	route_add_netif (&ip, &route, "\310\0\0\1", 24, &tap.netif);
+	route_add_netif (&ip, &route, my_ip, 24, &tap.netif);
 
 	task_create (hello, 0, "hello", 1, task, sizeof (task));
 }

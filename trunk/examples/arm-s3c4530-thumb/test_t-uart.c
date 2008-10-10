@@ -6,8 +6,8 @@
 #include "timer/timer.h"
 #include "uart/uart.h"
 
-char task [0x200];
-char task_msec [0x200];
+ARRAY (task, 0x200);
+ARRAY (task_msec, 0x200);
 timer_t timer;
 uart_t uart;
 

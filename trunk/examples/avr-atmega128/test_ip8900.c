@@ -21,11 +21,11 @@ mem_pool_t pool;
 timer_t timer;
 ip_t ip;
 ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
-char arp_data [sizeof(arp_t) + 10 * sizeof(arp_entry_t)];
+ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 arp_t *arp;
 cs8900_t eth;
 route_t route;
-char stack_poll [0x100];	/* Задача: опрос по таймеру */
+ARRAY (stack_poll, 0x100);	/* Задача: опрос по таймеру */
 
 /*
  * Задача периодического опроса.
@@ -40,6 +40,7 @@ void main_poll (void *data)
 void uos_init (void)
 {
 	lock_group_t *g;
+	unsigned char my_ip[] = "\220\316\265\373";
 
 	/* Baud 38400. */
 	outb (((int) (KHZ * 1000L / 38400) + 8) / 16 - 1, UBRR);
@@ -73,7 +74,10 @@ void uos_init (void)
 	setb (SRW, MCUCR);
 	cs8900_init (&eth, "eth0", 80, &pool, arp);
 
-	route_add_netif (&ip, &route, "\220\316\265\373", 24, &eth.netif);
+	route_add_netif (&ip, &route, my_ip, 24, &eth.netif);
 
 	task_create (main_poll, 0, "poll", 5, stack_poll, sizeof (stack_poll));
+
+	/* Define an address of chip CS8900. */
+	ASSIGN_VIRTUAL_ADDRESS (device_cs8900, 0x7f00);
 }

@@ -111,10 +111,6 @@ arm_intr_enable ()
 	: "=r" (temp) : : "memory", "cc");
 }
 
-inline extern void console_enable_receiver ()
-{
-}
-
 static void inline __attribute__ ((always_inline))
 arm_bus_yield ()
 {

@@ -11,9 +11,9 @@
 
 #define MEM_SIZE	15000
 
-char task [6000];
+ARRAY (task, 6000);
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 char memory [MEM_SIZE];
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
 mem_pool_t pool;
 tap_t tap;
 route_t route;
@@ -50,12 +50,13 @@ void main_task (void *data)
 	}
 	tcp_close (lsock);
 	debug_printf ("Server finished\n");
-	uos_halt();
+	uos_halt (0);
 }
 
 void uos_init (void)
 {
 	lock_group_t *g;
+	unsigned char my_ip[] = "\310\0\0\2";
 
 	timer_init (&timer, 100, KHZ, 10);
 	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);
@@ -72,7 +73,7 @@ void uos_init (void)
 	 * Create interface tap0 200.0.0.2 / 255.255.255.0
 	 */
 	tap_init (&tap, "tap0", 80, &pool, 0);
-	route_add_netif (&ip, &route, "\310\0\0\2", 24, &tap.netif);
+	route_add_netif (&ip, &route, my_ip, 24, &tap.netif);
 
 	task_create (main_task, 0, "main", 1, task, sizeof (task));
 }

@@ -9,7 +9,7 @@
 
 #define MEM_SIZE	15000
 
-char task [6000];
+ARRAY (task, 6000);
 char memory [MEM_SIZE];
 mem_pool_t pool;
 tap_t tap;

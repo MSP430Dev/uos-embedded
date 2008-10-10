@@ -35,9 +35,9 @@
 task_t *tasktab [MAXSESS];
 tcp_socket_t *socktab [MAXSESS];
 
-char task [6000];
+ARRAY (task, 6000);
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 char memory [MEM_SIZE];
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
 mem_pool_t pool;
 tap_t tap;
 route_t route;
@@ -59,7 +59,7 @@ loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 	int result = TCL_OK;
 	int i, first, limit, incr = 1;
 	char *command;
-	char itxt [12];
+	unsigned char itxt [12];
 
 	if ((argc < 5) || (argc > 6)) {
 		Tcl_AppendResult (interp, "bad # args: ", argv [0],
@@ -96,7 +96,7 @@ loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 				result = TCL_OK;
 				break;
 			} else if (result == TCL_ERROR) {
-				char buf [64];
+				unsigned char buf [64];
 
 				snprintf (buf, sizeof (buf),
 					"\n    (\"loop\" body line %d)",
@@ -282,7 +282,7 @@ void tcl_main (void *arg)
 void start_session (tcp_socket_t *sock)
 {
 	int n;
-	char *t;
+	array_t *t;
 
 	for (n=0; n<MAXSESS; ++n)
 		if (! socktab[n])
@@ -328,12 +328,13 @@ void telnet_task (void *data)
 	}
 	tcp_close (lsock);
 	debug_printf ("Server finished\n");
-	uos_halt();
+	uos_halt (0);
 }
 
 void uos_init (void)
 {
 	lock_group_t *g;
+	unsigned char my_ip[] = "\310\0\0\2";
 
 	timer_init (&timer, 100, KHZ, 10);
 	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);
@@ -350,7 +351,7 @@ void uos_init (void)
 	 * Create interface tap0 200.0.0.2 / 255.255.255.0
 	 */
 	tap_init (&tap, "tap0", 80, &pool, 0);
-	route_add_netif (&ip, &route, "\310\0\0\2", 24, &tap.netif);
+	route_add_netif (&ip, &route, my_ip, 24, &tap.netif);
 
 	task_create (telnet_task, 0, "telnetd", 1, task, sizeof (task));
 }

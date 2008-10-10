@@ -14,6 +14,7 @@ int main()
 	unsigned short serv_port = 2222;
 	struct sockaddr_in sin;
 	char buffer [256];
+	socklen_t sn;
 	int n;
 
 	printf ("Server started\n");
@@ -36,8 +37,8 @@ int main()
 	}
 	for (;;) {
 		printf ("Waiting for client...\n");
-		n = sizeof (sin);
-		sock = accept (lsock, (struct sockaddr*) &sin, &n);
+		sn = sizeof (sin);
+		sock = accept (lsock, (struct sockaddr*) &sin, &sn);
 		if (sock < 0) {
 			printf ("Error on accept\n");
 			break;

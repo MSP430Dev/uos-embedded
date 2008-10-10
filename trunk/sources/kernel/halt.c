@@ -47,7 +47,7 @@ uos_halt (int dump_flag)
 		if (task_current && task_current != task_idle)
 			task_print_debug (task_current);
 
-		debug_dump_stack (task_name (task_current), arch_get_stack_pointer (),
+		debug_dump_stack (task_name (task_current), __builtin_alloca (0),
 			(void*) task_current->stack_context, __builtin_return_address (0));
 		debug_printf ("\n*** Please report this information");
 	}

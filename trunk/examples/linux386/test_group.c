@@ -8,12 +8,12 @@
 
 #include <time.h>
 
-char waiter [6000];
-char sender1 [6000];
-char sender3 [6000];
 timer_t timer;
 lock_t A, B, C;
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
+ARRAY (waiter, 6000);
+ARRAY (sender1, 6000);
+ARRAY (sender3, 6000);
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 
 /*
  * Listener task. Get a lock group as an argument.
@@ -39,11 +39,11 @@ void main_waiter (void *arg)
 void main_sender (void *arg)
 {
 	int prio = (int) arg;
-	char msgA [8], msgB [8], msgC [8];
+	unsigned char msgA [8], msgB [8], msgC [8];
 
-	strcpy (msgA, "A-0"); msgA [2] += prio;
-	strcpy (msgB, "B-0"); msgB [2] += prio;
-	strcpy (msgC, "C-0"); msgC [2] += prio;
+	strcpy (msgA, (unsigned char*) "A-0"); msgA [2] += prio;
+	strcpy (msgB, (unsigned char*) "B-0"); msgB [2] += prio;
+	strcpy (msgC, (unsigned char*) "C-0"); msgC [2] += prio;
 	for (;;) {
 		switch (rand15() % 3) {
 		case 0:

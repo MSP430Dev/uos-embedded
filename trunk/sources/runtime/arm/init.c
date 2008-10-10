@@ -29,7 +29,7 @@ _init_ (void)
 	/* Enable write buffer. */
 	syscfg |= ARM_SYSCFG_WE;
 
-	// LY: experimental, disable round-robin for DMA-channels.
+	/* Disable round-robin for DMA-channels. */
 	syscfg |= ARM_SYSCFG_FP;
 
 	ARM_SYSCFG = syscfg;
@@ -79,10 +79,32 @@ _init_ (void)
 	main ();
 }
 
-void __gccmain (void)
+/*
+ * Check memory address.
+ * Board-dependent function, should be replaced by user.
+ */
+bool_t __attribute ((weak))
+uos_valid_memory_address (void *ptr)
 {
-	/* Implicitly called just after entering main(). */
+	unsigned u = (unsigned) ptr;
+
+#ifdef ARM_S3C4530
+	if (u >= ARM_SRAM_BASE && u < ARM_SRAM_BASE + 0x1000)
+		return 1;
+	return 0;
+#else
+	return 1;
+#endif
 }
+
+#ifdef ARM_S3C4530
+void __attribute ((weak))
+watchdog_alive ()
+{
+	/* This routine should be supplied by user.
+	 * Implementation of watchdog is different on different boards. */
+}
+#endif
 
 unsigned long _dump_stack_ [13];
 

@@ -1,29 +1,21 @@
+TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
-TARGET		= $(OS)/targets/atmega128
-include $(TARGET)/target.cfg
+include target.cfg
 
-#E		= hex
-E		= sre
 CFLAGS		+= -DKHZ=10000
-TESTS		= test_uart.$(E) test_nvram.$(E) \
-		  test_timer.$(E) test_crt.$(E) test_cksum.$(E) test_ram.$(E) \
-		  test_slip.$(E) test_ip.$(E) test_cs8900.$(E) \
-		  test_ip8900.$(E) #test_snmp.$(E) test_snmp8900.$(E)
-OUTS		= $(TESTS:%.$(E)=%.out)
+TESTS		= test_uart.sre test_nvram.sre \
+		  test_timer.sre test_crt.sre test_ram.sre \
+		  test_slip.sre test_ip.sre test_cs8900.sre \
+		  test_ip8900.sre #test_cksum.sre test_snmp.sre test_snmp8900.sre
+OUTS		= $(TESTS:%.sre=%.out)
 
-LOAD            = test_debug.sre
-
-all:		.deps target $(OUTS) $(TESTS)
+all:		$(OUTS) $(TESTS)
 		$(SIZE) $(OUTS)
 
-.deps:
-		mkdir .deps
-
-target:
-		$(MAKE) -C $(TARGET)
+$(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *.out *.hex *.$(E) *.[osi] *.lst *.dis *~ .deps
+		rm -rf *.out *.hex *.sre *.[oasi] *.lst *.dis *~ .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 

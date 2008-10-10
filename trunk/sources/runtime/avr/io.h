@@ -585,27 +585,5 @@
 
 #endif /*__OPTIMIZE__*/
 
-inline extern void console_enable_receiver ()
-{
-#ifdef RXEN
-	setb (RXEN, UCR);
-#elif defined (RXEN0)
-	setb (RXEN0, UCSR0B);
-#elif defined (RXEN1)
-	setb (RXEN1, UCSR1B);
-#endif
-}
-
-inline extern void console_disable_receiver ()
-{
-#ifdef RXEN
-	clearb (RXEN, UCR);
-#elif defined (RXEN0)
-	clearb (RXEN0, UCSR0B);
-#elif defined (RXEN1)
-	clearb (RXEN1, UCSR1B);
-#endif
-}
-
 #endif /* __ASSEMBLER__ */
 #endif /* _AVR_IO_H_ */

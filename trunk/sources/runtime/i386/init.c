@@ -289,12 +289,6 @@ _init_ (multiboot_info_t *mbi)
 	HANDLE_TRAP  (17, intr_align);
 }
 
-void
-__gccmain (void)
-{
-	/* Implicitly called just after entering main(). */
-}
-
 /*
  * Call global C++ constructors.
  */

@@ -15,9 +15,9 @@
 #define MEM_SIZE		15000
 #define STATIC_STRING(val)	({static char s[] = val; s; })
 
-char task [6000];
+ARRAY (task, 6000);
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 char memory [MEM_SIZE];
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
 mem_pool_t pool;
 tap_t tap;
 route_t route;
@@ -65,17 +65,17 @@ void main_task (void *data)
 	unsigned short port;
 
 	udp_socket (&sock, &ip, 161);
-	debug_printf (CONST("test_snmp: mem available = %d bytes\n"),
+	debug_printf ("test_snmp: mem available = %d bytes\n",
 		mem_available (&pool));
 
 	for (;;) {
 		p = udp_recvfrom (&sock, addr, &port);
-		debug_printf (CONST("test_snmp: mem available = %d bytes\n"),
+		debug_printf ("test_snmp: mem available = %d bytes\n",
 			mem_available (&pool));
 
 		r = buf_alloc (&pool, 1500, 50);
 		if (! r) {
-			debug_printf (CONST("test_snmp: out of memory!\n"));
+			debug_printf ("test_snmp: out of memory!\n");
 			buf_free (p);
 			continue;
 		}
@@ -96,6 +96,9 @@ void main_task (void *data)
 void uos_init (void)
 {
 	lock_group_t *g;
+	unsigned char my_ip[] = "\310\0\0\2";
+	unsigned char gw_ip[] = "\310\0\0\1";
+	unsigned char gw_netmask[] = "\0\0\0\0";
 
 	timer_init (&timer, 100, KHZ, 10);
 	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);
@@ -112,19 +115,18 @@ void uos_init (void)
 	 * Create interface tap0 200.0.0.2 / 255.255.255.0
 	 */
 	tap_init (&tap, "tap0", 80, &pool, 0);
-	route_add_netif (&ip, &route, "\310\0\0\2", 24, &tap.netif);
+	route_add_netif (&ip, &route, my_ip, 24, &tap.netif);
 
 	/*
 	 * Add default route to 200.0.0.1
 	 */
-	route_add_gateway (&ip, &default_route, "\0\0\0\0", 0, "\310\0\0\1");
+	route_add_gateway (&ip, &default_route, gw_netmask, 0, gw_ip);
 	if (! default_route.netif)
-		debug_printf (CONST("test_snmp: no interface for default route!\n"));
+		debug_printf ("test_snmp: no interface for default route!\n");
 
 	snmp_init (&snmp, &pool, &ip, snmp_tab, sizeof(snmp_tab), 20520,
 		SNMP_SERVICE_REPEATER, STATIC_STRING("Testing SNMP"),
-		CONST("1.3.6.1.4.1.20520.1.1"),
-		CONST("Test"), CONST("1.3.6.1.4.1.20520.6.1"));
+		"1.3.6.1.4.1.20520.1.1", "Test", "1.3.6.1.4.1.20520.6.1");
 
 	task_create (main_task, 0, "main", 1, task, sizeof (task));
 }

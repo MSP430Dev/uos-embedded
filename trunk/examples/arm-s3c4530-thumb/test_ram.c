@@ -13,7 +13,7 @@
 #define REFRESH_USEC	8
 #define IO_START	0x03600000
 
-char stack_console [0x300];	/* Задача: меню на консоли */
+ARRAY (stack_console, 0x300);	/* Задача: меню на консоли */
 
 void test_location (unsigned long addr, unsigned short val)
 {

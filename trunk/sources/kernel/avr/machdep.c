@@ -521,6 +521,14 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg, unsigned sta
 	*sp-- = 0;			/* r1 */
 	*sp-- = 0;			/* r0 */
 	t->stack_context = (void*) sp;
+
+	/*
+	 * Define assembler constant task_stack_context_offset,
+	 * which is a byte offset of stack_context field in tast_t structure.
+	 * Needed for _init_ for saving task_current.
+	 */
+	ASSIGN_VIRTUAL_ADDRESS (task_stack_context_offset,
+		__builtin_offsetof (task_t, stack_context));
 }
 
 /*
@@ -533,18 +541,4 @@ uos_valid_memory_address (void *ptr)
 	extern char __stack;
 
 	return u > 0x7FFF || (u > 0xFF && u <= (unsigned) &__stack);
-
-	/*
-	 * Define assembler constant task_stack_context_offset,
-	 * which is a byte offset of stack_context field in tast_t structure.
-	 * Needed for _init_ for saving task_current.
-	 */
-#define DEFINE_DEVICE_ADDR(name, val)                   \
-		__asm (					\
-		".globl " #name "\n\t"                  \
-		".set " #name ", %0"                    \
-		:: "n" (val)                            \
-	)
-	DEFINE_DEVICE_ADDR (task_stack_context_offset,
-		__builtin_offsetof (task_t, stack_context));
 }

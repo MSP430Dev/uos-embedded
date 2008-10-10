@@ -1,17 +1,14 @@
+TARGET		 = $(CURDIR)
 OS		 = $(shell cd ../..; pwd)
-TARGET		 = $(OS)/targets/i386
-include $(TARGET)/target.cfg
+include target.cfg
 
-OUTS		 = t_kbd.out t_mouse.out t_timer.out t_tcl.out
-#OUTS		+= t_task.out
+OUTS		 = t_kbd.out t_mouse.out t_timer.out #t_tcl.out
+OUTS		+= t_task.out
 #OUTS		+= t_math.out
 OUTS		+= t_pipe.out
 
-all:		.deps startup.o libuos.a $(OUTS) $(TESTS)
+all:		$(OUTS) $(TESTS)
 		size $(OUTS)
-
-.deps:
-		mkdir .deps
 
 img:		$(OUTS)
 		strip $(OUTS)
@@ -24,8 +21,10 @@ grub:		$(OUTS)
 #		mv t_mouse.out mouse
 #		mv t_kbd.out kbd
 
+$(OUTS) $(TESTS): startup.o libuos.a
+
 clean:
-		rm -rf *.out *.[osi] *.lst *.dis *~ .deps
+		rm -rf *.out *.[oasi] *.lst *.dis *~ .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 

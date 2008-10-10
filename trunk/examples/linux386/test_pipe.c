@@ -6,8 +6,8 @@
 #include "stream/stream.h"
 #include "stream/pipe.h"
 
-char task1 [0x1000];
-char task2 [0x1000];
+ARRAY (task1, 0x1000);
+ARRAY (task2, 0x1000);
 char pipe_buf [sizeof(pipe_t) + 4];
 
 void main_master (void *arg)

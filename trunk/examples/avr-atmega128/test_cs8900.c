@@ -54,6 +54,9 @@ outb (((int) (KHZ * 1000L / 19200) + 8) / 16 - 1, UBRR);
 
 	task_create (main_console, 0, "console", 1,
 		stack_console, sizeof (stack_console));
+
+	/* Define an address of chip CS8900. */
+	ASSIGN_VIRTUAL_ADDRESS (device_cs8900, 0x7f00);
 }
 
 void main_console (void *data)

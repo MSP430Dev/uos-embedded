@@ -20,11 +20,11 @@
 
 #define ctl(c)		((c) & 037)
 
-char stack_console [0x300];	/* Задача: меню на консоли */
-char stack_test [0x300];	/* Задача: передача-прием пакетов */
 uart_t uart;
 mem_pool_t pool;
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
+ARRAY (stack_console, 0x300);	/* Задача: меню на консоли */
+ARRAY (stack_test, 0x300);	/* Задача: передача-прием пакетов */
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 eth_t *eth;
 int packet_size = 1500;
 int kbaud = 2500;
@@ -356,7 +356,7 @@ try_again:		printf (&uart, "Enter packet size (1-1600): ");
 			data_pattern = mem_realloc (data_pattern, packet_size);
 			if (! data_pattern) {
 				printf (&uart, "No memory for data_pattern\n");
-				abort ();
+				uos_halt (1);
 			}
 			memset (data_pattern, 0xFF, packet_size);
 			if (packet_size >= 12)
@@ -424,7 +424,7 @@ void main_console (void *data)
 	data_pattern = mem_alloc (&pool, packet_size);
 	if (! data_pattern) {
 		printf (&uart, "No memory for data_pattern\n");
-		abort ();
+		uos_halt (1);
 	}
 	memset (data_pattern, 0xFF, packet_size);
 	if (packet_size >= 12)
@@ -445,7 +445,7 @@ void uos_init (void)
 	eth = mem_alloc (&pool, sizeof (eth_t));
 	if (! eth) {
 		printf (&uart, "No memory for eth_t\n");
-		abort ();
+		uos_halt (1);
 	}
 	eth_init (eth, "eth0", 80, 70, &pool, 0);
 	task_create (main_test, 0, "test", 5,

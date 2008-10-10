@@ -26,6 +26,7 @@ route_t route;
 void uos_init (void)
 {
 	lock_group_t *g;
+	unsigned char my_ip[] = "\310\0\0\2";
 
 /* Baud 38400. */
 outb (((int) (KHZ * 1000L / 38400) + 8) / 16 - 1, UBRR);
@@ -49,5 +50,5 @@ outb (((int) (KHZ * 1000L / 38400) + 8) / 16 - 1, UBRR);
 	 * Create interface slip0 200.0.0.2 / 255.255.255.0
 	 */
 	slip_init (&slip, 0, "slip0", 80, &pool, KHZ, 38400);
-	route_add_netif (&ip, &route, "\310\0\0\2", 24, &slip.netif);
+	route_add_netif (&ip, &route, my_ip, 24, &slip.netif);
 }
