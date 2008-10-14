@@ -16,10 +16,9 @@ _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
 		la	$sp, 0xb8008000			# Stack at end of internal SRAM
-		la	$gp, _gp			# Set global pointer
 
 		j	_init_				# Jump to _init_()
-		nop					# (delay slot)
+		lui	$gp, 0xb800			# Set global pointer (delay slot)
 
 #---------------------------------------
 # Macro: save all registers in stack
@@ -61,20 +60,20 @@ _reset_vector_:	.globl	_reset_vector_
 		sw	$31, (CONTEXT_RA * 4) ($sp)
 		.set	at
 
-		mfhi	$a1				# Save special registers
-		mflo	$a0
-		mfc0	$a2, $C0_STATUS
-		mfc0	$a3, $C0_EPC
-		sw	$a0, (CONTEXT_LO * 4) ($sp)
-		sw	$a1, (CONTEXT_HI * 4) ($sp)
-		li	$k0, ~(ST_ERL | ST_EXL)
-		and	$a2, $a2, $k0			# Clear ERL and EXL bits
-		sw	$a2, (CONTEXT_STATUS * 4) ($sp)
-		sw	$a3, (CONTEXT_PC * 4) ($sp)
+		mfhi	$a0				# Save special registers
+		sw	$a0, (CONTEXT_HI * 4) ($sp)
 
-		li	$k0, ~ST_IE
-		and	$a2, $a2, $k0			# Clear IE bit
-		mtc0	$a2, $C0_STATUS			# put SR back
+		mflo	$a0
+		sw	$a0, (CONTEXT_LO * 4) ($sp)
+
+		mfc0	$a0, $C0_EPC
+		sw	$a0, (CONTEXT_PC * 4) ($sp)
+
+		mfc0	$a0, $C0_STATUS
+		li	$a1, ~(ST_ERL | ST_EXL | ST_IE)
+		and	$a0, $a0, $a1			# Clear ERL, EXL and IE bits
+		sw	$a0, (CONTEXT_STATUS * 4) ($sp)
+		mtc0	$a0, $C0_STATUS			# put SR back
 		nop
 		nop
 		nop
@@ -85,17 +84,25 @@ _reset_vector_:	.globl	_reset_vector_
 #
 exception:
 		SAVE_REGS				# Save all registers in stack
-		la	$gp, _gp			# Set global pointer
+		move	$a0, $sp			# Arg0: pointer to saved state
+		addi	$sp, $sp, -4			# Make an arg frame
 
 		.extern _exception_handler_
-		move	$a0, $sp			# Arg0: pointer to saved state
 		j	_exception_handler_		# Jump to C code, no return
-		addi	$sp, $sp, -4			# Make an arg frame (delay slot)
+		lui	$gp, 0xb800			# Set global pointer (delay slot)
 
 #---------------------------------------
 # Restore CPU state and return from interrupt
 
 _restore_regs_: .globl _restore_regs_
+
+		lw	$a0, (CONTEXT_LO * 4) ($sp)	# Load HI, LO registers
+		mtlo	$a0
+		lw	$a0, (CONTEXT_HI * 4) ($sp)
+		mthi	$a0
+
+		lw	$a0, (CONTEXT_PC * 4) ($sp)	# K1 = EPC
+		mtc0	$a0, $C0_EPC			# put PC in EPC
 
 		.set	noat
 		lw	$1, (CONTEXT_R1 * 4) ($sp)	# Load general registers
@@ -131,23 +138,14 @@ _restore_regs_: .globl _restore_regs_
 		lw	$31, (CONTEXT_RA * 4) ($sp)
 		.set	at
 
-		lw	$k0, (CONTEXT_LO * 4) ($sp)	# Load special registers
-		lw	$k1, (CONTEXT_HI * 4) ($sp)
-		mthi	$k1
-		mtlo	$k0
 		lw	$k0, (CONTEXT_STATUS * 4) ($sp)	# K0 = saved status
-		lw	$k1, (CONTEXT_PC * 4) ($sp)	# K1 = EPC
 
 		addi	$sp, $sp, CONTEXT_WORDS*4	# Deallocate saved context
 
 		# Invoke CPU specific mechanism for returning from this exception
 		.set mips3
-		ori	$k0, $k0, 2			# prevent interrupts until eret
+		ori	$k0, $k0, ST_EXL | ST_IE	# prevent interrupts until eret
 		mtc0	$k0, $C0_STATUS			# put SR back
-		nop
-		nop
-		nop
-		mtc0	$k1, $C0_EPC			# put PC in EPC
 		nop
 		nop
 		nop
@@ -163,12 +161,12 @@ _restore_regs_: .globl _restore_regs_
 _pagefault_vector_: .globl _pagefault_vector_
 
 		SAVE_REGS				# Save all registers in stack
-		la	$gp, _gp			# Set global pointer
+		move	$a0, $sp			# Arg0: pointer to saved state
+		addi	$sp, $sp, -4			# Make an arg frame (delay slot)
 
 		.extern _pagefault_handler_
-		move	$a0, $sp			# Arg0: pointer to saved state
 		j	_pagefault_handler_		# Jump to C code, no return
-		addi	$sp, $sp, -4			# Make an arg frame (delay slot)
+		lui	$gp, 0xb800			# Set global pointer (delay slot)
 
 #---------------------------------------
 # Exception vector at 0xBFC00380
@@ -186,8 +184,7 @@ _exception_vector_: .globl _exception_vector_
 _interrupt_vector_: .globl _interrupt_vector_
 
 		SAVE_REGS				# Save all registers in stack
-		la	$gp, _gp			# Set global pointer
 
 		.extern _interrupt_handler_
 		j	_interrupt_handler_		# Jump to C code, no return
-		nop					# (delay slot)
+		lui	$gp, 0xb800			# Set global pointer (delay slot)

@@ -20,7 +20,7 @@ extern "C" {
 #      define TIMER_STACKSZ	0x400
 #   endif
 #   if MIPS32
-#      define TIMER_STACKSZ	600
+#      define TIMER_STACKSZ	0x400
 #   endif
 #   if defined (__arm__) || defined (__thumb__)
 #      define TIMER_STACKSZ	300

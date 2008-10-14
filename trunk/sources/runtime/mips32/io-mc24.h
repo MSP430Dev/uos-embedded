@@ -94,7 +94,7 @@
 #define MC_CSCON0	MC_R (0x1000)	/* Регистр конфигурации 0 */
 #define MC_CSCON1	MC_R (0x1004)	/* Регистр конфигурации 1 */
 #define MC_CSCON2	MC_R (0x1008)	/* Регистр конфигурации 2 */
-#define MC_CSCON3	MC_R (0x100С)	/* Регистр конфигурации 3 */
+#define MC_CSCON3	MC_R (0x100C)	/* Регистр конфигурации 3 */
 #define MC_CSCON4	MC_R (0x1010)	/* Регистр конфигурации 4 */
 #define MC_SDRCON	MC_R (0x1014)	/* Регистр конфигурации памяти SDRAM */
 #define MC_CKE_CTR	MC_R (0x1018)	/* Регистр управления состоянием вывода CKE микросхемы */
