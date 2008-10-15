@@ -35,49 +35,52 @@ _arch_task_switch_ ()
 "arch_task_switch: .globl arch_task_switch");
 	asm volatile ("move	%0, $a0" : "=r" (target));
 
-	asm volatile ("addi	$sp, $sp, -%0" : : "i" (CONTEXT_WORDS*4));
+	asm volatile ("addi	$sp, $sp, -%0" : : "i" (CONTEXT_WORDS * 4 + 16));
 	asm volatile (".set	noat");
-	asm volatile ("sw	$1, %0 ($sp)" : : "i" (CONTEXT_R1 * 4));
-	asm volatile ("sw	$2, %0 ($sp)" : : "i" (CONTEXT_R2 * 4));
-	asm volatile ("sw	$3, %0 ($sp)" : : "i" (CONTEXT_R3 * 4));
-	asm volatile ("sw	$4, %0 ($sp)" : : "i" (CONTEXT_R4 * 4));
-	asm volatile ("sw	$5, %0 ($sp)" : : "i" (CONTEXT_R5 * 4));
-	asm volatile ("sw	$6, %0 ($sp)" : : "i" (CONTEXT_R6 * 4));
-	asm volatile ("sw	$7, %0 ($sp)" : : "i" (CONTEXT_R7 * 4));
-	asm volatile ("sw	$8, %0 ($sp)" : : "i" (CONTEXT_R8 * 4));
-	asm volatile ("sw	$9, %0 ($sp)" : : "i" (CONTEXT_R9 * 4));
-	asm volatile ("sw	$10, %0 ($sp)" : : "i" (CONTEXT_R10 * 4));
-	asm volatile ("sw	$11, %0 ($sp)" : : "i" (CONTEXT_R11 * 4));
-	asm volatile ("sw	$12, %0 ($sp)" : : "i" (CONTEXT_R12 * 4));
-	asm volatile ("sw	$13, %0 ($sp)" : : "i" (CONTEXT_R13 * 4));
-	asm volatile ("sw	$14, %0 ($sp)" : : "i" (CONTEXT_R14 * 4));
-	asm volatile ("sw	$15, %0 ($sp)" : : "i" (CONTEXT_R15 * 4));
-	asm volatile ("sw	$16, %0 ($sp)" : : "i" (CONTEXT_R16 * 4));
-	asm volatile ("sw	$17, %0 ($sp)" : : "i" (CONTEXT_R17 * 4));
-	asm volatile ("sw	$18, %0 ($sp)" : : "i" (CONTEXT_R18 * 4));
-	asm volatile ("sw	$19, %0 ($sp)" : : "i" (CONTEXT_R19 * 4));
-	asm volatile ("sw	$20, %0 ($sp)" : : "i" (CONTEXT_R20 * 4));
-	asm volatile ("sw	$21, %0 ($sp)" : : "i" (CONTEXT_R21 * 4));
-	asm volatile ("sw	$22, %0 ($sp)" : : "i" (CONTEXT_R22 * 4));
-	asm volatile ("sw	$23, %0 ($sp)" : : "i" (CONTEXT_R23 * 4));
-	asm volatile ("sw	$24, %0 ($sp)" : : "i" (CONTEXT_R24 * 4));
-	asm volatile ("sw	$25, %0 ($sp)" : : "i" (CONTEXT_R25 * 4));
+	asm volatile ("sw	$1, %0 ($sp)" : : "i" (CONTEXT_R1 * 4 + 16));
+	asm volatile ("sw	$2, %0 ($sp)" : : "i" (CONTEXT_R2 * 4 + 16));
+	asm volatile ("sw	$3, %0 ($sp)" : : "i" (CONTEXT_R3 * 4 + 16));
+	asm volatile ("sw	$4, %0 ($sp)" : : "i" (CONTEXT_R4 * 4 + 16));
+	asm volatile ("sw	$5, %0 ($sp)" : : "i" (CONTEXT_R5 * 4 + 16));
+	asm volatile ("sw	$6, %0 ($sp)" : : "i" (CONTEXT_R6 * 4 + 16));
+	asm volatile ("sw	$7, %0 ($sp)" : : "i" (CONTEXT_R7 * 4 + 16));
+	asm volatile ("sw	$8, %0 ($sp)" : : "i" (CONTEXT_R8 * 4 + 16));
+	asm volatile ("sw	$9, %0 ($sp)" : : "i" (CONTEXT_R9 * 4 + 16));
+	asm volatile ("sw	$10, %0 ($sp)" : : "i" (CONTEXT_R10 * 4 + 16));
+	asm volatile ("sw	$11, %0 ($sp)" : : "i" (CONTEXT_R11 * 4 + 16));
+	asm volatile ("sw	$12, %0 ($sp)" : : "i" (CONTEXT_R12 * 4 + 16));
+	asm volatile ("sw	$13, %0 ($sp)" : : "i" (CONTEXT_R13 * 4 + 16));
+	asm volatile ("sw	$14, %0 ($sp)" : : "i" (CONTEXT_R14 * 4 + 16));
+	asm volatile ("sw	$15, %0 ($sp)" : : "i" (CONTEXT_R15 * 4 + 16));
+	asm volatile ("sw	$16, %0 ($sp)" : : "i" (CONTEXT_R16 * 4 + 16));
+	asm volatile ("sw	$17, %0 ($sp)" : : "i" (CONTEXT_R17 * 4 + 16));
+	asm volatile ("sw	$18, %0 ($sp)" : : "i" (CONTEXT_R18 * 4 + 16));
+	asm volatile ("sw	$19, %0 ($sp)" : : "i" (CONTEXT_R19 * 4 + 16));
+	asm volatile ("sw	$20, %0 ($sp)" : : "i" (CONTEXT_R20 * 4 + 16));
+	asm volatile ("sw	$21, %0 ($sp)" : : "i" (CONTEXT_R21 * 4 + 16));
+	asm volatile ("sw	$22, %0 ($sp)" : : "i" (CONTEXT_R22 * 4 + 16));
+	asm volatile ("sw	$23, %0 ($sp)" : : "i" (CONTEXT_R23 * 4 + 16));
+	asm volatile ("sw	$24, %0 ($sp)" : : "i" (CONTEXT_R24 * 4 + 16));
+	asm volatile ("sw	$25, %0 ($sp)" : : "i" (CONTEXT_R25 * 4 + 16));
 	/* Skip $26 - K0*/
 	/* Skip $27 - K1*/
-	asm volatile ("sw	$28, %0 ($sp)" : : "i" (CONTEXT_GP * 4));
+	asm volatile ("sw	$28, %0 ($sp)" : : "i" (CONTEXT_GP * 4 + 16));
 	/* Skip $29 - SP*/
-	asm volatile ("sw	$30, %0 ($sp)" : : "i" (CONTEXT_FP * 4));
-	asm volatile ("sw	$31, %0 ($sp)" : : "i" (CONTEXT_RA * 4));
+	asm volatile ("sw	$30, %0 ($sp)" : : "i" (CONTEXT_FP * 4 + 16));
+	asm volatile ("sw	$31, %0 ($sp)" : : "i" (CONTEXT_RA * 4 + 16));
 	asm volatile (".set	at");
 
 	/* Save special registers. */
-	asm volatile ("mfhi	$a1" : : : "a1");
+	asm volatile ("mfhi	$a0" : : : "a0");
+	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_HI * 4 + 16));
+
 	asm volatile ("mflo	$a0" : : : "a0");
-	asm volatile ("mfc0	$a2, $%0" : : "i" (C0_STATUS) : "a2");
-	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_LO * 4));
-	asm volatile ("sw	$a1, %0 ($sp)" : : "i" (CONTEXT_HI * 4));
-	asm volatile ("sw	$a2, %0 ($sp)" : : "i" (CONTEXT_STATUS * 4));
-	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4));
+	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_LO * 4 + 16));
+
+	asm volatile ("mfc0	$a0, $%0" : : "i" (C0_STATUS) : "a0");
+	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_STATUS * 4 + 16));
+
+	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4 + 16));
 
 	/* Save current task stack. */
 	task_current->stack_context = mips32_get_stack_pointer ();
@@ -233,5 +236,9 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* r3 */
 	*--sp = 0;			/* r2 */
 	*--sp = 0;			/* r1 */
+	*--sp = 0;			/* arg4 */
+	*--sp = 0;			/* arg3 */
+	*--sp = 0;			/* arg2 */
+	*--sp = 0;			/* arg1 */
 	t->stack_context = (void*) sp;
 }
