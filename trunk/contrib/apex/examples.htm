@@ -1,0 +1,824 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE>Test Cases</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1"><LINK
+title="Prosimii (alternative)" media=screen
+href="examples_archivos/prosimii-screen-alt.css" type=text/css
+rel=stylesheet><LINK title="Print Preview" media=screen
+href="./prosimii-print.css" type=text/css rel="stylesheet alternative"><LINK
+media=print href="examples_archivos/prosimii-print.css" type=text/css
+rel=stylesheet>
+<META content="MSHTML 6.00.2900.3314" name=GENERATOR>
+<style type="text/css">
+<!--
+.Estilo1 {color: #0000FF}
+-->
+</style>
+</HEAD>
+<BODY><!-- For non-visual user agents: -->
+<DIV id=top><A class="doNotDisplay doNotPrint"
+href="http://www.it.uu.se/research/group/darts/uppaal/examples.shtml#main-copy">Skip
+to main content.</A></DIV><!-- ##### Header ##### -->
+<DIV id=header>
+<DIV class=superHeader><SPAN>Related Sites:</SPAN> <A
+title="The Official Timestool Page" href="http://spinroot.com/spin/whatispin.html"
+target=_top>SPIN</A> | <A title="The Official Uppaal CORA Page"
+href="http://stwww.weizmann.ac.il/g-cs/benari/jspin/" target=_top>JSPIN</A></DIV>
+<DIV class=midHeader>
+<H1 class=headerTitle>ARINCTester</H1>
+<DIV class=headerSubTitle>Test Cases </DIV>
+<BR class="doNotDisplay doNotPrint">
+<DIV class=headerLinks><!--
+        <span class="doNotDisplay">Tools:</span>
+        <a href="./index2.html">view an alternative layout &laquo;</a>
+        <span class="doNotDisplay">|</span>
+        <a style="cursor: help;" title="Thanks to CSS, this page is already printer friendly!">printer-friendly version &laquo;</a>
+--></DIV></DIV>
+<DIV class=subHeader><SPAN class=doNotDisplay>Navigation:</SPAN><A
+href="index.html">Home</A> | <A
+href="about.htm">About</A> | <A
+href="documentation.htm">Documentation</A> | <A
+href="download.htm">Download</A> | <A
+href="examples.htm">Test Cases</A><A
+href="contributors.htm"> | Contributors</A></DIV>
+</DIV><!-- ##### Side Menu ##### -->
+<P class="doNotDisplay doNotPrint">This page’s menu:</P>
+<UL id=side-bar>
+  <LI><A
+  href="examples.htm#downloadtest">Download</A>
+  <LI><A
+  href="examples.htm#testcases">Description</A>
+</UL>
+<DIV id=main-copy>
+<H1><A name=downloadtest></A>Download - Test Cases </H1>
+<P>Test Cases were written in C files. The table below shows the names of C files used, main service checked and other services necessary to satisfy initial requirements.</P>
+<table width="818" height="842" border="1">
+  <tr>
+    <th scope="col">File Name </th>
+    <th scope="col">Main Services Checked </th>
+    <th scope="col">Other Services used </th>
+  </tr>
+  <tr>
+    <td><div align="center"><a href="apps/app1.c" class="Estilo1">app1.c</a></div></td>
+    <td><div align="center">GET_PARTITION_STATUS.</div></td>
+    <td><div align="center"></div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app2.c" class="Estilo1">app2.c</a></div></td>
+    <td><div align="center">
+SET_PARTITION_MODE,</div></td>
+    <td><div align="center">GET_PARTITION_STATUS.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app3.c" class="Estilo1">app3.c</a></div></td>
+    <td><div align="center">GET_PROCESS_ID.</div></td>
+    <td><div align="center"></div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app4.c" class="Estilo1">app4.c</a></div></td>
+    <td><div align="center">GET_PROCESS_STATUS.</div></td>
+    <td><div align="center"></div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app5.c" class="Estilo1">app5.c</a></div></td>
+    <td><div align="center">CREATE_PROCESS.</div></td>
+    <td><div align="center">GET_PROCESS_STATUS.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app6.c" class="Estilo1">app6.c</a></div></td>
+    <td><div align="center">SET_PRIORITY.</div></td>
+    <td><div align="center">START,<br>
+      GET_PROCESS_STATUS,<br>
+      STOP_SELF,<br>
+      GET_PARTITION_STATUS,<br>
+      GET_PROCESS_ID.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app7.c" class="Estilo1">app7.c</a></div></td>
+    <td><div align="center">SUSPEND_SELF.</div></td>
+    <td><div align="center">START,<br>
+      TIMED_WAIT,<br>
+      STOP_SELF,<br>
+      GET_PROCESS_ID.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app8.c" class="Estilo1">app8.c</a></div></td>
+    <td><div align="center">SUSPEND.</div></td>
+    <td><div align="center">START,<br>
+      GET_PROCESS_STATUS,<br>
+      STOP_SELF,<br>
+      GET_PROCESS_ID.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app9.c" class="Estilo1">app9.c</a></div></td>
+    <td><div align="center">RESUME.</div></td>
+    <td><div align="center">START,<br>
+      SUSPEND_SELF,<br>
+      GET_PROCESS_STATUS,<br>
+      STOP_SELF.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app10.c" class="Estilo1">app10.c</a></div></td>
+    <td><div align="center">STOP.</div></td>
+    <td><div align="center">START,<br>
+      GET_PARTITION_STATUS,<br>
+      STOP_SELF,<br>
+      READ_BLACKBOARD,<br>
+      DISPLAY_BLACKBOARD,<br>
+      GET_BLACKBOARD_ID.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app11.c" class="Estilo1">app11.c</a></div></td>
+    <td><div align="center">START.</div></td>
+    <td><div align="center">GET_PROCESS_STATUS.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app12.c" class="Estilo1">app12.c</a></div></td>
+    <td><div align="center">GET_MY_ID.</div></td>
+    <td><div align="center">CREATE_PROCESS,<br>
+      SET_PARTITION_MODE,<br>
+      START.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app13.c" class="Estilo1">app13.c</a></div></td>
+    <td><div align="center">TIMED_WAIT.</div></td>
+    <td><div align="center">START,<br>
+      GET_PROCESS_STATUS,<br>
+      TIMED_WAIT,<br>
+      CREATE_PROCESS,<br>
+      SET_PARTITION_MODE,<br>
+      STOP_SELF.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app14.c" class="Estilo1">app14.c</a></div></td>
+    <td><div align="center">PERIODIC_WAIT.</div></td>
+    <td><div align="center">START,<br>
+      GET_TIME,<br>
+      GET_PROCESS_STATUS,<br>
+      SET_PRIORITY.</div></td>
+  </tr>
+  <tr>
+    <td><div align="center" class="Estilo1"><a href="apps/app15.c" class="Estilo1">app15.c</a></div></td>
+    <td><div align="center">REPLENISH.</div></td>
+    <td><div align="center">GET_PROCESS_STATUS.</div></td>
+  </tr>
+</table>
+<P></P>
+<HR noShade>
+<H1><A name=testcases></A>Description - Test Cases </H1>
+<P>ARINCTester has been applied in a number of test cases. Test Cases are defined considering the ARINC 653 Part 3 &ldquo;Conformity Test Specification&rdquo; document. This specification gives a description in natural language of an APEX conformity test-battery. Therefore, this battery checks if the APEX services provided by an OS are conformed to the ARINC 653 Part 1 specification. In consequence, it can also be used to check if the services implemented in our environment are also conformant.
+ Here we briefly review all of them:
+<UL>
+  <LI><B name=app1>App1: </B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+          <p>Process Master_Test is created with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is aperiodic<br>
+            Master Partition is in normal state.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+          <p>Call procedure CHECKGET_PARTITION_STATUS using as arguments the following values:<br>
+            - Expected values for the status:<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;IDENTIFIER (Partition ID) = value defined in the configuration table<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;PERIOD = period defined in the configuration table<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;DURATION = duration defined in the configuration table<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;LOCK_LEVEL = 0<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;OPERATING_MODE = NORMAL<br>
+            - Expected error code is NO_ERROR.</p>
+          <p>Check that procedure call returned no error.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+          <p>Service GET_PARTITION_STATUS is successfully tested. </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Partition Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B name=app2>App2:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created and started, with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is periodic.<br>
+Master Partition is initializing.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>ProcessMain:<br>
+Call procedure CHECKSET_PARTITION_MODE with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;New mode is NORMAL mode.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Expected error code is NO_ERROR.<br>
+Check error code.</p>
+            <p>Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PARTITION_STATUS and check that partition is in NORMAL mode.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If partition is in NORMAL mode then the test is successful.</p>
+            </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p>Service SET_PARTITION_MODE is successfully tested. </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Partition Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App3:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created.<br>
+Process Proc1 is created.<br>
+Test running either during the partition start or during normal operating mode. Final result must
+be the same.            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>ProcessMain:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECKGET_PROCESS_ID with the following arguments:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ProcName of Process Proc1.<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Process Id returned in the creation of Proc1.</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p>Service GET_PROCESS_ID is successfully tested. </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App4:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created.<br>
+Process Proc1 is defined.<br>
+Test running either during the partition start or during normal operating mode. Final result must be the same.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>Call procedure CHECKGET_PROCESS_STATUS with the following arguments:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;ProcessId returned from CHECKCREATE_PROCESS.<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Valid ProcessStatus<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p>Service GET_PROCESS_STATUS is successfully tested. </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App5:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created.<br>
+Process Proc1 is defined according to the following:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Proc1.PROCESS_ATTRIBUTE_TYPE.NAME := &quot;PROCESS_1&quot;<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Proc1.PROCESS_ATTRIBUTE_TYPE.ENTRY_POINT:= (function pointer)<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Proc1.PROCESS_ATTRIBUTE_TYPE.STACK_SIZE:= VALID_STACK_SIZE<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Proc1.PROCESS_ATTRIBUTE_TYPE.BASE_PRIORITY:= REGULAR_MASTER_PROCESS_PRIORITY<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Proc1.PROCESS_ATTRIBUTE_TYPE.PERIOD:= VALID_PERIOD<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Proc1.PROCESS_ATTRIBUTE_TYPE.TIME_CAPACITY:= VALID_TIME_CAPACITY<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Proc1.PROCESS_ATTRIBUTE_TYPE.DEADLINE:= SOFT<br>
+Running during Master Partition initialization<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>Call procedure CHECKCREATE_PROCESS with the following arguments:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Attributes of Process Proc1.<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Check OutProcessStatus ID is DORMANT and OutProcessId is not null<br>
+Process created.<br>
+Call procedure CHECKCREATE_PROCESS with the following arguments:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Attributes of Process Proc1.<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;NO_ACTION as expected error code.<br>
+            </p>
+            </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> First call to procedure CHECKCREATE_PROCESS returns a CREATE_PROCESS structure confirming the process successful creation. Likewise, the +second call to the same procedure confirms that NO_ACTION has been taken by the CREATE_PROCESS service once a process with the same attributes has previously been created</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App6:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created and started with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is  aperiodic<br>
+Process P1 is created with base priority = REGULAR_P1_PROCESS_PRIORITY and is aperiodic.<br>
+Process P2 is created with base priority = REGULAR_P2_PROCESS_PRIORITY and is aperiodic.<br>
+Master Partition in NORMAL STATE.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p> Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until the value outputs for LOCK_LEVEL is equal to 0 (preemption
+is enabled).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P1 as argument (P1 will pre-empt this process).<br>
+Pseudo-code for process P1:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P2 as argument.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process P2.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECKSET_PRIORITY with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of Process P1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REGULAR_P2_PROCESS_PRIORITY - 1 as new priority value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code. (P1 will be pre-empted by P2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that procedure call didn't return any error.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV2 to TRUE if GET_PROCESS_STATUS returned READY and procedure returned no errors and GV1 is TRUE.<br>
+Pseudo-code for process P2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV1 to TRUE.<br>
+            </p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> Call to service SET_PRIORITY returns NO_ERROR.<br>
+Process P2 pre-empts P1 after P1 calls the service SET_PRIORITY. <br>
+GV1 and GV2 are TRUE (process scheduling asked).<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App7:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is aperiodic.<br>
+Process P1 is created with base priority = HIGH_PROCESS_PRIORITY and is aperiodic.<br>
+Master Partition in NORMAL STATE.<br>
+Global variable GV1 is initialized to FALSE.<br>
+Global variable GV2 is initialized to FALSE.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p><br>
+              Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until the value it outputs for LOCK_LEVEL is equal to 0 (to ensure<br>
+that pre-emption is enabled).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P1 as argument. (Master_Test is pre-empted by P1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that GV1=TRUE and GV2=FALSE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service TIMED_WAIT with delay value of REGULAR_TIME_WAIT<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that GV2 and GV1 are TRUE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Test succeeds if GV1 and GV2 values are TRUE, otherwise fails<br>
+Pseudo code for process P1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV1 to TRUE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECKSUSPEND_SELF with the following parameters:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Timeout = MINIMUM_WAIT<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Expected error is TIMED_OUT<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that procedure returned no errors<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV2 to TRUE if procedure call returned no errors</p>
+            </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> Process P1 is suspended and resumes after its timeout expires. No errors occur in service call.<br>
+All processes call service STOP_SELF at the end of its execution code.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App8:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created and started with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is aperiodic<br>
+Process P1 is created with base priority = REGULAR_P1_PROCESS_PRIORITY, is aperiodic.<br>
+Process P2 is created with base priority = REGULAR_P2_PROCESS_PRIORITY and is aperiodic.<br>
+Master Partition in NORMAL STATE.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p> Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until value for parameter LOCK_LEVEL returned by service is equal to 0 (this assures that pre-emption is activated).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P1 as argument. (Master_Test is pre-empted by P1).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Pseudo-code for process P1:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of P2 as argument.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECK_SUSPEND using as arguments the following values:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of Process P2.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Expected error code is NO_ERROR.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check OutProcessStatus returns WAITING.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that procedure returned no errors.<br>
+Pseudo-code for process P2.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service STOP_SELF.<br>
+            </p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p>The process P2 is suspended.<br>
+All processes call service STOP_SELF at the end of its execution code.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App9:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created and started with priority = REGULAR_MASTER_PROCESS_PRIORITY and is aperiodic.<br>
+Process P1 is created with base priority = REGULAR_P1_PROCESS_PRIORITY, is aperiodic.<br>
+Master Partition in NORMAL STATE.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p> Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until the value LOCK_LEVEL, returned by the service, is equal to 0 (this ensures that pre-emption is enabled)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P1 as argument. (Master_Test is pre-empted by P1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process P1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check GET_PROCESS_STATUS returned WAITING and GV1 is FALSE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECK_RESUME with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of process P1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Expected value equal to NO_ERROR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that procedure returned no errors.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Test succeeds if the procedure call didn't return an error and GV1 value is TRUE, otherwise it fails.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Pseudo-code for process P1:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service SUSPEND_SELF, using as argument the following values:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of process P1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Timeout = HALF_REGULAR_TIME_WAIT<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV1 value to TRUE</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> Process P1 is suspends itself and then it is resumed by Master_Test.<br>
+All processes call service STOP_SELF at the end of its execution code.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App10:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is aperiodic<br>
+Process P1 is created with base priority = REGULAR_P1_PROCESS_PRIORITY and is aperiodic<br>
+Blackboard B1 is created and clear<br>
+Blackboard B2 is created and clear<br>
+Master Partition in NORMAL STATE<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until the value it outputs for LOCK_LEVEL is equal to 0 (preemption is enabled).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P1 as argument (process P1 pre-empts Master_Test).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service READ_BLACKBOARD using the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of blackboard B1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Timeout = 0 ms.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service READ_BLACKBOARD using the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of blackboard B2.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Timeout = 0 ms.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Test succeeded if read messages are all &quot;OK&quot;, otherwise failed<br>
+Pseudo code for process P1:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P2 as argument.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P3 as argument (process P1 pre-empts process P3).<br>
+Pseudo code for process P3:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECK_STOP with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of process P2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service DISPLAY_BLACKBOARD using as arguments the following values:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of blackboard B1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Message is &quot;OK&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the value of process P2 as parameter.<br>
+Pseudo code for process P2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service DISPLAY_BLACKBOARD using as arguments the following values:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID of blackboard B2.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Message is &quot;OK&quot;.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Size is 3 bytes.</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p>Service STOP is successfully tested. </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App11:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p>Process Master_Test is created with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is aperiodic.<br>
+Process P1 is created with base priority = REGULAR_P2_PROCESS_PRIORITY and is aperiodic.<br>
+Master Partition in NORMAL STATE.<br>
+Global variable GV1 is initialized to FALSE.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until the LOCK_VALUE returned by the service is 0 (preemption is enabled).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECK_START, using as arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The ID of process P1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Expected error code is NO_ERROR.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that procedure returned no errors (Master_Test is pre-empted by P1).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Test succeeded if procedure returned no errors and GV1 is TRUE.</p>
+            <p>Pseudo-code for process P1:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Set GV1 to TRUE<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;Call service STOP_SELF<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> Procedure P1 is started and there is no errors raised.<br>
+All processes call service STOP_SELF at the end of its execution code.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App12:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> 	Process Master_Test is created.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p> Call procedure CHECK_GET_MY_ID with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> The call to Check My ID will return no errors, by making the GET_MY_ID to return the Master_Test process ID.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Process Management. </p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App13:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created with base priority 2 and is aperiodic.<br>
+Process P1 is created with base priority 21 and is periodic.<br>
+Global variable GV1 is initialized to FALSE.<br>
+Global variable GV2 is initialized to FALSE.<br>
+Master Partition in NORMAL STATE.<br>
+<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until the value it outputs for LOCK_LEVEL is equal to 0 (preemption is enabled).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P1 as argument (process P1 pre-empts Master_Test).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read value of variable GV1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process P1 and check the process status is WAITING.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECKTIMED_WAIT with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELAY_TIME := REGULAR_TIME_WAIT.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read value of variable GV2.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Test succeeded if read values of GV1 and GV2 are TRUE, procedure call returned no errors.<br>
+Pseudo code for process P1:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV1 to TRUE.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECKTIMED_WAIT with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELAY_TIME := REGULAR_TIME_WAIT - MINIMUM_WAIT.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV2 to TRUE if procedure call returned no errors.</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> The Master_Test process is pre-empted by process P1 once the TIMED_WAIT service is called. Since the process P1 has a similar priority, the round-robin rescheduling feature will enable it to set to True, variable Gv1. <br>
+Rescheduling is triggered thereafter, enabling the Master_Test process to read the contents of the variables. <br>
+TIMED_WAIT of 99 ms in P1 against 100ms of Master Test is a robustness test to ensure the full precision of TIMED WAIT. <br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Time Management.</p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App14:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Process Master_Test is created and started, with base priority = REGULAR_MASTER_PROCESS_PRIORITY and is periodic.<br>
+              Master Partition is initializing.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>Pseudo-code for process Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service UNLOCK_PREEMPTION until the value it outputs for LOCK_LEVEL is equal to 0.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service SET_PRIORITY and set Master_Test priority above P1 priority (as such P1 will not preempt Master_Test).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service START with the ID of process P1 as argument (process P1 pre-empts Master_Test).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process P1 and check the process status is either &nbsp;&nbsp;&nbsp;&nbsp;READY or WAITING and set InitialDeadlineTime to the current value of DEADLINE_TIME.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service SET_PRIORITY and set Master_Test to initial value (as such P1 will be able to pre-empt Master_Test).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;WHILE GV1 is FALSE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process P1 and check the process status is &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WAITING.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Call service TIMED_DELAY with parameter:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delay = MINIMUM_WAIT.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;END WHILE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check value of GV1 is TRUE.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check value of DEADLINE_TIME is different from value kept previously in InitialDeadlineTime.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;WHILE process status is NOT DORMANT<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process P1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Call service TIMED_DELAY with parameter:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delay = MINIMUM_WAIT.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;END WHILE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Test succeeded if GV1 and GV2 are TRUE, all checks were OK and all procedures returned no errors.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Pseudo code for process P1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set value of GV1 to TRUE.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECKPERIODIC_WAIT with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Check that procedure call returned no errors.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set GV2 to TRUE if previous checks were all TRUE.</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> Process P1 is suspended and pending on a queue. Process is restarted and it is no longer pending on the queue.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Time Management.</p>
+        </blockquote></td>
+      </tr>
+    </table>
+  <LI><B>App15:</B>
+    <table width="860" border="1">
+      <tr>
+        <th width="91" scope="row">Scenario</th>
+        <td width="753"><blockquote>
+            <p> Master Partition is in NORMAL state<br>
+Process Master_Test is created and started in Master Partition with priority = REGULAR_ MASTER_PROCESS_PRIORITY<br>
+and is aperiodic.<br>
+            </p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Description</th>
+        <td><blockquote>
+            <p>Pseudo-code for Master_Test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process Master_Test, to get the deadline time.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call procedure CHECKREPLENISH with the following arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BudgetTime = (deadline time - 1 - current system clock).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_ERROR as expected error code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Call service GET_PROCESS_STATUS using as argument the ID of process Master_Test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Test succeeds if procedure returned no errors and deadline time was decreased by one between the two calls to <br>
+&nbsp;&nbsp;&nbsp;&nbsp;GET_PROCESS_STATUS.</p>
+          </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Expected Results </th>
+        <td><blockquote>
+            <p> First call to the GET_PROCESS_STATUS service returns a PROCESS_STATUS_TYPE structure encapsulating the current process DEADLINE_TIME. The call to procedure CHECKREPLENISH updates the deadline removing 1 unit, which is confirmed by the final call to GET_PROCESS_STATUS.</p>
+        </blockquote></td>
+      </tr>
+      <tr>
+        <th scope="row">Checked Service Group</th>
+        <td><blockquote>
+          <p>ARINC653 Time Management.</p>
+        </blockquote></td>
+      </tr>
+    </table>
+</UL>
+</DIV>
+<!-- Start of StatCounter Code -->
+<SCRIPT language=javascript type=text/javascript>
+var sc_project=641662;
+var sc_partition=5;
+var sc_security="7666be07";
+</SCRIPT>
+
+<SCRIPT language=javascript src="examples_archivos/counter.js"
+type=text/javascript></SCRIPT>
+<NOSCRIPT><A href="http://www.statcounter.com/" target=_blank><IMG
+alt="web log free" src="examples_archivos/counter.gif" border=0></A> </NOSCRIPT><!-- End of StatCounter Code --><!-- ##### Footer ##### -->
+<DIV id=footer><STRONG>Updated &raquo;</STRONG> 03/06/2008</DIV>
+</BODY></HTML>
