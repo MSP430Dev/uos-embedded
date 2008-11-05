@@ -204,13 +204,12 @@ void uos_init (void)
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c] добавляем объявление номера прерывания таймера:
 {{{
 #if ELVEES_MC24
-#   define TIMER_IRQ            29      /* Interval Timer interrupt */
+#   define TIMER_IRQ 29  
 #endif
 }}}
 В функции `main_timer()` в соответствующее место добавляем инициализацию регистров таймера:
 {{{
 #if ELVEES_MC24
-        /* Use interval timer with prescale 1:1. */
         MC_ITCSR = 0;
         MC_ITSCALE = 0;
         MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
@@ -220,7 +219,6 @@ void uos_init (void)
 В цикле ожидания перед вызовом lock_wait() сбрасываем признак прерывания:
 {{{
 #if ELVEES_MC24
-        /* Clear interrupt. */
         MC_ITCSR &= ~MC_ITCSR_INT;
 #endif
 }}}
@@ -253,5 +251,89 @@ void uos_init (void)
 }}}
 В файле Makefile устанавливаем `TESTS = test_timer.sre`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и счётчик миллисекунд.
+
+=== 14. Драйвер асинхронного порта ===
+В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.h sources/uart/uart.h] в соответствующее место добавляем определение размера стека задачи асинхронного порта:
+{{{
+#if MIPS32
+#   define UART_STACKSZ 0x400
+}}}
+Аналогично в файле протокола SLIP [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.h sources/uart/slip.h]:
+{{{
+#if MIPS32
+#   define SLIP_STACKSZ 0x400
+}}}
+В начале файлов [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.c sources/uart/uart.c] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.c sources/uart/slip.c] добавляем включение файла макросов для MC-24:
+{{{
+#if ELVEES_MC24
+#   include "uart/elvees.h"
+#endif
+}}}
+Создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/elvees.h sources/uart/elvees.h] с макросами UART для MC-24:
+{{{
+#include "kernel/internal.h"
+
+#define RECEIVE_IRQ(p)  4               /* both receive and transmit */
+
+#define enable_receiver(p)              /* already enabled in init() */
+#define enable_receive_interrupt(p)     (MC_IER |= MC_IER_ERXRDY | MC_IER_ERLS)
+#define disable_receive_interrupt(p)    (MC_IER &= ~(MC_IER_ERXRDY | MC_IER_ERLS))
+#define enable_transmit_interrupt(p)    (MC_IER |= MC_IER_ETXRDY)
+#define disable_transmit_interrupt(p)   (MC_IER &= ~MC_IER_ETXRDY)
+
+#define transmit_byte(p,c)              (MC_THR = (c))
+#define get_received_byte(p)            MC_RBR
+
+#define test_transmitter_enabled(p)     1
+#define test_transmitter_empty(p)       (MC_LSR & MC_LSR_TXRDY)
+#define test_get_receive_data(p,d)      ((__uart_lsr & MC_LSR_RXRDY) ? \
+                                        ((*d) = MC_RBR, 1) : 0)
+#define test_frame_error(p)             ((__uart_lsr = MC_LSR) & MC_LSR_FE)
+#define test_parity_error(p)            (__uart_lsr & MC_LSR_PE)
+#define test_overrun_error(p)           (__uart_lsr & MC_LSR_OE)
+#define test_break_error(p)             (__uart_lsr & MC_LSR_BI)
+#define clear_frame_error(p)            /* Cleared by reading LSR */
+#define clear_parity_error(p)           /* --//-- */
+#define clear_overrun_error(p)          /* --//-- */
+#define clear_break_error(p)            /* --//-- */
+
+#define setup_baud_rate(p, khz, baud) {                                 \
+                unsigned divisor = MC_DL_BAUD (khz * 1000, baud);       \
+                MC_LCR = MC_LCR_8BITS | MC_LCR_DLAB;                    \
+                MC_DLM = divisor >> 8;                                  \
+                MC_DLL = divisor;                                       \
+                MC_LCR = MC_LCR_8BITS;                                  \
+        }
+
+static unsigned __uart_lsr;
+}}}
+
+=== 15. Третий тест: асинхронный порт ===
+В каталоге uos/examples/mips32 создаём файл test_uart.c:
+{{{
+#include <runtime/lib.h>
+#include "kernel/uos.h"
+#include "uart/uart.h"
+
+ARRAY (task, 0x400);
+uart_t uart;
+
+void hello (void *data)
+{
+        for (;;) {
+                puts (&uart, "\nHello, World! ");
+                getchar (&uart);
+        }
+}
+
+void uos_init (void)
+{
+        debug_puts ("\nTesting UART.\n");
+        uart_init (&uart, 0, 90, KHZ, 115200);
+        task_create (hello, 0, "hello", 1, task, sizeof (task));
+}
+}}}
+В файле Makefile устанавливаем `TESTS = test_uart.sre`.
+Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World".
 
 ... TODO ...
