@@ -149,19 +149,26 @@ include $(OS)/sources/rules.mak
 Запускаем "make". В результате получаем файл `test_debug.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World" (скорость 115200, 8 бит, без чётности).
 
 === 10. Перенос ядра ===
-Создаём каталог uos/sources/kernel/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.h machdep.h] с описанием регистров платформы MIPS32. В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/arch.h kernel/arch.h] добавляем строки:
-{{{
-#if MIPS32
-#   include <kernel/mips32/machdep.h>
-#endif
-}}}
+Создаём каталог uos/sources/kernel/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.h machdep.h] с описанием машинно-зависимых функций и макросов для платформы MIPS32:
+  * `ARCH_INTERRUPTS` - количество аппаратный прерываний, 40 для MC-24
+  * `arch_state_t` - тип для хранения маски аппаратных прерываний, `int` для MIPS-32
+  * `arch_stack_t` - тип для хранения указателя стека, `void *` для MIPS-32
+  * `arch_get_stack_pointer ()` - inline-функция, возвращающая текущий указатель стека
+  * `arch_set_stack_pointer ()` - inline-функция, устанавливающая указатель стека
+  * `arch_intr_disable ()` - inline-функция, запрещающая аппаратные прерывания
+  * `arch_intr_restore ()` - inline-функция, восстанавливающая режим аппаратных прерываний
+  * `arch_intr_bind ()` - inline-функция, пустая для MIPS-32
+  * `arch_intr_unbind ()` - inline-функция, пустая для MIPS-32
+  * `arch_idle ()` - inline-функция, переводящая процессор в режим ожидания
 
-... TODO ...
+В файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.с machdep.с] помещаем код машинно-зависимых функций:
+  * `arch_task_switch ()` - функция, переключающая выполнение на другую задачу
+  * `_interrupt_handler_ ()` - обработчик аппаратного прерывания, вызываемый из startup-кода
+  * `arch_intr_allow ()` - функция, открывающая маску указанного аппаратного прерывания
+  * `arch_build_stack_frame ()` - функция, создающая фрейм в стеке для старта новой задачи
 
-=== N. Добавляем обработку прерываний ===
-В файле uos/sources/kernel/arm/machdep.c в функциях `_irq_handler_()` и
-`arm_intr_allow()` добавляем работу с регистрами контроллера прерываний.
-Заключаем его в #ifdef ARM_AT91SAM ... #endif.
 
 === M. Обрабатываем таймер ===
-В файле uos/sources/timer/timer.c добавляем инициализацию регистров таймера.
+... TODO ...
+
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c uos/sources/timer/timer.c] добавляем инициализацию регистров таймера.
