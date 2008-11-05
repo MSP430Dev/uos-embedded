@@ -193,9 +193,65 @@ void uos_init (void)
 }
 }}}
 В файле Makefile устанавливаем `TESTS = test_task.sre`.
-Запускаем "make". В результате получаем файл `test_task.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World" и информация о свободной части стека задачи.
+Запускаем "make". В результате получаем файл `test_task.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и информация о свободной части стека задачи.
 
-=== M. Обрабатываем таймер ===
+=== 12. Обрабатываем таймер ===
+В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.h sources/timer/timer.h] в соответствующее место добавляем определение размера стека задачи таймера:
+{{{
+#if MIPS32
+#   define TIMER_STACKSZ 0x400
+}}}
+В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c] добавляем объявление номера прерывания таймера:
+{{{
+#if ELVEES_MC24
+#   define TIMER_IRQ            29      /* Interval Timer interrupt */
+#endif
+}}}
+В функции `main_timer()` в соответствующее место добавляем инициализацию регистров таймера:
+{{{
+#if ELVEES_MC24
+        /* Use interval timer with prescale 1:1. */
+        MC_ITCSR = 0;
+        MC_ITSCALE = 0;
+        MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
+        MC_ITCSR = MC_ITCSR_EN;
+#endif
+}}}
+В цикле ожидания перед вызовом lock_wait() сбрасываем признак прерывания:
+{{{
+#if ELVEES_MC24
+        /* Clear interrupt. */
+        MC_ITCSR &= ~MC_ITCSR_INT;
+#endif
+}}}
+
+=== 13. Третий тест: драйвер таймера ===
+В каталоге uos/examples/mips32 создаём файл test_timer.c:
+{{{
+#include <runtime/lib.h>
+#include "kernel/uos.h"
+#include "timer/timer.h"
+
+ARRAY (task, 0x400);
+timer_t timer;
+
+void hello (void *arg)
+{
+        for (;;) {
+                debug_printf ("Hello from `%s'! msec = %d\n",
+                        arg, timer_milliseconds (&timer));
+                lock_wait (&timer.decisec);
+        }
+}
+
+void uos_init (void)
+{
+        debug_puts ("\nTesting timer.\n");
+        timer_init (&timer, 100, KHZ, 1000);
+        task_create (hello, "task", "hello", 1, task, sizeof (task));
+}
+}}}
+В файле Makefile устанавливаем `TESTS = test_timer.sre`.
+Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и счётчик миллисекунд.
+
 ... TODO ...
-
-В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c uos/sources/timer/timer.c] добавляем инициализацию регистров таймера.
