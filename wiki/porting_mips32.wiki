@@ -110,7 +110,7 @@ cp ../arm/types.h ../arm/stdlib.h ../arm/string.h .
 выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`. Заключаем их в #ifdef ELVEES_MC24 ... #endif.
 
 === 9. Первый тест: отладочная выдача на консоль ===
-Создаём каталог uos/examples/mips32, а в нём файлы test_debug.c:
+Создаём каталог uos/examples/mips32-mc24, а в нём файлы test_debug.c:
 {{{
 #include <runtime/lib.h>
 
@@ -168,7 +168,7 @@ include $(OS)/sources/rules.mak
   * `arch_build_stack_frame ()` - функция, создающая фрейм в стеке для старта новой задачи
 
 === 11. Второй тест: формирование задач ===
-В каталоге uos/examples/mips32 создаём файл test_task.c:
+В каталоге uos/examples/mips32-mc24 создаём файл test_task.c:
 {{{
 #include <runtime/lib.h>
 #include "kernel/uos.h"
@@ -224,7 +224,7 @@ void uos_init (void)
 }}}
 
 === 13. Третий тест: таймер ===
-В каталоге uos/examples/mips32 создаём файл test_timer.c:
+В каталоге uos/examples/mips32-mc24 создаём файл test_timer.c:
 {{{
 #include <runtime/lib.h>
 #include "kernel/uos.h"
@@ -309,7 +309,7 @@ static unsigned __uart_lsr;
 }}}
 
 === 15. Четвёртый тест: асинхронный порт ===
-В каталоге uos/examples/mips32 создаём файл test_uart.c:
+В каталоге uos/examples/mips32-mc24 создаём файл test_uart.c:
 {{{
 #include <runtime/lib.h>
 #include "kernel/uos.h"
@@ -336,4 +336,9 @@ void uos_init (void)
 В файле Makefile устанавливаем `TESTS = test_uart.sre`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World".
 
-... TODO ...
+=== 16. Комплексный тест: пять обедающих философов ===
+Проведём комплексную проверку микроядра, драйвера таймера и драйвера асинхронного порта.
+В каталоге uos/examples/mips32-mc24 создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/philosophers.c examples/mips32-mc24/philosophers.c]. В нем помещаем код решения классической задачи [http://en.wikipedia.org/wiki/Dining_philosophers_problem пяти обедающих философов]. 
+
+В файле Makefile устанавливаем `TESTS = test_philosophers.sre`.
+Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World".
