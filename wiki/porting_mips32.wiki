@@ -308,7 +308,7 @@ void uos_init (void)
 static unsigned __uart_lsr;
 }}}
 
-=== 15. Третий тест: асинхронный порт ===
+=== 15. Четвёртый тест: асинхронный порт ===
 В каталоге uos/examples/mips32 создаём файл test_uart.c:
 {{{
 #include <runtime/lib.h>
