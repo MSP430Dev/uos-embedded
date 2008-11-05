@@ -341,4 +341,4 @@ void uos_init (void)
 В каталоге uos/examples/mips32-mc24 создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/philosophers.c examples/mips32-mc24/philosophers.c]. В нем помещаем код решения классической задачи [http://en.wikipedia.org/wiki/Dining_philosophers_problem пяти обедающих философов]. 
 
 В файле Makefile устанавливаем `TESTS = test_philosophers.sre`.
-Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World".
+Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоли будут отображаться пять философов и изменение их состояния во времени.
