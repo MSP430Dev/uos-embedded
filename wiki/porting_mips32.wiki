@@ -195,7 +195,7 @@ void uos_init (void)
 В файле Makefile устанавливаем `TESTS = test_task.sre`.
 Запускаем "make". В результате получаем файл `test_task.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и информация о свободной части стека задачи.
 
-=== 12. Обрабатываем таймер ===
+=== 12. Драйвер таймера ===
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.h sources/timer/timer.h] в соответствующее место добавляем определение размера стека задачи таймера:
 {{{
 #if MIPS32
@@ -225,7 +225,7 @@ void uos_init (void)
 #endif
 }}}
 
-=== 13. Третий тест: драйвер таймера ===
+=== 13. Третий тест: таймер ===
 В каталоге uos/examples/mips32 создаём файл test_timer.c:
 {{{
 #include <runtime/lib.h>
