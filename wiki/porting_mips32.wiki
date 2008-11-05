@@ -161,7 +161,7 @@ include $(OS)/sources/rules.mak
   * `arch_intr_unbind ()` - inline-функция, пустая для MIPS-32
   * `arch_idle ()` - inline-функция, переводящая процессор в режим ожидания
 
-В файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.с machdep.с] помещаем код машинно-зависимых функций:
+В файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.c machdep.c] помещаем код машинно-зависимых функций:
   * `arch_task_switch ()` - функция, переключающая выполнение на другую задачу
   * `_interrupt_handler_ ()` - обработчик аппаратного прерывания, вызываемый из startup-кода
   * `arch_intr_allow ()` - функция, открывающая маску указанного аппаратного прерывания
