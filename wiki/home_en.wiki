@@ -1,62 +1,32 @@
-uOS is an operating system for embedded microcontrollers. Supported architectures are Atmel AVR, ARM and i386.
+=uOS Operational System for Embedded Applications=
+uOS is a portable well-scalable operational system for embedded real-time systems. uOS is free software (GPL with addition) and intended for commercial applications.
 
-= uOS - встраиваемая операционная система =
-uOS представляет собой переносимую масштабируемую встраиваемую операционную систему для промышленных применений и систем реального времени. Свободная лицензия ([licence GPL с дополнением]) позволяет использовать uOS в коммерческих приложениях.
+==Key features of uOS:==
+  * Excellent hardware scalability: from 8-bit microcontrollers with 16 kilobytes ROM and 2 kilobytes RAM to weighty 32-bit microprocessors.
+  * Low size and performance overhead: core OS requires 2 kilobytes ROM and 200 bytes RAM.
+  * Modular approach: set of involved modules (drivers, memory manager, network stacks) can be extended according to the specific field of application.
+  * Nice portability. One of the latest job performed - porting to MIPS32 platform - took 1 man/month.
+  * Infinite number of tasks, priorities and resources.
 
-Исходные тексты uOS и дополнительное программное обеспечение можно 
-[download скачать здесь].
+During development main emphasis was done on inner simplicity and effectiveness. The kernel consist of approximately 1500 lines of code. Core algorithms are easy to read and support.
 
-Операционная система uOS может применяться в промышленных
-и коммуникационных системах с самым широким диапазоном ресурсов,
-от 8-битных микроконтроллеров с 16 килобайтами ПЗУ и 2 килобайтами ОЗУ,
-до 32-битных микропроцессоров. Система поддерживает неограниченное
-количество задач, приоритетов и ресурсов.
+==Supported architectures:==
+  * ARM: Samsung S3C4530A, ARM and Thumb modes.
+  * MIPS32: Elvees MC-24.
+  * Atmel AVR: ATmega128, ATmega2561, ATmega103, ATmega161.
+  * Intel i386: PC-compatible computers with PCI bus and VESA video. Grub 0.97 is used.
+  * over Linux Kernel API (i386 x 32), with TCP/IP support. Useful for debugging of platform-independent part of system being developed: data processing algorithms, memory management, networking protocols.
 
-Система uOS построена по модульному принципу. Базовый модуль ядра
-занимает около 2 килобайт ПЗУ и 200 байт ОЗУ. Набор используемых модулей
-может наращиваться в соответствии с потребностями конкретного применения.
-В перечень модулей входят драйверы устройств, диспетчер памяти, сетевые
-протоколы.
-
-При разработке основной упор делался на простоту и эффективность реализации, а также переносимость. С целью облегчения переноса на другие архитектуры микропроцессоров
-машинно-зависимая часть ядра uOS выделена в отдельный блок.
-
-Поддерживаемые архитектуры: 
- * ARM: Samsung S3C4530A, в режимах ARM и Thumb.
- * MIPS32: Элвис МС-24.
- * Atmel AVR: ATmega128, ATmega2561, ATmega103, ATmega161.
- * Intel i386: стандартные PC-совместимые компьютеры c шиной PCI и видеоадаптером VESA. Используется загрузчик Grub 0.97.
- * Linux 386, в режиме виртуальной машины, с поддержкой TCP/IP. Может применяться для отладки машинно-независимых частей разрабатываемых систем: алгоритмов обработки данных, диспетчеров памяти, сетевых протоколов.
-
-Характеристики uOS:
- * Вытесняющая многозадачность
- * Отсутствие ограничений на количество запускаемых задач
- * Отсутствие ограничений на количество уровней приоритета
- * Единый механизм синхронизации "ресурс", аналог mutex и mailbox, для задач и прерываний
- * Наследование приоритета (priority inheritance)
- * Возможность "быстрой" обработки прерываний, без задействования механизма синхронизации
- * Простота и расширяемость системы за счет организации в виде независимых модулей
- * Малый размер обязательной части системы
- * Высокая степень переносимости благодаря четкому выделению архитектурозависимых частей
- * Возможность обнаружения переполнения стека
- * Сетевой стек TCP/IP v4, включая протоколы Telnet и NNTP
- * Модуль протокола SNMP для применения в качестве встраиваемого агента
- * Интерпретатор языка Embedded TCL для приложений, требующих командной строки 
- * Свободные средства разработки (GCC), в том числе для платформы Windows
- * Набор примеров для каждой поддерживаемой архитектуры
-
-Документация:
- * [kernel Ядро системы]
- * [modules Базовые модули]
- * [runtime Системная библиотека]
- * [modules_extended Дополнительные модули]
- * [project Установка uOS и создание проекта]
- * [porting Перенос на другие архитектуры]
-
-Дополнительные материалы:
- * [coding_style Стиль кодирования] для проекта uOS, черновик.
- * [future_plans Мысли] по поводу следующей версии.
- * Установка GCC для архитектур [gcc_avr Atmel AVR], [gcc_arm ARM], [gcc_msp430 MSP430], [gcc_intel Intel 386/Pentium].
- * [http://uos-embedded.googlecode.com/files/uOS-0.2-manual.pdf uOS-0.2-manual.pdf] - описание в формате PDF (на русском языке).
- * [http://uos-embedded.googlecode.com/files/nanox-refman-2004-07-24.pdf nanox-refman-2004-07-24.pdf] - документация для Nano-X версии 0.91.
- * [screenshots Пример графической системы] на процессоре i386 с оконным интерфейсом Nano-X.
+==uOS charaсteristics:==
+  * Preemptive multitasking
+  * Practically no limitation for number of tasks and priorities
+  * Unified synchronization object "resource", analogue of mutex and mailbox, for tasks and interrupts
+  * Priority inheritance
+  * Opportunity of using "fast" interrupt handling, without involving synchronization objects
+  * Simplicity and extendability due to modular architecture
+  * Stack overflow detection
+  * Ready to use TCP/IP stack including Telnet and NNTP
+  * SNMP module for application as embedded agent
+  * Built-in Embedded TCL interpreter for applications requiring command line prompt
+  * Free development tools (GCC) incliding MS Windows platform
+  * Set of samples for every supported architecture
