@@ -1,5 +1,5 @@
-=uOS Operational System for Embedded Applications=
-uOS is a portable well-scalable operational system for embedded real-time systems. uOS is free software (GPL with addition) and intended for commercial applications.
+=uOS Operating System for Embedded Applications=
+uOS is a portable well-scalable operating system for embedded real-time systems. uOS is free software (GPL with extension) and intended for commercial applications.
 
 ==Key features of uOS:==
   * Excellent hardware scalability: from 8-bit microcontrollers with 16 kilobytes ROM and 2 kilobytes RAM to weighty 32-bit microprocessors.
@@ -8,7 +8,7 @@ uOS is a portable well-scalable operational system for embedded real-time system
   * Nice portability. One of the latest job performed - porting to MIPS32 platform - took 1 man/month.
   * Infinite number of tasks, priorities and resources.
 
-During development main emphasis was done on inner simplicity and effectiveness. The kernel consist of approximately 1500 lines of code. Core algorithms are easy to read and support.
+During development main emphasis was done on inner simplicity and effectiveness. The microkernel consist of approximately 1500 lines of code. Core algorithms are easy to read and support.
 
 ==Supported architectures:==
   * ARM: Samsung S3C4530A, ARM and Thumb modes.
