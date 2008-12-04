@@ -3,7 +3,7 @@
 
 void debug_dump (const char *caption, void* data, unsigned len)
 {
-	u_int8_t *t, *h, i;
+	uint8_t *t, *h, i;
 	unsigned offset;
 
 	debug_printf ("%S: %u bytes at %p\n", caption, len, data);

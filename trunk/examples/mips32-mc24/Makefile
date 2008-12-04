@@ -6,6 +6,7 @@ include target.cfg
 #TESTS		= test_debug.sre
 
 TESTS		= test_task.sre test_timer.sre test_uart.sre philosophers.sre
+#TESTS		+= test_tcp_server.sre test_tcp_client.sre
 
 all:		$(TESTS)
 		$(SIZE) --target=srec *.sre

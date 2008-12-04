@@ -76,6 +76,7 @@ SECTIONS
        can access them all, and initialized data all before uninitialized, so
        we can shorten the on-disk segment size.  */
     *(.sdata .sdata.* .gnu.linkonce.s.*)
+    *(.eh_frame)
     _edata = .;
   } > data
 
