@@ -1,0 +1,39 @@
+#summary [doxygen] Module "timer" - system time management
+
+= Module "timer" - system time management =
+Full description of file timer.c.
+
+== Defines ==
+|| TIMER_STACKSZ || Size of stack for  task in bytes. ||
+|| TIMER_MSEC_PER_DAY || Number of milliseconds per day. ||
+
+== Typedefs ==
+|| timer_snap_t || typedef struct _timer_snap_t  timer_snap_t || Data structure for holding a time value. ||
+|| timer_t || typedef struct _timer_t timer_t || Data structure of a  driver. ||
+
+== Functions ==
+
+=== timer_snap ===
+Return a valid snap of both days and milliseconds.
+
+=== timer_days ===
+Return the (real) time in milliseconds since uOS start.
+
+=== timer_passed ===
+Check that `msec' milliseconds passed since the `t0' moment.
+
+=== timer_delay ===
+Delay the current task by the given time in milliseconds.
+
+=== timer_milliseconds ===
+Return the (real) time in milliseconds since uOS start.
+
+=== interval_greater_or_equal ===
+Check that `msec' milliseconds have passed. `Interval' is the time interval, probably rolled over the day.
+
+=== timer_init ===
+Create  task.
+
+== Files ==
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.h sources/timer/timer.h]

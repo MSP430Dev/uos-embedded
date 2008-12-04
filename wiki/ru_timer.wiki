@@ -1,0 +1,39 @@
+#summary [doxygen] Модуль "timer" - управление системным временем
+
+= Модуль "timer" - управление системным временем =
+Полное описание файла timer.c.
+
+== Макросы ==
+|| TIMER_STACKSZ || Размер стека для задачи таймера, в байтах. ||
+|| TIMER_MSEC_PER_DAY || Количество миллисекунд в дне. ||
+
+== Определения типов ==
+|| timer_snap_t || typedef struct _timer_snap_t  timer_snap_t || Структура для хранения значения времени. ||
+|| timer_t || typedef struct _timer_t timer_t || Структура данных для драйвера таймера. ||
+
+== Функции ==
+
+=== timer_snap ===
+Запрос значения текущего времени.
+
+=== timer_days ===
+Запрос времени в сутках.
+
+=== timer_passed ===
+Проверка временного события.
+
+=== timer_delay ===
+Задержка выполнения текущей задачи.
+
+=== timer_milliseconds ===
+Запрос времени в миллисекундах.
+
+=== interval_greater_or_equal ===
+Проверка, прошло ли указанное количество миллисекунд `msec'. Параметр `interval' содержит интервал времени, возможно, переходящий границу суток.
+
+=== timer_init ===
+Инициализация таймера.
+
+== Файлы ==
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.h sources/timer/timer.h]

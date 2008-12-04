@@ -8,6 +8,10 @@
 import sys, string, getopt
 import xml.dom.minidom
 
+#
+# Default options.
+#
+language = "en"
 verbose = 0
 
 #
@@ -82,7 +86,7 @@ def parse_doxygen_namespace (filename):
 def parse_doxygen_file (filename):
 	global module_files
 
-	if verbose: print "*** File", filename
+	if verbose: print >>sys.stderr, "*** File", filename
 	doc = xml.dom.minidom.parse("xml/" + filename + ".xml").documentElement
 	if doc.tagName != "doxygen":
 		raise SystemError, "Unknown file node (%s)" % doc.tagName
@@ -142,24 +146,24 @@ def parse_doxygen_index ():
 def build_wiki_page ():
 	global module_files
 
-	print "#summary [doxygen]", module_brief
+	print "#summary [doxygen]", module_brief.encode('utf-8')
 	print
-	print "=", module_brief, "="
+	print "=", module_brief.encode('utf-8'), "="
 	if module_descr:
-		print module_descr
+		print module_descr.encode('utf-8')
 
 	if module_defines:
-		print "\n== Макросы =="
+		print "\n==", MSG_DEFINES, "=="
 		for f in module_defines:
 			name = fetch_element (f, "name")
 			brief = fetch_element (f, "briefdescription")
 			detailed = fetch_element (f, "detaileddescription")
 			if not brief:
 				brief = detailed
-			print "||", name, "||", brief, "||"
+			print "||", name.encode('utf-8'), "||", brief.encode('utf-8'), "||"
 
 	if module_typedefs:
-		print "\n== Определения типов =="
+		print "\n==", MSG_TYPEDEFS, "=="
 		for f in module_typedefs:
 			name = fetch_element (f, "name")
 			definition = fetch_element (f, "definition")
@@ -167,19 +171,19 @@ def build_wiki_page ():
 			detailed = fetch_element (f, "detaileddescription")
 			if not brief:
 				brief = detailed
-			print "||", name, "||", definition, "||", brief, "||"
+			print "||", name.encode('utf-8'), "||", definition.encode('utf-8'), "||", brief.encode('utf-8'), "||"
 
 	if module_functions:
-		print "\n== Функции =="
+		print "\n==", MSG_FUNCTIONS, "=="
 		for name in module_functions.keys():
 			f = module_functions [name]
 			brief = fetch_element (f, "briefdescription")
 			detailed = fetch_element (f, "detaileddescription")
-			print "\n===", name, "==="
-			print detailed
+			print "\n===", name.encode('utf-8'), "==="
+			print detailed.encode('utf-8')
 
 	if module_files:
-		print "\n== Файлы =="
+		print "\n==", MSG_FILES, "=="
 		for f in module_files:
 			print "[http://code.google.com/p/uos-embedded/source/browse/trunk/" + f,
 			print f + "]"
@@ -188,14 +192,15 @@ def usage ():
 	print """doxy2wiki.py: Create wiki page from Doxygen XML data.
 
 Usage:
-	doxy2wiki.py [-v] <module>...
+	doxy2wiki.py [-v] [-l language] <module>...
 Options:
 	-v           verbose mode
+	-l           language: en, ru, etc.
          <module>    name of module
 """
 
 try:
-	opts, args = getopt.getopt (sys.argv[1:], "hp:v", ["help", "parameter="])
+	opts, args = getopt.getopt (sys.argv[1:], "hl:v", ["help", "language="])
 except getopt.GetoptError:
 	usage()
 	sys.exit(2)
@@ -203,14 +208,30 @@ for opt, arg in opts:
 	if opt in ("-h", "--help"):
 		usage()
 		sys.exit()
+
 	elif opt == '-v':
 		verbose = 1
-	elif opt in ("-p", "--parameter"):
-		parameter = arg
+
+	elif opt in ("-l", "--language"):
+		language = arg
 
 if args == []:
 	usage()
 	sys.exit(2)
+
+#
+# Localization.
+#
+if language == "ru":
+	MSG_DEFINES   = "Макросы"
+	MSG_TYPEDEFS  = "Определения типов"
+	MSG_FUNCTIONS =	"Функции"
+	MSG_FILES     = "Файлы"
+else:
+	MSG_DEFINES   = "Defines"
+	MSG_TYPEDEFS  = "Typedefs"
+	MSG_FUNCTIONS =	"Functions"
+	MSG_FILES     = "Files"
 
 for module_name in args:
 	module_brief = "Module \"" + module_name + "\""
