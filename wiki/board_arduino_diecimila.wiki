@@ -31,3 +31,12 @@
 || Digital 2  || PD2             || PCINT18 / INT0           ||
 || Digital 3  || PD3             || PCINT19 / OC2B / INT1    ||
 || Digital 4  || PD4             || PCINT20 / XCK / T0       ||
+|| Digital 5  || PD5             || PCINT21 / OC2B / T1      ||
+|| Digital 6  || PD6             || PCINT22 / OC0A / AIN0    ||
+|| Digital 7  || PD7             || PCINT23 / AIN1           ||
+|| Digital 8  || PB0             || PCINT0 / CLKO / ICP1     ||
+|| Digital 9  || PB1             || PCINT1 / OC1A            ||
+|| Digital 10 || PB2             || PCINT2 / OC1B / SS       ||
+|| Digital 11 || PB3             || PCINT3 / OC2A / MOSI     ||
+|| Digital 12 || PB4             || PCINT4 / MISO            ||
+|| Digital 13 || PB5             || PCINT5 / SCK             ||
