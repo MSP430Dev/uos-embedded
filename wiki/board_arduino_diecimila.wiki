@@ -2,9 +2,20 @@
 
 [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila http://www.tinker.it/en/uploads/Products/ardu_ng2.jpg]
 
-Плата Arduino Diecimila ([http://arduino.cc/en/uploads/Main/Arduino-Diecimila-schematic.pdf схема]) построена на микроконтроллере [http://www.atmel.com/dyn/resources/prod_documents/doc2545.pdf ATmega168]. На ней имеется 14 цивровых входов/выходов (из них 6 могут быть выходами ШИМ), 6 аналоговых входов, 16-мегагерцовый кварц, порт USB, разъём питания, разъём программирования, и кнопка сброса. Питание можно брать от USB или от внешнего источника постоянного напряжения +7..12 вольт. Дополнительная информация доступна [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila на сайте производителя].
+Плата Arduino Diecimila ([http://arduino.cc/en/uploads/Main/Arduino-Diecimila-schematic.pdf схема]) построена на микроконтроллере ATmega168 [http://www.atmel.com/dyn/resources/prod_documents/doc2545.pdf спецификация]. На плате имеется:
+ * 14 цифровых входов/выходов (из них 6 могут быть выходами ШИМ)
+ * 6 аналоговых входов
+ * 16-мегагерцовый кварц
+ * порт USB
+ * разъём питания
+ * разъём программирования
+ * кнопка сброса.
+Питание можно брать от USB или от внешнего источника постоянного напряжения +7..12 вольт. Дополнительная информация доступна [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila на сайте производителя].
 
-Процессор ATmega168 имеет 16 килобайт flash-памяти для программ (из которых 2 килобайта занято начальным загрузчиком). Также имеется 1 килобайт памяти данных (SRAM) и 512 байт неразрушаемой памяти (EEPROM).
+Память: 
+ * 16 килобайт flash-памяти для программ (из которых 2 килобайта занято начальным загрузчиком)
+ * 1 килобайт памяти данных (SRAM) 
+ * 512 байт неразрушаемой памяти (EEPROM)
 
 Each of the 14 digital pins on the Diecimila can be used as an input or output, using pinMode(), digitalWrite(), and digitalRead() functions. They operate at 5 volts. Each pin can provide or receive a maximum of 40 mA and has an internal pull-up resistor (disconnected by default) of 20-50 kOhms. In addition, some pins have specialized functions:
 
