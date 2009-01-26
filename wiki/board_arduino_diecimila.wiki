@@ -2,11 +2,7 @@
 
 [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila http://www.tinker.it/en/uploads/Products/ardu_ng2.jpg]
 
-= Overview =
-
-The Arduino Diecimila is a microcontroller board based on the ATmega168 (datasheet). It has 14 digital input/output pins (of which 6 can be used as PWM outputs), 6 analog inputs, a 16 MHz crystal oscillator, a USB connection, a power jack, an ICSP header, and a reset button. It contains everything needed to support the microcontroller; simply connect it to a computer with a USB cable or power it with a AC-to-DC adapter or battery to get started.
-
-"Diecimila" means 10,000 in Italian and was named thusly to mark the fact that over 10,000 Arduino boards have been made. The Diecimila is the latest in a series of USB Arduino boards; for a comparison with previous versions, see the index of Arduino boards.
+Плата Arduino Diecimila ([http://arduino.cc/en/uploads/Main/Arduino-Diecimila-schematic.pdf схема]) построена на микроконтроллере [http://www.atmel.com/dyn/resources/prod_documents/doc2545.pdf ATmega168]. На ней имеется 14 цивровых входов/выходов (из них 6 могут быть выходами ШИМ), 6 аналоговых входов, 16-мегагерцовый кварц, порт USB, разъём питания, разъём программирования, и кнопка сброса. Питание можно брать от USB или от внешнего источника +9..12 VDC.
 
 Schematic & Reference Design
 
