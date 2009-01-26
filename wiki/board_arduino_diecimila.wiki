@@ -2,71 +2,31 @@
 
 [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila http://www.tinker.it/en/uploads/Products/ardu_ng2.jpg]
 
-Плата Arduino Diecimila ([http://arduino.cc/en/uploads/Main/Arduino-Diecimila-schematic.pdf схема]) построена на микроконтроллере ATmega168 [http://www.atmel.com/dyn/resources/prod_documents/doc2545.pdf спецификация]. На плате имеется:
+Плата Arduino Diecimila ([http://arduino.cc/en/uploads/Main/Arduino-Diecimila-schematic.pdf схема]) построена на микроконтроллере ATmega168 ([http://www.atmel.com/dyn/resources/prod_documents/doc2545.pdf спецификация]). Дополнительная информация доступна [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila на сайте производителя].
+
+На плате имеется:
  * 14 цифровых входов/выходов (из них 6 могут быть выходами ШИМ)
  * 6 аналоговых входов
  * 16-мегагерцовый кварц
  * порт USB
  * разъём питания
- * разъём программирования
+ * разъём программирования ICSP
  * кнопка сброса.
-Питание можно брать от USB или от внешнего источника постоянного напряжения +7..12 вольт. Дополнительная информация доступна [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila на сайте производителя].
+Питание можно брать от USB или от внешнего источника постоянного напряжения +7..12 вольт. 
 
 Память: 
  * 16 килобайт flash-памяти для программ (из которых 2 килобайта занято начальным загрузчиком)
  * 1 килобайт памяти данных (SRAM) 
  * 512 байт неразрушаемой памяти (EEPROM)
 
-Each of the 14 digital pins on the Diecimila can be used as an input or output, using pinMode(), digitalWrite(), and digitalRead() functions. They operate at 5 volts. Each pin can provide or receive a maximum of 40 mA and has an internal pull-up resistor (disconnected by default) of 20-50 kOhms. In addition, some pins have specialized functions:
+Цифровые выходы обеспечивают ток до 40 мА. Некоторые имеют специальные функции:
+ * Последовательный асинхронный порт: 0 (RX) и 1 (TX). Эти сигналы также соединены с  чипом FTDI USB-to-TTL, обеспечивающим интерфейс USB.
+ * Внешние прерывания: 2 and 3.
+ * ШИМ: 3, 5, 6, 9, 10 и 11. Обеспечивают 8-битную широтно-импульсную модуляцию.
+ * SPI: 10 (SS), 11 (MOSI), 12 (MISO), 13 (SCK).
+ * Светодиод: 13.
 
-    * Serial: 0 (RX) and 1 (TX). Used to receive (RX) and transmit (TX) TTL serial data. These pins are connected to the corresponding pins of the FTDI USB-to-TTL Serial chip.
+Аналоговые входы в количестве 6 штук обеспечивают 10-битное аналого-цифровое преобразование. Некоторые из этих сигналов также имеют дополнительные функции:
+ * I2C: 4 (SDA) и 5 (SCL).
 
-    * External Interrupts: 2 and 3. These pins can be configured to trigger an interrupt on a low value, a rising or falling edge, or a change in value. See the attachInterrupt() function for details.
-
-    * PWM: 3, 5, 6, 9, 10, and 11. Provide 8-bit PWM output with the analogWrite() function.
-
-    * SPI: 10 (SS), 11 (MOSI), 12 (MISO), 13 (SCK). These pins support SPI communication, which, although provided by the underlying hardware, is not currently included in the Arduino language.
-
-    * LED: 13. There is a built-in LED connected to digital pin 13. When the pin is HIGH value, the LED is on, when the pin is LOW, it's off. 
-
-The Diecimila has 6 analog inputs, each of which provide 10 bits of resolution (i.e. 1024 different values). By default they measure from ground to 5 volts, though is it possible to change the upper end of their range using the AREF pin and some low-level code. Additionally, some pins have specialized functionality:
-
-    * I2C: 4 (SDA) and 5 (SCL). Support I2C (TWI) communication using the Wire library (documentation on the Wiring website). 
-
-There are a couple of other pins on the board:
-
-    * AREF. Reference voltage for the analog inputs. Used with analogReference().
-
-    * Reset. Bring this line LOW to reset the microcontroller. Typically used to add a reset button to shields which block the one on the board. 
-
-See also the mapping between Arduino pins and ATmega168 ports.
-
-Communication
-
-The Arduino Diecimila has a number of facilities for communicating with a computer, another Arduino, or other microcontrollers. The ATmega168 provides UART TTL (5V) serial communication, which is available on digital pins 0 (RX) and 1 (TX). An FTDI FT232RL on the board channels this serial communication over USB and the FTDI drivers (included with the Arduino software) provide a virtual com port to software on the computer. The Arduino software includes a serial monitor which allows simple textual data to be sent to and from the Arduino board. The RX and TX LEDs on the board will flash when data is being transmitted via the FTDI chip and USB connection to the computer (but not for serial communication on pins 0 and 1).
-
-A SoftwareSerial library allows for serial communication on any of the Diecimila's digital pins.
-
-The ATmega168 also supports I2C (TWI) and SPI communication. The Arduino software includes a Wire library to simplify use of the I2C bus; see the documentation on the Wiring website for details. To use the SPI communication, please see the ATmega168 datasheet.
-
-Programming
-
-The Arduino Diecimila can be programmed with the Arduino software (download). For details, see the reference and tutorials.
-
-The ATmega168 on the Arduino Diecimila comes preburned with a bootloader that allows you to upload new code to it without the use of an external hardware programmer. It communicates using the original STK500 protocol (reference, C header files).
-
-You can also bypass the bootloader and program the ATmega168 through the ICSP (In-Circuit Serial Programming) header; see these instructions for details.
-
-Automatic (Software) Reset
-
-Rather then requiring a physical press of the reset button before an upload, the Arduino Diecimila is designed in a way that allows it to be reset by software running on a connected computer. One of the hardware flow control lines (DTR) of the FT232RL is connected to the reset line of the ATmega168 via a 100 nanofarad capacitor. When this line is asserted (taken low), the reset line drops long enough to reset the chip. Version 0009 of the Arduino software uses this capability to allow you to upload code by simply pressing the upload button in the Arduino environment. This means that the bootloader can have a shorter timeout, as the lowering of DTR can be well-coordinated with the start of the upload.
-
-This setup has other implications. When the Diecimila is connected to either a computer running Mac OS X or Linux, it resets each time a connection is made to it from software (via USB). For the following half-second or so, the bootloader is running on the Diecimila. While it is programmed to ignore malformed data (i.e. anything besides an upload of new code), it will intercept the first few bytes of data sent to the board after a connection is opened. If a sketch running on the board receives one-time configuration or other data when it first starts, make sure that the software with which it communicates waits a second after opening the connection and before sending this data.
-
-USB Overcurrent Protection
-
-The Arduino Diecimila has a resettable polyfuse that protects your computer's USB ports from shorts and overcurrent. Although most computers provide their own internal protection, the fuse provides an extra layer of protection. If more than 500 mA is applied to the USB port, the fuse will automatically break the connection until the short or overload is removed.
-
-Physical Characteristics
-
-The maximum length and width of the Diecimila PCB are 2.7 and 2.1 inches respectively, with the USB connector and power jack extending beyond the former dimension. Three screw holes allow the board to be attached to a surface or case. Note that the distance between digital pins 7 and 8 is 160 mil (0.16"), not an even multiple of the 100 mil spacing of the other pins.
+Встроенный начальный загрузчик позволяет загружать в плату программный код без использования специализированного программатора. Он поддерживает стандартный протокол STK500 ([http://www.atmel.com/dyn/resources/prod_documents/doc2525.pdf спецификация]). Можно обходиться без начального загрузчика и прошивать код через разъем программирования ICSP.
