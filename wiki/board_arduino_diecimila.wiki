@@ -1,6 +1,6 @@
 #summary Target board: Arduino Diecimila.
 
-[http://www.arduino.cc/en/Main/ArduinoBoardDiecimila http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Arduino_Diecimila.jpg/250px-Arduino_Diecimila.jpg]
+[http://www.arduino.cc/en/Main/ArduinoBoardDiecimila http://www.tinker.it/en/uploads/Products/ardu_ng2.jpg]
 
 = Overview =
 
