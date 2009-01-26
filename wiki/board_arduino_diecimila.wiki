@@ -27,3 +27,7 @@
 Привязка сигналов платы к ножкам процессора:
 || *На плате* || *На процессоре* || *Дополнительные функции* ||
 || Digital 0  || PD0             || PCINT16 / RXD            ||
+|| Digital 1  || PD1             || PCINT17 / TXD            ||
+|| Digital 2  || PD2             || PCINT18 / INT0           ||
+|| Digital 3  || PD3             || PCINT19 / OC2B / INT1    ||
+|| Digital 4  || PD4             || PCINT20 / XCK / T0       ||
