@@ -54,9 +54,10 @@
 #endif
 
 #if defined(AVR_AT90S2333) || defined(__AVR_AT90S2333__) ||\
-    defined(AVR_AT90S4433) || defined(__AVR_AT90S4433__)
+    defined(AVR_AT90S4433) || defined(__AVR_AT90S4433__) ||\
+    defined(AVR_ATmega168) || defined(__AVR_ATmega168__)
 #   define AC_DDR	DDRD	/* 0x11 DDRD */
-#   define AC_PORT	PORT_D	/* 0x12 PORTD */
+#   define AC_PORT	PORTD	/* 0x12 PORTD */
 #   define AC_AIN0	6
 #   define AC_AIN1	7
 #endif

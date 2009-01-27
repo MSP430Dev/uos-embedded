@@ -43,7 +43,7 @@
 #  define _AVR_IOXXX_H_ "iomx8.h"
 #else
 #  error "Attempt to include more than one <avr/ioXXX.h> file."
-#endif 
+#endif
 
 /* I/O registers */
 
@@ -207,7 +207,7 @@
 #define EEAR    _SFR_IO16 (0x21)
 #define EEARL   _SFR_IO8 (0x21)
 #define EEARH   _SFR_IO8 (0x22)
-/* 
+/*
 Even though EEARH is not used by the mega48, the EEAR8 bit in the register
 must be written to 0, according to the datasheet, hence the EEARH register
 must be defined for the mega48.
@@ -575,43 +575,43 @@ must be defined for the mega48.
 
 #define UCSR0A  _SFR_MEM8 (0xC0)
 /* UCSR0A */
-#define RXC0    7
-#define TXC0    6
-#define UDRE0   5
-#define FE0     4
-#define DOR0    3
-#define UPE0    2
-#define U2X0    1
-#define MPCM0   0
+#define RXC     7
+#define TXC     6
+#define UDRE    5
+#define FE      4
+#define DOR     3
+#define UPE     2
+#define U2X     1
+#define MPCM    0
 
 #define UCSR0B  _SFR_MEM8 (0xC1)
 /* UCSR0B */
-#define RXCIE0  7
-#define TXCIE0  6
-#define UDRIE0  5
-#define RXEN0   4
-#define TXEN0   3
-#define UCSZ02  2
-#define RXB80   1
-#define TXB80   0
+#define RXCIE   7
+#define TXCIE   6
+#define UDRIE   5
+#define RXEN    4
+#define TXEN    3
+#define UCSZ2   2
+#define RXB8    1
+#define TXB8    0
 
 #define UCSR0C  _SFR_MEM8 (0xC2)
 /* UCSR0C */
-#define UMSEL01  7
-#define UMSEL00  6
-#define UPM01    5
-#define UPM00    4
-#define USBS0    3
-#define UCSZ01   2
-#define UDORD0   2
-#define UCSZ00   1
-#define UCPHA0   1
-#define UCPOL0   0
+#define UMSEL1   7
+#define UMSEL0   6
+#define UPM1     5
+#define UPM0     4
+#define USBS     3
+#define UCSZ1    2
+#define UDORD    2
+#define UCSZ0    1
+#define UCPHA    1
+#define UCPOL    0
 
-#define UBRR0   _SFR_MEM16 (0xC4)
-#define UBRR0L  _SFR_MEM8 (0xC4)
-#define UBRR0H  _SFR_MEM8 (0xC5)
-#define UDR0    _SFR_MEM8 (0xC6)
+#define UBRR    _SFR_MEM16 (0xC4)
+#define UBRRL   _SFR_MEM8 (0xC4)
+#define UBRRH   _SFR_MEM8 (0xC5)
+#define UDR     _SFR_MEM8 (0xC6)
 
 /* Interrupt vectors */
 

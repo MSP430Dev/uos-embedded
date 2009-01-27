@@ -31,7 +31,7 @@
 #ifndef _AVR_IOM168_H_
 #define _AVR_IOM168_H_ 1
 
-#include <avr/iomx8.h>
+#include <runtime/avr/iomx8.h>
 
 /* Constants */
 #define SPM_PAGESIZE 128

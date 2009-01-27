@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-/** \def TIMER_STACKSZ
+/**\def TIMER_STACKSZ
  * \~english
  * Size of stack for timer task in bytes.
  *
@@ -30,15 +30,19 @@ extern "C" {
 #   define TIMER_STACKSZ	6000	/* LINUX386 */
 #endif
 
-/** \~english
- *	Number of milliseconds per day.
+/**\~english
+ * Number of milliseconds per day.
+ *
  * \~russian
- *	Количество миллисекунд в дне.
+ * Количество миллисекунд в дне.
  */
 #define TIMER_MSEC_PER_DAY	(24UL*60*60*1000)
 
-/**
+/**\~english
  * Data structure for holding a time value.
+ *
+ * \~russian
+ * Структура для хранения значения времени.
  */
 typedef struct _timer_snap_t {
 	unsigned long milliseconds;
@@ -56,8 +60,11 @@ struct _timer_t {
 	ARRAY (stack, TIMER_STACKSZ);	/* task stack */
 };
 
-/**
+/**\~english
  * Data structure of a timer driver.
+ *
+ * \~russian
+ * Структура данных для драйвера таймера.
  */
 typedef struct _timer_t timer_t;
 

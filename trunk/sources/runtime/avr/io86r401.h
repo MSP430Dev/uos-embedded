@@ -45,7 +45,7 @@
 #  error "Attempt to include more than one <avr/ioXXX.h> file."
 #endif
 
-#include <avr/sfr_defs.h>
+#include <runtime/avr/sfr_defs.h>
 
 /* Status REGister */
 #define SREG    _SFR_IO8(0x3F)
@@ -83,7 +83,7 @@
 
 #define BTCNT           _SFR_IO8(0x20)
 
-/* 
+/*
 NOTE: EEPROM name's changed to have D in front on them, per datasheet, but
 you may want to remove the leading D.
 */
@@ -286,5 +286,3 @@ you may want to remove the leading D.
 #define FLASHEND    0x07FF
 
 #endif  /* _AVR_IO86RF401_H_ */
-
-

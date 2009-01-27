@@ -1,10 +1,10 @@
-/** \namespace timer \brief \~english
+/**\namespace timer \brief \~english
  * Module "timer" - system time management.
  *
  * Full description of file timer.c.
  */
 
-/** \namespace timer \brief \~russian
+/**\namespace timer \brief \~russian
  * Модуль "timer" - управление системным временем.
  *
  * Полное описание файла timer.c.
@@ -40,9 +40,13 @@
 #   define TIMER_IRQ		SIGALRM
 #endif
 
-/**
+/**\~english
  * Check that `msec' milliseconds have passed.
  * `Interval' is the time interval, probably rolled over the day.
+ *
+ * \~russian
+ * Проверка, прошло ли указанное количество миллисекунд `msec'.
+ * Параметр `interval' содержит интервал времени, возможно, переходящий границу суток.
  */
 small_int_t
 interval_greater_or_equal (long interval, long msec)
@@ -130,8 +134,11 @@ main_timer (void *arg)
 	}
 }
 
-/**
+/**\~english
  * Return the (real) time in milliseconds since uOS start.
+ *
+ * \~russian
+ * Запрос времени в миллисекундах.
  */
 unsigned long
 timer_milliseconds (timer_t *t)
@@ -144,8 +151,11 @@ timer_milliseconds (timer_t *t)
 	return val;
 }
 
-/**
+/**\~english
  * Return the (real) time in milliseconds since uOS start.
+ *
+ * \~russian
+ * Запрос времени в сутках.
  */
 unsigned int
 timer_days (timer_t *t)
@@ -158,8 +168,11 @@ timer_days (timer_t *t)
 	return val;
 }
 
-/**
+/**\~english
  * Return a valid snap of both days and milliseconds.
+ *
+ * \~russian
+ * Запрос значения текущего времени.
  */
 void
 timer_snap (timer_t *t, timer_snap_t *v)
@@ -170,8 +183,11 @@ timer_snap (timer_t *t, timer_snap_t *v)
 	lock_release (&t->lock);
 }
 
-/**
+/**\~english
  * Delay the current task by the given time in milliseconds.
+ *
+ * \~russian
+ * Задержка выполнения текущей задачи.
  */
 void
 timer_delay (timer_t *t, unsigned long msec)
@@ -186,8 +202,11 @@ timer_delay (timer_t *t, unsigned long msec)
 	lock_release (&t->lock);
 }
 
-/**
+/**\~english
  * Check that `msec' milliseconds passed since the `t0' moment.
+ *
+ * \~russian
+ * Проверка временного события.
  */
 bool_t
 timer_passed (timer_t *t, unsigned long t0, unsigned int msec)
@@ -201,8 +220,11 @@ timer_passed (timer_t *t, unsigned long t0, unsigned int msec)
 	return interval_greater_or_equal (now - t0, msec);
 }
 
-/**
+/**\~english
  * Create timer task.
+ *
+ * \~russian
+ * Инициализация таймера.
  */
 void
 timer_init (timer_t *t, int prio, unsigned long khz,

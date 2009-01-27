@@ -265,6 +265,42 @@ _intr##n (void) \
 
 #endif
 
+#ifdef __AVR_ATmega168__
+	/*
+	 * ATmega 168
+	 */
+	HANDLE(0, _interrupt0_, clearb_const (0, EIMSK))
+	HANDLE(1, _interrupt1_, clearb_const (1, EIMSK))
+	HANDLE(2, _pin_change0_, clearb_far30 (PCIE0, PCICR))
+	HANDLE(3, _pin_change1_, clearb_far30 (PCIE1, PCICR))
+	HANDLE(4, _pin_change2_, clearb_far30 (PCIE2, PCICR))
+	HANDLE(5, _watchdog_timeout_, clearb_far30 (WDIE, WDTCSR))
+	HANDLE(6, _output_compare2a_, clearb_far30 (OCIE2A, TIMSK2))
+	HANDLE(7, _output_compare2b_, clearb_far30 (OCIE2B, TIMSK2))
+	HANDLE(8, _overflow2_, clearb_far30 (TOIE2, TIMSK2))
+	HANDLE(9, _input_capture1_, clearb_far30 (ICIE1, TIMSK1))
+	HANDLE(10, _output_compare1a_, clearb_far30 (OCIE1A, TIMSK1))
+	HANDLE(11, _output_compare1b_, clearb_far30 (OCIE1B, TIMSK1))
+	HANDLE(12, _overflow1_, clearb_far30 (TOIE1, TIMSK1))
+	HANDLE(13, _output_compare0a_, clearb_far30 (OCIE0A, TIMSK0))
+	HANDLE(14, _output_compare0b_, clearb_far30 (OCIE0B, TIMSK0))
+	HANDLE(15, _overflow0_, clearb_far30 (TOIE0, TIMSK0))
+	HANDLE(16, _spi_, clearb_r30 (SPIE, SPCR))
+	HANDLE(17, _uart_recv_, clearb_far30 (RXCIE, UCR))
+	HANDLE(18, _uart_data_, clearb_far30 (UDRIE, UCR))
+	HANDLE(19, _uart_trans_, clearb_far30 (TXCIE, UCR))
+	HANDLE(20, _adc_, clearb_far30 (ADIE, ADCSRA))
+	HANDLE(21, _eeprom_ready_, clearb_const (EERIE, EECR))
+
+	/* Allow gdb-stub to grab the analog comparator interrupt. */
+	asm (".weak _comparator_");
+	HANDLE(22, _comparator_, clearb_r30 (ACIE, ACSR))
+
+	HANDLE(23, _twi_, clearb_far30 (TWIE, TWCR))
+	HANDLE(24, _spm_ready_, clearb_r30 (SPMIE, SPMCSR))
+
+#endif
+
 #ifdef __AVR_ATmega2561__
         /*
 	 * ATmega 2561
@@ -410,6 +446,38 @@ arch_intr_allow (int irq)
 	case 17: setb (TXCIE, UCSR1B); break;	/* UART 1 transmit complete */
 	case 18: setb (EERIE, EECR); break;	/* EEPROM ready */
 	case 19: setb (ACIE, ACSR); break;	/* Analog comparator event */
+#endif
+
+#ifdef __AVR_ATmega168__
+	/*
+	 * ATmega 168
+	 */
+        case 0:  setb (0, EIMSK); break;	/* External interrupts */
+	case 1:  setb (1, EIMSK); break;
+	case 2:  setb (PCIE0, PCICR); break;	/* Pin change */
+	case 3:  setb (PCIE1, PCICR); break;
+	case 4:  setb (PCIE2, PCICR); break;
+	case 5:  setb (WDIE, WDTCSR); break;	/* Watchdog timeout */
+	case 6:  setb (OCIE2A, TIMSK2); break;	/* Output compare 2A */
+	case 7:  setb (OCIE2B, TIMSK2); break;	/* Output compare 2B */
+	case 8:  setb (TOIE2, TIMSK2); break;	/* Timer overflow 2 */
+	case 9:  setb (ICIE1, TIMSK1); break;	/* Input capture 1 */
+	case 10: setb (OCIE1A, TIMSK1); break;	/* Output compare 1A */
+	case 11: setb (OCIE1B, TIMSK1); break;	/* Output compare 1B */
+	case 12: setb (TOIE1, TIMSK1); break;	/* Timer overflow 1 */
+	case 13: setb (OCIE0A, TIMSK0); break;	/* Output compare 0A */
+	case 14: setb (OCIE0B, TIMSK0); break;	/* Output compare 0B */
+	case 15: setb (TOIE0, TIMSK0); break;	/* Timer overflow 0 */
+	case 16: setb (SPIE, SPCR); break;	/* SPI event */
+	case 17: setb (RXCIE, UCR); break;	/* UART receive complete */
+						/* UART transmitter empty */
+	case 18: /* Do not set UDRIE here! setb (UDRIE, UCR); */ break;
+	case 19: setb (TXCIE, UCR); break;	/* UART transmit complete */
+	case 20: setb (ADIE, ADCSRA); break;	/* ADC */
+	case 21: setb (EERIE, EECR); break;	/* EEPROM ready */
+	case 22: setb (ACIE, ACSR); break;	/* Analog comparator event */
+	case 23: setb (TWIE, TWCR); break;	/* TWI */
+	case 24: setb (SPMIE, SPMCSR); break;	/* SPM ready */
 #endif
 
 #ifdef __AVR_ATmega2561__
