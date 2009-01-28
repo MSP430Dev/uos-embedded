@@ -47,7 +47,7 @@
 || Analog 4   || PC4             || ADC4 / SDA     ||
 || Analog 5   || PC5             || ADC5 / SCL     ||
 
-Можно прошивать плату мимо начального загрузчика, непосредственно в Flash-память, используя LPT-адаптер STK200 [http://www.masterkit.ru/main/set.php?num=1106 или совместимый]. Понадобится шлейф-переходник с [http://olimex.com/dev/images/avr-icsp-10.gif 10-контактного разъёма ISCP] на 6-контактный:
+Можно прошивать плату мимо начального загрузчика, непосредственно в Flash-память, используя LPT-адаптер STK200 [http://www.masterkit.ru/main/set.php?num=1106 или совместимый] ([http://www.ln.com.ua/~real/avreal/img/stkx00.png схема]). Понадобится шлейф-переходник с [http://olimex.com/dev/images/avr-icsp-10.gif 10-контактного разъёма ISCP] на 6-контактный:
 || *Сигнал* || *ICSP-10* || *ICSP-6* ||
 || MOSI     || 1         || 4        ||
 || +5V      || 2         || 2        ||
