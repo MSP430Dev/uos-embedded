@@ -51,3 +51,18 @@
 || MISO   || 1 || 2 || +5V  ||
 || SCK    || 3 || 4 || MOSI ||
 || /RESET || 5 || 6 || GND  ||
+
+Можно прошивать плату мимо начального загрузчика, непосредственно в Flash-память, можно использовать LPT-адаптер STK200 [http://www.masterkit.ru/main/set.php?num=1106 или совместимый]. Понадобится шлейф-переходник с [http://olimex.com/dev/images/avr-icsp-10.gif 10-контактного разъёма ISCP] на 6-контактный:
+|| *Сигнал* || *ICSP-10* || *ICSP-6* ||
+|| MOSI     || 1         || 4        ||
+|| +5V      || 2         || 2        ||
+|| /RESET   || 5         || 5        ||
+|| GND      || 6         || 6        ||
+|| SCK      || 7         || 3        ||
+|| MISO     || 9         || 1        ||
+
+Восстановить начальный загрузчик можно командами:
+{{{
+avrdude -cstk200 -patmega168 -e -u -Ulock:w:0x3f:m -Uefuse:w:0x00:m -Uhfuse:w:0xDD:m -Ulfuse:w:0xFF:m
+avrdude -cstk200 -patmega168 -Uflash:w:ATmegaBOOT_168_diecimila.hex -Ulock:w:0x0f:m
+}}}
