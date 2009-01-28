@@ -46,3 +46,8 @@
 || Analog 3   || PC3             || ADC3           ||
 || Analog 4   || PC4             || ADC4 / SDA     ||
 || Analog 5   || PC5             || ADC5 / SCL     ||
+
+Разъём программирования ICSP:
+|| MISO   || 1 || 2 || +5V  ||
+|| SCK    || 3 || 4 || MOSI ||
+|| /RESET || 5 || 6 || GND  ||
