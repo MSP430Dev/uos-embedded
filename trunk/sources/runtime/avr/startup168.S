@@ -88,6 +88,11 @@ _(_init_):
 	cpc	r27, r16
 	brne	2b
 
+	; Setup stack to end of internal memory
+	ldi	r16, lo8(__stack)
+	out	SPL, r16
+	ldi	r16, hi8(__stack)
+	out	SPH, r16
 	JMP(main)
 .end_of_init:
 	.endfunc

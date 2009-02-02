@@ -14,7 +14,7 @@ libuos.a:	always
 
 always:
 
-.SUFFIXES:	.i .sre .hex .dis .com .adb .cpp .cxx .fl
+.SUFFIXES:	.i .srec .hex .dis .com .adb .cpp .cxx .fl
 
 .PHONY:		$(MODULES) depend
 
@@ -56,7 +56,7 @@ always:
 .fl.cxx .fl.h:
 		fluid -c $<
 
-.out.sre:
+.out.srec:
 		$(OBJCOPY) -O srec $< $@
 		@chmod -x $@
 

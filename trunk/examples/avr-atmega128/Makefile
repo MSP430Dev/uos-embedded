@@ -3,11 +3,11 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 CFLAGS		+= -DKHZ=10000
-TESTS		= test_uart.sre test_nvram.sre \
-		  test_timer.sre test_crt.sre test_ram.sre \
-		  test_slip.sre test_ip.sre test_cs8900.sre \
-		  test_ip8900.sre #test_cksum.sre test_snmp.sre test_snmp8900.sre
-OUTS		= $(TESTS:%.sre=%.out)
+TESTS		= test_uart.srec test_nvram.srec \
+		  test_timer.srec test_crt.srec test_ram.srec \
+		  test_slip.srec test_ip.srec test_cs8900.srec \
+		  test_ip8900.srec #test_cksum.srec test_snmp.srec test_snmp8900.srec
+OUTS		= $(TESTS:%.srec=%.out)
 
 all:		$(OUTS) $(TESTS)
 		$(SIZE) $(OUTS)
@@ -15,7 +15,7 @@ all:		$(OUTS) $(TESTS)
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *.out *.hex *.sre *.[oasi] *.lst *.dis *~ .deps $(MODULES)
+		rm -rf *.out *.hex *.srec *.[oasi] *.lst *.dis *~ .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 

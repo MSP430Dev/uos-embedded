@@ -286,16 +286,16 @@
  * Make traditional UART0 register names.
  */
 #if !defined (UCR) && defined (UCSR0B)
-#define UCR UCSR0B
+#  define UCR UCSR0B
 #endif
 #if !defined (USR) && defined (UCSR0A)
-#define USR UCSR0A
+#  define USR UCSR0A
 #endif
 #if !defined (UDR) && defined (UDR0)
-#define UDR UDR0
+#  define UDR UDR0
 #endif
 #if !defined (UBRR) && defined (UBRR0L)
-#define UBRR UBRR0L
+#  define UBRR UBRR0L
 #endif
 
 /*

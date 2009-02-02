@@ -57,6 +57,8 @@ __ld_entry:
 	JMP(_spm_ready_)
 
 _(_init_):
+#	include "avr-asm-init.inc"
+
 	;
 	; Copy the .data image from flash to ram.
 	; Linker places it at the end of .text segment.
@@ -133,7 +135,7 @@ _(_init_):
 .end_of_init:
 	.endfunc
 
-#if 1 /* LY: будут использоваться обработчики из kernel/avr/machdep.c,
+#if 0 /* LY: будут использоваться обработчики из kernel/avr/machdep.c,
        *     они выполняют маскирование необрабатываемых прерываний.
        *     это более ясное, простое и надежное решение для общего случая,
        *     при необходимости код приложения может явно пределить
@@ -159,7 +161,7 @@ _(_init_):
 	.weak	_(_output_compare0_)
 	.weak	_(_overflow0_)
 	.weak	_(_spi_)
-#if 1  /* vch: no default handler for UARTs, uOS or superfast handler used  */
+#if 0  /* vch: no default handler for UARTs, uOS or superfast handler used  */
 	.weak	_(_uart_recv_)
 	.weak	_(_uart1_recv_)
 	.weak	_(_uart_data_)
@@ -196,7 +198,7 @@ _(_overflow1_):
 _(_output_compare0_):
 _(_overflow0_):
 _(_spi_):
-#if 1  /* vch: no default handler for UARTs, uOS or superfast handler used */
+#if 0  /* vch: no default handler for UARTs, uOS or superfast handler used */
 _(_uart_recv_):
 _(_uart1_recv_):
 _(_uart_data_):

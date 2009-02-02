@@ -3,18 +3,18 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 # Compile without kernel module in target.cfg.
-#TESTS		= test_debug.sre
+#TESTS		= test_debug.srec
 
-TESTS		= test_task.sre test_timer.sre test_uart.sre philosophers.sre
-#TESTS		+= test_tcp_server.sre test_tcp_client.sre
+TESTS		= test_task.srec test_timer.srec test_uart.srec philosophers.srec
+#TESTS		+= test_tcp_server.srec test_tcp_client.srec
 
 all:		$(TESTS)
-		$(SIZE) --target=srec *.sre
+		$(SIZE) --target=srec *.srec
 
 $(TESTS):	startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.sre *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 

@@ -4,11 +4,11 @@ include target.cfg
 
 #CFLAGS		+= -DKHZ=50000 # SNDS300
 CFLAGS		+= -DKHZ=41250 # Cronyx
-TESTS		= test_debug.sre test_task.sre test_timer.sre \
-		  test_uart.sre test_t-uart.sre test_ram.sre \
-		  test_hdlc.sre test_eth.sre
-		  #test_tcl.sre test_cronyx.sre test_ip.sre test_snmp.sre
-OUTS		= $(TESTS:%.sre=%.out)
+TESTS		= test_debug.srec test_task.srec test_timer.srec \
+		  test_uart.srec test_t-uart.srec test_ram.srec \
+		  test_hdlc.srec test_eth.srec
+		  #test_tcl.srec test_cronyx.srec test_ip.srec test_snmp.srec
+OUTS		= $(TESTS:%.srec=%.out)
 
 all:		$(OUTS) $(TESTS)
 		$(SIZE) $(OUTS)
@@ -16,7 +16,7 @@ all:		$(OUTS) $(TESTS)
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.sre *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 

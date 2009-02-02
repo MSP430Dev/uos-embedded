@@ -5,6 +5,6 @@ include target.cfg
 all:		startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.sre *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
