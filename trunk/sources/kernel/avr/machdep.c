@@ -235,7 +235,7 @@ _intr##n (void) \
 #endif
 #endif /* __AVR_ATmega103__ || __AVR_ATmega128__ */
 
-#ifdef __IOM161
+#ifdef __AVR_ATmega161__
 	/*
 	 * ATmega 161
 	 */
@@ -402,9 +402,6 @@ arch_intr_allow (int irq)
 	case 22: setb (ACIE, ACSR); break;	/* Analog comparator event */
 
 #ifdef __AVR_ATmega128__
-	/*
-	 * ATmega 128
-	 */
 	case 23: setb_far (0, ETIMSK); break;
 	case 24: setb_far (5, ETIMSK); break;
 	case 25: setb_far (4, ETIMSK); break;
@@ -419,10 +416,7 @@ arch_intr_allow (int irq)
 #endif
 #endif /* __AVR_ATmega103__ || __AVR_ATmega128__ */
 
-#ifdef __IOM161
-	/*
-	 * ATmega 161
-	 */
+#ifdef __AVR_ATmega161__
 	case 0: setb (6, GIMSK); break;		/* External interrupts. */
 	case 1: setb (7, GIMSK); break;
 	case 2: setb (5, GIMSK); break;
@@ -449,9 +443,6 @@ arch_intr_allow (int irq)
 #endif
 
 #ifdef __AVR_ATmega168__
-	/*
-	 * ATmega 168
-	 */
         case 0:  setb (0, EIMSK); break;	/* External interrupts */
 	case 1:  setb (1, EIMSK); break;
 	case 2:  setb (PCIE0, PCICR); break;	/* Pin change */

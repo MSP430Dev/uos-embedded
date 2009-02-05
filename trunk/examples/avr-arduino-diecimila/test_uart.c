@@ -5,7 +5,7 @@
 #include "kernel/uos.h"
 #include "uart/uart.h"
 
-ARRAY (task, 200);
+ARRAY (task, 250);
 uart_t uart;
 
 void hello (void *data)
@@ -18,6 +18,6 @@ void hello (void *data)
 
 void uos_init (void)
 {
-	uart_init (&uart, 0, 90, KHZ, 9600);
+	uart_init (&uart, 0, 90, KHZ, 19200);
 	task_create (hello, 0, "hello", 1, task, sizeof (task));
 }

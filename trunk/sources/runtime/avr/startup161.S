@@ -50,12 +50,12 @@ _(_init_):
 	; Y (r28:29) - byte counter (size of .data segment)
 	; Z (r30:31:RAMPZ) - source pointer (flash)
 	;
-	ldi	r28, lo8 (_edata-0x60)	; load size of .data image
-	ldi	r29, hi8 (_edata-0x60)
+	ldi	r28, lo8 (_edata-0x100)	; load size of .data image
+	ldi	r29, hi8 (_edata-0x100)
 	sbiw	r28,0			; if (counter == 0)...
 	breq	.clear_bss		; ...skip loop
 
-	ldi	r26, 0x60		; load start of ram
+	ldi	r26, 0x100		; load start of ram
 	ldi	r27, 0
 
 	ldi	r30, lo8 (_etext)	; load the end of .text segment

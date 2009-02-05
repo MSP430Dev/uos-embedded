@@ -2,11 +2,18 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TESTS		= test_debug.srec test_uart.srec test_timer.srec #test_nvram.srec
+TESTS		= test_debug.srec test_task.srec test_uart.srec test_timer.srec #test_nvram.srec
 OUTS		= $(TESTS:%.srec=%.out)
 
 # Using avrdude programmer with STK200 LPT adapter.
-PROG		= avrdude -cstk200 -patmega128 -Enoreset
+#PROG		= avrdude -cstk200 -Enoreset -patmega128
+
+# Using avrdude programmer with JTAGICE USB adapter.
+#PROG		= avrdude -cjtag1 -P /dev/ttyUSB? -patmega128
+
+# Using avrdude programmer with AVRISP USB adapter.
+PROG		= avrdude -cstk500v2 -P /dev/ttyUSB? -patmega128
+
 FUSES		= -Ulfuse:w:0xFE:m -Uhfuse:w:0x1F:m -Uefuse:w:0xFF:m
 
 all:		$(OUTS) $(TESTS)
@@ -25,13 +32,6 @@ load:		test_debug.srec
 
 test:		mt-128.olimex
 		$(PROG) -e -U$< $(FUSES)
-
-# Using avrdude programmer with JTAGICE USB adapter.
-probe2:
-		avrdude -cjtag1 -P /dev/ttyUSB? -patmega128 -v
-
-load2:		test_debug.srec
-		avrdude -cjtag1 -P /dev/ttyUSB? -patmega128 -e -U$< $(FUSES)
 
 include $(OS)/sources/rules.mak
 

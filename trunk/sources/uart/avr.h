@@ -124,8 +124,8 @@
 /*
  * Using UART 0 and UART 1 - ATmega161.
  */
-#define RECEIVE_IRQ(p)		(p ? 23 : 17)	/* UART receive complete */
-#define TRANSMIT_IRQ(p)		(p ? 24 : 18)	/* UART transmit empty */
+#define RECEIVE_IRQ(p)		(p ? 13 : 12)	/* UART receive complete */
+#define TRANSMIT_IRQ(p)		(p ? 15 : 14)	/* UART transmit empty */
 
 #define enable_transmitter(p)		if (p) setb (TXEN, UCSR1B); else \
 						setb (TXEN, UCR)
@@ -170,7 +170,7 @@
 
 #else
 /*
- * Using UART 0 only - ATmega103, ATmega603, AT90S2313, AT90S2333,
+ * Using UART 0 only - ATmega103, ATmega168, AT90S2313, AT90S2333,
  *	AT90S4414, AT90S4433, AT90S4434, AT90S8515, AT90S8535.
  */
 #define RECEIVE_IRQ(p)			17	/* UART receive complete */

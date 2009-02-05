@@ -19,11 +19,19 @@
 #endif
 
 #if __AVR__
-#ifdef __AVR_ATmega2561__
-#   define TIMER_IRQ		16	/* Timer 1 compare A */
-#else
-#   define TIMER_IRQ		11	/* Timer 1 compare A */
-#endif  /*__AVR_ATmega2561__*/
+					/* Timer 1 compare A */
+#   ifdef __AVR_ATmega2561__
+#      define TIMER_IRQ		16
+#   endif
+#   if defined (__AVR_ATmega103__) || defined (__AVR_ATmega128__)
+#      define TIMER_IRQ		11
+#   endif
+#   ifdef __AVR_ATmega161__
+#      define TIMER_IRQ		6
+#   endif
+#   ifdef __AVR_ATmega168__
+#      define TIMER_IRQ		10
+#   endif
 #endif  /*__AVR__*/
 
 #if ARM_S3C4530
