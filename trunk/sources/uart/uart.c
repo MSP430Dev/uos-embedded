@@ -201,22 +201,14 @@ uart_receiver (void *arg)
 			clear_break_error (u->port);
 		}
 #ifndef TRANSMIT_IRQ
-		if (test_transmitter_enabled(u->port))
+		if (test_transmitter_enabled (u->port))
 			uart_transmit_start (u);
 #endif
 		/* Check that receive data is available,
 		 * and get the received byte. */
 		if (! test_get_receive_data (u->port, &c))
 			continue;
-#if 0
-#ifndef NDEBUG
-		if (c == 3) {
-			/* ^C - break and run into debugger */
-			breakpoint ();
-			continue;
-		}
-#endif
-#endif
+
 		newlast = u->in_last + 1;
 		if (newlast >= u->in_buf + UART_INBUFSZ)
 			newlast = u->in_buf;

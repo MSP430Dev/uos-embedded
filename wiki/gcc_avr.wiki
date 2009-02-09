@@ -4,10 +4,10 @@
 Описана установка кросс-системы программирования для микроконтроллеров
 семейства [http://atmel.com/products/avr/ Atmel AVR].
 Устанавливается поддержка языков Си и Си++.
-Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.3.0].
+Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.3.3].
 
 Готовый бинарный пакет можно скачать здесь:
- * [http://uos-embedded.googlecode.com/files/gcc430-avr.tgz gcc430-avr.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc433-avr.tgz gcc433-avr.tgz] -- для Linux
 
 == Установка под Linux или FreeBSD или Mac OS X ==
 
@@ -22,7 +22,7 @@
 }}}
 
 Устанавливать готовую систему программирования будем в каталог
-/usr/local/avr430 по номеру версии GCC 4.3.0. Это упростит в будущем
+/usr/local/avr433 по номеру версии GCC 4.3.3. Это упростит в будущем
 переход на новые версии компилятора.
 
 Для простоты предположим, что сборка производится в каталоге /src.
@@ -30,18 +30,15 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://sourceware.org/pub/binutils/snapshots/binutils.tar.bz2 binutils.tar.bz2] (16 Мбайт) - самая свежая версия
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2] (37 Мбайт)
+  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.3/gcc-4.3.3.tar.bz2 gcc-4.3.3.tar.bz2] (56 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils.tar.bz2
-  tar xvjf gcc-4.3.0.tar.bz2
+  tar xvjf binutils-2.19.1.tar.bz2
+  tar xvjf gcc-4.3.3.tar.bz2
 }}}
-
-Пакет binutils будет распакован в каталоге с номером последней версии,
-например binutils-2.18.50 или выше.
 
 === Правка для GCC ===
 
@@ -50,7 +47,7 @@
 [http://uos-embedded.googlecode.com/files/gcc43-avr-rodata.pch gcc43-avr-rodata.pch].
 Чтобы применить правку, выполните команды:
 {{{
-  cd /src/gcc-4.3.0/gcc/config/avr
+  cd /src/gcc-4.3.3/gcc/config/avr
   patch < gcc43-avr-rodata.pch
 }}}
 
@@ -67,17 +64,26 @@
 архиватор AR, а также набор утилит для работы с объектными файлами
 (SIZE, NM, RANLIB, STRIP, и прочие).
 
+Для успешной сборки binutils 2.19.1 следует использовать правку, исправляющую
+ошибки в файле opcodes/avr-dis.c:
+[http://uos-embedded.googlecode.com/files/binutils-2.19.1.pch].
+Чтобы применить правку, выполните команды:
+{{{
+  cd /src/binutils-2.19.1/opcodes
+  patch < binutils-2.19.1.pch
+}}}
+
 Сборка производится в отдельном каталоге binutils-avr. Выполните команды:
 {{{
   mkdir /src/binutils-avr
   cd /src/binutils-avr
-  /src/binutils-2.18.50/configure --target=avr --prefix=/usr/local/avr430 --disable-nls
+  /src/binutils-2.19.1/configure --target=avr --prefix=/usr/local/avr433 --disable-nls
   make
 }}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
 {{{
-  mkdir /usr/local/avr430
+  mkdir /usr/local/avr433
 }}}
 
 Установите binutils:
@@ -92,7 +98,7 @@
 {{{
   mkdir /src/gcc-avr
   cd /src/gcc-avr
-  /src/gcc-4.3.0/configure --target=avr --prefix=/usr/local/avr430 \
+  /src/gcc-4.3.3/configure --target=avr --prefix=/usr/local/avr433 \
     --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}

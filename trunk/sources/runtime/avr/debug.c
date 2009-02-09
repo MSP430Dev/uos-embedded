@@ -1,16 +1,6 @@
 #include <runtime/lib.h>
 #include <watchdog/watchdog.h>
 
-#ifdef __AVR__
-#include <kernel/uos.h>
-task_t *task_broken			/* LY: task_current value on reset/jmp0. */
-	__attribute__((section(".ly")));
-void *task_broken_stack			/* LY: stack_context value from task_current on reset/jmp0. */
-	__attribute__((section(".ly")));
-void *broken_stack			/* LY: SP value on reset/jmp0. */
-	__attribute__((section(".ly")));
-#endif
-
 #ifdef AVR_DEBUG_UART1
 /* Use UART1 for debug output (default UART0). */
 #  undef UCR
@@ -54,16 +44,6 @@ again:
 		goto again;
 	}
 	watchdog_alive ();
-
-#if 0
-	if (testb (RXC, USR)) {
-		debug_char = inb (UDR);
-		if (debug_char == 3) {
-			debug_char = -1;
-			breakpoint ();
-		}
-	}
-#endif
 	outb (x, SREG);
 }
 
@@ -93,12 +73,6 @@ debug_getchar (void)
 		}
 		/* TODO: utf8 to unicode conversion. */
 		c = inb (UDR);
-#if 0
-		if (c == 3) {
-			breakpoint ();
-			continue;
-		}
-#endif
 		break;
 	}
 	outb (x, SREG);
@@ -125,13 +99,7 @@ debug_peekchar (void)
 	}
 	/* TODO: utf8 to unicode conversion. */
 	c = inb (UDR);
-#if 0
-	if (c == 3) {
-		breakpoint ();
-		outb (x, SREG);
-		return -1;
-	}
-#endif
+
 	outb (x, SREG);
 	debug_char = c;
 	return c;

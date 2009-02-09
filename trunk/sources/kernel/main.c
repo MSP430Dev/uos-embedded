@@ -97,6 +97,7 @@ main (void)
 	uos_init ();
 
 	/* Switch to the most priority task. */
+	assert (task_current == task_idle);
 	task_schedule ();
 
 	/* Idle task activity. */

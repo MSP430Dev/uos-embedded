@@ -9,10 +9,10 @@ OUTS		= $(TESTS:%.srec=%.out)
 #PROG		= avrdude -cstk200 -Enoreset -patmega128
 
 # Using avrdude programmer with JTAGICE USB adapter.
-#PROG		= avrdude -cjtag1 -P /dev/ttyUSB? -patmega128
+PROG		= avrdude -cjtag1 -P /dev/ttyUSB? -patmega128
 
 # Using avrdude programmer with AVRISP USB adapter.
-PROG		= avrdude -cstk500v2 -P /dev/ttyUSB? -patmega128
+#PROG		= avrdude -cstk500v2 -P /dev/ttyUSB? -patmega128
 
 FUSES		= -Ulfuse:w:0xFE:m -Uhfuse:w:0x1F:m -Uefuse:w:0xFF:m
 
@@ -27,8 +27,8 @@ clean:
 probe:
 		$(PROG) -v
 
-load:		test_debug.srec
-		$(PROG) -e -U$< $(FUSES)
+load:		test_uart.srec
+		$(PROG) -e -U$<	#$(FUSES)
 
 test:		mt-128.olimex
 		$(PROG) -e -U$< $(FUSES)

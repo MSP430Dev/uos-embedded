@@ -17,7 +17,7 @@ static lock_t lock;
 void
 eeprom_write_byte (unsigned addr, unsigned char c)
 {
-	assert (__arch_intr_is_enabled_now ());
+/*	assert (__arch_intr_is_enabled_now ());*/
 	lock_take (&lock);
 
 	/* Wait until EEWE becomes zero. */
@@ -27,8 +27,8 @@ eeprom_write_byte (unsigned addr, unsigned char c)
 	outw (addr, EEAR);
 	outb (c, EEDR);
 	asm volatile ("cli");
-	setb_const (EEMWE, EECR);
-	setb_const (EEWE, EECR);
+	setb (EEMWE, EECR);
+	setb (EEWE, EECR);
 	asm volatile ("sei");
 
 	lock_release (&lock);
@@ -49,7 +49,7 @@ eeprom_read_byte (unsigned addr)
 		lock_wait (&lock);
 
 	outw (addr, EEAR);
-	setb_const (EERE, EECR);
+	setb (EERE, EECR);
 	c = inb (EEDR);
 
 	lock_release (&lock);

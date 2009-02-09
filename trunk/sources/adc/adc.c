@@ -17,7 +17,7 @@ adc_read (adc_t *v)
 	lock_take (&v->lock);
 
 	/* Start measuring in Single Conversion mode. */
-	setb_const (ADSC, ADCSR);
+	setb (ADSC, ADCSR);
 
 	/* Wait until ADSC becomes zero.
 	 * It could not take us too long. */

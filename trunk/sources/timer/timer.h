@@ -14,7 +14,7 @@ extern "C" {
  */
 #ifndef TIMER_STACKSZ
 #   if __AVR__
-#      define TIMER_STACKSZ	0x150
+#      define TIMER_STACKSZ	0x100
 #   endif
 #   if I386
 #      define TIMER_STACKSZ	0x400

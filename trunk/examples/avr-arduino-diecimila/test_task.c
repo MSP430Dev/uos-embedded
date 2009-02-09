@@ -16,8 +16,8 @@ void hello (void *arg)
 
 void uos_init (void)
 {
-	/* Baud 19200. */
-	outw (((int) (KHZ * 1000L / 19200) + 8) / 16 - 1, UBRR);
+	/* Baud 38400. */
+	UBRR = ((int) (KHZ * 1000L / 38400) + 8) / 16 - 1;
 
 	debug_puts ("\nTesting task.\n");
 	task_create (hello, "task", "hello", 1, task, sizeof (task));

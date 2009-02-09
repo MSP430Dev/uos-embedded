@@ -5,7 +5,7 @@
 #include "kernel/uos.h"
 #include "timer/timer.h"
 
-ARRAY (task, 0x100);
+ARRAY (task, 200);
 timer_t timer;
 
 void hello (void *arg)
@@ -19,8 +19,8 @@ void hello (void *arg)
 
 void uos_init (void)
 {
-	/* Baud 9600. */
-	outb (((int) (KHZ * 1000L / 9600) + 8) / 16 - 1, UBRR1L);
+	/* Baud 38400. */
+	UBRR1L = ((int) (KHZ * 1000L / 38400) + 8) / 16 - 1;
 
 	debug_puts ("\nTesting timer.\n");
 	timer_init (&timer, 100, KHZ, 10);

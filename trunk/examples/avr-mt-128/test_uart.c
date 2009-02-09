@@ -18,6 +18,6 @@ void hello (void *data)
 
 void uos_init (void)
 {
-	uart_init (&uart, 1, 90, KHZ, 9600);
+	uart_init (&uart, 1, 90, KHZ, 38400);
 	task_create (hello, 0, "hello", 1, task, sizeof (task));
 }

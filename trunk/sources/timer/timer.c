@@ -18,8 +18,7 @@
 #   define TIMER_IRQ		0	/* IRQ0 */
 #endif
 
-#if __AVR__
-					/* Timer 1 compare A */
+#if __AVR__				/* Timer 1 compare A */
 #   ifdef __AVR_ATmega2561__
 #      define TIMER_IRQ		16
 #   endif

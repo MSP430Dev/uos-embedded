@@ -57,7 +57,15 @@ __ld_entry:
 	JMP(_spm_ready_)
 
 _(_init_):
-	;
+	; Clear zero register
+	clr	r1
+
+	; Setup stack to end of internal memory
+	ldi	r16, lo8(__stack)
+	out	SPL, r16
+	ldi	r16, hi8(__stack)
+	out	SPH, r16
+
 	; Copy the .data image from flash to ram.
 	; Linker places it at the end of .text segment.
 	; Register usage:
@@ -67,7 +75,7 @@ _(_init_):
 	;
 	ldi	r28, lo8 (_edata-0x100)	; load size of .data image
 	ldi	r29, hi8 (_edata-0x100)
-	sbiw	r28,0			; if (counter == 0)...
+	sbiw	r28, 0			; if (counter == 0)...
 	breq	.clear_bss		; ...skip loop
 
 	ldi	r26, lo8 (0x100)	; load start of ram
@@ -110,7 +118,6 @@ _(_init_):
 
 .clear_bss:
 	;; avr-ld always put .bss after .data
-	clr	r1
 #if FLASHEND > 0x2000
 	out	RAMPZ, r1
 #endif
@@ -119,26 +126,15 @@ _(_init_):
 	ldi	r16, hi8(__bss_end)
 	rjmp	1f
 2:
-	st	X+,r1
+	st	X+, r1
 1:	cpi	r26, lo8(__bss_end)
 	cpc	r27, r16
 	brne	2b
 
-	; Setup stack to end of internal memory
-	ldi	r16, lo8(__stack)
-	out	SPL, r16
-	ldi	r16, hi8(__stack)
-	out	SPH, r16
 	JMP(main)
 .end_of_init:
 	.endfunc
 
-#if 1 /* LY: будут использоваться обработчики из kernel/avr/machdep.c,
-       *     они выполняют маскирование необрабатываемых прерываний.
-       *     это более ясное, простое и надежное решение для общего случая,
-       *     при необходимости код приложения может явно пределить
-       *     свои обработчики в виде 'reti'.
-       */
 .section .text
 	.func	.weaks		; stay avr-as happy with -gstabs
 .weaks:
@@ -216,4 +212,3 @@ _(_overflow3_):
 _(_twi_):
 _(_spm_ready_):
 	reti
-#endif /* LY: end of 'if 0' */

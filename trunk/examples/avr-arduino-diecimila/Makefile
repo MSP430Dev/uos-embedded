@@ -28,7 +28,7 @@ clean:
 probe:
 		$(PROG) -v
 
-load:		test_timer.srec
+load:		test_uart.srec
 		$(PROG) -e -U$< $(FUSES)
 
 # Using avrdude programmer with Arduino boot block.

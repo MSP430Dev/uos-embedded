@@ -98,8 +98,15 @@ __ld_entry:
 #endif
 
 _(_init_):
-#	include "avr-asm-init.inc"
-	;
+	; Clear zero register
+	clr	r1
+
+	; Setup stack to end of internal memory
+	ldi	r16, lo8(__stack)
+	out	SPL, r16
+	ldi	r16, hi8(__stack)
+	out	SPH, r16
+
 	; Copy the .data image from flash to ram.
 	; Linker places it at the end of .text segment.
 	; Register usage:
@@ -109,7 +116,7 @@ _(_init_):
 	;
 	ldi	r28, lo8 (_edata-0x60)	; load size of .data image
 	ldi	r29, hi8 (_edata-0x60)
-	sbiw	r28,0			; if (counter == 0)...
+	sbiw	r28, 0			; if (counter == 0)...
 	breq	.clear_bss		; ...skip loop
 
 	ldi	r26, 0x60		; load start of ram
@@ -152,7 +159,6 @@ _(_init_):
 
 .clear_bss:
 	;; avr-ld always put .bss after .data
-	clr	r1
 #if FLASHEND > 0x2000
 	out	RAMPZ, r1
 #endif
@@ -161,11 +167,10 @@ _(_init_):
 	ldi	r16, hi8(__bss_end)
 	rjmp	1f
 2:
-	st	X+,r1
+	st	X+, r1
 1:	cpi	r26, lo8(__bss_end)
 	cpc	r27, r16
 	brne	2b
-
 
 	JMP(main)
 .end_of_init:
