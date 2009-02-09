@@ -66,7 +66,7 @@
 
 Для успешной сборки binutils 2.19.1 следует использовать правку, исправляющую
 ошибки в файле opcodes/avr-dis.c:
-[http://uos-embedded.googlecode.com/files/binutils-2.19.1.pch].
+[http://uos-embedded.googlecode.com/files/binutils-2.19.1.pch binutils-2.19.1.pch].
 Чтобы применить правку, выполните команды:
 {{{
   cd /src/binutils-2.19.1/opcodes
