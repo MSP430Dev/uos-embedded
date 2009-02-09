@@ -11,7 +11,7 @@ timer_t timer;
 void hello (void *arg)
 {
 	for (;;) {
-		debug_printf ("Hello from `%S'! msec = %d\n",
+		debug_printf ("Hello from `%S'! msec = %u\n",
 			arg, timer_milliseconds (&timer));
 		lock_wait (&timer.decisec);
 	}

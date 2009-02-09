@@ -1,6 +1,6 @@
 ;
-; Startup file with SRAM started at address 0x60.
-; For ATmega103 and others.
+; Startup file with SRAM started at address 0x100.
+; For ATmega128, ATmega161, ATmega168 and others.
 ;
 #define __SFR_OFFSET 0
 #include <runtime/avr/io.h>
@@ -36,17 +36,17 @@ _init_:
 	; Y (r28:29) - byte counter (size of .data segment)
 	; Z (r30:31:RAMPZ) - source pointer (flash)
 	;
-	ldi	r28, lo8 (_edata-0x60)	; load size of .data image
-	ldi	r29, hi8 (_edata-0x60)
+	ldi	r28, lo8 (_edata-0x100)	; load size of .data image
+	ldi	r29, hi8 (_edata-0x100)
 	sbiw	r28, 0			; if (counter == 0)...
 	breq	.clear_bss		; ...skip loop
 
-	ldi	r26, lo8 (0x60)		; load start of ram
-	ldi	r27, hi8 (0x60)
+	ldi	r26, lo8 (0x100)	; load start of ram
+	ldi	r27, hi8 (0x100)
 
 	ldi	r30, lo8 (_etext)	; load the end of .text segment
 	ldi	r31, hi8 (_etext)	; this is a start of .data image
-#if FLASHEND > 0x2000
+#ifdef RAMPZ
 	ldi	r25, hh8 (_etext)
 	out	RAMPZ, r25
 	tst	r25			; if high memory...
@@ -61,7 +61,7 @@ _init_:
 	sbiw	r28, 1			; decrement counter
 	breq	.clear_bss		; if (counter == 0) done
 	adiw	r30, 1			; increment Z pointer
-#if FLASHEND <= 0x2000
+#ifndef RAMPZ
 	rjmp	.copy_data		; continue
 #else
 	brcc	.copy_data		; if no overflow continue
@@ -81,7 +81,7 @@ _init_:
 
 .clear_bss:
 	;; avr-ld always put .bss after .data
-#if FLASHEND > 0x2000
+#ifdef RAMPZ
 	out	RAMPZ, r1
 #endif
 	ldi	r26, lo8(__bss_start)

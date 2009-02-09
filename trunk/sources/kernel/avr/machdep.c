@@ -21,26 +21,33 @@
 #include "kernel/internal.h"
 
 /*
- * Clear bit in far register, using r30.
+ * Clear bit in register, using only r30.
  */
 #define clearb_r30(bit, port) do {			\
-	asm volatile (					\
-		"in r30, %0" "\n"			\
-		"andi r30, %1" "\n"			\
-		"out %0, r30"				\
-		: /* no outputs */			\
-		: "I" (_SFR_IO_ADDR(port)),		\
-		  "M" (0xff & ~(1 << (bit))) : "cc", "r30");	\
-	} while (0)
-
-#define clearb_far30(bit, port) do {			\
-	asm volatile (					\
-		"lds r30, %0" "\n"			\
-		"andi r30, %1" "\n"			\
-		"sts %0, r30"				\
-		: /* no outputs */			\
-		: "M" (_SFR_MEM_ADDR(port)),		\
-		  "M" (0xff & ~(1 << (bit))) : "cc", "r30");	\
+	if (_SFR_IO_ADDR (port) < 0x20)			\
+		asm volatile (				\
+			"cbi %0, %1"			\
+			: /* no outputs */		\
+			: "I" (_SFR_IO_ADDR (port)),	\
+			  "I" (bit));			\
+	else if (_SFR_IO_REG_P (port))			\
+		asm volatile (				\
+			"in r30, %0" "\n"		\
+			"andi r30, %1" "\n"		\
+			"out %0, r30"			\
+			: /* no outputs */		\
+			: "I" (_SFR_IO_ADDR (port)),	\
+			  "M" (0xff & ~(1 << (bit))) 	\
+			: "cc", "r30");			\
+	else						\
+		asm volatile (				\
+			"lds r30, %0" "\n"		\
+			"andi r30, %1" "\n"		\
+			"sts %0, r30"			\
+			: /* no outputs */		\
+			: "M" (_SFR_MEM_ADDR(port)),	\
+			  "M" (0xff & ~(1 << (bit)))	\
+			 : "cc", "r30");		\
 	} while (0)
 
 #define SAVE_REGS() asm volatile (\
@@ -190,36 +197,42 @@ _intr##n (void) \
 	HANDLE (13, clearb_r30 (2, TIMSK))
 	HANDLE (14, clearb_r30 (1, TIMSK))
 	HANDLE (15, clearb_r30 (0, TIMSK))
-	HANDLE (16, clearb (SPIE, SPCR))	/* SPI event */
+	HANDLE (16, clearb_r30 (SPIE, SPCR))	/* SPI event */
+#ifndef USERDEF_INTR17
 	/* vch: прерывания от UART (UART0) могут перекрываться "супербыстрыми"
 	        обработчиками, например, реализация sbus делает это. */
-/*	asm (".weak _uart_recv_");*/
-	HANDLE (17, clearb (RXCIE, UCR))	/* UART receive complete */
-/*	asm (".weak _uart_data_");*/
-	HANDLE (18, clearb (UDRIE, UCR))	/* UART transmitter empty */
-/*	asm (".weak _uart_trans_");*/
-	HANDLE (19, clearb (TXCIE, UCR))	/* UART transmit complete */
-	HANDLE (20, clearb (ADIE, ADCSR))	/* Analog-digital conversion complete */
-	HANDLE (21, clearb (EERIE, EECR))	/* EEPROM ready */
-	HANDLE (22, clearb (ACIE, ACSR))	/* Analog comparator event */
+	HANDLE (17, clearb_r30 (RXCIE, UCR))	/* UART receive complete */
+#endif
+#ifndef USERDEF_INTR18
+	HANDLE (18, clearb_r30 (UDRIE, UCR))	/* UART transmitter empty */
+#endif
+#ifndef USERDEF_INTR19
+	HANDLE (19, clearb_r30 (TXCIE, UCR))	/* UART transmit complete */
+#endif
+	HANDLE (20, clearb_r30 (ADIE, ADCSR))	/* Analog-digital conversion complete */
+	HANDLE (21, clearb_r30 (EERIE, EECR))	/* EEPROM ready */
+	HANDLE (22, clearb_r30 (ACIE, ACSR))	/* Analog comparator event */
 
 #ifdef __AVR_ATmega128__
-	HANDLE (23, clearb_far30 (0, ETIMSK))
-	HANDLE (24, clearb_far30 (5, ETIMSK))
-	HANDLE (25, clearb_far30 (4, ETIMSK))
-	HANDLE (26, clearb_far30 (3, ETIMSK))
-	HANDLE (27, clearb_far30 (1, ETIMSK))
-	HANDLE (28, clearb_far30 (2, ETIMSK))
+	HANDLE (23, clearb_r30 (0, ETIMSK))
+	HANDLE (24, clearb_r30 (5, ETIMSK))
+	HANDLE (25, clearb_r30 (4, ETIMSK))
+	HANDLE (26, clearb_r30 (3, ETIMSK))
+	HANDLE (27, clearb_r30 (1, ETIMSK))
+	HANDLE (28, clearb_r30 (2, ETIMSK))
+#ifndef USERDEF_INTR29
 	/* vch: прерывания от UART1 могут перекрываться "супербыстрыми"
 	        обработчиками, например, реализация sbus делает это. */
-/*	asm (".weak _uart1_recv_");*/
-	HANDLE (29, clearb_far30 (RXCIE, UCSR1B)) /* UART 1 receive complete */
-/*	asm (".weak _uart1_data_");*/
-	HANDLE (30, clearb_far30 (UDRIE, UCSR1B)) /* UART 1 transmitter empty */
-/*	asm (".weak _uart1_trans_");*/
-	HANDLE (31, clearb_far30 (TXCIE, UCSR1B)) /* UART 1 transmit complete */
-	HANDLE (32, clearb_far30 (TWIE, TWCR))
-	HANDLE (33, clearb_far30 (SPMIE, SPMCR))
+	HANDLE (29, clearb_r30 (RXCIE, UCSR1B))	/* UART 1 receive complete */
+#endif
+#ifndef USERDEF_INTR30
+	HANDLE (30, clearb_r30 (UDRIE, UCSR1B))	/* UART 1 transmitter empty */
+#endif
+#ifndef USERDEF_INTR31
+	HANDLE (31, clearb_r30 (TXCIE, UCSR1B))	/* UART 1 transmit complete */
+#endif
+	HANDLE (32, clearb_r30 (TWIE, TWCR))
+	HANDLE (33, clearb_r30 (SPMIE, SPMCR))
 #endif
 #endif /* __AVR_ATmega103__ || __AVR_ATmega128__ */
 
@@ -235,43 +248,43 @@ _intr##n (void) \
 	HANDLE (8,  clearb_r30 (2, TIMSK))
 	HANDLE (9,  clearb_r30 (1, TIMSK))
 	HANDLE (10, clearb_r30 (0, TIMSK))
-	HANDLE (11, clearb (SPIE, SPCR))	/* SPI event */
-	HANDLE (12, clearb (RXCIE, UCR))	/* UART receive complete */
-	HANDLE (13, clearb (RXCIE, UCSR1B))	/* UART 1 receive complete */
-	HANDLE (14, clearb (UDRIE, UCR))	/* UART transmitter empty */
-	HANDLE (15, clearb (UDRIE, UCSR1B))	/* UART 1 transmitter empty */
-	HANDLE (16, clearb (TXCIE, UCR))	/* UART transmit complete */
-	HANDLE (17, clearb (TXCIE, UCSR1B))	/* UART 1 transmit complete */
-	HANDLE (18, clearb (EERIE, EECR))	/* EEPROM ready */
-	HANDLE (19, clearb (ACIE, ACSR))	/* Analog comparator event */
+	HANDLE (11, clearb_r30 (SPIE, SPCR))	/* SPI event */
+	HANDLE (12, clearb_r30 (RXCIE, UCR))	/* UART receive complete */
+	HANDLE (13, clearb_r30 (RXCIE, UCSR1B))	/* UART 1 receive complete */
+	HANDLE (14, clearb_r30 (UDRIE, UCR))	/* UART transmitter empty */
+	HANDLE (15, clearb_r30 (UDRIE, UCSR1B))	/* UART 1 transmitter empty */
+	HANDLE (16, clearb_r30 (TXCIE, UCR))	/* UART transmit complete */
+	HANDLE (17, clearb_r30 (TXCIE, UCSR1B))	/* UART 1 transmit complete */
+	HANDLE (18, clearb_r30 (EERIE, EECR))	/* EEPROM ready */
+	HANDLE (19, clearb_r30 (ACIE, ACSR))	/* Analog comparator event */
 
 #endif
 
 #ifdef __AVR_ATmega168__
-	HANDLE (0,  clearb (0, EIMSK))		/* External interrupts */
-	HANDLE (1,  clearb (1, EIMSK))
-	HANDLE (2,  clearb_far30 (PCIE0, PCICR)) /* Pin change */
-	HANDLE (3,  clearb_far30 (PCIE1, PCICR))
-	HANDLE (4,  clearb_far30 (PCIE2, PCICR))
-	HANDLE (5,  clearb_far30 (WDIE, WDTCSR)) /* Watchdog timeout */
-	HANDLE (6,  clearb_far30 (OCIE2A, TIMSK2)) /* Timer/counter interrupts */
-	HANDLE (7,  clearb_far30 (OCIE2B, TIMSK2))
-	HANDLE (8,  clearb_far30 (TOIE2, TIMSK2))
-	HANDLE (9,  clearb_far30 (ICIE1, TIMSK1))
-	HANDLE (10, clearb_far30 (OCIE1A, TIMSK1))
-	HANDLE (11, clearb_far30 (OCIE1B, TIMSK1))
-	HANDLE (12, clearb_far30 (TOIE1, TIMSK1))
-	HANDLE (13, clearb_far30 (OCIE0A, TIMSK0))
-	HANDLE (14, clearb_far30 (OCIE0B, TIMSK0))
-	HANDLE (15, clearb_far30 (TOIE0, TIMSK0))
+	HANDLE (0,  clearb_r30 (0, EIMSK))	/* External interrupts */
+	HANDLE (1,  clearb_r30 (1, EIMSK))
+	HANDLE (2,  clearb_r30 (PCIE0, PCICR))	/* Pin change */
+	HANDLE (3,  clearb_r30 (PCIE1, PCICR))
+	HANDLE (4,  clearb_r30 (PCIE2, PCICR))
+	HANDLE (5,  clearb_r30 (WDIE, WDTCSR))	/* Watchdog timeout */
+	HANDLE (6,  clearb_r30 (OCIE2A, TIMSK2)) /* Timer/counter interrupts */
+	HANDLE (7,  clearb_r30 (OCIE2B, TIMSK2))
+	HANDLE (8,  clearb_r30 (TOIE2, TIMSK2))
+	HANDLE (9,  clearb_r30 (ICIE1, TIMSK1))
+	HANDLE (10, clearb_r30 (OCIE1A, TIMSK1))
+	HANDLE (11, clearb_r30 (OCIE1B, TIMSK1))
+	HANDLE (12, clearb_r30 (TOIE1, TIMSK1))
+	HANDLE (13, clearb_r30 (OCIE0A, TIMSK0))
+	HANDLE (14, clearb_r30 (OCIE0B, TIMSK0))
+	HANDLE (15, clearb_r30 (TOIE0, TIMSK0))
 	HANDLE (16, clearb_r30 (SPIE, SPCR))	/* SPI event */
-	HANDLE (17, clearb_far30 (RXCIE, UCR))	/* UART receive complete */
-	HANDLE (18, clearb_far30 (UDRIE, UCR))	/* UART transmitter empty */
-	HANDLE (19, clearb_far30 (TXCIE, UCR))	/* UART transmit complete */
-	HANDLE (20, clearb_far30 (ADIE, ADCSRA)) /* Analog-digital conversion complete */
-	HANDLE (21, clearb (EERIE, EECR))	/* EEPROM ready */
+	HANDLE (17, clearb_r30 (RXCIE, UCR))	/* UART receive complete */
+	HANDLE (18, clearb_r30 (UDRIE, UCR))	/* UART transmitter empty */
+	HANDLE (19, clearb_r30 (TXCIE, UCR))	/* UART transmit complete */
+	HANDLE (20, clearb_r30 (ADIE, ADCSRA))	/* Analog-digital conversion complete */
+	HANDLE (21, clearb_r30 (EERIE, EECR))	/* EEPROM ready */
 	HANDLE (22, clearb_r30 (ACIE, ACSR))	/* Analog comparator event */
-	HANDLE (23, clearb_far30 (TWIE, TWCR))
+	HANDLE (23, clearb_r30 (TWIE, TWCR))
 	HANDLE (24, clearb_r30 (SPMIE, SPMCSR))
 
 #endif
@@ -285,53 +298,59 @@ _intr##n (void) \
 	HANDLE (5,  clearb_r30 (5, EIMSK))
 	HANDLE (6,  clearb_r30 (6, EIMSK))
 	HANDLE (7,  clearb_r30 (7, EIMSK))
-	HANDLE (8,  clearb_far30 (PCIE0, PCICR)) /* Pin change */
-	HANDLE (9,  clearb_far30 (PCIE1, PCICR))
-	HANDLE (11, clearb_far30 (WDIE,WDTCSR))	/* Watchdog timeout */
-	HANDLE (12, clearb_far30 (OCIE2A, TIMSK2)) /* Timer/counter 0-2 interrupts */
-	HANDLE (13, clearb_far30 (OCIE2B, TIMSK2))
-	HANDLE (14, clearb_far30 (TOIE2, TIMSK2))
-	HANDLE (15, clearb_far30 (ICIE3, TIMSK3))
-	HANDLE (16, clearb_far30 (OCIE1A, TIMSK1))
-	HANDLE (17, clearb_far30 (OCIE1B, TIMSK1))
-	HANDLE (18, clearb_far30 (OCIE1C, TIMSK1))
-	HANDLE (19, clearb_far30 (TOIE1, TIMSK1))
-	HANDLE (20, clearb_far30 (OCIE0A, TIMSK0))
-	HANDLE (21, clearb_far30 (OCIE0B, TIMSK0))
-	HANDLE (22, clearb_far30 (TOIE0, TIMSK0))
+	HANDLE (8,  clearb_r30 (PCIE0, PCICR))	/* Pin change */
+	HANDLE (9,  clearb_r30 (PCIE1, PCICR))
+	HANDLE (11, clearb_r30 (WDIE,WDTCSR))	/* Watchdog timeout */
+	HANDLE (12, clearb_r30 (OCIE2A, TIMSK2)) /* Timer/counter 0-2 interrupts */
+	HANDLE (13, clearb_r30 (OCIE2B, TIMSK2))
+	HANDLE (14, clearb_r30 (TOIE2, TIMSK2))
+	HANDLE (15, clearb_r30 (ICIE3, TIMSK3))
+	HANDLE (16, clearb_r30 (OCIE1A, TIMSK1))
+	HANDLE (17, clearb_r30 (OCIE1B, TIMSK1))
+	HANDLE (18, clearb_r30 (OCIE1C, TIMSK1))
+	HANDLE (19, clearb_r30 (TOIE1, TIMSK1))
+	HANDLE (20, clearb_r30 (OCIE0A, TIMSK0))
+	HANDLE (21, clearb_r30 (OCIE0B, TIMSK0))
+	HANDLE (22, clearb_r30 (TOIE0, TIMSK0))
 	HANDLE (23, clearb_r30 (SPIE, SPCR))	/* SPI event */
+#ifndef USERDEF_INTR24
 	/* vch: прерывания от UART (UART0) могут перекрываться "супербыстрыми"
 	        обработчиками, например, реализация sbus делает это. */
-/*	asm (".weak _uart_recv_");*/
-	HANDLE (24, clearb_far30 (RXCIE, UCR))	/* UART receive complete */
-/*	asm (".weak _uart_data_");*/
-	HANDLE (25, clearb_far30 (UDRIE, UCR))	/* UART transmitter empty */
-/*	asm (".weak _uart_trans_");*/
-	HANDLE (26, clearb_far30 (TXCIE, UCR))	/* UART transmit complete */
-	HANDLE (27, clearb_far30 (ACIE, ACSR))	/* Analog comparator event */
-	HANDLE (28, clearb_far30 (ADIE, ADCSRA)) /* Analog-digital conversion complete */
+	HANDLE (24, clearb_r30 (RXCIE, UCR))	/* UART receive complete */
+#endif
+#ifndef USERDEF_INTR25
+	HANDLE (25, clearb_r30 (UDRIE, UCR))	/* UART transmitter empty */
+#endif
+#ifndef USERDEF_INTR26
+	HANDLE (26, clearb_r30 (TXCIE, UCR))	/* UART transmit complete */
+#endif
+	HANDLE (27, clearb_r30 (ACIE, ACSR))	/* Analog comparator event */
+	HANDLE (28, clearb_r30 (ADIE, ADCSRA))	/* Analog-digital conversion complete */
 	HANDLE (29, clearb_r30 (EERIE, EECR))	/* EEPROM ready */
-	HANDLE (30, clearb_far30 (ICIE3, TIMSK3)) /* Timer/counter 3 interrupts */
-	HANDLE (31, clearb_far30 (OCIE3A, TIMSK3))
-	HANDLE (32, clearb_far30 (OCIE3B, TIMSK3))
-	HANDLE (33, clearb_far30 (OCIE3C, TIMSK3))
-	HANDLE (34, clearb_far30 (TOIE3, TIMSK3))
-/*	asm (".weak _uart1_recv_");*/
-	HANDLE (35, clearb_far30 (RXCIE1, UCSR1B)) /* UART 1 receive complete */
-/*	asm (".weak _uart1_data_");*/
-	HANDLE (36, clearb_far30 (UDRIE1, UCSR1B)) /* UART 1 transmitter empty */
-/*	asm (".weak _uart1_trans_");*/
-	HANDLE (37, clearb_far30 (TXCIE1, UCSR1B)) /* UART 1 transmit complete */
-	HANDLE (38, clearb_far30 (TWIE, TWCR))
+	HANDLE (30, clearb_r30 (ICIE3, TIMSK3))	/* Timer/counter 3 interrupts */
+	HANDLE (31, clearb_r30 (OCIE3A, TIMSK3))
+	HANDLE (32, clearb_r30 (OCIE3B, TIMSK3))
+	HANDLE (33, clearb_r30 (OCIE3C, TIMSK3))
+	HANDLE (34, clearb_r30 (TOIE3, TIMSK3))
+#ifndef USERDEF_INTR35
+	HANDLE (35, clearb_r30 (RXCIE1, UCSR1B)) /* UART 1 receive complete */
+#endif
+#ifndef USERDEF_INTR36
+	HANDLE (36, clearb_r30 (UDRIE1, UCSR1B)) /* UART 1 transmitter empty */
+#endif
+#ifndef USERDEF_INTR37
+	HANDLE (37, clearb_r30 (TXCIE1, UCSR1B)) /* UART 1 transmit complete */
+#endif
+	HANDLE (38, clearb_r30 (TWIE, TWCR))
 	HANDLE (39, clearb_r30 (SPMIE, SPMCSR))
-	HANDLE (41, clearb_far30 (OCIE4A, TIMSK4)) /* Timer/counter 4-5 interrupts */
-	HANDLE (42, clearb_far30 (OCIE4B, TIMSK4))
-	HANDLE (43, clearb_far30 (OCIE4C, TIMSK4))
-	HANDLE (44, clearb_far30 (TOIE4, TIMSK4))
-	HANDLE (46, clearb_far30 (OCIE5A, TIMSK5))
-	HANDLE (47, clearb_far30 (OCIE5B, TIMSK5))
-	HANDLE (48, clearb_far30 (OCIE5C, TIMSK5))
-	HANDLE (49, clearb_far30 (TOIE5, TIMSK5))
+	HANDLE (41, clearb_r30 (OCIE4A, TIMSK4)) /* Timer/counter 4-5 interrupts */
+	HANDLE (42, clearb_r30 (OCIE4B, TIMSK4))
+	HANDLE (43, clearb_r30 (OCIE4C, TIMSK4))
+	HANDLE (44, clearb_r30 (TOIE4, TIMSK4))
+	HANDLE (46, clearb_r30 (OCIE5A, TIMSK5))
+	HANDLE (47, clearb_r30 (OCIE5B, TIMSK5))
+	HANDLE (48, clearb_r30 (OCIE5C, TIMSK5))
+	HANDLE (49, clearb_r30 (TOIE5, TIMSK5))
 #endif
 
 
