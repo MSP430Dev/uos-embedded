@@ -1,16 +1,10 @@
 #define __SFR_OFFSET 0
 #include <runtime/avr/io.h>
 
-#if WITH_UNDERSCORES
-#define _(x) _##x
-#else
-#define _(x) x
-#endif
-
 #if FLASHEND > 0x2000
-#define JMP(label) jmp _(label)
+#   define JMP(label) jmp label
 #else
-#define JMP(label) rjmp _(label)
+#   define JMP(label) rjmp label
 #endif
 
 	.section	.init
@@ -18,28 +12,10 @@
 	.globl __ld_entry
 __ld_entry:
 	JMP(_init_)
-	JMP(_interrupt0_)
-	JMP(_interrupt1_)
-	JMP(_interrupt2_)
-	JMP(_output_compare2_)
-	JMP(_overflow2_)
-	JMP(_input_capture1_)
-	JMP(_output_compare1a_)
-	JMP(_output_compare1b_)
-	JMP(_overflow1_)
-	JMP(_output_compare0_)
-	JMP(_overflow0_)
-	JMP(_spi_)
-	JMP(_uart_recv_)
-	JMP(_uart1_recv_)
-	JMP(_uart_data_)
-	JMP(_uart1_data_)
-	JMP(_uart_trans_)
-	JMP(_uart1_trans_)
-	JMP(_eeprom_ready_)
-	JMP(_comparator_)
 
-_(_init_):
+#include "vectors.S"
+
+_init_:
 	; Clear zero register
 	clr	r1
 
@@ -61,8 +37,8 @@ _(_init_):
 	sbiw	r28, 0			; if (counter == 0)...
 	breq	.clear_bss		; ...skip loop
 
-	ldi	r26, 0x100		; load start of ram
-	ldi	r27, 0
+	ldi	r26, lo8 (0x100)	; load start of ram
+	ldi	r27, hi8 (0x100)
 
 	ldi	r30, lo8 (_etext)	; load the end of .text segment
 	ldi	r31, hi8 (_etext)	; this is a start of .data image

@@ -24,8 +24,8 @@ adc_read (adc_t *v)
 	while (testb (ADSC, ADCSR))
 		lock_wait (&v->lock);
 
-	val = inb (ADCL);
-	val |= inb (ADCH) << 8;
+	val = ADCL;
+	val |= ADCH << 8;
 
 	lock_release (&v->lock);
 	return val;
@@ -37,14 +37,14 @@ adc_read (adc_t *v)
 void
 adc_select_channel (adc_t *v, unsigned char cnum)
 {
-	outb (cnum, ADMUX);
+	ADMUX = cnum;
 }
 
 void
 adc_init (adc_t *v)
 {
 	/* Turn ADC on, prescaler 1/128. */
-	outb (0x87, ADCSR);
+	ADCSR = 0x87;
 
 	/* Get the interrupt. */
 	lock_take_irq (&v->lock, ADC_IRQ, 0, 0);

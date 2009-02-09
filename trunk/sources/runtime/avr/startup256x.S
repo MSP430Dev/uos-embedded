@@ -1,18 +1,14 @@
+;
+; Startup file with SRAM started at address 0x200.
+; For ATmega256 and others.
+;
 #define __SFR_OFFSET 0
 #include <runtime/avr/io.h>
 
-#if WITH_UNDERSCORES
-#	define _(x) _##x
+#if FLASHEND > 0x2000
+#   define JMP(label) jmp label
 #else
-#	define _(x) x
-#endif
-
-#if FLASHEND > 0x1FFFF
-#	define JMP(label) jmp _(label)
-#elif FLASHEND > 0x2000
-#	define JMP(label) jmp _(label)
-#else
-#	define JMP(label) rjmp _(label)
+#   define JMP(label) rjmp label
 #endif
 
 	.section	.init
@@ -20,64 +16,10 @@
 	.globl __ld_entry
 __ld_entry:
 	JMP(_init_)
-	JMP(_interrupt0_)
-	JMP(_interrupt1_)
-	JMP(_interrupt2_)
-	JMP(_interrupt3_)
-	JMP(_interrupt4_)
-	JMP(_interrupt5_)
-	JMP(_interrupt6_)
-	JMP(_interrupt7_)
-        JMP(_pcinterrupt0_)
-	JMP(_pcinterrupt1_)
-	JMP(_pcinterrupt2_)
-        JMP(_wdt_timeout_)
-        JMP(_output_compare2a_)
-	JMP(_output_compare2b_)
-	JMP(_overflow2_)
-	JMP(_input_capture1_)
-	JMP(_output_compare1a_)
-	JMP(_output_compare1b_)
-        JMP(_output_compare1c_)
-	JMP(_overflow1_)
-        JMP(_output_compare0a_)
-	JMP(_output_compare0b_)
-	JMP(_overflow0_)
-        JMP(_spi_)
-        JMP(_uart_recv_)
-	JMP(_uart_data_)
-	JMP(_uart_trans_)
-        JMP(_comparator_)
-        JMP(_adc_)
-        JMP(_eeprom_ready_)
-        JMP(_input_capture3_)
-	JMP(_output_compare3a_)
-	JMP(_output_compare3b_)
-	JMP(_output_compare3c_)
-	JMP(_overflow3_)
-        JMP(_uart1_recv_)
-	JMP(_uart1_data_)
-	JMP(_uart1_trans_)
-        JMP(_twi_)
-        JMP(_spm_ready_)
-        JMP(_input_capture4_)
-	JMP(_output_compare4a_)
-	JMP(_output_compare4b_)
-	JMP(_output_compare4c_)
-	JMP(_overflow4_)
-        JMP(_input_capture5_)
-	JMP(_output_compare5a_)
-	JMP(_output_compare5b_)
-	JMP(_output_compare5c_)
-	JMP(_overflow5_)
-        JMP(_uart2_recv_)
-	JMP(_uart2_data_)
-	JMP(_uart2_trans_)
-        JMP(_uart3_recv_)
-	JMP(_uart3_data_)
-	JMP(_uart3_trans_)
 
-_(_init_):
+#include "vectors.S"
+
+_init_:
 	; Clear zero register
 	clr	r1
 

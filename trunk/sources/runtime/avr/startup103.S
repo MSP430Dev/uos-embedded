@@ -1,16 +1,14 @@
+;
+; Startup file with SRAM started at address 0x60.
+; For ATmega103 and others.
+;
 #define __SFR_OFFSET 0
 #include <runtime/avr/io.h>
 
-#if WITH_UNDERSCORES
-#	define _(x) _##x
-#else
-#	define _(x) x
-#endif
-
 #if FLASHEND > 0x2000
-#	define JMP(label) jmp _(label)
+#   define JMP(label) jmp label
 #else
-#	define JMP(label) rjmp _(label)
+#   define JMP(label) rjmp label
 #endif
 
 	.section	.init
@@ -18,86 +16,10 @@
 	.globl __ld_entry
 __ld_entry:
 	JMP(_init_)
-#ifdef INT0_vect
-	JMP(_interrupt0_)
-#endif
-#ifdef INT1_vect
-	JMP(_interrupt1_)
-#endif
-#ifdef INT2_vect
-	JMP(_interrupt2_)
-#endif
-#ifdef INT3_vect
-	JMP(_interrupt3_)
-#endif
-#ifdef INT4_vect
-	JMP(_interrupt4_)
-#endif
-#ifdef INT5_vect
-	JMP(_interrupt5_)
-#endif
-#ifdef INT6_vect
-	JMP(_interrupt6_)
-#endif
-#ifdef INT7_vect
-	JMP(_interrupt7_)
-#endif
-#ifdef TIMER2_COMP_vect
-	JMP(_output_compare2_)
-#endif
-#ifdef TIMER2_OVF_vect
-	JMP(_overflow2_)
-#endif
-#ifdef TIMER1_CAPT_vect
-	JMP(_input_capture1_)
-#endif
-#ifdef TIMER1_COMPA_vect
-	JMP(_output_compare1a_)
-#endif
-#ifdef TIMER1_COMPB_vect
-	JMP(_output_compare1b_)
-#endif
-#ifdef TIMER1_OVF_vect
-	JMP(_overflow1_)
-#endif
-#ifdef TIMER0_COMP_vect
-	JMP(_output_compare0_)
-#endif
-#ifdef TIMER0_OVF_vect
-	JMP(_overflow0_)
-#endif
-#ifdef SPI_STC_vect
-	JMP(_spi_)
-#endif
-#ifdef UART_RX_vect
-	JMP(_uart_recv_)
-#endif
-#ifdef UART1_RX_vect
-	JMP(_uart1_recv_)
-#endif
-#ifdef UART_UDRE_vect
-	JMP(_uart_data_)
-#endif
-#ifdef UART1_UDRE_vect
-	JMP(_uart1_data_)
-#endif
-#ifdef UART_TX_vect
-	JMP(_uart_trans_)
-#endif
-#ifdef UART1_TX_vect
-	JMP(_uart1_trans_)
-#endif
-#ifdef ADC_vect
-	JMP(_adc_)
-#endif
-#ifdef EE_RDY_vect
-	JMP(_eeprom_ready_)
-#endif
-#ifdef ANA_COMP_vect
-	JMP(_comparator_)
-#endif
 
-_(_init_):
+#include "vectors.S"
+
+_init_:
 	; Clear zero register
 	clr	r1
 
@@ -119,8 +41,8 @@ _(_init_):
 	sbiw	r28, 0			; if (counter == 0)...
 	breq	.clear_bss		; ...skip loop
 
-	ldi	r26, 0x60		; load start of ram
-	ldi	r27, 0
+	ldi	r26, lo8 (0x60)		; load start of ram
+	ldi	r27, hi8 (0x60)
 
 	ldi	r30, lo8 (_etext)	; load the end of .text segment
 	ldi	r31, hi8 (_etext)	; this is a start of .data image

@@ -253,6 +253,12 @@
 #  endif
 #endif
 
+#if FLASHEND > 0x2000
+#  define __NVECTORS (_VECTORS_SIZE/4 - 1)
+#else
+#  define __NVECTORS (_VECTORS_SIZE/2 - 1)
+#endif
+
 #include <runtime/avr/portpins.h>
 
 #if __AVR_ARCH__ != 1
@@ -306,12 +312,6 @@
 #endif
 
 #ifndef __ASSEMBLER__
-
-/*
- * Global interrupt control.
- */
-#define sei()  asm volatile ("sei" ::: "memory")
-#define cli()  asm volatile ("cli" ::: "memory")
 
 /*
  * Read a byte from the program space (flash).
@@ -392,14 +392,11 @@
 #	define readl(addr)	readl_near(addr)
 #endif
 
-#define inb(port)		(port)
-#define outb(val, port)		do { (port) = (val); } while (0)
-#define inw(port)		(port)
-#define outw(val, port)		do { (port) = (val); } while (0)
-
+/*
+ * Bit manipulation for i/o ports.
+ */
 #define setb(bit, port)		do { (port) |= 1 << (bit); } while (0)
 #define clearb(bit, port)	do { (port) &= ~(1 << (bit)); } while (0)
-#define clearb_const		clearb
 #define testb(bit, port)	((port) & (1 << (bit)))
 
 #endif /* __ASSEMBLER__ */

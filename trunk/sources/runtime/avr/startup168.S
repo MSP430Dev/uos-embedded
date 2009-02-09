@@ -1,16 +1,10 @@
 #define __SFR_OFFSET 0
 #include <runtime/avr/io.h>
 
-#if WITH_UNDERSCORES
-#define _(x) _##x
-#else
-#define _(x) x
-#endif
-
 #if FLASHEND > 0x2000
-#define JMP(label) jmp _(label)
+#   define JMP(label) jmp label
 #else
-#define JMP(label) rjmp _(label)
+#   define JMP(label) rjmp label
 #endif
 
 	.section	.init
@@ -18,33 +12,10 @@
 	.globl __ld_entry
 __ld_entry:
 	JMP(_init_)
-	JMP(_interrupt0_)
-	JMP(_interrupt1_)
-	JMP(_pin_change0_)
-	JMP(_pin_change1_)
-	JMP(_pin_change2_)
-	JMP(_watchdog_timeout_)
-	JMP(_output_compare2a_)
-	JMP(_output_compare2b_)
-	JMP(_overflow2_)
-	JMP(_input_capture1_)
-	JMP(_output_compare1a_)
-	JMP(_output_compare1b_)
-	JMP(_overflow1_)
-	JMP(_output_compare0a_)
-	JMP(_output_compare0b_)
-	JMP(_overflow0_)
-	JMP(_spi_)
-	JMP(_uart_recv_)
-	JMP(_uart_data_)
-	JMP(_uart_trans_)
-	JMP(_adc_)
-	JMP(_eeprom_ready_)
-	JMP(_comparator_)
-	JMP(_twi_)
-	JMP(_spm_ready_)
 
-_(_init_):
+#include "vectors.S"
+
+_init_:
 	; Clear zero register
 	clr	r1
 
@@ -98,59 +69,3 @@ _(_init_):
 	JMP(main)
 .end_of_init:
 	.endfunc
-
-.section .text
-	.func	.weaks		; stay avr-as happy with -gstabs
-.weaks:
-	.weak	_(_interrupt0_)
-	.weak	_(_interrupt1_)
-	.weak   _(_pin_change0_)
-	.weak   _(_pin_change1_)
-	.weak   _(_pin_change2_)
-	.weak   _(_watchdog_timeout_)
-	.weak   _(_output_compare2a_)
-	.weak   _(_output_compare2b_)
-	.weak   _(_overflow2_)
-	.weak   _(_input_capture1_)
-	.weak   _(_output_compare1a_)
-	.weak   _(_output_compare1b_)
-	.weak   _(_overflow1_)
-	.weak   _(_output_compare0a_)
-	.weak   _(_output_compare0b_)
-	.weak   _(_overflow0_)
-	.weak   _(_spi_)
-	.weak   _(_uart_recv_)
-	.weak   _(_uart_data_)
-	.weak   _(_uart_trans_)
-	.weak   _(_adc_)
-	.weak   _(_eeprom_ready_)
-	.weak   _(_comparator_)
-	.weak   _(_twi_)
-	.weak   _(_spm_ready_)
-
-_(_interrupt0_):
-_(_interrupt1_):
-_(_pin_change0_):
-_(_pin_change1_):
-_(_pin_change2_):
-_(_watchdog_timeout_):
-_(_output_compare2a_):
-_(_output_compare2b_):
-_(_overflow2_):
-_(_input_capture1_):
-_(_output_compare1a_):
-_(_output_compare1b_):
-_(_overflow1_):
-_(_output_compare0a_):
-_(_output_compare0b_):
-_(_overflow0_):
-_(_spi_):
-_(_uart_recv_):
-_(_uart_data_):
-_(_uart_trans_):
-_(_adc_):
-_(_eeprom_ready_):
-_(_comparator_):
-_(_twi_):
-_(_spm_ready_):
-	reti

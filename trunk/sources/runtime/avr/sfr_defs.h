@@ -168,79 +168,8 @@
 #define _SFR_BYTE(sfr) _MMIO_BYTE(_SFR_ADDR(sfr))
 #define _SFR_WORD(sfr) _MMIO_WORD(_SFR_ADDR(sfr))
 
-/** \name Bit manipulation */
-
-/*@{*/
-/** \def _BV
-    \ingroup avr_sfr
-
-    \code #include <avr/io.h>\endcode
-
-    Converts a bit number into a byte value.
-
-    \note The bit shift is performed by the compiler which then inserts the
-    result into the code. Thus, there is no run-time overhead when using
-    _BV(). */
-
-#define _BV(bit) (1 << (bit))
-
-/*@}*/
-
 #ifndef _VECTOR
 #define _VECTOR(N) __vector_ ## N
 #endif
-
-#ifndef __ASSEMBLER__
-
-
-/** \name IO register bit manipulation */
-
-/*@{*/
-
-
-
-/** \def bit_is_set
-    \ingroup avr_sfr
-
-    \code #include <avr/io.h>\endcode
-
-    Test whether bit \c bit in IO register \c sfr is set.
-    This will return a 0 if the bit is clear, and non-zero
-    if the bit is set. */
-
-#define bit_is_set(sfr, bit) (_SFR_BYTE(sfr) & _BV(bit))
-
-/** \def bit_is_clear
-    \ingroup avr_sfr
-
-    \code #include <avr/io.h>\endcode
-
-    Test whether bit \c bit in IO register \c sfr is clear.
-    This will return non-zero if the bit is clear, and a 0
-    if the bit is set. */
-
-#define bit_is_clear(sfr, bit) (!(_SFR_BYTE(sfr) & _BV(bit)))
-
-/** \def loop_until_bit_is_set
-    \ingroup avr_sfr
-
-    \code #include <avr/io.h>\endcode
-
-    Wait until bit \c bit in IO register \c sfr is set. */
-
-#define loop_until_bit_is_set(sfr, bit) do { } while (bit_is_clear(sfr, bit))
-
-/** \def loop_until_bit_is_clear
-    \ingroup avr_sfr
-
-    \code #include <avr/io.h>\endcode
-
-    Wait until bit \c bit in IO register \c sfr is clear. */
-
-#define loop_until_bit_is_clear(sfr, bit) do { } while (bit_is_set(sfr, bit))
-
-/*@}*/
-
-#endif /* !__ASSEMBLER__ */
 
 #endif  /* _SFR_DEFS_H_ */

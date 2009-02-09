@@ -23,7 +23,7 @@
 /*
  * The total number of different hardware interrupts.
  */
-#define ARCH_INTERRUPTS		34
+#define ARCH_INTERRUPTS		__NVECTORS
 
 /*
  * Type for saving task stack context.
@@ -59,14 +59,14 @@ void arch_task_switch (task_t *target);
 static inline void
 arch_intr_disable (arch_state_t *x)
 {
-	*x = inb (SREG);
-	cli ();
+	*x = SREG;
+	asm volatile ("cli");
 }
 
 static inline void
 arch_intr_restore (arch_state_t x)
 {
-	outb (x, SREG);
+	SREG = x;
 }
 
 /*
@@ -119,11 +119,11 @@ arch_idle ()
 static void inline __attribute__ ((always_inline))
 arch_set_stack_pointer (arch_stack_t x)
 {
-	outw ((int) x, SP);
+	SP = (int) x;
 }
 
 static arch_stack_t inline __attribute__ ((always_inline))
 arch_get_stack_pointer ()
 {
-	return (void*) inw (SP);
+	return (void*) SP;
 }

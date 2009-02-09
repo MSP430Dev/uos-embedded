@@ -23,8 +23,8 @@ debug_putchar (void *arg, short c)
 {
 	small_uint_t x;
 
-	x = inb (SREG);
-	cli();
+	x = SREG;
+	asm volatile ("cli");
 	setb (TXEN, UCR);
 
 	/* Wait for transmitter idle. */
@@ -33,7 +33,7 @@ debug_putchar (void *arg, short c)
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	outb (c, UDR);
+	UDR = c;
 
 	/* Wait for transmitter idle. */
 	while (! testb (UDRE, USR))
@@ -44,7 +44,7 @@ again:
 		goto again;
 	}
 	watchdog_alive ();
-	outb (x, SREG);
+	SREG = x;
 }
 
 /*
@@ -61,21 +61,21 @@ debug_getchar (void)
 		return c;
 	}
 
-	x = inb (SREG);
-	cli();
+	x = SREG;
+	asm volatile ("cli");
 	setb (RXEN, UCR);
 	for (;;) {
 		/* Wait until receive data available. */
 		while (! testb (RXC, USR)) {
-			sei();
-			cli();
+			if (x & (1 << SREG_I))
+				asm volatile ("sei \n cli");
 			continue;
 		}
 		/* TODO: utf8 to unicode conversion. */
-		c = inb (UDR);
+		c = UDR;
 		break;
 	}
-	outb (x, SREG);
+	SREG = x;
 	return c;
 }
 
@@ -90,17 +90,17 @@ debug_peekchar (void)
 	if (debug_char >= 0)
 		return debug_char;
 
-	x = inb (SREG);
-	cli();
+	x = SREG;
+	asm volatile ("cli");
 	setb (RXEN, UCR);
 	if (! testb (RXC, USR)) {
-		outb (x, SREG);
+		SREG = x;
 		return -1;
 	}
 	/* TODO: utf8 to unicode conversion. */
-	c = inb (UDR);
+	c = UDR;
 
-	outb (x, SREG);
+	SREG = x;
 	debug_char = c;
 	return c;
 }
@@ -110,8 +110,8 @@ debug_puts (const char *p)
 {
 	unsigned char c, x;
 
-	x = inb (SREG);
-	cli();
+	x = SREG;
+	asm volatile ("cli");
 	for (;;) {
 		c = readb ((int) p);
 		if (! c)
@@ -119,5 +119,5 @@ debug_puts (const char *p)
 		debug_putchar (0, c);
 		++p;
 	}
-	outb (x, SREG);
+	SREG = x;
 }

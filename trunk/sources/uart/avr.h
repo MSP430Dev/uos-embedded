@@ -26,14 +26,14 @@
 #define disable_transmit_interrupt(p)	if (p) clearb (UDRIE, UCSR1B); else \
 						clearb (UDRIE, UCR)
 
-#define transmit_byte(p,c)		if (p)	{                         \
-						  setb (TXC, UCSR1A); \
-						  outb ((c), UDR1);   \
-						} else {                  \
-						  setb (TXC, USR);        \
-						  outb (c, UDR);          \
+#define transmit_byte(p,c)		if (p)	{			\
+						  setb (TXC, UCSR1A);	\
+						  UDR1 = (c);		\
+						} else {		\
+						  setb (TXC, USR);	\
+						  UDR = (c);		\
 						}
-#define get_received_byte(p)		((p) ? inb (UDR1) : inb (UDR))
+#define get_received_byte(p)		((p) ? UDR1 : UDR)
 
 #define test_transmitter_enabled(p)	((p) ? testb (TXEN, UCSR1B) : \
 						testb (TXEN, UCR))
@@ -44,9 +44,9 @@
 #define test_receive_data(p)		((p) ? testb (RXC, UCSR1A) : \
 						testb (RXC, USR))
 #define test_get_receive_data(p,d)	((p) ? (testb (RXC, UCSR1A) ? \
-						((*d) = inb (UDR1), 1) : 0) : \
+						((*d) = UDR1, 1) : 0) : \
 					(testb (RXC, USR) ? \
-						((*d) = inb (UDR), 1) : 0))
+						((*d) = UDR, 1) : 0))
 #define test_frame_error(p)		((p) ? testb (FE, UCSR1A) : \
 						testb (FE, USR))
 #define test_parity_error(p) 		((p) ? testb (UPE, UCSR1A) : \
@@ -57,8 +57,8 @@
 						testb (RXB8, UCR))
 
 #define setup_baud_rate(port, khz, baud) \
-	if (port) outb (((int) (khz*1000L / baud) + 8) / 16 - 1, UBRR1L); \
-	else	  outb (((int) (khz*1000L / baud) + 8) / 16 - 1, UBRR)
+	if (port) UBRR1L = ((int) (khz*1000L / baud) + 8) / 16 - 1; \
+	else	  UBRR = ((int) (khz*1000L / baud) + 8) / 16 - 1
 
 
 
@@ -88,12 +88,12 @@
 
 #define transmit_byte(p,c)		if (p)	{			\
 						  setb (TXC, UCSR1A);	\
-						  outb ((c), UDR1);	\
+						  UDR1 = (c);		\
 						} else {		\
 						  setb (TXC, USR);	\
-						  outb (c, UDR);	\
+						  UDR = (c);		\
 						}
-#define get_received_byte(p)		((p) ? inb (UDR1) : inb (UDR))
+#define get_received_byte(p)		((p) ? UDR1 : UDR)
 
 #define test_transmitter_enabled(p)	((p) ? testb (TXEN, UCSR1B) : \
 						testb (TXEN, UCR))
@@ -104,9 +104,9 @@
 #define test_receive_data(p)		((p) ? testb (RXC, UCSR1A) : \
 						testb (RXC, USR))
 #define test_get_receive_data(p,d)	((p) ? (testb (RXC, UCSR1A) ? \
-						((*d) = inb (UDR1), 1) : 0) : \
+						((*d) = UDR1, 1) : 0) : \
 					(testb (RXC, USR) ? \
-						((*d) = inb (UDR), 1) : 0))
+						((*d) = UDR, 1) : 0))
 #define test_frame_error(p)		((p) ? testb (FE, UCSR1A) : \
 						testb (FE, USR))
 #define test_parity_error(p) 		((p) ? testb (UPE, UCSR1A) : \
@@ -117,8 +117,8 @@
 						testb (RXB8, UCR))
 
 #define setup_baud_rate(port, khz, baud) \
-	if (port) outb (((int) (khz*1000L / baud) + 8) / 16 - 1, UBRR1L); \
-	else	  outb (((int) (khz*1000L / baud) + 8) / 16 - 1, UBRR)
+	if (port) UBRR1L = ((int) (khz*1000L / baud) + 8) / 16 - 1; \
+	else	  UBRR = ((int) (khz*1000L / baud) + 8) / 16 - 1
 
 #elif defined (__AVR_ATmega161__)
 /*
@@ -142,9 +142,8 @@
 #define disable_transmit_interrupt(p)	if (p) clearb (UDRIE, UCSR1B); else \
 						clearb (UDRIE, UCR)
 
-#define transmit_byte(p,c)		if (p) outb (c, UDR1); else \
-						outb (c, UDR)
-#define get_received_byte(p)		((p) ? inb (UDR1) : inb (UDR))
+#define transmit_byte(p,c)		if (p) UDR1 = (c); else UDR = (c)
+#define get_received_byte(p)		((p) ? UDR1 : UDR)
 
 #define test_transmitter_enabled(p)	((p) ? testb (TXEN, UCSR1B) : \
 						testb (TXEN, UCR))
@@ -153,9 +152,9 @@
 #define test_receive_data(p)		((p) ? testb (RXC, UCSR1A) : \
 						testb (RXC, USR))
 #define test_get_receive_data(p,d)	((p) ? (testb (RXC, UCSR1A) ? \
-						((*d) = inb (UDR1), 1) : 0) : \
+						((*d) = UDR1, 1) : 0) : \
 					(testb (RXC, USR) ? \
-						((*d) = inb (UDR), 1) : 0))
+						((*d) = UDR, 1) : 0))
 #define test_frame_error(p)		((p) ? testb (FE, UCSR1A) : \
 						testb (FE, USR))
 #define test_parity_error(p) 		0
@@ -165,8 +164,8 @@
 						testb (RXB, UCR))
 
 #define setup_baud_rate(port, khz, baud) \
-	if (port) outb (((int) (khz*1000L / baud) + 8) / 16 - 1, UBRR1); \
-	else	  outb (((int) (khz*1000L / baud) + 8) / 16 - 1, UBRR0)
+	if (port) UBRR1 = ((int) (khz*1000L / baud) + 8) / 16 - 1; \
+	else	  UBRR0 = ((int) (khz*1000L / baud) + 8) / 16 - 1
 
 #else
 /*
@@ -184,21 +183,21 @@
 #define enable_transmit_interrupt(p)	setb (UDRIE, UCR)
 #define disable_transmit_interrupt(p)	clearb (UDRIE, UCR)
 
-#define transmit_byte(p,c)		outb (c, UDR)
-#define get_received_byte(p)		inb (UDR)
+#define transmit_byte(p,c)		UDR = (c)
+#define get_received_byte(p)		UDR
 
 #define test_transmitter_enabled(p)	testb (TXEN, UCR)
 #define test_transmitter_empty(p)	testb (UDRE, USR)
 #define test_receive_data(p)		testb (RXC, USR)
 #define test_get_receive_data(p,d)	(testb (RXC, USR) ? \
-					((*d) = inb (UDR), 1) : 0)
+					((*d) = UDR, 1) : 0)
 #define test_frame_error(p)		testb (FE, USR)
 #define test_parity_error(p) 		0
 #define test_overrun_error(p) 		testb (DOR, USR)
 #define uart_rxb8(p)			testb (RXB8, UCR)
 
 #define setup_baud_rate(port, khz, baud) \
-	outb (((int) (khz * 1000L / baud) + 8) / 16 - 1, UBRR)
+	UBRR = ((int) (khz * 1000L / baud) + 8) / 16 - 1
 
 #endif
 

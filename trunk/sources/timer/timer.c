@@ -79,11 +79,11 @@ main_timer (void *arg)
 
 	/* Initialize the hardware. */
 #if __AVR__
-	outb (0, TCCR1A);
-	outb (0, TCCR1B);
-	outw ((t->khz * t->msec_per_tick) / 8 - 2, OCR1A);
-	outw (0, TCNT1);
-	outb (0x0A, TCCR1B);	/* clock source CK/8, clear on match A */
+	TCCR1A = 0;
+	TCCR1B = 0;
+	OCR1A = (t->khz * t->msec_per_tick) / 8 - 2;
+	TCNT1 = 0;
+	TCCR1B = 0x0A;	/* clock source CK/8, clear on match A */
 #endif
 #if I386
 	{

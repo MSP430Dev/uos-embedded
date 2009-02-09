@@ -74,7 +74,6 @@
 
 /*
  *  The Register Bit names are represented by their bit number (0-7).
- *  Example: PORTB |= _BV(PORTB7); Set MSB of PORTB.
  */
 
 /* 0x00 Reserved */

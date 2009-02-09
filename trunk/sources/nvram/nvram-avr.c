@@ -24,8 +24,8 @@ eeprom_write_byte (unsigned addr, unsigned char c)
 	while (testb (EEWE, EECR))
 		lock_wait (&lock);
 
-	outw (addr, EEAR);
-	outb (c, EEDR);
+	EEAR = addr;
+	EEDR = c;
 	asm volatile ("cli");
 	setb (EEMWE, EECR);
 	setb (EEWE, EECR);
@@ -48,9 +48,9 @@ eeprom_read_byte (unsigned addr)
 	while (testb (EEWE, EECR))
 		lock_wait (&lock);
 
-	outw (addr, EEAR);
+	EEAR = addr;
 	setb (EERE, EECR);
-	c = inb (EEDR);
+	c = EEDR;
 
 	lock_release (&lock);
 	return c;

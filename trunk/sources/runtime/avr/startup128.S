@@ -1,18 +1,14 @@
+;
+; Startup file with SRAM started at address 0x100.
+; For ATmega128, ATmega161, ATmega168 and others.
+;
 #define __SFR_OFFSET 0
 #include <runtime/avr/io.h>
 
-#if WITH_UNDERSCORES
-#	define _(x) _##x
+#if FLASHEND > 0x2000
+#   define JMP(label) jmp label
 #else
-#	define _(x) x
-#endif
-
-#if FLASHEND > 0x1FFFF
-#	define JMP(label) ejmp _(label)
-#elif FLASHEND > 0x2000
-#	define JMP(label) jmp _(label)
-#else
-#	define JMP(label) rjmp _(label)
+#   define JMP(label) rjmp label
 #endif
 
 	.section	.init
@@ -20,43 +16,10 @@
 	.globl __ld_entry
 __ld_entry:
 	JMP(_init_)
-	JMP(_interrupt0_)
-	JMP(_interrupt1_)
-	JMP(_interrupt2_)
-	JMP(_interrupt3_)
-	JMP(_interrupt4_)
-	JMP(_interrupt5_)
-	JMP(_interrupt6_)
-	JMP(_interrupt7_)
-	JMP(_output_compare2_)
-	JMP(_overflow2_)
-	JMP(_input_capture1_)
-	JMP(_output_compare1a_)
-	JMP(_output_compare1b_)
-	JMP(_overflow1_)
-	JMP(_output_compare0_)
-	JMP(_overflow0_)
-	JMP(_spi_)
-	JMP(_uart_recv_)
-	JMP(_uart_data_)
-	JMP(_uart_trans_)
-	JMP(_adc_)
-	JMP(_eeprom_ready_)
-	JMP(_comparator_)
 
-	JMP(_output_compare1c_)
-	JMP(_input_capture3_)
-	JMP(_output_compare3a_)
-	JMP(_output_compare3b_)
-	JMP(_output_compare3c_)
-	JMP(_overflow3_)
-	JMP(_uart1_recv_)
-	JMP(_uart1_data_)
-	JMP(_uart1_trans_)
-	JMP(_twi_)
-	JMP(_spm_ready_)
+#include "vectors.S"
 
-_(_init_):
+_init_:
 	; Clear zero register
 	clr	r1
 
@@ -134,81 +97,3 @@ _(_init_):
 	JMP(main)
 .end_of_init:
 	.endfunc
-
-.section .text
-	.func	.weaks		; stay avr-as happy with -gstabs
-.weaks:
-	.weak	_(_interrupt0_)
-	.weak	_(_interrupt1_)
-	.weak	_(_interrupt2_)
-	.weak	_(_interrupt3_)
-	.weak	_(_interrupt4_)
-	.weak	_(_interrupt5_)
-	.weak	_(_interrupt6_)
-	.weak	_(_interrupt7_)
-	.weak	_(_output_compare2_)
-	.weak	_(_overflow2_)
-	.weak	_(_input_capture1_)
-	.weak	_(_output_compare1a_)
-	.weak	_(_output_compare1b_)
-	.weak	_(_overflow1_)
-	.weak	_(_output_compare0_)
-	.weak	_(_overflow0_)
-	.weak	_(_spi_)
-#if 1  /* vch: no default handler for UARTs, uOS or superfast handler used  */
-	.weak	_(_uart_recv_)
-	.weak	_(_uart1_recv_)
-	.weak	_(_uart_data_)
-	.weak	_(_uart1_data_)
-	.weak	_(_uart_trans_)
-	.weak	_(_uart1_trans_)
-#endif
-	.weak	_(_adc_)
-	.weak	_(_eeprom_ready_)
-	.weak	_(_comparator_)
-	.weak   _(_output_compare1c_)
-	.weak   _(_input_capture3_)
-	.weak   _(_output_compare3a_)
-	.weak   _(_output_compare3b_)
-	.weak   _(_output_compare3c_)
-	.weak   _(_overflow3_)
-	.weak   _(_twi_)
-	.weak   _(_spm_ready_)
-
-_(_interrupt0_):
-_(_interrupt1_):
-_(_interrupt2_):
-_(_interrupt3_):
-_(_interrupt4_):
-_(_interrupt5_):
-_(_interrupt6_):
-_(_interrupt7_):
-_(_output_compare2_):
-_(_overflow2_):
-_(_input_capture1_):
-_(_output_compare1a_):
-_(_output_compare1b_):
-_(_overflow1_):
-_(_output_compare0_):
-_(_overflow0_):
-_(_spi_):
-#if 1  /* vch: no default handler for UARTs, uOS or superfast handler used */
-_(_uart_recv_):
-_(_uart1_recv_):
-_(_uart_data_):
-_(_uart1_data_):
-_(_uart_trans_):
-_(_uart1_trans_):
-#endif
-_(_adc_):
-_(_eeprom_ready_):
-_(_comparator_):
-_(_output_compare1c_):
-_(_input_capture3_):
-_(_output_compare3a_):
-_(_output_compare3b_):
-_(_output_compare3c_):
-_(_overflow3_):
-_(_twi_):
-_(_spm_ready_):
-	reti
