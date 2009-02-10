@@ -44,6 +44,6 @@
 
 || *Тест*                                                                                                    || *Описание*                                                                       || *Память программ*|| *Память данных* ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.          ||  байт (%)    ||  байта (%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_task.c]  || Проверка переключения задач. Одна задача пользователя.                           ||  байта (%) ||  байта (%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. ||  байта (%) ||  байт (%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_uart.c]  || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       ||  байта (%) ||  байт (%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           ||  байта (%) ||  байта (%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. ||  байта (%) ||  байт (%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       ||  байта (%) ||  байт (%)  ||
