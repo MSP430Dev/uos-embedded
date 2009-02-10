@@ -61,3 +61,6 @@
 avrdude -cstk200 -patmega168 -e -u -Ulock:w:0x3f:m -Uefuse:w:0x00:m -Uhfuse:w:0xDD:m -Ulfuse:w:0xFF:m
 avrdude -cstk200 -patmega168 -Uflash:w:ATmegaBOOT_168_diecimila.hex -Ulock:w:0x0f:m
 }}}
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila examples/avr-arduino-diecimila] находятся примеры сборки uOS для Arduino Diecimila.
