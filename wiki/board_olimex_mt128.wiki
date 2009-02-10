@@ -38,6 +38,7 @@
 || Средняя кнопка  || PA2             || ---                      ||
 || Правая кнопка   || PA3             || ---                      ||
 || Нижняя кнопка   || PA4             || ---                      ||
+|| (TODO)          || (TODO)          || (TODO)                   ||
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128 examples/avr-mt-128] находятся примеры сборки uOS для Olimex MT-128.
