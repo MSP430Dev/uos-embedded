@@ -64,3 +64,13 @@ avrdude -cstk200 -patmega168 -Uflash:w:ATmegaBOOT_168_diecimila.hex -Ulock:w:0x0
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila examples/avr-arduino-diecimila] находятся примеры сборки uOS для Arduino Diecimila.
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_debug.c test_debug.c] - проверка runtime-библиотеки и отладочной печати
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_debug.c test_task.c] - проверка переключения задач
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_debug.c test_timer.c] - проверка драйвера таймера
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_debug.c test_uart.c] - проверка драйвера UART
+
+|| *Тест*       || *Описание*               || *Память программ* || *Память данных* ||
+|| test_debug.c || Микроядро отсутствует    || 350 байт          || 2 байта (0.2%)  ||
+|| test_task.c  || Одна задача пользователя || 5782 байт         || 483 байта (47%) ||
+|| test_timer.c || Две задачи: пользователя (main) и таймера || 8652 байт || 800 байт (78%) ||
+|| test_uart.c  || Две задачи: пользователя (main) и uart    || 6092 байт || 916 байт (89%) ||
