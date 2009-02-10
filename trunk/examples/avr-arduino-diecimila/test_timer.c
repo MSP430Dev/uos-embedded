@@ -21,8 +21,8 @@ void uos_init (void)
 {
 	/* Baud 38400. */
 	UBRR = ((int) (KHZ * 1000L / 38400) + 8) / 16 - 1;
-
 	debug_puts ("\nTesting timer.\n");
+
 	timer_init (&timer, 100, KHZ, 10);
 	task_create (hello, "task", "hello", 1, task, sizeof (task));
 }

@@ -9,14 +9,14 @@
 с периферийными устройствами: инициализацию, таймер, UART и т.д.
 
 === 1. Создаём каталог целевой платформы ===
-Создаем каталог uos/targets/arm-at91sam. Помещаем туда файлы,
+Создаем каталог uos/examples/arm-at91sam7. Помещаем туда файлы,
 необходимые для компиляции.
 {{{
-mkdir uos/targets/arm-at91sam
-cd uos/targets/arm-at91sam
-cp ../arm/Makefile .
-cp ../arm/target.cfg .
-cp ../arm/ldscript.x .
+mkdir uos/examples/arm-at91sam7
+cd uos/examples/arm-at91sam7
+cp ../arm-s3c4530/Makefile .
+cp ../arm-s3c4530/target.cfg .
+cp ../arm-s3c4530/ldscript.x .
 }}}
 
 В файле target.cfg изменяем значения переменных:

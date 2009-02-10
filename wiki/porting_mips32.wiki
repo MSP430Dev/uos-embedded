@@ -10,16 +10,16 @@ MIPS32. Затем необходимо реализовать работу с �
 инициализацию, таймер, UART и т.д.
 
 === 1. Создаём каталог целевой платформы ===
-Создаем каталог uos/targets/mc24. Помещаем туда файлы, необходимые для компиляции.
+Создаем каталог uos/examples/mips32-mc24. Помещаем туда файлы, необходимые для компиляции.
 {{{
-mkdir uos/targets/mc24
-cd uos/targets/mc24
-cp ../s3c4530/Makefile .
-cp ../s3c4530/target.cfg .
-cp ../s3c4530/ldscript.x .
+mkdir uos/examples/mips32-mc24
+cd uos/examples/mips32-mc24
+cp ../arm-s3c4530/Makefile .
+cp ../arm-s3c4530/target.cfg .
+cp ../arm-s3c4530/ldscript.x .
 }}}
 
-В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/targets/mc24/target.cfg target.cfg] изменяем значения переменных:
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mip32-mc24/target.cfg target.cfg] изменяем значения переменных:
   * ARCH - mips32.
   * MODULES - необходимо убрать s3c4530.
   * CFLAGS - задаем тип платформы -DMIPS32 и модель конкретного микроконтроллера -DELVEES_MC24.
@@ -27,7 +27,7 @@ cp ../s3c4530/ldscript.x .
   * CC, AR и прочие - устанавливаем имена компонентов компилятора: mipsel-elf32-gcc и т.п.
   * STARTUP - стартовый код разместим в файле startup-mc24.S.
 
-В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/targets/mc24/ldscript.x ldscript.x] заменяем везде arm на mips,
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mip32-mc24/ldscript.x ldscript.x] заменяем везде arm на mips,
 а также в блоке MEMORY изменяем адреса и длины сегментов памяти:
   * Для text устанавливаем ORIGIN = 0xbfc00000, LENGTH = 2M
   * Для data устанавливаем ORIGIN = 0xb8000000, LENGTH = 32K
@@ -128,7 +128,7 @@ void _interrupt_handler_ ()
 и Makefile:
 {{{
 OS              = $(shell cd ../..; pwd)
-TARGET          = $(OS)/targets/mc24
+TARGET          = $(OS)/examples/mip32-mc24
 include $(TARGET)/target.cfg
 
 TESTS           = test_debug.sre
@@ -203,7 +203,7 @@ void uos_init (void)
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c] добавляем объявление номера прерывания таймера:
 {{{
 #if ELVEES_MC24
-#   define TIMER_IRQ 29  
+#   define TIMER_IRQ 29
 #endif
 }}}
 В функции `main_timer()` в соответствующее место добавляем инициализацию регистров таймера:
@@ -337,7 +337,7 @@ void uos_init (void)
 
 === 16. Комплексный тест: пять обедающих философов ===
 Проведём комплексную проверку микроядра, драйвера таймера и драйвера асинхронного порта.
-В каталоге uos/examples/mips32-mc24 создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/philosophers.c examples/mips32-mc24/philosophers.c]. В нем помещаем код решения классической задачи [http://en.wikipedia.org/wiki/Dining_philosophers_problem пяти обедающих философов]. 
+В каталоге uos/examples/mips32-mc24 создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/philosophers.c examples/mips32-mc24/philosophers.c]. В нем помещаем код решения классической задачи [http://en.wikipedia.org/wiki/Dining_philosophers_problem пяти обедающих философов].
 
 В файле Makefile устанавливаем `TESTS = test_philosophers.sre`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоли будут отображаться пять философов и изменение их состояния во времени.
