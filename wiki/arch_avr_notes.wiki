@@ -52,30 +52,3 @@
 ||  R1               ||
 ||  R0               ||
 ||  ---              || <--- Новое значение SP ||
-
-= Команды процессора =
-
-|| *Инструкция* || *Синтаксис*    || *Категория*|| *Описание* || *Пример* ||
-|| nop  || {{{nop}}}              || -          || =no operation; Performs a single cycle, there is nothing to do || {{{nop}}} ||
-|| mov  || {{{mov reg_t, reg_s}}} || register   || =move; Copy the contents of register *reg_s* to register *reg_t* || {{{mov r16, r20}}} ||
-|| ldi  || {{{ldi reg, const}}}   || register   || =load immediate; Push the value of *const* into the register *reg*  || {{{ldi r16, 0xFF}}} ||
-|| cbr  || {{{cbr reg, mask}}}    || register   || =clear bits of register; Clears all bits in register *reg* which are set in *mask*. *Note:* There's a difference to *cbi*! || {{{cbr r16, 0b10101010}}} ||
-|| sbr  || {{{sbi reg, mask}}}    || register   || =set bits in registers; Sets all bits in register *reg* which are set in *mask*. This is equal to {{{ori}}}. *Note:* There's a difference to *sbi*! || {{{sbr r16, 0b01010101}}} ||
-|| sbrc || {{{sbrc reg, bit}}}    || register, flowctrl || =skip if bit is cleared; Skips the following instruction if bit *bit* (0=LSB; 7=MSB) equals 0 in the register *reg* || {{{sbrc r16, 0}}} ||
-|| sbrs || {{{sbrs reg, bit}}}    || register, flowctrl || =skip if bit is set; Skips the following instruction if bit *bit* (0=LSB; 7=MSB) equals 1 in the register *reg* || {{{sbrs r16, 5}}} ||
-|| out  || {{{out port, reg}}}    || I/O        || Write data containing in *reg* to ioport *port*|| {{{out PORTB, r16}}} ||
-|| in   || {{{in reg, port}}}     || I/O        || Read data from ioport *port* and push it into register *reg*|| {{{in r16, PORTC}}} ||
-|| cbi  || {{{cbi port, bit}}}    || I/O        || =clear bit; Clears the bit *bit* (0=LSB; 7=MSB) in the I/O register *port* || {{{cbi PORTB, 5}}} ||
-|| sbi  || {{{sbi port, bit}}}    || I/O        || =set bit; Sets the bit *bit* (0=LSB; 7=MSB) in the I/O register *port* || {{{sbi PORTC, 3}}} ||
-|| sbic || {{{sbic port, bit}}}   || I/O, flowctrl || =skip if bit is cleared; Skips the following instruction if bit *bit* (0=LSB; 7=MSB) equals 0 in the I/O register *port* || {{{sbic PINB, 0}}} ||
-|| sbis || {{{sbis port, bit}}}   || I/O, flowctrl || =skip if bit is set; Skipts the following instruction if bit *bit* (0=LSB; 7=MSB) is equals 1 in the I/O register *port* || {{{sbis PINB, 7}}} ||
-|| rjmp || {{{rjmp label}}}       || flowctrl   || =relative jump; Jumps to the label *label*. (Labels are defined with {{{<labelname>:}}}) || {{{rjmp waitfor}}} ||
-|| com  || {{{com reg}}}          || logical    || =complement; Builds the complement of the contents in register *reg* and store it to himself. This means to *invert* the bits _(00001111 => 11110000)_. || {{{com r18}}} ||
-|| and  || {{{and reg1, reg2}}}   || logical    || Performs a logical AND between the registers *reg1* and *reg2* and stores the result in the register *reg1* || {{{and r16, r17}}} ||
-|| andi || {{{andi reg, const}}}  || logical    || =and immediate; Performs a logical AND between the register *reg* and the value *const* and stores the result in the register *reg* || {{{andi r16, 0b00001111}}} ||
-|| or   || {{{or reg1, reg2}}}    || logical    || Performs a logical OR between the registers *reg1* and *reg2* and stores the result in the register *reg1* || {{{or r16, r17}}} ||
-|| ori  || {{{ori reg, const}}}   || logical    || =or immediate; Performs a logical OR between the register *reg* and the value *const* and stores the result in the register *reg*. This is equal to {{{sbr}}} || {{{ori r16, 0b01101111}}} ||
-|| eor  || {{{eor reg1, reg2}}}   || logical    || Performs a logical EXCLUSIVE OR between the registers *reg1* and *reg2* and stores the result in the register *reg1* || {{{eor r16, r17}}} ||
-|| lsl  || {{{lsl reg}}}          || logical    || =logical shift left; Shifts the bits in the register *reg* one place to left. The LSB will be cleared (00110011 => 01100110). This operation is like a multiplication by 2. || {{{lsl r16}}} ||
-|| lsr  || {{{lsr reg}}}          || logical    || =logical shift right; Shifts the bits in the register *reg* one place to right. The MSB will be cleared (00110011 => 00011001). This operation is like a division by 2. || {{{lsr r16}}} ||
-|| asr  || {{{asr reg}}}          || arithmetic || =arithmetic shift right; Shifts the bits in the register *reg* one place to right. *The MSB (_sign bit_) will be held* (00110011 => 00011001) (11110000 => 11111000). This operation is like a division by 2. || {{{asr r16}}} ||

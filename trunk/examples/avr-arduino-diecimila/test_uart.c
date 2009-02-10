@@ -19,6 +19,6 @@ void hello (void *data)
 void uos_init (void)
 {
 	uart_init (&uart, 0, 90, KHZ, 38400);
-debug_puts ("\nTesting uart.\n");
+	debug_puts ("\nTesting uart.\n");
 	task_create (hello, 0, "hello", 1, task, sizeof (task));
 }

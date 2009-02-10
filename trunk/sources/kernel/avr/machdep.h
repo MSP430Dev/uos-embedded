@@ -73,7 +73,7 @@ arch_intr_restore (arch_state_t x)
  * Allow the given hardware interrupt,
  * unmasking it in the interrupt controller.
  *
- * WARNING! MACHDEP_INTR_ALLOW(n) MUST be called when interrupt disabled
+ * WARNING! MACHDEP_INTR_ALLOW(n) MUST be called with interrupts disabled
  */
 void arch_intr_allow (int irq);
 
