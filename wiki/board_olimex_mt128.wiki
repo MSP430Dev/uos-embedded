@@ -32,6 +32,16 @@
 Программный код можно загружать в плату через разъёмы ICSP-10 или JTAG,
 с использованием соответствующего программатора.
 
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128 examples/avr-mt-128] находятся примеры сборки uOS для Olimex MT-128.
+
+|| *Тест*                                                                                                    || *Описание*                                                                       || *Память программ*|| *Память данных* ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.          ||  байт (%)    ||  байта (%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           ||  байта (%) ||  байта (%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. ||  байта (%) ||  байт (%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       ||  байта (%) ||  байт (%)  ||
+
+= Сигналы =
 Привязка сигналов платы к ножкам процессора:
 || *На плате*      || *На процессоре* || *Дополнительные функции* ||
 || Верхняя кнопка  || PA0             || ---                      ||
@@ -88,12 +98,3 @@
 || Кварц 32768 Гц  || PG3             || TOSC2                    ||
 || Кварц 32768 Гц  || PG4             || TOSC1                    ||
 || Порт ADC / 1    || AVREF           || +5V через R13            ||
-
-= Примеры uOS =
-В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128 examples/avr-mt-128] находятся примеры сборки uOS для Olimex MT-128.
-
-|| *Тест*                                                                                                    || *Описание*                                                                       || *Память программ*|| *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.          ||  байт (%)    ||  байта (%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           ||  байта (%) ||  байта (%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. ||  байта (%) ||  байт (%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       ||  байта (%) ||  байт (%)  ||
