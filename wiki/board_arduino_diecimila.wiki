@@ -23,6 +23,16 @@
 
 Встроенный начальный загрузчик позволяет загружать в плату программный код без использования специализированного программатора. Он поддерживает стандартный протокол STK500 ([http://www.atmel.com/dyn/resources/prod_documents/doc2525.pdf спецификация]). Можно обходиться без начального загрузчика и прошивать код через разъем программирования ICSP.
 
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila examples/avr-arduino-diecimila] находятся примеры сборки uOS для Arduino Diecimila.
+
+|| *Тест*                                                                                                               || *Описание*                                                                       || *Память программ*|| *Память данных* ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.          || 350 байт (2%)    || 2 байта (0.2%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           || 5782 байта (35%) || 483 байта (47%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. || 8652 байта (53%) || 800 байт (78%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       || 6092 байта (37%) || 916 байт (89%)  ||
+
+= Сигналы =
 Привязка сигналов платы к ножкам процессора:
 || *На плате* || *На процессоре* || *Дополнительные функции* ||
 || Digital 0  || PD0             || RXD            ||
@@ -60,12 +70,3 @@
 avrdude -cstk200 -patmega168 -e -u -Ulock:w:0x3f:m -Uefuse:w:0x00:m -Uhfuse:w:0xDD:m -Ulfuse:w:0xFF:m
 avrdude -cstk200 -patmega168 -Uflash:w:ATmegaBOOT_168_diecimila.hex -Ulock:w:0x0f:m
 }}}
-
-= Примеры uOS =
-В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila examples/avr-arduino-diecimila] находятся примеры сборки uOS для Arduino Diecimila.
-
-|| *Тест*                                                                                                               || *Описание*                                                                       || *Память программ*|| *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.          || 350 байт (2%)    || 2 байта (0.2%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           || 5782 байта (35%) || 483 байта (47%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. || 8652 байта (53%) || 800 байт (78%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       || 6092 байта (37%) || 916 байт (89%)  ||
