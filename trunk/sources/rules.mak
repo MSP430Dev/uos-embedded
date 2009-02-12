@@ -14,7 +14,7 @@ libuos.a:	always
 
 always:
 
-.SUFFIXES:	.i .srec .hex .dis .com .adb .cpp .cxx .fl
+.SUFFIXES:	.i .srec .hex .dis .cpp .cxx .fl
 
 .PHONY:		$(MODULES) depend
 
@@ -45,12 +45,6 @@ always:
 		$(CC) $(LDFLAGS) $(CFLAGS) $(DEPFLAGS) $< $(LIBS) -o $@
 
 .o.out:
-		$(CC) $(LDFLAGS) $< $(LIBS) -o $@
-
-.c.com:
-		$(CC) $(LDFLAGS) $(CFLAGS) $< $(LIBS) -o $@
-
-.o.com:
 		$(CC) $(LDFLAGS) $< $(LIBS) -o $@
 
 .fl.cxx .fl.h:
