@@ -5,17 +5,19 @@
 #include "lcd.h"
 #include "avr-mt-128.h"
 
-timer_t timer;			/* Драйвер таймера */
-lcd_t line1, line2;		/* Драйвер индикатора */
-ARRAY (task, 280);		/* Задача: опрос кнопок */
+timer_t timer;
+lcd_t line1, line2;
+ARRAY (task, 280);
 
-const char message[] = "\fTo err is human, but to really foul things up requires a computer.";
+const char message[] = "\fКто ходит в гости по утрам, тот поступает мудро!";
 
 void display_page (unsigned char n)
 {
 	unsigned char i;
 
 	lcd_clear_all (&line1, &line2);
+	line1.raw = 1;
+	line2.raw = 1;
 	n <<= 5;
 	for (i=0; i<8; ++i)
 		putchar (&line1, n + i);
@@ -24,11 +26,12 @@ void display_page (unsigned char n)
 			putchar (&line1, n + i);
 	for (i=16; i<32; ++i)
 		putchar (&line2, n + i);
+	line1.raw = 0;
+	line2.raw = 0;
 }
 
 /*
- * Задача периодического опроса.
- * Параметр не используем.
+ * Task of polling buttons.
  */
 void poll_buttons (void *data)
 {
@@ -38,9 +41,11 @@ void poll_buttons (void *data)
 	unsigned char down_pressed = 0;
 
 	printf (&line1, "Testing LCD.");
-	printf (&line1, "Use buttons.");
+	printf (&line2, "Use buttons.");
 
 	for (;;) {
+		timer_delay (&timer, 10);
+
 		if (! button_up_pressed ())
 			up_pressed = 0;
 		else if (! up_pressed) {
@@ -66,7 +71,7 @@ void poll_buttons (void *data)
 			/* Center button: show current page of symbols. */
 			display_page (pagenum);
 		}
-		if (button_right_pressed ())
+		if (! button_right_pressed ())
 			right_pressed = 0;
 		else if (! right_pressed) {
 			right_pressed = 1;
@@ -74,7 +79,7 @@ void poll_buttons (void *data)
 			/* Right button: show next page of symbols. */
 			display_page (++pagenum);
 		}
-		if (button_down_pressed ())
+		if (! button_down_pressed ())
 			down_pressed = 0;
 		else if (! down_pressed) {
 			down_pressed = 1;
@@ -85,22 +90,9 @@ void poll_buttons (void *data)
 	}
 }
 
-/*
- * Выполнение системы начинается с этой функции.
- * Инициализируем аппаратуру, драйверы, создаем задачи.
- */
 void uos_init (void)
 {
-	/* Драйвер таймера.
-	 * Задаем приоритет, частоту процессора,
-	 * количество миллисекунд между тиками таймера. */
 	timer_init (&timer, 100, KHZ, 10);
-
-	/* Драйвер LCD-индикатора. */
 	lcd_init (&line1, &line2, &timer);
-
-	/* Создаем задачу опроса. Задаем:
-	 * имя стартовой функции, ее аргумент, название задачи, приоритет,
-	 * массив данных задачи, его размер, семафор окончания. */
 	task_create (poll_buttons, 0, "poll", 1, task, sizeof (task));
 }

@@ -1,11 +1,14 @@
-#define NCOL	16	/* Количество символов в строке */
+
+#define NCOL	16			/* Line width */
 
 typedef struct {
-	stream_interface_t *interface;	/* для printf */
-	struct _timer_t *timer;		/* для прокрутки */
-	unsigned char base;		/* базовый адрес */
-	unsigned char col;		/* номер позиции */
-	unsigned char data [NCOL];	/* символы */
+	stream_interface_t *interface;	/* for printf */
+	struct _timer_t *timer;		/* for scrolling */
+	unsigned char base;		/* base address of this line */
+	unsigned char col;		/* current column */
+	unsigned char raw;		/* do not use Unicode mapping */
+	unsigned char c1, c2;		/* utf8 decoder */
+	unsigned char data [NCOL];	/* symbols */
 } lcd_t;
 
 /*
