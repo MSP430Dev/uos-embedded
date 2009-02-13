@@ -9,7 +9,8 @@ timer_t timer;
 lcd_t line1, line2;
 ARRAY (task, 280);
 
-const char message[] = "\fКто ходит в гости по утрам, тот поступает мудро!";
+const char message1[] = "\fКто ходит в гости по утрам, тот поступает мудро.";
+const char message2[] = "\fДа!";
 
 void display_page (unsigned char n)
 {
@@ -85,7 +86,9 @@ void poll_buttons (void *data)
 			down_pressed = 1;
 
 			/* Down button: scroll long message. */
-			printf (&line2, message);
+			printf (&line2, message1);
+			timer_delay (&timer, 500);
+			printf (&line2, message2);
 		}
 	}
 }

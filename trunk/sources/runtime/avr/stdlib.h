@@ -34,6 +34,4 @@ atol (const unsigned char *__p)
 }
 
 extern const unsigned char *strmatch (const unsigned char*, const unsigned char*);
-
-extern void avr_startup_report (void);
 #define AVR_TASK_RESTART_KEY	((task_t *) 0xBEEFul)

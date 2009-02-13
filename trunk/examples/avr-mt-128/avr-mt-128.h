@@ -26,37 +26,43 @@ inline int button_down_pressed (void)
 	return ~PINA & 0b00010000;
 }
 
-inline int led_relay_is_on (void)
+inline int relay_is_on (void)
 {
 	return PINA & 0b01000000;
 }
 
-inline void led_relay_control (int on)
+inline void relay_control (int on)
 {
 	if (on)
-		PORTA |= 0b01000000;
+		setb (6, PORTA);
 	else
-		PORTA &= ~0b01000000;
+		clearb (6, PORTA);
 }
 
-inline void led_relay_init ()
+inline void relay_init ()
 {
-	led_relay_control (0);
-	DDRA |= 0b01000000;
+	relay_control (0);
+	clearb (6, PORTA);
+	setb (6, DDRA);
 }
 
 inline void buzzer_control (int mode)
 {
-	if (mode < 0)
-		PORTE |= 0b00110000;				/* Disable */
-	else if (mode == 0)
-		PORTE = (PORTE | 0b00110000) & ~0b00010000;	/* Forward */
-	else
-		PORTA = (PORTE | 0b00110000) & ~0b00100000;	/* Reverse */
+	if (mode > 0) {
+		clearb (4, PORTE);	/* Forward */
+		setb (5, PORTE);
+	} else if (mode < 0) {
+		setb (4, PORTE);	/* Reverse */
+		clearb (5, PORTE);
+	} else {
+		setb (4, PORTE);	/* Disable */
+		setb (5, PORTE);
+	}
 }
 
 inline void buzzer_init ()
 {
-	buzzer_control (-1);
-	DDRE |= 0b00110000;
+	buzzer_control (0);
+	setb (4, DDRE);
+	setb (5, DDRE);
 }

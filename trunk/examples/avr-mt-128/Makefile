@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TESTS		= test_debug.srec test_task.srec test_timer.srec test_uart.srec test_lcd.srec #test_nvram.srec
+TESTS		= test_debug.srec test_task.srec test_timer.srec test_uart.srec test_lcd.srec test_olimex.srec #test_nvram.srec
 OUTS		= $(TESTS:%.srec=%.out)
 
 # Using avrdude programmer with STK200 LPT adapter.
@@ -27,7 +27,7 @@ clean:
 probe:
 		$(PROG) -v
 
-load:		test_lcd.srec
+load:		test_olimex.srec
 		$(PROG) -e -U$<	#$(FUSES)
 
 olimex:		mt-128.olimex
@@ -35,6 +35,9 @@ olimex:		mt-128.olimex
 
 test_lcd.out:	test_lcd.o lcd.o
 		$(CC) $(LDFLAGS) test_lcd.o lcd.o $(LIBS) -o $@
+
+test_olimex.out: test_olimex.o lcd.o
+		$(CC) $(LDFLAGS) test_olimex.o lcd.o $(LIBS) -o $@
 
 include $(OS)/sources/rules.mak
 

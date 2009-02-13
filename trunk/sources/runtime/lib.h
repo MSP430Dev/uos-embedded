@@ -76,6 +76,12 @@ void uos_call_global_initializers (void);
 void uos_call_global_destructors (void);
 
 /*
+ * Delay functions, useful for small pauses.
+ */
+void udelay (small_uint_t);
+void mdelay (small_uint_t);
+
+/*
  * Check memory address.
  */
 bool_t uos_valid_memory_address (void*);
