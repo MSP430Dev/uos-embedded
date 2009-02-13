@@ -4,7 +4,7 @@ include target.cfg
 
 CFLAGS		+= -DKHZ=10000
 TESTS		= test_uart.srec test_nvram.srec \
-		  test_timer.srec test_crt.srec test_ram.srec \
+		  test_timer.srec test_ram.srec \
 		  test_slip.srec test_ip.srec test_cs8900.srec \
 		  test_ip8900.srec #test_cksum.srec test_snmp.srec test_snmp8900.srec
 OUTS		= $(TESTS:%.srec=%.out)

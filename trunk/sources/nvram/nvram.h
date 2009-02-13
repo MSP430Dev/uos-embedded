@@ -1,3 +1,6 @@
+/*
+ * Non-volatile memory storage, protected with checksum.
+ */
 #ifndef _NVRAM_H_
 #define _NVRAM_H_ 1
 
@@ -50,10 +53,6 @@ inline extern unsigned nvram_get_addr (nvram_t *nv)
 		return NVRAM_BAD_ADDRESS;
 	return nv->__addr - nv->begin;
 }
-
-void eeprom_init (nvram_t *nv);
-void eeprom_write_byte (unsigned addr, unsigned char c);
-unsigned char eeprom_read_byte (unsigned addr);
 
 void nvram_init (nvram_t *nv, unsigned region_begin, unsigned region_end);
 void nvram_protect (nvram_t *nv, struct _timer_t *timer);

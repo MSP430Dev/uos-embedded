@@ -1,11 +1,10 @@
 /*
  * Testing UART.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "stream/stream.h"
-#include "timer/timer.h"
-#include "uart/uart.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <timer/timer.h>
+#include <uart/uart.h>
 #include "lcd.h"
 #include "avr-mt-128.h"
 

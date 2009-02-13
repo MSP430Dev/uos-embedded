@@ -1,3 +1,4 @@
+#include <stream/stream.h>
 
 #define NCOL	16			/* Line width */
 
@@ -15,7 +16,7 @@ typedef struct {
  * Инициализация контроллера.
  * Если задан таймер, то при выходе за границу экрана строка плавно прокручивается.
  */
-void lcd_init (lcd_t *line1, lcd_t *line2, timer_t *timer);
+void lcd_init (lcd_t *line1, lcd_t *line2, struct _timer_t *timer);
 
 /*
  * Загрузка изображения символа.
@@ -32,6 +33,11 @@ void lcd_clear_all (lcd_t *line1, lcd_t *line2);
  * Стирание одной строки.
  */
 void lcd_clear (lcd_t *line);
+
+/*
+ * Move cursor to given position.
+ */
+void lcd_move (lcd_t *line, int col);
 
 /*
  * Печать одного символа.

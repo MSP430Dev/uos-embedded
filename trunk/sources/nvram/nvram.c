@@ -1,6 +1,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <nvram/nvram.h>
+#include <nvram/eeprom.h>
 #include <watchdog/watchdog.h>
 
 static inline bool_t __nvram_is_valid_addr (nvram_t *v, unsigned addr)
@@ -288,7 +289,7 @@ void nvram_init (nvram_t *v, unsigned region_begin, unsigned region_end)
 	v->limit = region_end;
 	v->__addr = NVRAM_BAD_ADDRESS;
 	v->end = v->begin;
-	eeprom_init (v);
+	eeprom_init ();
 	assert (! nvram_is_valid_addr (v, NVRAM_BAD_ADDRESS));
 	assert (! nvram_is_valid_addr (v, 0));
 	assert (! __nvram_is_valid_addr (v, NVRAM_BAD_ADDRESS));

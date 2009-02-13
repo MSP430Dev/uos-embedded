@@ -1,7 +1,6 @@
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "stream/stream.h"
-#include "timer/timer.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <timer/timer.h>
 #include "lcd.h"
 
 /*
@@ -313,6 +312,16 @@ static void lcd_scroll (lcd_t *line)
 	}
 	lcd_write_data (' ');
 	--line->col;
+}
+
+/*
+ * Move cursor to given position.
+ */
+void lcd_move (lcd_t *line, int col)
+{
+	if (col < 0 || col >= NCOL)
+		return;
+	line->col = col;
 }
 
 /*

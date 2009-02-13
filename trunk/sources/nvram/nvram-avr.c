@@ -1,13 +1,15 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <nvram/nvram.h>
-/*#include <kernel/arch.h>*/
 
 #ifdef __AVR_ATmega2561__
-#     define NVRAM_IRQ		29	/* EEPROM write complete */
-#else
-#     define NVRAM_IRQ		21	/* EEPROM write complete */
-#endif  /*__AVR_ATmega2561__*/
+#	define NVRAM_IRQ		29	/* EEPROM write complete */
+#endif
+#if defined (__AVR_ATmega128__) || \
+    defined (__AVR_ATmega103__) ||\
+    defined (__AVR_ATmega168__)
+#	define NVRAM_IRQ		21	/* EEPROM write complete */
+#endif
 
 static lock_t lock;
 
@@ -26,10 +28,14 @@ eeprom_write_byte (unsigned addr, unsigned char c)
 
 	EEAR = addr;
 	EEDR = c;
-	asm volatile ("cli");
-	setb (EEMWE, EECR);
-	setb (EEWE, EECR);
-	asm volatile ("sei");
+
+	asm volatile (
+	       "cli \n"
+	"	sbi %0, %1 \n"
+	"	sbi %0, %2 \n"
+	"	sei"
+	 : /* no outputs */
+	 : "I" (_SFR_IO_ADDR (EECR)), "I" (EEMWE), "I" (EEWE));
 
 	lock_release (&lock);
 }
@@ -57,7 +63,7 @@ eeprom_read_byte (unsigned addr)
 }
 
 void
-eeprom_init (nvram_t *v)
+eeprom_init ()
 {
 	/* Associate the interrupt. */
 	lock_take_irq (&lock, NVRAM_IRQ, 0, 0);
