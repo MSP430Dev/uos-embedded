@@ -28,9 +28,10 @@
 
 || *Тест*                                                                                                               || *Описание*                                                                       || *Память программ*|| *Память данных* ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.          || 350 байт (2%)    || 2 байта (0.2%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           || 5782 байта (35%) || 483 байта (47%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. || 8652 байта (53%) || 800 байт (78%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           || 5770 байта (35%) || 483 байта (47%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. || 8640 байта (53%) || 800 байт (78%)  ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       || 6092 байта (37%) || 916 байт (89%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila/test_nvram.c test_nvram.c]   || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.       || 9686 байт (59%) || 939 байт (92%)  ||
 
 = Сигналы =
 Привязка сигналов платы к ножкам процессора:
