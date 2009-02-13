@@ -34,12 +34,15 @@
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128 examples/avr-mt-128] находятся примеры сборки uOS для Olimex MT-128.
 
-|| *Тест*                                                                                                    || *Описание*                                                                       || *Память программ*|| *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.          ||  байт (%)    ||  байта (%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           ||  байта (%) ||  байта (%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. ||  байта (%) ||  байт (%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       ||  байта (%) ||  байт (%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-ье-128/test_nvram.c test_nvram.c]   || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.       ||  байт (%) ||  байт (%)  ||
+|| *Тест*                                                                                                        || *Описание*                                                                                       || *Память программ* || *Память данных* ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                          || 404 байт (0.3%)   || 2 байта         ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                           || 5974 байта (4.6%) || 555 байт (13%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c]     || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера.                 || 8856 байта (6.8%) || 872 байт (21%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                       || 6624 байта (5.1%) || 988 байт (24%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_nvram.c test_nvram.c]     || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.                        || 10192 байт (7.8%) || 704 байт (17%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Две задачи: программа пользователя и драйвер таймера.                      || 10566 байт (8.1%) || 998 байт (24%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Три задачи: программа пользователя, драйверы таймера и UART.|| 11924 байт (9.1%) || 1369 байт (33%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Шесть задач: пять философов и драйвер таймера.        || 10896 байт (8.3%) || 2289 байт (56%) ||
 
 = Сигналы =
 Привязка сигналов платы к ножкам процессора:
