@@ -39,6 +39,7 @@
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                           ||  байта (%) ||  байта (%) ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера. ||  байта (%) ||  байт (%)  ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.       ||  байта (%) ||  байт (%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-ье-128/test_nvram.c test_nvram.c]   || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.       ||  байт (%) ||  байт (%)  ||
 
 = Сигналы =
 Привязка сигналов платы к ножкам процессора:
