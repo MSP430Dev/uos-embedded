@@ -14,7 +14,6 @@ MIPS32. Затем необходимо реализовать работу с �
 {{{
 mkdir uos/examples/mips32-mc24
 cd uos/examples/mips32-mc24
-cp ../arm-s3c4530/Makefile .
 cp ../arm-s3c4530/target.cfg .
 cp ../arm-s3c4530/ldscript.x .
 }}}
@@ -109,7 +108,7 @@ cp ../arm/types.h ../arm/stdlib.h ../arm/string.h .
 выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`. Заключаем их в #ifdef ELVEES_MC24 ... #endif.
 
 === 9. Первый тест: отладочная выдача на консоль ===
-Создаём каталог uos/examples/mips32-mc24, а в нём файлы test_debug.c:
+В каталоге uos/examples/mips32-mc24 создаём файлы test_debug.c:
 {{{
 #include <runtime/lib.h>
 
