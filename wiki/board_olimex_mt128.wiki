@@ -41,7 +41,7 @@
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                       || 6624 байта (5.1%) || 988 байт (24%)  ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_nvram.c test_nvram.c]     || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.                        || 10192 байт (7.8%) || 704 байт (17%)  ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Две задачи: программа пользователя и драйвер таймера.                      || 10566 байт (8.1%) || 998 байт (24%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Три задачи: программа пользователя, драйверы таймера и UART.|| 11924 байт (9.1%) || 1369 байт (33%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Две задачи: программа пользователя и драйвер UART.|| 11576 байт (8.8%) || 1052 байт (26%) ||
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Шесть задач: пять философов и драйвер таймера.        || 10896 байт (8.3%) || 2289 байт (56%) ||
 
 = Сигналы =
