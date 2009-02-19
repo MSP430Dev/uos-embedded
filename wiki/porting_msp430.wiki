@@ -35,13 +35,6 @@ cp ../arm-s3c4530/target.cfg .
 Создаём каталог uos/sources/runtime/msp430. Помещаем в него файлы io.h, iomacros.h, msp430x14x1.h, msp430x14x.h, msp430x15x.h, msp430x16x.h, msp430x33x.h, msp430x43x.h, msp430x44x.h
 из проекта [http://mspgcc.cvs.sourceforge.net/viewvc/mspgcc/msp430-libc/include/ MSPGCC] с описанием регистров платформы MSP430.
 
-(TODO) В файл iomacros.h также помещаем определения inline-функций для доступа к аппаратным регистрам:
-  * `int msp430_get_stack_pointer ()` - чтение значения регистра стека SP
-  * `void msp430_set_stack_pointer (int)` - установка значения регистра стека SP
-  * `void msp430_intr_disable (int *)` - сохранение статуса и запрет прерываний
-  * `void msp430_intr_restore (int)` - восстановление статуса прерываний
-  * `void msp430_intr_enable ()` - разрешение прерываний
-
 === 3. Создаём стартовый файл ===
 На основе [http://mspgcc.cvs.sourceforge.net/viewvc/mspgcc/msp430-libc/src/gcrt0.S gcrt0.S из проекта MSPGCC] создаём стартовый файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/msp430/startup.S startup.S].
 
@@ -124,6 +117,13 @@ include $(OS)/sources/rules.mak
 
 === 9. Создаём обработчики исключений ===
 В файл init.c добавляем функции `_pagefault_handler_(context)` и `_exception_handler_(context)`. Они должны печатать на отладочную консоль значения регистров и выполнять аппаратный сброс системы.
+
+(TODO) В файл iomacros.h также помещаем определения inline-функций для доступа к аппаратным регистрам:
+  * `int msp430_get_stack_pointer ()` - чтение значения регистра стека SP
+  * `void msp430_set_stack_pointer (int)` - установка значения регистра стека SP
+  * `void msp430_intr_disable (int *)` - сохранение статуса и запрет прерываний
+  * `void msp430_intr_restore (int)` - восстановление статуса прерываний
+  * `void msp430_intr_enable ()` - разрешение прерываний
 
 === 10. Перенос ядра ===
 Создаём каталог uos/sources/kernel/msp430 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/msp430/machdep.h machdep.h] с описанием машинно-зависимых функций и макросов для платформы MSP430:
