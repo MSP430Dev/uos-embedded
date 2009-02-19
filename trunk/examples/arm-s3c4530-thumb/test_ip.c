@@ -23,8 +23,8 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t ip;
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
-char arp_data [sizeof(arp_t) + 10 * sizeof(arp_entry_t)];
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 arp_t *arp;
 eth_t *eth;
 route_t route;
@@ -82,7 +82,7 @@ void uos_init (void)
 	eth = mem_alloc (&pool, sizeof (eth_t));
 	if (! eth) {
 		debug_printf ("No memory for eth_t\n");
-		abort ();
+		uos_halt (1);
 	}
 
 	arp = arp_init (arp_data, sizeof(arp_data), &ip);

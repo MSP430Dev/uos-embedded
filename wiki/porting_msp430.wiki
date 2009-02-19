@@ -1,77 +1,58 @@
-#summary Success story: porting uOS to Elvees Multicore MIPS32 architecture
+#summary Success story: porting uOS to MSP430 architecture
 
-= Микроконтроллеры Элвис Мультикор =
-Описана последовательность работ по переносу системы uOS на архитектуру [http://www.mips.com/products/processors/architectures/mips32/ MIPS32],
-применительно к микроконтроллеру [http://multicore.ru/index.php?id=47 MC-24] семейства Элвис Мультикор.
+= Микроконтроллеры MSP430 =
+Описана последовательность работ по переносу системы uOS на архитектуру [http://focus.ti.com/paramsearch/docs/parametricsearch.tsp?familyId=342&sectionId=95&tabId=1200&family=mcu MSP430],
+применительно к микроконтроллеру [http://focus.ti.com/docs/prod/folders/print/msp430f149.html MSP430F149].
 
-Скалярное ядро процессоров Элвис Мультикор имеет архитектуру MIPS32, новую для uOS.
+MSP430 представляет собой 16-битную архитектуру, новую для uOS.
 В первую очередь требуется реализация машинно-зависимой части микроядра для архитектуры
-MIPS32. Затем необходимо реализовать работу с периферийными устройствами:
+MSP430. Затем необходимо реализовать работу с периферийными устройствами:
 инициализацию, таймер, UART и т.д.
 
+Полезные ссылки:
+  * [http://ru.wikipedia.org/wiki/MSP430 Статья в Википедии]
+  * [http://www.gaw.ru/html.cgi/txt/doc/micros/msp430/index.htm Русскоязычная документация]
+
 === 1. Создаём каталог целевой платформы ===
-Создаем каталог uos/examples/mips32-mc24. Помещаем туда файлы, необходимые для компиляции.
+Создаем каталог uos/examples/msp430-f149. Помещаем туда файлы, необходимые для компиляции.
 {{{
-mkdir uos/examples/mips32-mc24
-cd uos/examples/mips32-mc24
+mkdir uos/examples/msp430-f149
+cd uos/examples/msp430-f149
 cp ../arm-s3c4530/target.cfg .
-cp ../arm-s3c4530/ldscript.x .
 }}}
 
-В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/target.cfg target.cfg] изменяем значения переменных:
-  * ARCH - mips32.
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/target.cfg target.cfg] изменяем значения переменных:
+  * ARCH - msp430.
   * MODULES - необходимо убрать s3c4530.
-  * CFLAGS - задаем тип платформы -DMIPS32 и модель конкретного микроконтроллера -DELVEES_MC24.
-  * BINDIR - устанавливаем правильный путь к компилятору, в моём случае это /usr/local/mipsel432/bin.
-  * CC, AR и прочие - устанавливаем имена компонентов компилятора: mipsel-elf32-gcc и т.п.
-  * STARTUP - стартовый код разместим в файле startup-mc24.S.
+  * CFLAGS - задаем тип платформы -DMSP430.
+  * BINDIR - устанавливаем правильный путь к компилятору, в моём случае это /usr/local/msp323/bin.
+  * CC, AR и прочие - устанавливаем имена компонентов компилятора: msp430-gcc и т.п.
+  * STARTUP - стартовый код разместим в файле startup.S.
 
-В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/ldscript.x ldscript.x] заменяем везде arm на mips,
-а также в блоке MEMORY изменяем адреса и длины сегментов памяти:
-  * Для text устанавливаем ORIGIN = 0xbfc00000, LENGTH = 2M
-  * Для data устанавливаем ORIGIN = 0xb8000000, LENGTH = 32K
-
-В сегменте .data после __data_start добавляем установку адреса для регистра $gp.
-Поскольку в контроллере МС-24 имеется всего 32 килобайта внутренней памяти,
-смещение на 0x8000 не требуется:
-{{{
-_gp = .;
-}}}
+В качестве скрипта линкера используем /usr/local/msp323/msp430/lib/ldscripts/msp430x147.x.
 
 === 2. Создаём файл описания специальных регистров процессора ===
 
-Создаём каталог uos/sources/runtime/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/io.h io.h] с описанием регистров платформы MIPS32. Для конкретного процессора МС-24 делаем отдельный файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/io-mc24.h io-mc24.h]. Файл io.h имеет вид:
-{{{
-#ifdef ELVEES_MC24
-#   include <runtime/mips32/io-mc24.h>
-#endif
-}}}
-В дальнейшем сюда можно добавлять варианты для других процессоров с архитектурой MIPS32.
+Создаём каталог uos/sources/runtime/msp430. Помещаем в него файлы io.h, iomacros.h, msp430x14x1.h, msp430x14x.h, msp430x15x.h, msp430x16x.h, msp430x33x.h, msp430x43x.h, msp430x44x.h
+из проекта [http://mspgcc.cvs.sourceforge.net/viewvc/mspgcc/msp430-libc/include/ MSPGCC] с описанием регистров платформы MSP430.
 
-В файл io.h также помещаем определения inline-функций для доступа к аппаратным регистрам:
-  * `int mips32_get_stack_pointer ()` - чтение значения регистра стека SP
-  * `void mips32_set_stack_pointer (int)` - установка значения регистра стека SP
-  * `int mips32_read_c0_register (int)` - чтение регистров сопроцессора C0
-  * `void mips32_write_c0_register (int, int)` - запись регистров сопроцессора C0
-  * `void mips32_intr_disable (int *)` - сохранение статуса и запрет прерываний
-  * `void mips32_intr_restore (int)` - восстановление статуса прерываний
-  * `void mips32_intr_enable ()` - разрешение прерываний
+(TODO) В файл iomacros.h также помещаем определения inline-функций для доступа к аппаратным регистрам:
+  * `int msp430_get_stack_pointer ()` - чтение значения регистра стека SP
+  * `void msp430_set_stack_pointer (int)` - установка значения регистра стека SP
+  * `void msp430_intr_disable (int *)` - сохранение статуса и запрет прерываний
+  * `void msp430_intr_restore (int)` - восстановление статуса прерываний
+  * `void msp430_intr_enable ()` - разрешение прерываний
 
 === 3. Проектируем структуру контекста ===
 
-Определяем количество и порядок регистров, сохраняемых в стеке при входе в прерывание или исключение. [arch_mips_notes Документируем] на будущее.
+Определяем количество и порядок регистров, сохраняемых в стеке при входе в прерывание или исключение. [arch_msp430_notes Документируем] на будущее.
 
 === 4. Создаём стартовый файл ===
 
-Создаём стартовый файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/startup-mc24.S startup-mc24.S]. Стартовый код размещаем в секции .init, которая будет находиться по адресу 0xbfc00000. Вектора прерываний:
-  * bfc00000 - аппаратный сброс, немаскируемое прерывание. Вызов Си-функции `_init_()`.
-  * bfc00200 - обращение к отсутствующей странице. Сохранение регистров в стеке и вызов Си-функции `_pagefault_handler_(context)`.
-  * bfc00380 - исключение. Сохранение регистров в стеке и вызов Си-функции `_exception_handler_(context)`.
-  * bfc00400 - прерывание. Сохранение регистров в стеке и вызов Си-функции `_interrupt_handler_(context)`.
-Здесь `int *context` указывает на массив из 32-х сохранённых регистров.
+Создаём стартовый файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/msp430/startup.S startup-mc24.S].
 
 === 5. Делаем функцию начальной инициализации ===
-Создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/init.c uos/sources/runtime/mips32/init.c], содержащий функцию `_init_()`. Она должна:
+Создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/msp430/init.c uos/sources/runtime/msp430/init.c], содержащий функцию `_init_()`. Она должна:
   * устанавливать начальное состояние регистров микроконтроллера;
   * копировать инициализированные данные из памяти Flash в ОЗУ;
   * обнулять сегмент BSS;
@@ -82,33 +63,34 @@ _gp = .;
 В файл init.c добавляем функции `_pagefault_handler_(context)` и `_exception_handler_(context)`. Они должны печатать на отладочную консоль значения регистров и выполнять аппаратный сброс системы.
 
 === 7. Создаем архитектурозависимые файлы стандартной библиотеки ===
-Создаём файлы [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/types.h sources/runtime/mips32/types.h], [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/stdlib.h sources/runtime/mips32/stdlib.h] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/string.h sources/runtime/mips32/string.h]:
+Создаём файлы [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/msp430/types.h sources/runtime/msp430/types.h], [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/msp430/stdlib.h sources/runtime/msp430/stdlib.h] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/msp430/string.h sources/runtime/msp430/string.h]:
 {{{
-cd uos/sources/runtime/mips32/
+cd uos/sources/runtime/msp430/
 cp ../arm/types.h ../arm/stdlib.h ../arm/string.h .
 }}}
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/arch.h sources/runtime/arch.h] в соответствующее место добавляем фрагмент:
 {{{
-#elif defined (MIPS32)
+#elif defined (MSP430)
 #       include <stdarg.h>
-#       include <runtime/mips32/types.h>
-#       include <runtime/mips32/string.h>
-#       include <runtime/mips32/stdlib.h>
-#       include <runtime/mips32/io.h>
+#       include <runtime/msp430/types.h>
+#       include <runtime/msp430/string.h>
+#       include <runtime/msp430/stdlib.h>
+#       include <runtime/msp430/io.h>
 #       include <runtime/ctype.h>
 #       define __BYTE_ORDER __LITTLE_ENDIAN
 #       define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
 }}}
 Теперь можно проверить, что файл init.c правильно компилируется:
 {{{
-/usr/local/mipsel432/bin/mipsel-elf32-gcc -c -fno-builtin -DMIPS32 -DELVEES_MC24 -I../.. init.c
+/usr/local/msp323/bin/msp430-gcc -c -fno-builtin -DMSP430 -I../.. init.c
 }}}
+
 === 8. Делаем функции отладочной выдачи на консоль ===
-В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/mips32/debug.c uos/sources/runtime/mips32/debug.c] создаём функции отладочной
-выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`. Заключаем их в #ifdef ELVEES_MC24 ... #endif.
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/msp430/debug.c uos/sources/runtime/msp430/debug.c] создаём функции отладочной
+выдачи на консоль: `debug_putchar()`, `debug_getchar()`, `debug_peekchar()`.
 
 === 9. Первый тест: отладочная выдача на консоль ===
-В каталоге uos/examples/mips32-mc24 создаём файлы test_debug.c:
+В каталоге uos/examples/msp430-f149 создаём файлы test_debug.c:
 {{{
 #include <runtime/lib.h>
 
@@ -127,7 +109,7 @@ void _interrupt_handler_ ()
 и Makefile:
 {{{
 OS              = $(shell cd ../..; pwd)
-TARGET          = $(OS)/examples/mips32-mc24
+TARGET          = $(OS)/examples/msp430-f149
 include $(TARGET)/target.cfg
 
 TESTS           = test_debug.sre
@@ -147,7 +129,7 @@ include $(OS)/sources/rules.mak
 Запускаем "make". В результате получаем файл `test_debug.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World" (скорость 115200, 8 бит, без чётности).
 
 === 10. Перенос ядра ===
-Создаём каталог uos/sources/kernel/mips32 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.h machdep.h] с описанием машинно-зависимых функций и макросов для платформы MIPS32:
+Создаём каталог uos/sources/kernel/msp430 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/msp430/machdep.h machdep.h] с описанием машинно-зависимых функций и макросов для платформы MSP430:
   * `ARCH_INTERRUPTS` - количество аппаратный прерываний, 40 для MC-24
   * `arch_state_t` - тип для хранения маски аппаратных прерываний, `int` для MIPS-32
   * `arch_stack_t` - тип для хранения указателя стека, `void *` для MIPS-32
@@ -159,14 +141,14 @@ include $(OS)/sources/rules.mak
   * `arch_intr_unbind ()` - inline-функция, пустая для MIPS-32
   * `arch_idle ()` - inline-функция, переводящая процессор в режим ожидания
 
-В файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/mips32/machdep.c machdep.c] помещаем код машинно-зависимых функций:
+В файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/msp430/machdep.c machdep.c] помещаем код машинно-зависимых функций:
   * `arch_task_switch ()` - функция, переключающая выполнение на другую задачу
   * `_interrupt_handler_ ()` - обработчик аппаратного прерывания, вызываемый из startup-кода
   * `arch_intr_allow ()` - функция, открывающая маску указанного аппаратного прерывания
   * `arch_build_stack_frame ()` - функция, создающая фрейм в стеке для старта новой задачи
 
 === 11. Второй тест: формирование задач ===
-В каталоге uos/examples/mips32-mc24 создаём файл test_task.c:
+В каталоге uos/examples/msp430-f149 создаём файл test_task.c:
 {{{
 #include <runtime/lib.h>
 #include "kernel/uos.h"
@@ -196,7 +178,7 @@ void uos_init (void)
 === 12. Драйвер таймера ===
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.h sources/timer/timer.h] в соответствующее место добавляем определение размера стека задачи таймера:
 {{{
-#if MIPS32
+#if MSP430
 #   define TIMER_STACKSZ 0x400
 }}}
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c] добавляем объявление номера прерывания таймера:
@@ -222,7 +204,7 @@ void uos_init (void)
 }}}
 
 === 13. Третий тест: таймер ===
-В каталоге uos/examples/mips32-mc24 создаём файл test_timer.c:
+В каталоге uos/examples/msp430-f149 создаём файл test_timer.c:
 {{{
 #include <runtime/lib.h>
 #include "kernel/uos.h"
@@ -253,12 +235,12 @@ void uos_init (void)
 === 14. Драйвер асинхронного порта ===
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.h sources/uart/uart.h] в соответствующее место добавляем определение размера стека задачи асинхронного порта:
 {{{
-#if MIPS32
+#if MSP430
 #   define UART_STACKSZ 0x400
 }}}
 Аналогично в файле протокола SLIP [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.h sources/uart/slip.h]:
 {{{
-#if MIPS32
+#if MSP430
 #   define SLIP_STACKSZ 0x400
 }}}
 В начале файлов [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.c sources/uart/uart.c] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.c sources/uart/slip.c] добавляем включение файла макросов для MC-24:
@@ -307,7 +289,7 @@ static unsigned __uart_lsr;
 }}}
 
 === 15. Четвёртый тест: асинхронный порт ===
-В каталоге uos/examples/mips32-mc24 создаём файл test_uart.c:
+В каталоге uos/examples/msp430-f149 создаём файл test_uart.c:
 {{{
 #include <runtime/lib.h>
 #include "kernel/uos.h"
@@ -336,7 +318,7 @@ void uos_init (void)
 
 === 16. Комплексный тест: пять обедающих философов ===
 Проведём комплексную проверку микроядра, драйвера таймера и драйвера асинхронного порта.
-В каталоге uos/examples/mips32-mc24 создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/philosophers.c examples/mips32-mc24/philosophers.c]. В нем помещаем код решения классической задачи [http://en.wikipedia.org/wiki/Dining_philosophers_problem пяти обедающих философов].
+В каталоге uos/examples/msp430-f149 создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/philosophers.c examples/msp430-f149/philosophers.c]. В нем помещаем код решения классической задачи [http://en.wikipedia.org/wiki/Dining_philosophers_problem пяти обедающих философов].
 
 В файле Makefile устанавливаем `TESTS = test_philosophers.sre`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоли будут отображаться пять философов и изменение их состояния во времени.

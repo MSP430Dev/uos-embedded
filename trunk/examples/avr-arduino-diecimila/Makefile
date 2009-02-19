@@ -3,8 +3,8 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 CFLAGS		+= -DKHZ=16000
-TESTS		= test_debug.srec test_task.srec test_uart.srec \
-		  test_timer.srec test_nvram.srec
+TESTS		= test_debug.srec test_task.srec test_timer.srec \
+		  test_uart.srec test_nvram.srec
 OUTS		= $(TESTS:%.srec=%.out)
 
 # Using avrdude programmer with STK200 LPT adapter.

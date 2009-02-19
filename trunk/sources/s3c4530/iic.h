@@ -13,11 +13,11 @@
 
 typedef struct _s3c4530a_iic_t {
 	MIIC_T;
-	u_int32_t iicps;
+	uint32_t iicps;
 } s3c4530a_iic_t;
 
 #define SIZE_S3C4530A_IIC_T sizeof (s3c4530a_iic_t)
 
-miic_t* s3c4530a_iic_init (void* buf, u_int32_t mclk, u_int32_t rate);
+miic_t* s3c4530a_iic_init (void* buf, uint32_t mclk, uint32_t rate);
 
 #endif /* __S3C4530_IIC_H_ */

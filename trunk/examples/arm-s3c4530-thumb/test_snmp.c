@@ -21,13 +21,13 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t *ip;
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 slip_t slip;
 route_t route;
 route_t default_route;
 snmp_t snmp;
 udp_socket_t sock;
-char task [0x180];
+ARRAY (task, 0x180);
 
 /*
  * Declare get/getnext/set functions.
@@ -49,7 +49,7 @@ ICMP_VARIABLE_LIST
 UDP_VARIABLE_LIST
 SNMP_VARIABLE_LIST
 
-const snmp_var_t snmp_tab [] __flash__ = {
+const snmp_var_t snmp_tab [] = {
 #include <snmp/snmp-vardef.h>
 	SYSTEM_VARIABLE_LIST
 	IF_VARIABLE_LIST

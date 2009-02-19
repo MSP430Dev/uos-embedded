@@ -83,8 +83,8 @@ arp_t *arp;
 route_t route;
 ip_t *ip;
 
-char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
-char arp_data [sizeof(arp_t) + 10 * sizeof(arp_entry_t)];
+ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 
 int reset_counter;			/* Device reset counter */
 
@@ -774,7 +774,7 @@ void main_telnet (void *data)
 	lsock = tcp_listen (ip, 0, serv_port);
 	if (! lsock) {
 		debug_printf ("Error on listen, aborted\n");
-		abort();
+		uos_halt (1);
 	}
 	for (;;) {
 		sock = tcp_accept (lsock);
@@ -810,7 +810,7 @@ void uos_init (void)
 	eth = mem_alloc (&pool, sizeof (eth_t));
 	if (! eth) {
 		debug_printf ("No memory for eth_t\n");
-		abort ();
+		uos_halt (1);
 	}
 
 	/*
@@ -822,7 +822,7 @@ void uos_init (void)
 	ip = mem_alloc (&pool, sizeof (*ip));
 	if (! ip) {
 		debug_printf ("No memory for ip_t\n");
-		abort ();
+		uos_halt (1);
 	}
 	arp = arp_init (arp_data, sizeof(arp_data), ip);
 	ip_init (ip, &pool, PRIO_IP, &timer, arp, g);
@@ -838,7 +838,7 @@ void uos_init (void)
 	hdlc = mem_alloc (&pool, sizeof (hdlc_t));
 	if (! hdlc) {
 		debug_printf ("No memory for hdlc_t\n");
-		abort ();
+		uos_halt (1);
 	}
 	hdlc_init (hdlc, 0, "hdlc0", PRIO_HDLC_RX, PRIO_HDLC_TX,
 		&pool, KHZ * 1000);

@@ -28,7 +28,7 @@ static small_uint_t inline iic_wait (lock_t* l)
 	return iiccon;
 }
 
-static void inline iic_reset (u_int32_t ps)
+static void inline iic_reset (uint32_t ps)
 {
 	ARM_IICCON = ARM_IICCON_RESET;
 	ARM_IICPS = ps;
@@ -42,7 +42,7 @@ static bool_t
 iic_transfer (miic_t *c, small_uint_t sla, void *tb, small_uint_t ts,
 	void *rb, small_uint_t rs)
 {
-	u_int8_t* ptr;
+	uint8_t* ptr;
 	small_uint_t iiccon;
 	s3c4530a_iic_t* s = (s3c4530a_iic_t*) c;
 	bool_t need_write = tb && ts;
@@ -68,7 +68,7 @@ iic_transfer (miic_t *c, small_uint_t sla, void *tb, small_uint_t ts,
 		if (iiccon & ARM_IICCON_LRB)
 			goto not_acked;
 
-		ptr = (u_int8_t*) tb;
+		ptr = (uint8_t*) tb;
 		while (ts--) {
 			/* debug_printf ("IIC: out data (0x%02x)\n", *ptr); */
 			ARM_IICBUF = *ptr++;
@@ -86,7 +86,7 @@ iic_transfer (miic_t *c, small_uint_t sla, void *tb, small_uint_t ts,
 	}
 
 	if (need_read) {
-		ptr = (u_int8_t*) rb;
+		ptr = (uint8_t*) rb;
 
 		/* out SLA with READ bit set */
 		/* debug_printf ("IIC: out SLA (0x%02x)\n", sla | 1); */
@@ -127,7 +127,7 @@ not_acked:
  * Init S3C4530A IIC controller. Caller must provide buffer
  * for s3c4530a_iic_t structure (pointed buf parameter).
  */
-miic_t* s3c4530a_iic_init (void* buf, u_int32_t mclk, u_int32_t rate)
+miic_t* s3c4530a_iic_init (void* buf, uint32_t mclk, uint32_t rate)
 {
 	s3c4530a_iic_t* s = (s3c4530a_iic_t*) buf;
 	assert (buf && rate && mclk > rate);

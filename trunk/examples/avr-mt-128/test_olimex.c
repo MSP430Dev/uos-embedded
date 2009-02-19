@@ -3,12 +3,10 @@
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
-#include <timer/timer.h>
 #include <uart/uart.h>
 #include "lcd.h"
 #include "avr-mt-128.h"
 
-timer_t timer;
 uart_t uart;
 lcd_t line1, line2;
 ARRAY (task, 280);
@@ -61,7 +59,6 @@ void poll_buttons (void *data)
 		}
 
 		/* Right button: generate 4 kHz. */
-		asm volatile ("cli");
 		while (button_right_pressed ()) {
 			buzzer_control (1);
 			udelay (125);
@@ -69,7 +66,6 @@ void poll_buttons (void *data)
 			udelay (125);
 		}
 		buzzer_control (0);
-		asm volatile ("sei");
 
 		/* Down button: send message to UART. */
 		if (! button_down_pressed ())
@@ -84,9 +80,8 @@ void poll_buttons (void *data)
 
 void uos_init (void)
 {
-	timer_init (&timer, 100, KHZ, 10);
 	uart_init (&uart, 1, 90, KHZ, 38400);
-	lcd_init (&line1, &line2, &timer);
+	lcd_init (&line1, &line2, 0);
 	buzzer_init ();
 	relay_init ();
 	task_create (poll_buttons, 0, "poll", 1, task, sizeof (task));
