@@ -31,8 +31,6 @@
 
 #if !defined(__ASSEMBLER__)
 
-#include <sys/inttypes.h>
-
 #ifndef BV
 	#define BV(x) (1 << (x))
 #endif
@@ -56,9 +54,9 @@ void x (void)
 #define CRITICAL __attribute__ ((critical))
 #define critical __attribute__ ((critical))
 
-#define noinit	__attribute__ ((section(".noinit"))) 
-#define NOINIT	__attribute__ ((section(".noinit"))) 
-#define NoInit	__attribute__ ((section(".noinit"))) 
+#define noinit	__attribute__ ((section(".noinit")))
+#define NOINIT	__attribute__ ((section(".noinit")))
+#define NoInit	__attribute__ ((section(".noinit")))
 
 /* Reentrant */
 #define reentrant 	__attribute__ ((reentrant))
@@ -71,44 +69,6 @@ void x (void)
 
 /* Reserve RAM defenition */
 #define RESERVE_RAM(x)	__attribute__ ((reserve(x)))
-
-/*
- *  Status register. Cannot do
- *	register SR asm("r2"); cause it
- *  is not general register
- */
-
-#define WRITE_SR(x) \
-	__asm__ __volatile__("mov	%0, r2" : : "r" ((uint16_t) x))
-
-#define READ_SR \
-({ \
-	uint16_t __x; \
-	__asm__ __volatile__( \
-		"mov	r2, %0" \
-		: "=r" ((uint16_t) __x) \
-		:); \
-	__x; \
-})
-
-
-/*
- *  Can do assembler assignement with r1
- *  but wrote next two for consistency
- */
-
-#define WRITE_SP(x) \
-	__asm__ __volatile__("mov %0, r1" : : "r" ((uint16_t) x))
-
-#define READ_SP \
-({ \
-	uint16_t __x; \
-	__asm__ __volatile__( \
-		"mov	r1, %0" \
-		: "=r" ((uint16_t) __x) \
-		:); \
-	__x; \
-})
 
 #define _BIS_SR(x)              __asm__ __volatile__("bis	%0, r2" : : "ir" ((uint16_t) x))
 #define _BIC_SR(x)              __asm__ __volatile__("bic	%0, r2" : : "ir" ((uint16_t) x))
@@ -188,10 +148,86 @@ do \
 
 #endif
 
+/*
+ * Write status register.
+ * Cannot do register SR asm("r2"); cause it is not general register.
+ */
+#define msp430_write_sr(value)				\
+do {							\
+	asm volatile (					\
+	"mov	%0, r2"					\
+	: : "r" ((unsigned int) (value)));		\
+} while (0)
+
+/*
+ * Read status register.
+ */
+#define msp430_read_sr()				\
+({ int __value;						\
+	asm volatile (					\
+	"mov	r2, %0"					\
+	: "=r" (__value));				\
+	__value;					\
+})
+
+/*
+ * Disable the hardware interrupts.
+ * saving the interrupt state into the supplied variable.
+ */
+static void inline __attribute__ ((always_inline))
+msp430_intr_disable (int *x)
+{
+	*x = msp430_read_sr ();
+	_BIC_SR (0x0008); /* GIE */
+}
+
+/*
+ * Restore the hardware interrupt mode using the saved interrupt state.
+ */
+static void inline __attribute__ ((always_inline))
+msp430_intr_restore (int x)
+{
+	msp430_write_sr (x);
+}
+
+/*
+ * Enable hardware interrupts.
+ */
+static void inline __attribute__ ((always_inline))
+msp430_intr_enable ()
+{
+	_BIS_SR (0x0008); /* GIE */
+}
+
+/*
+ * Set value of stack pointer register.
+ */
+static void inline __attribute__ ((always_inline))
+msp430_set_stack_pointer (void *x)
+{
+	asm volatile (
+	"mov	%0, r1"
+	: : "r" (x));
+}
+
+/*
+ * Get value of stack pointer register.
+ */
+static inline __attribute__ ((always_inline))
+void *msp430_get_stack_pointer ()
+{
+	void *x;
+
+	asm volatile (
+	"mov	r1, %0"
+	: "=r" (x));
+	return x;
+}
+
 #ifdef __cplusplus
     #define sfrb_(x,x_) \
 	    extern "C" volatile unsigned char x asm(#x_)
-    
+
     #define sfrw_(x,x_) \
 	    extern "C" volatile unsigned int x asm(#x_)
 
@@ -202,7 +238,7 @@ do \
 #else //__cplusplus
     #define sfrb_(x,x_) \
 	    volatile unsigned char x asm(#x_)
-    
+
     #define sfrw_(x,x_) \
 	    volatile unsigned int x asm(#x_)
 
@@ -245,7 +281,7 @@ do \
 		: "=m" ((uint8_t) *__x) \
 		:  "ir" ((uint8_t) val)); \
 })
-		
+
 #define READ_PERIPHERAL_REGISTER(addr) \
 ({ \
 	volatile uint8_t *__x = (uint8_t *) addr; \

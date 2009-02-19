@@ -12,7 +12,7 @@
  * $Id: msp430x14x.h,v 1.9 2005/10/18 13:29:21 coppice Exp $
  */
 
-#include <iomacros.h>
+#include <runtime/msp430/iomacros.h>
 
 #define __MSP430_HAS_WDT__
 #define __MSP430_HAS_MPY__
@@ -31,17 +31,17 @@
 #define __MSP430_HAS_COMPA__
 #define __MSP430_HAS_ADC12__
 
-#include <msp430/mpy.h>
-#include <msp430/gpio.h>
-#include <msp430/usart.h>
-#include <msp430/timera.h>
-#include <msp430/timerb.h>
-#include <msp430/basic_clock.h>
-#include <msp430/flash.h>
-#include <msp430/compa.h>
-#include <msp430/adc12.h>
+#include <runtime/msp430/mpy.h>
+#include <runtime/msp430/gpio.h>
+#include <runtime/msp430/usart.h>
+#include <runtime/msp430/timera.h>
+#include <runtime/msp430/timerb.h>
+#include <runtime/msp430/basic_clock.h>
+#include <runtime/msp430/flash.h>
+#include <runtime/msp430/compa.h>
+#include <runtime/msp430/adc12.h>
 
-#include <msp430/common.h>
+#include <runtime/msp430/common.h>
 
 #define IE1_                0x0000  /* Interrupt Enable 1 */
 sfrb(IE1,IE1_);
@@ -87,7 +87,7 @@ sfrb(ME2,ME2_);
 #define USART1RX_VECTOR     6  /* 0xFFE6 USART 1 Receive */
 #define PORT1_VECTOR        8  /* 0xFFE8 Port 1 */
 #define TIMERA1_VECTOR      10 /* 0xFFEA Timer A CC1-2, TA */
-#define TIMERA0_VECTOR      12 /* 0xFFEC Timer A CC0 */   
+#define TIMERA0_VECTOR      12 /* 0xFFEC Timer A CC0 */
 #define ADC12_VECTOR        14 /* 0xFFEE ADC */
 #define USART0TX_VECTOR     16 /* 0xFFF0 USART 0 Transmit */
 #define USART0RX_VECTOR     18 /* 0xFFF2 USART 0 Receive */

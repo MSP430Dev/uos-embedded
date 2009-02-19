@@ -15,8 +15,7 @@
  * $Id: msp430x43x.h,v 1.10 2008/10/09 15:00:13 sb-sf Exp $
  */
 
-#include <iomacros.h>
-
+#include <runtime/msp430/iomacros.h>
 
 #define __MSP430_HAS_WDT__
 #define __MSP430_HAS_PORT1__
@@ -39,21 +38,21 @@
 #define __msp430_have_lcd_16_20
 #define LCD_BASE 0x90
 
-#include <msp430/basic_timer.h>
-#include <msp430/system_clock.h>
-#include <msp430/svs.h>
-#include <msp430/lcd.h>
-#include <msp430/flash.h>
-#include <msp430/timera.h>
-#include <msp430/timerb.h>
-#include <msp430/usart.h>
+#include <runtime/msp430/basic_timer.h>
+#include <runtime/msp430/system_clock.h>
+#include <runtime/msp430/svs.h>
+#include <runtime/msp430/lcd.h>
+#include <runtime/msp430/flash.h>
+#include <runtime/msp430/timera.h>
+#include <runtime/msp430/timerb.h>
+#include <runtime/msp430/usart.h>
 #if !defined(__MSP430_4351__) && !defined(__MSP430_4361__) && !defined(__MSP430_4371__)
-#include <msp430/adc12.h>
+#include <runtime/msp430/adc12.h>
 #endif
-#include <msp430/gpio.h>
-#include <msp430/compa.h>
+#include <runtime/msp430/gpio.h>
+#include <runtime/msp430/compa.h>
 
-#include <msp430/common.h>
+#include <runtime/msp430/common.h>
 
 #define IE1_                0x0000  /* Interrupt Enable 1 */
 sfrb(IE1,IE1_);
@@ -98,7 +97,7 @@ sfrb(ME1,ME1_);
 #define COMPARATORA_VECTOR  22      /* 0xFFF6 Comparator A */
 #define TIMERB1_VECTOR      24      /* 0xFFF8 Timer B CC1-2, TB */
 #define TIMERB0_VECTOR      26      /* 0xFFFA Timer B CC0 */
-#define NMI_VECTOR          28      /* 0xFFFC Non-maskable */ 
+#define NMI_VECTOR          28      /* 0xFFFC Non-maskable */
 
 #define UART0TX_VECTOR      USART0TX_VECTOR
 #define UART0RX_VECTOR      USART0RX_VECTOR

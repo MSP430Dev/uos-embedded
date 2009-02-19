@@ -27,6 +27,15 @@
 #	include <runtime/ctype.h>
 #	define __BYTE_ORDER __LITTLE_ENDIAN
 #	define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
+#elif defined (MSP430)
+#	include <stdarg.h>
+#	include <runtime/msp430/types.h>
+#	include <runtime/msp430/string.h>
+#	include <runtime/msp430/stdlib.h>
+#	include <runtime/msp430/io.h>
+#	include <runtime/ctype.h>
+#	define __BYTE_ORDER __LITTLE_ENDIAN
+#	define __FLOAT_WORD_ORDER __LITTLE_ENDIAN
 #elif defined (I386)
 #	include <stdarg.h>
 #	include <runtime/i386/types.h>

@@ -12,7 +12,7 @@
  * $Id: msp430x33x.h,v 1.8 2006/11/15 14:34:57 coppice Exp $
  */
 
-#include <iomacros.h>
+#include <runtime/msp430/iomacros.h>
 
 #define __MSP430_HAS_WDT__
 #define __MSP430_HAS_MPY__
@@ -33,18 +33,18 @@
 #define LCD_BASE 0x30
 #define __msp430_have_lcdlowr
 
-#include <msp430/gpio.h>
-#include <msp430/lcd.h>
-#include <msp430/basic_timer.h>
-#include <msp430/timer8.h>
-#include <msp430/timerport.h>
-#include <msp430/system_clock.h>
-#include <msp430/eprom.h>
-#include <msp430/mpy.h>
-#include <msp430/usart.h>
-#include <msp430/timera.h>
+#include <runtime/msp430/gpio.h>
+#include <runtime/msp430/lcd.h>
+#include <runtime/msp430/basic_timer.h>
+#include <runtime/msp430/timer8.h>
+#include <runtime/msp430/timerport.h>
+#include <runtime/msp430/system_clock.h>
+#include <runtime/msp430/eprom.h>
+#include <runtime/msp430/mpy.h>
+#include <runtime/msp430/usart.h>
+#include <runtime/msp430/timera.h>
 
-#include <msp430/common.h>
+#include <runtime/msp430/common.h>
 
 #define IE1_                0x0000  /* Interrupt Enable 1 */
 sfrb(IE1,IE1_);
