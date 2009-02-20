@@ -36,11 +36,5 @@
 ;---------------------------------------
 ; Reset vector at FFFE.
 ;
-		.word _reset_vector_
-
-		.text
-_reset_vector_:	.globl	_reset_vector_
-		mov	#__stack, r1			; Stack at end of internal SRAM
-
 		.extern	_init_
-		br	#_init_				; Jump to _init_()
+		.word _init_

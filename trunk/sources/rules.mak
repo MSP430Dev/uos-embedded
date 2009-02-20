@@ -59,7 +59,7 @@ always:
 		@chmod -x $@
 
 .out.dis:
-		$(OBJDUMP) -D -S $? > $@
+		$(OBJDUMP) -d -S $? > $@
 
 ifeq (.deps, $(wildcard .deps))
 -include .deps/*.dep

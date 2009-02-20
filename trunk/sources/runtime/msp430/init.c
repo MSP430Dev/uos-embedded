@@ -1,6 +1,6 @@
 #include <runtime/lib.h>
 
-extern unsigned long _etext, __data_start, _edata, _end;
+extern unsigned long _etext, __data_start, _edata, _end, __stack;
 extern void main (void);
 
 /*
@@ -13,6 +13,47 @@ void __attribute ((naked))
 _init_ (void)
 {
 	unsigned long *src, *dest, *limit;
+
+	msp430_set_stack_pointer (&__stack);
+
+	/*
+	 * Enable the crystal on XT1 and use it as MCLK.
+	 */
+	WDTCTL = WDTPW | WDTHOLD;		/* stop watchdog timer */
+	BCSCTL1 |= XTS;				/* XT1 as high-frequency */
+	_BIC_SR (OSCOFF);			/* turn on XT1 oscillator */
+	do {					/* wait in loop until crystal is stable */
+		IFG1 &= ~OFIFG;
+	} while (IFG1 & OFIFG);
+
+	BCSCTL1 |= DIVA0;			/* ACLK = XT1 / 2 */
+	BCSCTL1 &= ~DIVA1;
+	IE1 &= ~WDTIE;				/* disable WDT int. */
+	IFG1 &= ~WDTIFG;			/* clear WDT int. flag */
+
+	/* Use WDT as timer, flag each 512 pulses from ACLK. */
+	WDTCTL = WDTPW | WDTTMSEL | WDTCNTCL | WDTSSEL | WDTIS1;
+	while (! (IFG1 & WDTIFG))		/* count 1024 pulses from XT1 (until XT1's */
+		continue;			/* amplitude is OK) */
+	IFG1 &= ~OFIFG;				/* clear osc. fault int. flag */
+	BCSCTL2 = SELM0 | SELM1;		/* set XT1 as MCLK */
+
+	/*
+	 * Enable USART0 module.
+	 */
+#ifdef __MSP430_HAS_UART0__
+	U0ME |= UTXE0 + URXE0;
+	P3SEL |= BV(4) + BV(5);			/* set Port 3 pins for USART0 */
+	UCTL0 = SWRST;				/* reset the USART */
+	UCTL0 = CHAR;				/* set the 8-bit byte, 1 stop bit, no parity */
+	UTCTL0 = SSEL_ACLK;			/* select ACLK for baudrate generator clock */
+
+	UBR00 = (unsigned long) KHZ * 500 / 115200;
+	UBR10 = ((unsigned long) KHZ * 500 / 115200) >> 8;
+	UMCTL0 = 0xDD;				/* Optimal for 115200 at 4 MHz clock */
+
+	URCTL0 = 0;				/* init receiver control register */
+#endif
 
 #ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.

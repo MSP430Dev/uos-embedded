@@ -8,7 +8,7 @@ TESTS		= test_debug.srec
 #TESTS		= test_task.srec test_timer.srec test_uart.srec philosophers.srec
 
 all:		$(TESTS)
-		$(SIZE) --target=srec *.srec
+		for f in *.out; do $(SIZE) $$f; done
 
 $(TESTS):	startup.o libuos.a
 

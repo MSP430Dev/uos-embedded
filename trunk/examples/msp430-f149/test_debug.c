@@ -11,6 +11,7 @@ int main (void)
 	}
 }
 
-void _unexpected_interrupt_ ()
+void __attribute__((interrupt(0)))
+_unexpected_interrupt_ ()
 {
 }

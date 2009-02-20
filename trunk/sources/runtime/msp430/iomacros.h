@@ -156,7 +156,7 @@ do \
 do {							\
 	asm volatile (					\
 	"mov	%0, r2"					\
-	: : "r" ((unsigned int) (value)));		\
+	: : "g" ((unsigned int) (value)));		\
 } while (0)
 
 /*
@@ -166,7 +166,7 @@ do {							\
 ({ int __value;						\
 	asm volatile (					\
 	"mov	r2, %0"					\
-	: "=r" (__value));				\
+	: "=g" (__value));				\
 	__value;					\
 })
 
@@ -178,7 +178,7 @@ static void inline __attribute__ ((always_inline))
 msp430_intr_disable (int *x)
 {
 	*x = msp430_read_sr ();
-	_BIC_SR (0x0008); /* GIE */
+	asm volatile ("dint");
 }
 
 /*
@@ -196,7 +196,7 @@ msp430_intr_restore (int x)
 static void inline __attribute__ ((always_inline))
 msp430_intr_enable ()
 {
-	_BIS_SR (0x0008); /* GIE */
+	asm volatile ("eint");
 }
 
 /*
@@ -207,7 +207,7 @@ msp430_set_stack_pointer (void *x)
 {
 	asm volatile (
 	"mov	%0, r1"
-	: : "r" (x));
+	: : "g" (x));
 }
 
 /*
@@ -220,7 +220,7 @@ void *msp430_get_stack_pointer ()
 
 	asm volatile (
 	"mov	r1, %0"
-	: "=r" (x));
+	: "=g" (x));
 	return x;
 }
 
