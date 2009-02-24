@@ -1,0 +1,105 @@
+#summary Target board: Olimex MSP430-easyWeb2.
+
+[http://www.olimex.com/dev/msp-easyweb2.html http://www.olimex.com/dev/images/eweb2.jpg]
+
+Плата Olimex MSP430-easyWeb2 ([http://www.olimex.com/dev/images/msp430-easyweb2-sch.gif схема]) построена на микроконтроллере MSP430F149 ([http://www.ti.com/lit/gpn/msp430f149 спецификация]). Дополнительная информация доступна [http://www.olimex.com/dev/msp-easyweb2.html на сайте производителя].
+
+(TODO)
+
+На плате имеется:
+ * 26 цифровых входов/выходов (разъёмы EXT1, EXT2 и J)
+ * 4 аналоговых входа с 10-битным аналого-цифровым преобразователем (разъём ADC)
+ * 16-мегагерцовый кварц
+ * кварц 32768 Гц
+ * разъём RS-232 DCE, подключенный к асинхронному порту UART 1
+ * разъём TTL, подключенный к асинхронному порту UART 0
+ * порт для "таблеток" Dallas
+ * текстовый экран LCD, 2 ряда по 16 символов (K2-1602K-FSY-YBW-R, совместим с HD44780)
+ * динамик-"пищалка"
+ * реле (со светодиодом) с программным управлением
+ * 5 кнопок
+ * разъём питания
+ * разъём программирования ICSP-10
+ * разъём отладки JTAG
+
+Память:
+ * 128 килобайт flash-памяти для программ (из которых 2 килобайта занято начальным загрузчиком)
+ * 4 килобайта памяти данных (SRAM)
+ * 4 килобайта неразрушаемой памяти (EEPROM)
+
+Цифровые выходы обеспечивают ток до 40 мА. Некоторые имеют специальные функции: SPI и I2C.
+Питание поступает от внешнего источника постоянного напряжения +7..12 вольт.
+
+Программный код можно загружать в плату через разъёмы ICSP-10 или JTAG,
+с использованием соответствующего программатора.
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128 examples/avr-mt-128] находятся примеры сборки uOS для Olimex MT-128.
+
+|| *Тест*                                                                                                        || *Описание*                                                                                       || *Память программ* || *Память данных* ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                          || 404 байт (0.3%)   || 2 байта         ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                           || 5974 байта (4.6%) || 555 байт (13%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c]     || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера.                 || 8856 байта (6.8%) || 872 байт (21%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                       || 6624 байта (5.1%) || 988 байт (24%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_nvram.c test_nvram.c]     || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.                        || 10192 байт (7.8%) || 704 байт (17%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Две задачи: программа пользователя и драйвер таймера.                      || 10566 байт (8.1%) || 998 байт (24%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Две задачи: программа пользователя и драйвер UART.|| 11576 байт (8.8%) || 1052 байт (26%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Шесть задач: пять философов и драйвер таймера.        || 10896 байт (8.3%) || 2289 байт (56%) ||
+
+= Сигналы =
+Привязка сигналов платы к ножкам процессора:
+|| *На плате*      || *На процессоре* || *Дополнительные функции* ||
+|| Верхняя кнопка  || PA0             || ---                      ||
+|| Левая кнопка    || PA1             || ---                      ||
+|| Средняя кнопка  || PA2             || ---                      ||
+|| Правая кнопка   || PA3             || ---                      ||
+|| Нижняя кнопка   || PA4             || ---                      ||
+|| Разъём Dallas   || PA5             || ---                      ||
+|| Управление реле || PA6             || ---                      ||
+|| Порт EXT2 / 14  || PA7             || ---                      ||
+|| Порт EXT2 / 6   || PB0             || SS                       ||
+|| Порт ICSP / 7   || PB1             || SCK                      ||
+|| Порт EXT2 / 7   || PB2             || MOSI                     ||
+|| Порт EXT2 / 8   || PB3             || MISO                     ||
+|| Порт EXT2 / 9   || PB4             || OC0                      ||
+|| Порт EXT2 / 10  || PB5             || OC1A                     ||
+|| Порт EXT2 / 11  || PB6             || OC1B                     ||
+|| Порт EXT2 / 12  || PB7             || OC2 / OC1C               ||
+|| Управление LCD  || PC0             || RS                       ||
+|| Управление LCD  || PC1             || R/W                      ||
+|| Управление LCD  || PC2             || E                        ||
+|| Порт EXT2 / 13  || PC3             || ---                      ||
+|| Управление LCD  || PC4             || D4                       ||
+|| Управление LCD  || PC5             || D5                       ||
+|| Управление LCD  || PC6             || D6                       ||
+|| Управление LCD  || PC7             || D7                       ||
+|| Порт EXT1 / 9   || PD0             || SCL / INT0               ||
+|| Порт EXT1 / 10  || PD1             || SDA / INT1               ||
+|| Разъём UART 0 / 2 || PD2           || RXD1 / INT2              ||
+|| Разъём UART 0 / 1 || PD3           || TXD1 / INT3              ||
+|| Порт EXT1 / 11  || PD4             || IC1                      ||
+|| Порт EXT1 / 12  || PD5             || XCK1                     ||
+|| Порт EXT1 / 13  || PD6             || T1, разъём FREQ через джампер J/3 ||
+|| Порт EXT1 / 14  || PD7             || T2, разъём FREQ через джампер J/1 ||
+|| Порт ICSP / 1   || PE0             || PDI                      ||
+|| Порт ICSP / 9   || PE1             || PDO                      ||
+|| Порт EXT1 / 3   || PE2             || XCK0 / AIN0              ||
+|| Порт EXT1 / 4   || PE3             || OC3A / AIN1              ||
+|| Порт EXT1 / 5   || PE4             || OC3B / INT4              ||
+|| Порт EXT1 / 6   || PE5             || OC3C / INT5              ||
+|| Порт EXT1 / 7   || PE6             || T3 / INT6                ||
+|| Порт EXT1 / 8   || PE7             || IC3 / INT7               ||
+|| Порт ADC / 3    || PF0             || ADC0                     ||
+|| Порт ADC / 4    || PF1             || ADC1                     ||
+|| Порт ADC / 5    || PF2             || ADC2                     ||
+|| Порт ADC / 6    || PF3             || ADC3                     ||
+|| Порт JTAG / 1   || PF4             || ADC4 / TCK               ||
+|| Порт JTAG / 5   || PF5             || ADC5 / TMS               ||
+|| Порт JTAG / 3   || PF6             || ADC6 / TDO               ||
+|| Порт JTAG / 9   || PF7             || ADC7 / TDI               ||
+|| Порт EXT2 / 3   || PG0             || WR                       ||
+|| Порт EXT2 / 4   || PG1             || RD                       ||
+|| Порт EXT2 / 5   || PG2             || ALE                      ||
+|| Кварц 32768 Гц  || PG3             || TOSC2                    ||
+|| Кварц 32768 Гц  || PG4             || TOSC1                    ||
+|| Порт ADC / 1    || AVREF           || +5V через R13            ||
