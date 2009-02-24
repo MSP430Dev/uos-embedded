@@ -42,6 +42,10 @@ _init_ (void)
 	 * Enable USART0 module.
 	 */
 #ifdef __MSP430_HAS_UART0__
+	P3SEL |= BIT4 | BIT5;			/* enable UART0 */
+	P3DIR |= BIT4;				/* enable TXD0 as output */
+	P3DIR &= ~BIT5;				/* enable RXD0 as input */
+
 	U0ME |= UTXE0 + URXE0;
 	P3SEL |= BV(4) + BV(5);			/* set Port 3 pins for USART0 */
 	UCTL0 = SWRST;				/* reset the USART */

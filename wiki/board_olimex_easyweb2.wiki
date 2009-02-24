@@ -35,22 +35,13 @@
 Питание поступает от внешнего источника постоянного напряжения +7..12 вольт.
 
 Программный код можно загружать в плату через разъём JTAG-14,
-с использованием соответствующего программатора.
+с использованием программатора msp430-jtag из пакета [http://mspgcc.sourceforge.net/ MSPGCC].
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149 examples/msp430-f149] находятся примеры сборки uOS для Olimex MT-128.
 
-(TODO)
-
 || *Тест*                                                                                                        || *Описание*                                                                                       || *Память программ* || *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                          || 404 байт (0.3%)   || 2 байта         ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                           || 5974 байта (4.6%) || 555 байт (13%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_timer.c test_timer.c]     || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера.                 || 8856 байта (6.8%) || 872 байт (21%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                       || 6624 байта (5.1%) || 988 байт (24%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_nvram.c test_nvram.c]     || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.                        || 10192 байт (7.8%) || 704 байт (17%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Две задачи: программа пользователя и драйвер таймера.                      || 10566 байт (8.1%) || 998 байт (24%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Две задачи: программа пользователя и драйвер UART.|| 11576 байт (8.8%) || 1052 байт (26%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Шесть задач: пять философов и драйвер таймера.        || 10896 байт (8.3%) || 2289 байт (56%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                         || 470 байт (0.3%)   || 2 байта         ||
 
 = Сигналы =
 
@@ -107,3 +98,27 @@
 || Порт AEXT / 10                 || VEREF+          || ---                      ||
 || Порт AEXT / 11                 || VREF+           || ---                      ||
 || Порт AEXT / 12                 || VREF-           || ---                      ||
+
+
+= Программатор и отладчик =
+[http://www.olimex.com/dev/msp-jtag.html http://www.olimex.com/dev/images/msp430-jtag.jpg]
+
+В качестве аппаратного интерфейса к JTAG-порту я использую LPT-адаптер [http://www.olimex.com/dev/msp-jtag.html Olimex MSP430-JTAG].
+
+Для отладки через GDB нужно установить утилиту [http://uos-embedded.googlecode.com/files/msp430-gdbproxy.zip msp430-gdbproxy].
+В её состав входят библиотеки libHIL и libMSP430, которые требуются также для утилиты прошивки.
+Для установки запустите скрипт install.sh.
+
+Утилита прошивки msp430-jtag входит в состав пакета [http://mspgcc.sourceforge.net/ MSPGCC].
+Её исходные тексты можно скачать командами:
+{{{
+cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
+cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc co python -d mspgcc-python
+}}}
+
+Для установки исправьте в файле mspgcc-python/makefile значение PREFIX на /usr/local/bin
+и выполните команды:
+{{{
+cd mspgcc-python
+sudo make install
+}}}
