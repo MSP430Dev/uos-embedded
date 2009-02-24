@@ -2,51 +2,59 @@
 
 [http://www.olimex.com/dev/msp-easyweb2.html http://www.olimex.com/dev/images/eweb2.jpg]
 
-Плата Olimex MSP430-easyWeb2 ([http://www.olimex.com/dev/images/msp430-easyweb2-sch.gif схема]) построена на микроконтроллере MSP430F149 ([http://www.ti.com/lit/gpn/msp430f149 спецификация]). Дополнительная информация доступна [http://www.olimex.com/dev/msp-easyweb2.html на сайте производителя].
-
-(TODO)
+Плата Olimex MSP430-easyWeb2 ([http://www.olimex.com/dev/images/msp430-easyweb2-sch.gif схема])
+построена на микроконтроллере MSP430F149. Дополнительная информация доступна
+[http://www.olimex.com/dev/msp-easyweb2.html на сайте производителя].
+Документация:
+ * [http://www.ti.com/lit/gpn/msp430f149 Спецификация]: MSP430x13x, MSP430x14x, MSP430x14x1 Mixed Signal Microcontroller.
+ * [http://www.ti.com/litv/pdf/slaz017b Перечень ошибок]: MSP430F13x/14x/14x1 Device Erratasheet.
+ * [http://www.ti.com/litv/pdf/slau049f Руководство пользователя]: MSP430x1xx Family User's Guide
 
 На плате имеется:
- * 26 цифровых входов/выходов (разъёмы EXT1, EXT2 и J)
- * 4 аналоговых входа с 10-битным аналого-цифровым преобразователем (разъём ADC)
- * 16-мегагерцовый кварц
- * кварц 32768 Гц
- * разъём RS-232 DCE, подключенный к асинхронному порту UART 1
- * разъём TTL, подключенный к асинхронному порту UART 0
- * порт для "таблеток" Dallas
- * текстовый экран LCD, 2 ряда по 16 символов (K2-1602K-FSY-YBW-R, совместим с HD44780)
- * динамик-"пищалка"
- * реле (со светодиодом) с программным управлением
- * 5 кнопок
- * разъём питания
- * разъём программирования ICSP-10
- * разъём отладки JTAG
+ * Порт Ethernet с контроллером CS8900 и тремя светодиодами состояния
+ * 1 светодиод с программным управлением
+ * 2 цифровых выхода с реле
+ * 4 цифровых входа с развязкой через оптопары
+ * 1 цифровой вход/выход TTL (разъём EXT)
+ * 8 аналоговых входов с 12-битным аналого-цифровым преобразователем (разъём AEXT)
+ * 4 кнопки
+ * Порт RS-232 DCE
+ * Динамик-"пищалка"
+ * Текстовый экран LCD, 2 ряда по 16 символов (K2-1602K-FSY-YBW-R, совместим с HD44780)
+ * Порт для "таблеток" Dallas
+ * Вход частотомера
+ * 8-мегагерцовый кварц
+ * Разъём программирования и отладки JTAG-14
+ * Разъём питания
 
 Память:
- * 128 килобайт flash-памяти для программ (из которых 2 килобайта занято начальным загрузчиком)
- * 4 килобайта памяти данных (SRAM)
- * 4 килобайта неразрушаемой памяти (EEPROM)
+ * 60 килобайт flash-памяти для программ
+ * 2 килобайта памяти данных (RAM)
+ * 64 килобайта неразрушаемой памяти (EEPROM 24LC515)
 
-Цифровые выходы обеспечивают ток до 40 мА. Некоторые имеют специальные функции: SPI и I2C.
 Питание поступает от внешнего источника постоянного напряжения +7..12 вольт.
 
-Программный код можно загружать в плату через разъёмы ICSP-10 или JTAG,
+Программный код можно загружать в плату через разъём JTAG-14,
 с использованием соответствующего программатора.
 
 = Примеры uOS =
-В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128 examples/avr-mt-128] находятся примеры сборки uOS для Olimex MT-128.
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149 examples/msp430-f149] находятся примеры сборки uOS для Olimex MT-128.
+
+(TODO)
 
 || *Тест*                                                                                                        || *Описание*                                                                                       || *Память программ* || *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                          || 404 байт (0.3%)   || 2 байта         ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                           || 5974 байта (4.6%) || 555 байт (13%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_timer.c test_timer.c]     || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера.                 || 8856 байта (6.8%) || 872 байт (21%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                       || 6624 байта (5.1%) || 988 байт (24%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_nvram.c test_nvram.c]     || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.                        || 10192 байт (7.8%) || 704 байт (17%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Две задачи: программа пользователя и драйвер таймера.                      || 10566 байт (8.1%) || 998 байт (24%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Две задачи: программа пользователя и драйвер UART.|| 11576 байт (8.8%) || 1052 байт (26%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-mt-128/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Шесть задач: пять философов и драйвер таймера.        || 10896 байт (8.3%) || 2289 байт (56%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                          || 404 байт (0.3%)   || 2 байта         ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                           || 5974 байта (4.6%) || 555 байт (13%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_timer.c test_timer.c]     || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера.                 || 8856 байта (6.8%) || 872 байт (21%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                       || 6624 байта (5.1%) || 988 байт (24%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_nvram.c test_nvram.c]     || Проверка памяти NVRAM. Две задачи: программа пользователя и драйвер UART.                        || 10192 байт (7.8%) || 704 байт (17%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Две задачи: программа пользователя и драйвер таймера.                      || 10566 байт (8.1%) || 998 байт (24%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Две задачи: программа пользователя и драйвер UART.|| 11576 байт (8.8%) || 1052 байт (26%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Шесть задач: пять философов и драйвер таймера.        || 10896 байт (8.3%) || 2289 байт (56%) ||
 
 = Сигналы =
+(TODO)
+
 Привязка сигналов платы к ножкам процессора:
 || *На плате*      || *На процессоре* || *Дополнительные функции* ||
 || Верхняя кнопка  || PA0             || ---                      ||
