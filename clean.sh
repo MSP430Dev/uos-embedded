@@ -3,4 +3,4 @@
 # Delete temporary files.
 #
 find . -name '*~' -print0 | xargs -0 -r --verbose rm -r
-rm -f z.pch
+rm -f z.pch svn-commit.tmp

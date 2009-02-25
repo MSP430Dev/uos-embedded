@@ -11,7 +11,7 @@ timer_t timer;
 void hello (void *arg)
 {
 	for (;;) {
-		debug_printf ("Hello from `%S'! msec = %d\n",
+		debug_printf ("Hello from `%s'! msec = %u\n",
 			arg, timer_milliseconds (&timer));
 		lock_wait (&timer.decisec);
 	}
@@ -19,9 +19,6 @@ void hello (void *arg)
 
 void uos_init (void)
 {
-	/* Baud 38400. */
-	UBRR1L = ((int) (KHZ * 1000L / 38400) + 8) / 16 - 1;
-
 	debug_puts ("\nTesting timer.\n");
 	timer_init (&timer, 100, KHZ, 10);
 	task_create (hello, "task", "hello", 1, task, sizeof (task));

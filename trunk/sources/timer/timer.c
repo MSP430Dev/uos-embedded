@@ -41,6 +41,10 @@
 #   define TIMER_IRQ		29	/* Interval Timer interrupt */
 #endif
 
+#if MSP430
+#   define TIMER_IRQ		(TIMERA0_VECTOR / 2)
+#endif
+
 #if LINUX386
 #   include <sys/time.h>
 #   include <signal.h>
