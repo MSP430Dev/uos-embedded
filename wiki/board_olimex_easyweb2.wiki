@@ -38,10 +38,10 @@
 с использованием программатора msp430-jtag из пакета [http://mspgcc.sourceforge.net/ MSPGCC].
 
 = Примеры uOS =
-В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149 examples/msp430-f149] находятся примеры сборки uOS для Olimex easyWeb2.
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2 examples/msp430-easyweb2] находятся примеры сборки uOS для Olimex easyWeb2.
 
 || *Тест*                                                                                                        || *Описание*                                                                                       || *Память программ* || *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-f149/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                         || 470 байт (0.3%)   || 2 байта         ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                         || 470 байт (0.3%)   || 2 байта         ||
 
 = Сигналы =
 
