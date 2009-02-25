@@ -40,8 +40,33 @@
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2 examples/msp430-easyweb2] находятся примеры сборки uOS для Olimex easyWeb2.
 
-|| *Тест*                                                                                                        || *Описание*                                                                                       || *Память программ* || *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                         || 470 байт (0.3%)   || 2 байта         ||
+|| *Тест*                                                                                                         || *Описание*                                                                                       || *Память программ* || *Память данных* ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                          || 470 байт (0.3%)   || 2 байта         ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                                           || 4488 байта (7.3%) || 442 байта (22%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2/test_timer.c test_timer.c] || Проверка драйвера таймера. Две задачи: программа пользователя и драйвер таймера.                 || 6850 байта (11%)  || 762 байта (37%) ||
+
+= Программатор и отладчик =
+[http://www.olimex.com/dev/msp-jtag.html http://www.olimex.com/dev/images/msp430-jtag.jpg]
+
+В качестве аппаратного интерфейса к JTAG-порту я использую LPT-адаптер [http://www.olimex.com/dev/msp-jtag.html Olimex MSP430-JTAG].
+
+Для отладки через GDB нужно установить утилиту [http://uos-embedded.googlecode.com/files/msp430-gdbproxy.zip msp430-gdbproxy].
+В её состав входят библиотеки libHIL и libMSP430, которые требуются также для утилиты прошивки.
+Для установки запустите скрипт install.sh.
+
+Утилита прошивки msp430-jtag входит в состав пакета [http://mspgcc.sourceforge.net/ MSPGCC].
+Её исходные тексты можно скачать командами:
+{{{
+cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
+cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc co python -d mspgcc-python
+}}}
+
+Для установки исправьте в файле mspgcc-python/makefile значение PREFIX на /usr/local/bin
+и выполните команды:
+{{{
+cd mspgcc-python
+sudo make install
+}}}
 
 = Сигналы =
 
@@ -98,27 +123,3 @@
 || Порт AEXT / 10                 || VEREF+          || ---                      ||
 || Порт AEXT / 11                 || VREF+           || ---                      ||
 || Порт AEXT / 12                 || VREF-           || ---                      ||
-
-
-= Программатор и отладчик =
-[http://www.olimex.com/dev/msp-jtag.html http://www.olimex.com/dev/images/msp430-jtag.jpg]
-
-В качестве аппаратного интерфейса к JTAG-порту я использую LPT-адаптер [http://www.olimex.com/dev/msp-jtag.html Olimex MSP430-JTAG].
-
-Для отладки через GDB нужно установить утилиту [http://uos-embedded.googlecode.com/files/msp430-gdbproxy.zip msp430-gdbproxy].
-В её состав входят библиотеки libHIL и libMSP430, которые требуются также для утилиты прошивки.
-Для установки запустите скрипт install.sh.
-
-Утилита прошивки msp430-jtag входит в состав пакета [http://mspgcc.sourceforge.net/ MSPGCC].
-Её исходные тексты можно скачать командами:
-{{{
-cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
-cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc co python -d mspgcc-python
-}}}
-
-Для установки исправьте в файле mspgcc-python/makefile значение PREFIX на /usr/local/bin
-и выполните команды:
-{{{
-cd mspgcc-python
-sudo make install
-}}}

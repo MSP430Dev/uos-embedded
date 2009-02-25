@@ -3,10 +3,10 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 # Compile without kernel module in target.cfg.
-TESTS		= test_debug.hex test_task.hex test_timer.srec
+TESTS		= test_debug.hex test_task.hex test_timer.hex
 OUTS            = $(TESTS:%.srec=%.out)
 
-#test_uart.srec test_lcd.srec test_olimex.srec test_nvram.srec philosophers.srec test_cs8900.srec
+#test_uart.hex test_lcd.hex test_olimex.hex test_nvram.hex philosophers.hex test_cs8900.hex
 
 # Using msp430-jtag programmer with JTAG LPT adapter.
 PROG            = env LIBMSPGCC_PATH=/usr/local/lib msp430-jtag
