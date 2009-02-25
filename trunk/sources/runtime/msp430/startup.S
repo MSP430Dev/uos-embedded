@@ -3,6 +3,13 @@
 ;
 
 ;---------------------------------------
+; Handler for unexpected interrupt.
+;
+		.weak   _unexpected_interrupt_
+_unexpected_interrupt_:
+		reti
+
+;---------------------------------------
 ; Macro: setup an interrupt vector.
 ; By default, an _unexpected_interrupt_() routine is called.
 ;
@@ -11,7 +18,6 @@
 		.set    \name, _unexpected_interrupt_
 		.word   \name
 		.endm
-		.global _unexpected_interrupt_
 
 ;---------------------------------------
 ; Interrupt vectors at FFE0-FFFC.

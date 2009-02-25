@@ -86,6 +86,7 @@ main (void)
 	task_idle = (task_t*) task_idle_data;
 	task_idle->stack[0] = STACK_MAGIC;
 	task_idle->name = "idle";
+	list_init (&task_idle->item);
 	list_init (&task_idle->slaves);
 
 	/* Make list of active tasks. */

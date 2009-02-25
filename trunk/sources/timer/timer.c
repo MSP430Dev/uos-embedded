@@ -109,6 +109,25 @@ main_timer (void *arg)
 	MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
 	MC_ITCSR = MC_ITCSR_EN;
 #endif
+#if MSP430
+        /* Ensure the timer is stopped. */
+        TACTL = 0;
+
+        /* Run the timer of the ACLK. */
+        TACTL = TASSEL_1;
+
+        /* Clear everything to start with. */
+        TACTL |= TACLR;
+
+        /* Set the compare match value according to the tick rate we want. */
+        TACCR0 = t->khz * t->msec_per_tick / 2;
+
+        /* Start up clean. */
+        TACTL |= TACLR;
+
+        /* Up mode. */
+        TACTL |= MC_1;
+#endif
 #if LINUX386
 	{
 	struct itimerval itv;

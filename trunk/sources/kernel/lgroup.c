@@ -94,7 +94,7 @@ lock_group_unlisten (lock_group_t *g)
 	for (s = g->slot + g->num; --s >= g->slot; ) {
 		assert (! list_is_empty (&s->item));
 		s->message = 0;
-		list_remove (&s->item);
+		list_unlink (&s->item);
 	}
 	arch_intr_restore (x);
 }
@@ -130,7 +130,7 @@ lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr)
 		}
 
 		/* Suspend the task. */
-		list_remove (&task_current->item);
+		list_unlink (&task_current->item);
 		g->waiter = task_current;
 		task_schedule ();
 	}

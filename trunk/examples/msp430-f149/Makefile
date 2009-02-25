@@ -3,15 +3,15 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 # Compile without kernel module in target.cfg.
-TESTS		= test_debug.hex
+TESTS		= test_debug.hex test_task.hex
 
-#TESTS		= test_task.hex test_timer.hex test_uart.hex philosophers.hex
+#TESTS		= test_timer.hex test_uart.hex philosophers.hex
 
 # Using msp430-jtag programmer with JTAG LPT adapter.
 PROG            = env LIBMSPGCC_PATH=/usr/local/lib msp430-jtag
 
 all:		$(TESTS)
-		for f in *.out; do $(SIZE) $$f; done
+		for f in *.out; do $(SIZE) *.out; break; done
 
 $(TESTS):	startup.o libuos.a
 
@@ -21,7 +21,7 @@ clean:
 probe:
 		$(PROG) -D
 
-load:		test_debug.hex
+load:		test_task.hex
 		$(PROG) -e $<
 
 # Original software from http://www.olimex.com/dev/soft/msp430/easyweb_test.tar.gz

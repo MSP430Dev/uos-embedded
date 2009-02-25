@@ -88,7 +88,7 @@ lock_wait (lock_t *m)
 	deep = m->deep;
 	m->deep = 0;
 #endif
-	list_remove (&m->item);
+	list_unlink (&m->item);
 
 	/* Recalculate the value of task priority.
 	 * It must be the maximum of base priority,

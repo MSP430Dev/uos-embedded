@@ -197,7 +197,7 @@ lock_release (lock_t *m)
 #endif
 
 	/* Remove this lock from the list of task slaves. */
-	list_remove (&m->item);
+	list_unlink (&m->item);
 
 	/* Recalculate the value of task priority.
 	 * It must be the maximum of base priority,

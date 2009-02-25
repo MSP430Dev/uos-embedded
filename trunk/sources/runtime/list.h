@@ -3,7 +3,7 @@
 
 /*
  * Extra fast implementation of doubly linked list, by LY.
- * Some ideas comming from Linux's source code, but not the code.
+ * Some ideas coming from Linux's source code.
  */
 typedef struct _list_t {
 	struct _list_t *next;
@@ -24,22 +24,22 @@ static inline void list_init (list_t *l)
  * Insert a new element between the two neigbour elements 'prev' and 'next'.
  * Internal function.
  */
-static inline void __list_put_in_between (list_t *elem, list_t *prev, list_t *next)
+static inline void __list_put_in_between (list_t *elem, list_t *left, list_t *right)
 {
-	next->prev = elem;
-	elem->next = next;
-	elem->prev = prev;
-	prev->next = elem;
+	right->prev = elem;
+	elem->next = right;
+	elem->prev = left;
+	left->next = elem;
 }
 
 /*
  * Connect two elements together, thus removing all in between.
  * Internal function.
  */
-static inline void __list_connect_together (list_t *prev, list_t *next)
+static inline void __list_connect_together (list_t *left, list_t *right)
 {
-	next->prev = prev;
-	prev->next = next;
+	right->prev = left;
+	left->next = right;
 }
 
 /*
@@ -63,7 +63,7 @@ static inline void list_append (list_t *l, list_t *elem)
 /*
  * Remove an element from any list.
  */
-static inline void list_remove (list_t *elem)
+static inline void list_unlink (list_t *elem)
 {
 	__list_connect_together (elem->prev, elem->next);
 	list_init (elem);

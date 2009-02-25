@@ -114,9 +114,6 @@ arch_idle ()
 {
 	msp430_intr_enable ();
 	for (;;) {
-		asm volatile (
-			".set mips4 \n"
-		"	wait \n"
-		"	.set mips1");
+		_BIS_SR (CPUOFF);
 	}
 }

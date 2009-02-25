@@ -91,28 +91,19 @@ int main (void)
                 debug_getchar();
         }
 }
-
-void _interrupt_handler_ ()
-{
-}
 }}}
 и Makefile:
 {{{
+TARGET          = $(CURDIR)
 OS              = $(shell cd ../..; pwd)
-TARGET          = $(OS)/examples/msp430-f149
-include $(TARGET)/target.cfg
+include target.cfg
 
 TESTS           = test_debug.sre
-OUTS            = $(TESTS:%.sre=%.out)
 
-all:            .deps target $(OUTS) $(TESTS)
-                $(SIZE) $(OUTS)
-.deps:
-                mkdir .deps
-target:
-                $(MAKE) -C $(TARGET)
+all:            $(TESTS)
+                for f in *.out; do $(SIZE) $$f; done
 clean:
-                rm -rf *.out *.hex *.sre *.[osi] *.lst *.dis *~ .deps
+                rm -rf *~ *.[oasi] *.out *.srec *.lst *.dis .deps $(MODULES) $(TESTS)
 
 include $(OS)/sources/rules.mak
 }}}
