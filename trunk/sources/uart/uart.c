@@ -1,21 +1,25 @@
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "uart/uart.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <uart/uart.h>
 
 #if __AVR__
-#   include "uart/avr.h"
+#   include "avr.h"
 #endif
 
 #if ARM_S3C4530
-#   include "uart/samsung.h"
+#   include "samsung.h"
 #endif
 
 #if ELVEES_MC24
-#   include "uart/elvees.h"
+#   include "elvees.h"
+#endif
+
+#if MSP430
+#   include "msp430.h"
 #endif
 
 #if LINUX386
-#   include "uart/linux.h"
+#   include "linux.h"
 #endif
 
 /*
@@ -26,6 +30,7 @@
 static bool_t
 uart_transmit_start (uart_t *u)
 {
+debug_puts ("(*) ");
 	if (u->out_first == u->out_last)
 		lock_signal (&u->transmitter, 0);
 

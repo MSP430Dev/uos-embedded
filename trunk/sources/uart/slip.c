@@ -1,23 +1,27 @@
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "mem/mem.h"
-#include "buf/buf.h"
-#include "uart/slip.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <mem/mem.h>
+#include <buf/buf.h>
+#include <uart/slip.h>
 
 #if __AVR__
-#   include "uart/avr.h"
+#   include "avr.h"
 #endif
 
 #if ARM_S3C4530
-#   include "uart/samsung.h"
+#   include "samsung.h"
 #endif
 
 #if ELVEES_MC24
-#   include "uart/elvees.h"
+#   include "elvees.h"
+#endif
+
+#if MSP430
+#   include "msp430.h"
 #endif
 
 #if LINUX386
-#   include "uart/linux.h"
+#   include "linux.h"
 #endif
 
 #define SLIP_FLAG		0300

@@ -11,6 +11,9 @@
 #   if MIPS32
 #      define SLIP_STACKSZ	0x400
 #   endif
+#   if MSP430
+#      define SLIP_STACKSZ	0x180
+#   endif
 #   if LINUX386
 #      define SLIP_STACKSZ	4000
 #   endif

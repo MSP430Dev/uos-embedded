@@ -114,6 +114,7 @@ arch_task_switch (task_t *target)
 void __attribute__((naked))
 _irq_handler_ (lock_irq_t *h)
 {
+debug_printf ("/%d/\n", h->irq);
 	if (h->handler) {
 		/* If the lock is free -- call fast handler. */
 		if (h->lock->master) {
@@ -165,16 +166,17 @@ int _msp430_adc12ie;
 void
 arch_intr_allow (int irq)
 {
+debug_printf ("intr_allow (%d)\n", irq);
 #if defined(__MSP430_147__) || defined(__MSP430_148__) || defined(__MSP430_149__)
 	switch (irq) {
         case 1:  P2IE     = _msp430_p2ie;    break;	/* 0xFFE2 Port 2 */
-        case 2:  U1IE    |= UTXIE1;          break;	/* 0xFFE4 USART 1 Transmit */
+        case 2:  /*U1IE  |= UTXIE1;*/        break;	/* 0xFFE4 USART 1 Transmit */
         case 3:  U1IE    |= URXIE1;          break;	/* 0xFFE6 USART 1 Receive */
         case 4:  P1IE     = _msp430_p1ie;    break;	/* 0xFFE8 Port 1 */
         case 5:  TACCTL1 |= CCIE;            break;	/* 0xFFEA Timer A CC1-2, TA */
         case 6:  TACCTL0 |= CCIE;            break;	/* 0xFFEC Timer A CC0 */
         case 7:  ADC12IE  = _msp430_adc12ie; break;	/* 0xFFEE ADC */
-        case 8:  U0IE    |= UTXIE0;          break;	/* 0xFFF0 USART 0 Transmit */
+        case 8:  /*U0IE  |= UTXIE0;*/        break;	/* 0xFFF0 USART 0 Transmit */
         case 9:  U0IE    |= URXIE0;          break;	/* 0xFFF2 USART 0 Receive */
         case 10: IE1     |= WDTIE;           break;	/* 0xFFF4 Watchdog Timer */
         case 11: CACTL1  |= CAIE;            break;	/* 0xFFF6 Comparator A */

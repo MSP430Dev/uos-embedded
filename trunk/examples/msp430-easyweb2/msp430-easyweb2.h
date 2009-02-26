@@ -1,68 +1,78 @@
 /*
  * Definitions of input signals and output actions for Olimex MT-128 board.
  */
-inline int button_up_pressed (void)
+inline int button1_pressed (void)
 {
-	return ~PINA & 0b00000001;
+	return ~P4IN & (1 << 4);
 }
 
-inline int button_left_pressed (void)
+inline int button2_pressed (void)
 {
-	return ~PINA & 0b00000010;
+	return ~P4IN & (1 << 5);
 }
 
-inline int button_center_pressed (void)
+inline int button3_pressed (void)
 {
-	return ~PINA & 0b00000100;
+	return ~P4IN & (1 << 6);
 }
 
-inline int button_right_pressed (void)
+inline int button4_pressed (void)
 {
-	return ~PINA & 0b00001000;
+	return ~P4IN & (1 << 7);
 }
 
-inline int button_down_pressed (void)
-{
-	return ~PINA & 0b00010000;
-}
-
-inline int relay_is_on (void)
-{
-	return PINA & 0b01000000;
-}
-
-inline void relay_control (int on)
+inline void relay1_control (int on)
 {
 	if (on)
-		setb (6, PORTA);
+		P1OUT |= BIT5;
 	else
-		clearb (6, PORTA);
+		P1OUT &= ~BIT5;
+}
+
+inline void relay2_control (int on)
+{
+	if (on)
+		P1OUT |= BIT6;
+	else
+		P1OUT &= ~BIT6;
 }
 
 inline void relay_init ()
 {
-	relay_control (0);
-	clearb (6, PORTA);
-	setb (6, DDRA);
+	relay1_control (0);
+	relay2_control (0);
+	P1DIR = BIT5 | BIT6;
 }
 
 inline void buzzer_control (int mode)
 {
 	if (mode > 0) {
-		clearb (4, PORTE);	/* Forward */
-		setb (5, PORTE);
+		P4OUT &= ~BIT2;			/* Forward */
+		P4OUT |= BIT3;
 	} else if (mode < 0) {
-		setb (4, PORTE);	/* Reverse */
-		clearb (5, PORTE);
+		P4OUT |= BIT2;			/* Reverse */
+		P4OUT &= ~BIT3;
 	} else {
-		setb (4, PORTE);	/* Disable */
-		setb (5, PORTE);
+		P4OUT &= ~(BIT2 | BIT3);	/* Disable */
 	}
 }
 
 inline void buzzer_init ()
 {
 	buzzer_control (0);
-	setb (4, DDRE);
-	setb (5, DDRE);
+	P4DIR = BIT2 | BIT3;
+}
+
+inline void led_control (int on)
+{
+	if (on)
+		P2OUT &= ~BIT1;
+	else
+		P2OUT |= BIT1;
+}
+
+inline void led_init ()
+{
+	led_control (0);
+	P2DIR = ~BIT0;
 }

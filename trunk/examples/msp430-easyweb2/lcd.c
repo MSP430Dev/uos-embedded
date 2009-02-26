@@ -4,15 +4,14 @@
 #include "lcd.h"
 
 /*
- * LCD indicator is connected to port C.
+ * LCD indicator is connected to port 2.
  */
-#define RS	0b00000001	/* 0 - command, 1 - data */
-#define RW	0b00000010	/* 0 - write, 1 - read */
-#define E	0b00000100	/* strobe */
-#define D4	0b00010000	/* data */
-#define D5	0b00100000
-#define D6	0b01000000
-#define D7	0b10000000
+#define RS		0x04	/* 0 - command, 1 - data */
+#define E		0x08	/* strobe */
+#define D4		0x10	/* data */
+#define D5		0x20
+#define D6		0x40
+#define D7		0x80
 
 /*
  * LCD commands.
@@ -40,45 +39,47 @@ static stream_interface_t lcd_interface = {
  * Some symbols are missing.
  * Prepare glyphs for download.
  */
+#define ROW(a,b,c,d,e) (a<<4 | b<<3 | c<<2 | d<<1 | e)
+
 static const char backslash [8]  = {
-	0b00000,
-	0b10000,
-	0b01000,
-	0b00100,
-	0b00010,
-	0b00001,
-	0b00000,
-	0b00000,
+        ROW( 0,0,0,0,0 ),
+        ROW( 1,0,0,0,0 ),
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,0,0,1 ),
+        ROW( 0,0,0,0,0 ),
+        ROW( 0,0,0,0,0 ),
 };
 static const char leftbrace [8]  = {
-	0b00010,
-	0b00100,
-	0b00100,
-	0b01000,
-	0b00100,
-	0b00100,
-	0b00010,
-	0b00000,
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,0,0,0 ),
 };
 static const char rightbrace [8]  = {
-	0b01000,
-	0b00100,
-	0b00100,
-	0b00010,
-	0b00100,
-	0b00100,
-	0b01000,
-	0b00000,
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,0,0,0 ),
 };
 static const char softsign [8]  = {
-	0b10000,
-	0b10000,
-	0b10000,
-	0b11100,
-	0b10010,
-	0b10010,
-	0b11100,
-	0b00000,
+        ROW( 1,0,0,0,0 ),
+        ROW( 1,0,0,0,0 ),
+        ROW( 1,0,0,0,0 ),
+        ROW( 1,1,1,0,0 ),
+        ROW( 1,0,0,1,0 ),
+        ROW( 1,0,0,1,0 ),
+        ROW( 1,1,1,0,0 ),
+        ROW( 0,0,0,0,0 ),
 };
 
 /*
@@ -128,19 +129,19 @@ unicode_to_local (unsigned short val)
 	switch (val & ~0x7f) {
 	case 0x0000:
 		/* ASCII */
-		return readb (tab0 + val);
+		return tab0 [val];
 	case 0x0400:
 		/* Cyrillic */
-		return readb (tab4 + (val & 0x7f));
+		return tab4 [val & 0x7f];
 	}
 	return 0;
 }
 
 static void lcd_pulse ()
 {
-	PORTC |= E;
+	P2OUT |= E;
 	udelay (5);
-	PORTC &= ~E;
+	P2OUT &= ~E;
 }
 
 /*
@@ -149,14 +150,14 @@ static void lcd_pulse ()
 static void lcd_write_ctl (unsigned char val)
 {
 	/* Set RS port to 0 */
-	unsigned char lowbits = PORTC & ~(D7 | D6 | D5 | D4 | RS);
+	unsigned char lowbits = P2OUT & ~(D7 | D6 | D5 | D4 | RS);
 
 	/* High nibble. */
-	PORTC = (val & 0b11110000) | lowbits;
+	P2OUT = (val & 0xF0) | lowbits;
 	lcd_pulse ();
 
 	/* Low nibble. */
-	PORTC = (val << 4) | lowbits;
+	P2OUT = (val << 4) | lowbits;
 	lcd_pulse ();
 
 	mdelay (2);
@@ -168,14 +169,14 @@ static void lcd_write_ctl (unsigned char val)
 static void lcd_write_data (unsigned char val)
 {
 	/* Set RS port to 1 */
-	unsigned char lowbits = (PORTC & ~(D7 | D6 | D5 | D4)) | RS;
+	unsigned char lowbits = (P2OUT & ~(D7 | D6 | D5 | D4)) | RS;
 
 	/* High nibble. */
-	PORTC = (val & 0b11110000) | lowbits;
+	P2OUT = (val & 0xF0) | lowbits;
 	lcd_pulse ();
 
 	/* Low nibble. */
-	PORTC = (val << 4) | lowbits;
+	P2OUT = (val << 4) | lowbits;
 	lcd_pulse ();
 
 	mdelay (2);
@@ -190,12 +191,14 @@ void lcd_init (lcd_t *line1, lcd_t *line2, timer_t *timer)
 {
 	unsigned char i;
 
-	PORTC &= ~(RS | RW | E | D4 | D5 | D6 | D7);
-	DDRC |= RS | RW | E | D4 | D5 | D6 | D7;
+	P2SEL &= ~(RS | E | D4 | D5 | D6 | D7);
+	P2OUT &= ~(RS | E | D4 | D5 | D6 | D7);
+	P2DIR |= RS | E | D4 | D5 | D6 | D7;
+
 	mdelay (110);
 
 	/* Initialize 4-bit bus. */
-	PORTC |= D5 | D4;
+	P2OUT |= D5 | D4;
 	lcd_pulse ();
 	mdelay (10);
 
@@ -205,7 +208,7 @@ void lcd_init (lcd_t *line1, lcd_t *line2, timer_t *timer)
 	lcd_pulse ();
 	mdelay (10);
 
-	PORTC &= ~D4;
+	P2OUT &= ~D4;
 	lcd_pulse ();
 	mdelay (10);
 
@@ -252,7 +255,7 @@ void lcd_load_glyph (char n, const char *data)
 
 	lcd_write_ctl (0x40 + n * 8);		/* установка адреса */
 	for (i=0; i<8; ++i)
-		lcd_write_data (readb (data++));
+		lcd_write_data (*data++);
 }
 
 /*

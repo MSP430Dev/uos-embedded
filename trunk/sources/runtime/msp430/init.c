@@ -47,15 +47,17 @@ _init_ (void)
 	P3DIR &= ~BIT5;				/* enable RXD0 as input */
 
 	U0ME |= UTXE0 + URXE0;
-	P3SEL |= BV(4) + BV(5);			/* set Port 3 pins for USART0 */
 	UCTL0 = SWRST;				/* reset the USART */
 	UCTL0 = CHAR;				/* set the 8-bit byte, 1 stop bit, no parity */
 	UTCTL0 = SSEL_ACLK;			/* select ACLK for baudrate generator clock */
 
-	UBR00 = (unsigned long) KHZ * 500 / 115200;
-	UBR10 = ((unsigned long) KHZ * 500 / 115200) >> 8;
-	UMCTL0 = 0xDD;				/* Optimal for 115200 at 4 MHz clock */
-
+	UBR00 = KHZ * 500L / 115200;
+	UBR10 = (int) (KHZ * 500L / 115200) >> 8;
+#  if KHZ == 8000
+	UMCTL0 = 0xDD;				/* optimal for 115200 and ACLK=4 MHz */
+#  else
+	UMCTL0 = 0;
+#  endif
 	URCTL0 = 0;				/* init receiver control register */
 #endif
 
