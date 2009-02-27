@@ -114,7 +114,7 @@ arch_task_switch (task_t *target)
 void __attribute__((naked))
 _irq_handler_ (lock_irq_t *h)
 {
-debug_printf ("/%d/\n", h->irq);
+/*debug_printf ("/%d/\n", h->irq);*/
 	if (h->handler) {
 		/* If the lock is free -- call fast handler. */
 		if (h->lock->master) {
@@ -166,7 +166,7 @@ int _msp430_adc12ie;
 void
 arch_intr_allow (int irq)
 {
-debug_printf ("intr_allow (%d)\n", irq);
+/*debug_printf ("intr_allow (%d)\n", irq);*/
 #if defined(__MSP430_147__) || defined(__MSP430_148__) || defined(__MSP430_149__)
 	switch (irq) {
         case 1:  P2IE     = _msp430_p2ie;    break;	/* 0xFFE2 Port 2 */

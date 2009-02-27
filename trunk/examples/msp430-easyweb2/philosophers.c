@@ -6,14 +6,14 @@
 #include <timer/timer.h>
 #include <random/rand15.h>
 #include "lcd.h"
-#include "avr-mt-128.h"
+#include "msp430-easyweb2.h"
 
-#define N	5			/* Number of philosophers */
+#define NPHIL	5			/* Number of philosophers */
 
 timer_t timer;				/* Timer driver */
 lcd_t line1, line2;
-ARRAY (task [N], 280);			/* Task space */
-lock_t fork [N];			/* Forks */
+ARRAY (task [NPHIL], 200);		/* Task space */
+lock_t fork [NPHIL];			/* Forks */
 lock_t table;				/* Broadcast communication */
 lock_t screen;				/* Access to the screen */
 int sound_disabled;
@@ -88,14 +88,17 @@ void put_forks (lock_t *left_fork, lock_t *right_fork)
 		buzzer_control (0);
 	}
 
-	/* Down button: enable/disable sound. */
-	if (button_down_pressed ()) {
+	/* Button 1: enable/disable sound. */
+	if (button1_pressed ()) {
 		if (! button_pressed) {
 			button_pressed = 1;
 			sound_disabled = ! sound_disabled;
+			led_control (1);
 		}
-	} else
+	} else if (button_pressed) {
 		button_pressed = 0;
+		led_control (0);
+	}
 }
 
 void philosopher (void *data)
@@ -105,9 +108,9 @@ void philosopher (void *data)
 	i = (int) data;
 	for (;;) {
 		think (i);
-		get_forks (i, &fork [i], &fork [(i+1) % N]);
+		get_forks (i, &fork [i], &fork [(i+1) % NPHIL]);
 		eat (i);
-		put_forks (&fork [i], &fork [(i+1) % N]);
+		put_forks (&fork [i], &fork [(i+1) % NPHIL]);
 	}
 }
 
@@ -115,12 +118,13 @@ void uos_init ()
 {
 	int i;
 
-	timer_init (&timer, 100, KHZ, 50);
+	timer_init (&timer, 100, KHZ, 10);
 	lcd_init (&line1, &line2, &timer);
 	buzzer_init ();
+	led_init ();
 
-	/* Create N philosopher tasks. */
-	for (i=0; i<N; ++i)
+	/* Create NPHIL philosopher tasks. */
+	for (i=0; i<NPHIL; ++i)
 		task_create (philosopher, (void*) i, "phil", 1,
 			task[i], sizeof (task[i]));
 }

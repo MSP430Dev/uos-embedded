@@ -34,8 +34,10 @@ void poll_buttons (void *data)
 
 		/* Button: clear display. */
 		if (! button1_pressed ()) {
-			b1_pressed = 0;
-			led_control (0);
+			if (b1_pressed) {
+				b1_pressed = 0;
+				led_control (0);
+			}
 		} else if (! b1_pressed) {
 			b1_pressed = 1;
 			led_control (1);

@@ -5,8 +5,9 @@
 #include <kernel/uos.h>
 #include <nvram/eeprom.h>
 #include "lcd.h"
-#include "avr-mt-128.h"
+#include "msp430-easyweb2.h"
 
+#define EEPROM_BYTES	(64*1024L)
 lcd_t line1, line2;
 ARRAY (task, 280);
 
@@ -14,31 +15,32 @@ void wait_for_button ()
 {
 	puts (&line2, "\fPress button B4.");
 
-	/* Wait until right button released. */
-	while (button_right_pressed ())
+	/* Wait until button 1 released. */
+	while (button1_pressed ())
 		continue;
 
-	/* Wait until right button pressed. */
-	while (! button_right_pressed ())
+	/* Wait until button 1 pressed. */
+	while (! button1_pressed ())
 		continue;
 }
 
 void test (void *data)
 {
-	unsigned i, errors;
+	unsigned errors;
 	unsigned char c;
+	unsigned long i;
 
 	puts (&line1, "\fTesting NVRAM.");
 	for (;;) {
 		wait_for_button ();
 		errors = 0;
 
-		for (i=0; i<=E2END; ++i) {
+		for (i=0; i<EEPROM_BYTES; ++i) {
 			if ((i & 63) == 0)
 				printf (&line2, "\fWriting %d...", i);
 			eeprom_write_byte (i, ~i);
 		}
-		for (i=0; i<=E2END; ++i) {
+		for (i=0; i<EEPROM_BYTES; ++i) {
 			if ((i & 1023) == 0)
 				printf (&line2, "\fReading %d...", i);
 			c = eeprom_read_byte (i);
@@ -53,7 +55,7 @@ void test (void *data)
 		if (errors)
 			printf (&line1, "\fTotal %d errs.", errors);
 		else
-			printf (&line1, "\f%d bytes OK.", E2END+1);
+			printf (&line1, "\f%d bytes OK.", EEPROM_BYTES);
 	}
 }
 
