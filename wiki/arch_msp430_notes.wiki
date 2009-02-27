@@ -31,3 +31,17 @@ r15...r14 (в случае `long`).
 ||  ...   ||
 ||  r15   || <--- Новое значение SP ||
 ||  ---   ||
+
+= Отладчик GDB =
+{{{
+wget gdb-6.0.tar.bz2
+tar xjvf gdb-6.0.tar.bz2
+
+cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/mspgcc co gdb/gdb-current
+cp -r gdb/gdb-current/* gdb-6.0/
+
+cd gdb-6.0
+./configure --prefix=/usr/local/msp430 --target=msp430
+make
+make install
+}}}
