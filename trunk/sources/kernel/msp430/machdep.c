@@ -155,8 +155,8 @@ _irq_handler_ (lock_irq_t *h)
 }
 
 /* TODO */
-int _msp430_p2ie;
 int _msp430_p1ie;
+int _msp430_p2ie;
 int _msp430_adc12ie;
 
 /*
@@ -167,24 +167,50 @@ void
 arch_intr_allow (int irq)
 {
 /*debug_printf ("intr_allow (%d)\n", irq);*/
-#if defined(__MSP430_147__) || defined(__MSP430_148__) || defined(__MSP430_149__)
 	switch (irq) {
-        case 1:  P2IE     = _msp430_p2ie;    break;	/* 0xFFE2 Port 2 */
-        case 2:  /*U1IE  |= UTXIE1;*/        break;	/* 0xFFE4 USART 1 Transmit */
-        case 3:  U1IE    |= URXIE1;          break;	/* 0xFFE6 USART 1 Receive */
-        case 4:  P1IE     = _msp430_p1ie;    break;	/* 0xFFE8 Port 1 */
-        case 5:  TACCTL1 |= CCIE;            break;	/* 0xFFEA Timer A CC1-2, TA */
-        case 6:  TACCTL0 |= CCIE;            break;	/* 0xFFEC Timer A CC0 */
-        case 7:  ADC12IE  = _msp430_adc12ie; break;	/* 0xFFEE ADC */
-        case 8:  /*U0IE  |= UTXIE0;*/        break;	/* 0xFFF0 USART 0 Transmit */
-        case 9:  U0IE    |= URXIE0;          break;	/* 0xFFF2 USART 0 Receive */
-        case 10: IE1     |= WDTIE;           break;	/* 0xFFF4 Watchdog Timer */
-        case 11: CACTL1  |= CAIE;            break;	/* 0xFFF6 Comparator A */
-        case 12: TBCCTL1 |= CCIE;            break;	/* 0xFFF8 Timer B 1-7 */
-        case 13: TBCCTL0 |= CCIE;            break;	/* 0xFFFA Timer B 0 */
-        case 14:                             break;	/* 0xFFFC Non-maskable */
-	}
+#ifdef PORT1_VECTOR
+        case PORT1_VECTOR/2: P1IE = _msp430_p1ie; break;	/* Port 1 */
 #endif
+#ifdef PORT2_VECTOR
+        case PORT2_VECTOR/2: P2IE = _msp430_p2ie; break;	/* Port 2 */
+#endif
+#ifdef USART1TX_VECTOR
+        case USART1TX_VECTOR/2: /*U1IE |= UTXIE1;*/ break;	/* USART 1 Transmit */
+#endif
+#ifdef USART1RX_VECTOR
+        case USART1RX_VECTOR/2: U1IE |= URXIE1; break;		/* USART 1 Receive */
+#endif
+#ifdef USART0TX_VECTOR
+        case USART0TX_VECTOR/2: /*U0IE |= UTXIE0;*/ break;	/* USART 0 Transmit */
+#endif
+#ifdef USART0RX_VECTOR
+        case USART0RX_VECTOR/2: U0IE |= URXIE0; break;		/* USART 0 Receive */
+#endif
+#ifdef TIMERA1_VECTOR
+        case TIMERA1_VECTOR/2: TACCTL1 |= CCIE; break;		/* Timer A CC1-2, TA */
+#endif
+#ifdef TIMERA0_VECTOR
+        case TIMERA0_VECTOR/2: TACCTL0 |= CCIE; break;		/* Timer A CC0 */
+#endif
+#ifdef TIMERB1_VECTOR
+        case TIMERB1_VECTOR/2: TBCCTL1 |= CCIE; break;		/* Timer B 1-7 */
+#endif
+#ifdef TIMERB0_VECTOR
+        case TIMERB0_VECTOR/2: TBCCTL0 |= CCIE; break;		/* Timer B 0 */
+#endif
+#ifdef ADC12_VECTOR
+        case ADC12_VECTOR/2: ADC12IE = _msp430_adc12ie; break;	/* ADC */
+#endif
+#ifdef WDT_VECTOR
+        case WDT_VECTOR/2: IE1 |= WDTIE; break;			/* Watchdog Timer */
+#endif
+#ifdef COMPARATORA_VECTOR
+        case COMPARATORA_VECTOR/2: CACTL1  |= CAIE; break;	/* Comparator A */
+#endif
+#ifdef NMI_VECTOR
+        case NMI_VECTOR/2: break;				/* Non-maskable */
+#endif
+	}
 }
 
 /*
@@ -200,19 +226,61 @@ _intr##n (void) \
 	asm volatile ("jump _irq_handler_");\
 }
 
-#if defined(__MSP430_147__) || defined(__MSP430_148__) || defined(__MSP430_149__)
-HANDLE (2,  P2IE = 0);		/* 0xFFE2 Port 2 */
-HANDLE (4,  U1IE &= ~UTXIE1);	/* 0xFFE4 USART 1 Transmit */
-HANDLE (6,  U1IE &= ~URXIE1);	/* 0xFFE6 USART 1 Receive */
-HANDLE (8,  P1IE = 0);		/* 0xFFE8 Port 1 */
-HANDLE (10, TACCTL1 &= ~CCIE);	/* 0xFFEA Timer A CC1-2, TA */
-HANDLE (12, TACCTL0 &= ~CCIE);	/* 0xFFEC Timer A CC0 */
-HANDLE (14, ADC12IE = 0);	/* 0xFFEE ADC */
-HANDLE (16, U0IE &= ~UTXIE0);	/* 0xFFF0 USART 0 Transmit */
-HANDLE (18, U0IE &= ~URXIE0);	/* 0xFFF2 USART 0 Receive */
-HANDLE (20, IE1 &= ~WDTIE);	/* 0xFFF4 Watchdog Timer */
-HANDLE (22, CACTL1 &= ~CAIE);	/* 0xFFF6 Comparator A */
-HANDLE (24, TBCCTL1 &= ~CCIE);	/* 0xFFF8 Timer B 1-7 */
-HANDLE (26, TBCCTL0 &= ~CCIE);	/* 0xFFFA Timer B 0 */
-HANDLE (28, );			/* 0xFFFC Non-maskable */
+#ifdef PORT1_VECTOR
+HANDLE (PORT1_VECTOR,  P1IE = 0);		/* Port 1 */
 #endif
+#ifdef PORT2_VECTOR
+HANDLE (PORT2_VECTOR,  P2IE = 0);		/* Port 2 */
+#endif
+#ifdef USART1TX_VECTOR
+HANDLE (USART1TX_VECTOR,  U1IE &= ~UTXIE1);	/* USART 1 Transmit */
+#endif
+#ifdef USART1RX_VECTOR
+HANDLE (USART1RX_VECTOR,  U1IE &= ~URXIE1);	/* USART 1 Receive */
+#endif
+#ifdef USART0TX_VECTOR
+HANDLE (USART0TX_VECTOR, U0IE &= ~UTXIE0);	/* USART 0 Transmit */
+#endif
+#ifdef USART0RX_VECTOR
+HANDLE (USART0RX_VECTOR, U0IE &= ~URXIE0);	/* USART 0 Receive */
+#endif
+#ifdef TIMERA1_VECTOR
+HANDLE (TIMERA1_VECTOR, TACCTL1 &= ~CCIE);	/* Timer A CC1-2, TA */
+#endif
+#ifdef TIMERA0_VECTOR
+HANDLE (TIMERA0_VECTOR, TACCTL0 &= ~CCIE);	/* Timer A CC0 */
+#endif
+#ifdef TIMERB1_VECTOR
+HANDLE (TIMERB1_VECTOR, TBCCTL1 &= ~CCIE);	/* Timer B 1-7 */
+#endif
+#ifdef TIMERB0_VECTOR
+HANDLE (TIMERB0_VECTOR, TBCCTL0 &= ~CCIE);	/* Timer B 0 */
+#endif
+#ifdef ADC12_VECTOR
+HANDLE (ADC12_VECTOR, ADC12IE = 0);		/* ADC */
+#endif
+#ifdef WDT_VECTOR
+HANDLE (WDT_VECTOR, IE1 &= ~WDTIE);		/* Watchdog Timer */
+#endif
+#ifdef COMPARATORA_VECTOR
+HANDLE (COMPARATORA_VECTOR, CACTL1 &= ~CAIE);	/* Comparator A */
+#endif
+#ifdef NMI_VECTOR
+HANDLE (NMI_VECTOR, );				/* Non-maskable */
+#endif
+
+/* TODO:
+ * ADC10_VECTOR
+ * BASICTIMER_VECTOR
+ * DACDMA_VECTOR
+ * IO0_VECTOR
+ * IO1_VECTOR
+ * PORT0_VECTOR
+ * TIMERPORT_VECTOR
+ * UARTRX_VECTOR
+ * UARTTX_VECTOR
+ * USCIAB0RX_VECTOR
+ * USCIAB0TX_VECTOR
+ * USCIAB1RX_VECTOR
+ * USCIAB1TX_VECTOR
+ */

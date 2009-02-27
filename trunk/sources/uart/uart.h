@@ -11,7 +11,7 @@
 #      define UART_STACKSZ	0x400
 #   endif
 #   if MSP430
-#      define UART_STACKSZ	0x100
+#      define UART_STACKSZ	0x200
 #   endif
 #   if LINUX386
 #      define UART_STACKSZ	4000

@@ -30,24 +30,29 @@
 static bool_t
 uart_transmit_start (uart_t *u)
 {
-debug_puts ("(*) ");
+/*debug_puts ("{s} ");*/
 	if (u->out_first == u->out_last)
 		lock_signal (&u->transmitter, 0);
 
 	/* Check that transmitter buffer is busy. */
-	if (! test_transmitter_empty (u->port))
+	if (! test_transmitter_empty (u->port)) {
+/*debug_putchar (0, '!');*/
 		return 1;
+	}
 
 	/* Nothing to transmit or no CTS - stop transmitting. */
 	if (u->out_first == u->out_last ||
 	    (u->cts_query && u->cts_query (u) == 0)) {
 		/* Disable `transmitter empty' interrupt. */
 		disable_transmit_interrupt (u->port);
+/*debug_printf ("{d%02x}", IE1);*/
 		return 0;
 	}
 
 	/* Send byte. */
+/*debug_putchar (0, '<');*/
 	transmit_byte (u->port, *u->out_first);
+/*debug_putchar (0, '>');*/
 
 	++u->out_first;
 	if (u->out_first >= u->out_buf + UART_OUTBUFSZ)
@@ -55,6 +60,7 @@ debug_puts ("(*) ");
 
 	/* Enable `transmitter empty' interrupt. */
 	enable_transmit_interrupt (u->port);
+/*debug_printf ("{e%02x}", IE1);*/
 	return 1;
 }
 
@@ -211,8 +217,10 @@ uart_receiver (void *arg)
 #endif
 		/* Check that receive data is available,
 		 * and get the received byte. */
+/*debug_printf ("{i%02x}", U0IFG);*/
 		if (! test_get_receive_data (u->port, &c))
 			continue;
+/*debug_printf ("%02x", c);*/
 
 		newlast = u->in_last + 1;
 		if (newlast >= u->in_buf + UART_INBUFSZ)

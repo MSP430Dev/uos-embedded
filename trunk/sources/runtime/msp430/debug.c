@@ -13,16 +13,15 @@ debug_putchar (void *arg, short c)
 	msp430_intr_disable (&x);
 
 	/* Wait for transmitter interrupt flag. */
-	while (! (U0IFG & UTXIFG0))
+	while (! (U0IFG & UTXIFG0) && ! (UTCTL0 & TXEPT))
 		continue;
-
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
 	TXBUF0 = c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (UTCTL0 & TXEPT))
+	while (! (U0IFG & UTXIFG0) && ! (UTCTL0 & TXEPT))
 		continue;
 
 /*	watchdog_alive ();*/
