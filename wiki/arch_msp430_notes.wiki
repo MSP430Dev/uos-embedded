@@ -33,6 +33,10 @@ r15...r14 (в случае `long`).
 ||  ---   ||
 
 = Отладчик GDB =
+GDB 5.1.1 - последняя нормально работающая версия отладчика для MSP430. Судя по обсуждениям в инетрнете, на текущий момент (февраль 2009) более свежие версии не обладают приемлемой функциональностью.
+
+Бинарную версию для Linux [http://uos-embedded.googlecode.com/files/gdb511-msp.tgz можно скачать здесь], или собрать из исходных текстов:
+Собрать  
 {{{
 wget http://cygwin.mirrors.pair.com/gdb/old-releases/gdb-5.1.1.tar.bz2
 tar xjvf gdb-5.1.1.tar.bz2
@@ -44,4 +48,12 @@ cd gdb-5.1.1
 ./configure --target=msp430
 make
 make install
+}}}
+
+Для подсоединения к целевой плате необходимо использовать утилиту прокси:
+{{{
+$ msp430-gdbproxy msp430 &
+$ msp430-gdb myprog.elf
+(gdb) target remote localhost:2000
+(gdb) c
 }}}
