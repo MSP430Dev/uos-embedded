@@ -23,8 +23,7 @@
 #define transmit_byte(p,c)		if (p) TXBUF1 = (c); else TXBUF0 = (c)
 #define get_received_byte(p)		((p) ? RXBUF1 : RXBUF0)
 
-#define test_transmitter_empty(p)	((p) ? ((U1IFG & UTXIFG1) || (UTCTL1 & TXEPT)) : \
-					((U0IFG & UTXIFG0) || (UTCTL0 & TXEPT)))
+#define test_transmitter_empty(p)	((p) ? (UTCTL1 & TXEPT) : (UTCTL0 & TXEPT))
 #define test_receive_data(p)		((p) ? (U1IFG & URXIFG1) : (U0IFG & (URXIFG0 | 1)))
 #define test_get_receive_data(p,d)	((p) ? ((U1IFG & URXIFG1) ? \
 						((*d) = RXBUF1, 1) : 0) : \
@@ -62,7 +61,7 @@
 #define transmit_byte(p,c)		TXBUF0 = (c)
 #define get_received_byte(p)		RXBUF0
 
-#define test_transmitter_empty(p)	((U0IFG & UTXIFG0) || (UTCTL0 & TXEPT))
+#define test_transmitter_empty(p)	(UTCTL0 & TXEPT)
 #define test_receive_data(p)		(U0IFG & (URXIFG0 | 1))
 #define test_get_receive_data(p,d)	((U0IFG & (URXIFG0 | 1)) ? \
 					((*d) = RXBUF0, 1) : 0)

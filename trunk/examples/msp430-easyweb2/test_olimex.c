@@ -20,6 +20,7 @@ void poll_buttons (void *data)
 
 	printf (&line1, "  Easy WEB ][   ");
 	printf (&line2, " powered by uOS ");
+	puts (&uart, "\nhttp://uos.vak.ru\n");
 	for (;;) {
 		/* Receive data from UART and put them on screen. */
 		while (peekchar (&uart) >= 0) {

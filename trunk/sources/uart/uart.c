@@ -36,7 +36,7 @@ uart_transmit_start (uart_t *u)
 
 	/* Check that transmitter buffer is busy. */
 	if (! test_transmitter_empty (u->port)) {
-/*debug_putchar (0, '!');*/
+/*debug_putchar (0, '`');*/
 		return 1;
 	}
 

@@ -49,7 +49,7 @@ _init_ (void)
 	U0ME |= UTXE0 + URXE0;
 	UCTL0 = SWRST;				/* reset the USART */
 	UCTL0 = CHAR;				/* set the 8-bit byte, 1 stop bit, no parity */
-	UTCTL0 = SSEL_ACLK;			/* select ACLK for baudrate generator clock */
+	UTCTL0 = SSEL_ACLK | TXEPT;		/* select ACLK for baudrate generator clock */
 
 	UBR00 = KHZ * 500L / 115200;
 	UBR10 = (int) (KHZ * 500L / 115200) >> 8;
