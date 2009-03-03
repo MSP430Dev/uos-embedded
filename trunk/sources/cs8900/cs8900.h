@@ -8,6 +8,9 @@
 #	if __thumb__
 #		define CS8900_STACKSZ	0x180
 #	endif
+#	if MSP430
+#		define CS8900_STACKSZ	0x180
+#	endif
 #endif
 
 struct _mem_pool_t;

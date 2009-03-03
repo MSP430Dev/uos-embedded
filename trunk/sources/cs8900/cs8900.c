@@ -4,8 +4,6 @@
 #include "buf/buf.h"
 #include "cs8900/cs8900.h"
 
-extern volatile unsigned char device_cs8900[];
-
 #define ETH_MTU		1514
 #define ETH_MIN		(64-4)	/* LY: Минимальна длина пакета без CRC. */
 #define CS8900_RUNT	0	/* LY: Допускает передачу коротких фреймов, т.е. меньше 60+4 байт. */
@@ -14,49 +12,191 @@ extern volatile unsigned char device_cs8900[];
 				 *     Если выключено и CS8900_RUNT=0, то чип дополняет
 				 *     пакеты мусором (похоже размножает последний байт).
 				 */
+
+/* In 8-bit data bus mode, interrupts could not be used (bug in chip). */
 #define POLL_MODE
-#define DATAREG		0x00
-#define TXCMD		0x04
-#define TXLENGTH	0x06
-#define ISQ		0x08
-#define PACKETPP	0x0A
-#define PPDATA		0x0C
+
+/* CS8900 i/o addresses, i/o mode mapping. */
+#define DATAREG		0x00	/* rw- Receive/transmit data */
+#define TXCMD		0x04	/* w - Transmit command */
+#define TXLENGTH	0x06	/* w - Transmit length */
+#define ISQ		0x08	/* r - Interrupt status queue */
+#define PACKETPP	0x0A	/* rw- PacketPage pointer */
+#define PPDATA		0x0C	/* rw- PacketPage data */
 
 /*
- * Output low byte first, then high byte.
+ * On different boards and CPU acrhitectures, CS8900 controller
+ * could be attached differently. Here we declare low-level
+ * board-dependend i/o functions.
  */
+#ifdef MSP430
+
+/* Olimex easyWeb2 board:
+ * data bus on P5[7:0], address bus on P3[3:0],
+ * /IOR on P3.6, /IOW on P3.7. */
+#define IOR		0x40
+#define IOW		0x80
+
+void
+cs_out (small_uint_t reg, unsigned val)
+{
+	/* Output low byte first, then high byte. */
+	P5DIR = 0xFF;				// data port to output
+
+	P3OUT = IOR | IOW | reg;		// put address on bus
+	P5OUT = val;				// write low order byte to data bus
+	P3OUT &= ~IOW;				// toggle IOW-signal
+
+	P3OUT = IOR | IOW | reg | 1;		// and put next address on bus
+	P5OUT = val >> 8;			// write high order byte to data bus
+	P3OUT &= ~IOW;				// toggle IOW-signal
+
+	P3OUT |= IOW;
+}
+
+unsigned
+cs_in (small_uint_t reg)
+{
+	unsigned v;
+
+	/* Input high byte first, then low byte. */
+	P5DIR = 0;				// data port to input
+	P3OUT = IOR | IOW | reg | 1;		// put address on bus
+	P3OUT &= ~IOR;				// IOR-signal low
+	v = P5IN << 8;				// get low order byte from data bus
+
+	P3OUT = IOR | IOW | reg;		// IOR high and put next address on bus
+	P3OUT &= ~IOR;				// IOR-signal low
+	v |= P5IN;				// get high order byte from data bus
+
+	P3OUT |= IOR;
+	return v;
+}
+
+void
+cs_outb (small_uint_t reg, small_uint_t val)
+{
+	P5DIR = 0xFF;				// data port to output
+	P3OUT = IOR | IOW | reg;		// put address on bus
+	P5OUT = val;				// write byte to data bus
+	P3OUT &= ~IOW;				// toggle IOW-signal
+	P3OUT |= IOW;
+}
+
+small_uint_t
+cs_inb (small_uint_t reg)
+{
+	unsigned v;
+
+	P5DIR = 0;				// data port to input
+	P3OUT = IOR | IOW | reg;		// IOR high and put next address on bus
+	P3OUT &= ~IOR;				// IOR-signal low
+	v = P5IN;				// get byte from data bus
+
+	P3OUT |= IOR;
+	return v;
+}
+
+void
+cs_init ()
+{
+	P3SEL &= BIT4 | BIT5;			/* configure control lines as gpio */
+	P3OUT = IOR | IOW;			/* reset outputs, control lines high */
+	P3DIR |= IOR | IOW | 0x0F;		/* address/control bus as output */
+
+	P5SEL = 0;				/* select standard port functions */
+	P5OUT = 0;				/* reset outputs */
+	P5DIR = 0xFF;				/* switch data port to output */
+}
+
+#elif defined (__AVR__)
+
+/* Atmel AVR board.
+ * This symbol must be mapped onto chip address space. */
+extern volatile unsigned char device_cs8900[];
+
 void inline __attribute__((always_inline))
-cs_out (small_uint_t reg, unsigned val) {
-#ifdef __AVR__
+cs_out (small_uint_t reg, unsigned val)
+{
+	/* Output low byte first, then high byte. */
 	__asm __volatile (
 		"sts %1, %A0"		"\n\t"
 		"sts (%1)+1, %B0"
 		:: "r" (val), "o" (device_cs8900[reg]));
-#else
-	device_cs8900[reg] = val;
-	device_cs8900[reg + 1] = val >> 8;
-#endif
 }
 
-/*
- * Input high byte first, then low byte.
- */
 unsigned inline __attribute__((always_inline))
-cs_in (small_uint_t reg) {
-#ifdef __AVR__
+cs_in (small_uint_t reg)
+{
 	unsigned v;
+
+	/* Input high byte first, then low byte. */
 	__asm __volatile (
 		"lds %B0, (%1)+1"	"\n\t"
 		"lds %A0, %1"
 		: "=r" (v) : "o" (device_cs8900[reg]));
 	return v;
+}
+
+void inline __attribute__((always_inline))
+cs_outb (small_uint_t reg, small_uint_t val)
+{
+	device_cs8900[reg] = val;
+}
+
+small_uint_t inline __attribute__((always_inline))
+cs_inb (small_uint_t reg)
+{
+	return device_cs8900[reg];
+}
+
+void inline __attribute__((always_inline))
+cs_init ()
+{
+}
+
 #else
+
+/* Generic board.
+ * The following symbol must be mapped onto chip address space. */
+extern volatile unsigned char device_cs8900[];
+
+void inline __attribute__((always_inline))
+cs_out (small_uint_t reg, unsigned val)
+{
+	/* Output low byte first, then high byte. */
+	device_cs8900[reg] = val;
+	device_cs8900[reg + 1] = val >> 8;
+}
+
+unsigned inline __attribute__((always_inline))
+cs_in (small_uint_t reg)
+{
 	small_uint_t l, h;
+
+	/* Input high byte first, then low byte. */
 	h = device_cs8900[reg + 1];
 	l = device_cs8900[reg];
 	return ((unsigned) h << 8) | l;
-#endif
 }
+
+void inline __attribute__((always_inline))
+cs_outb (small_uint_t reg, small_uint_t val)
+{
+	device_cs8900[reg] = val;
+}
+
+small_uint_t inline __attribute__((always_inline))
+cs_inb (small_uint_t reg)
+{
+	return device_cs8900[reg];
+}
+
+void inline __attribute__((always_inline))
+cs_init ()
+{
+}
+#endif
 
 /*
  * Self Control Register - Read/write
@@ -311,7 +451,7 @@ cs8900_receive_data (cs8900_t *u)
 	len = cs_in (DATAREG);
 	if (! (event & RXE_OK) || len < 4 || len > ETH_MTU) {
 		/* Skip this frame */
-		/* debug_printf ("cs8900_receive_data: failed, event=%#04x, length %d bytes\n", event, len); */
+/*debug_printf ("cs8900_receive_data: failed, event=%#04x, length %d bytes\n", event, len);*/
 		++u->netif.in_errors;
 skip:
 		/* Throw away the last committed received frame */
@@ -321,10 +461,10 @@ skip:
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-	/* debug_printf ("cs8900_receive_data: ok, event=%#04x, length %d bytes\n", event, len); */
+/*debug_printf ("cs8900_receive_data: ok, event=%#04x, length %d bytes\n", event, len);*/
 
 	if (buf_queue_is_full (&u->inq)) {
-		/* debug_printf ("cs8900_receive_data: input overflow\n"); */
+/*debug_printf ("cs8900_receive_data: input overflow\n");*/
 		++u->netif.in_discards;
 		goto skip;
 	}
@@ -333,15 +473,15 @@ skip:
 	p = buf_alloc (u->pool, len, 2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
-		/* debug_printf ("cs8900_receive_data: ignore packet - out of memory\n"); */
+/*debug_printf ("cs8900_receive_data: ignore packet - out of memory\n");*/
 		++u->netif.in_discards;
 		goto skip;
 	}
 
 	/* Get received packet. */
 	for (b = p->payload; ;) {
-		b[0] = device_cs8900[DATAREG];
-		h = device_cs8900[DATAREG + 1];
+		b[0] = cs_inb (DATAREG);
+		h = cs_inb (DATAREG + 1);
 		if (len == 1)
 			break;
 		b[1] = h;
@@ -384,7 +524,7 @@ cs8900_poll (cs8900_t *u)
 	lock_take (&u->netif.lock);
 	cs8900_interrupt (u);
 	if (u->inq.count != 0) {
-		/* debug_printf ("cs8900_poll: received data\n"); */
+/*debug_printf ("cs8900_poll: received data\n");*/
 		lock_signal (&u->netif.lock, 0);
 	}
 	lock_release (&u->netif.lock);
@@ -421,13 +561,13 @@ cs8900_output (cs8900_t *u, buf_t *p, small_uint_t prio)
 	unsigned char *b;
 	unsigned len;
 
-	/*debug_printf ("cs8900_output: transmit %d bytes\n", p->tot_len);*/
+/*debug_printf ("cs8900_output: transmit %d bytes\n", p->tot_len);*/
 	lock_take (&u->netif.lock);
 
 	/* Exit if link has failed */
 	cs_out (PACKETPP, PP_LINEST);
 	if (! (cs_in (PPDATA) & LINK_OK) || p->tot_len < 4 || p->tot_len > ETH_MTU) {
-		/* debug_printf ("cs8900_output: transmit %d bytes, link failed\n", p->tot_len); */
+/*debug_printf ("cs8900_output: transmit %d bytes, link failed\n", p->tot_len);*/
 failed: 	++u->netif.out_errors;
 		lock_release (&u->netif.lock);
 		buf_free (p);
@@ -487,11 +627,11 @@ failed: 	++u->netif.out_errors;
 		assert (q->len > 0);
 		b = q->payload;
 		for (len = q->len; len; --len) {
-			device_cs8900[hilo] = *b++;
+			cs_outb (hilo, *b++);
 			hilo ^= 1;
 		}
 		if (hilo != DATAREG)
-			device_cs8900[DATAREG + 1] = 0;
+			cs_outb (DATAREG + 1, 0);
 		q = q->next;
 	} while (q);
 	/* debug_dump ("cs8900-TX", p->payload, p->len); */
@@ -521,12 +661,29 @@ failed: 	++u->netif.out_errors;
 bool_t
 cs8900_probe ()
 {
-	unsigned id;
+	unsigned v, m;
 
-	cs_out (PACKETPP, 0);
-	id = cs_in (PPDATA);
-	/*debug_printf ("\nmanufacturer = %#04x\n", id);*/
-	return id == 0x630E;
+	cs_init ();
+	for (m=0; ; ++m) {
+		/* Startup time is ~10 msec on Olimex easyWeb2 board. */
+		if (m > 20)
+			return 0;
+		cs_out (PACKETPP, 0);
+		v = cs_in (PPDATA);
+/*debug_printf ("CS8900 manufacturer = %#04x\n", v);*/
+		if (v == 0x630E)
+			break;
+		udelay (1000);
+	}
+	for (v=1; v<0x1000; v<<=1) {
+		cs_out (PACKETPP, v);
+		m = cs_in (PACKETPP);
+		if (m != (v | 0x3000)) {
+/*debug_printf ("reading packetpage pointer: got %#04x, expected %#04x\n", m, v | 0x3000);*/
+			return 0;
+		}
+	}
+	return 1;
 }
 
 static netif_interface_t cs8900_interface = {
@@ -562,21 +719,14 @@ cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *a
 	u->netif.ethaddr[3] = 0xff;
 	u->netif.ethaddr[4] = 0xff;
 	u->netif.ethaddr[5] = 0xff;
-#if 0
-	{
-		unsigned x;
-		cs_out (PACKETPP, 0x55aa);
-		x = cs_in (PACKETPP);
-		if (x != 0x55aa)
-			debug_printf ("written 0x55aa read %#04x\n", x);
-	}
-#endif
-	lock_take (&u->netif.lock);
 
 	/*
 	 * Initialize hardware.
 	 */
+	lock_take (&u->netif.lock);
+
 	/* Set RESET bit. */
+	cs_init ();
 	cs_out (PACKETPP, PP_SELFCTL);
 	OUT_SELFCTL (POWER_ON_RESET);
 
@@ -588,7 +738,7 @@ cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *a
 
 		if ((selfctl & POWER_ON_RESET) == 0)
 			break;
-		/*debug_printf ("selfctl=0x%04x ", selfctl);*/
+/*debug_printf ("selfctl=0x%04x ", selfctl);*/
 	}
 
 	/* After full initialization of the cs8900a
@@ -600,7 +750,7 @@ cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *a
 
 		if (selfst & INIT_DONE)
 			break;
-		/*debug_printf ("selfst=0x%04x ", selfst);*/
+/*debug_printf ("selfst=0x%04x ", selfst);*/
 		continue;
 	}
 
@@ -635,8 +785,11 @@ cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *a
 
 	/* Enable interrupt generation */
 	cs_out (PACKETPP, PP_BUSCTL);
-	OUT_BUSCTL (0 /*ENABLE_IRQ*/);
-
+#ifdef POLL_MODE
+	OUT_BUSCTL (0);
+#else
+	OUT_BUSCTL (ENABLE_IRQ);
+#endif
 	/* Enable receiver and transmitter */
 	cs_out (PACKETPP, PP_LINECTL);
 	OUT_LINECTL (SERIAL_RX_ON | SERIAL_TX_ON);

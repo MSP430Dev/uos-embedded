@@ -13,7 +13,7 @@ debug_putchar (void *arg, short c)
 	msp430_intr_disable (&x);
 
 	/* Wait for transmitter holding register empty. */
-	while (! (UTCTL0 & TXEPT))
+	while (! (UTCTL0 & TXEPT) && ! (U0IFG & UTXIFG0))
 		continue;
 again:
 	/* Send byte. */
@@ -21,7 +21,7 @@ again:
 	TXBUF0 = c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (UTCTL0 & TXEPT))
+	while (! (UTCTL0 & TXEPT) && ! (U0IFG & UTXIFG0))
 		continue;
 
 /*	watchdog_alive ();*/

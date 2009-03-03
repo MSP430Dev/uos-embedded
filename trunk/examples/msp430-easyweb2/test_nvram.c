@@ -11,6 +11,10 @@
 lcd_t line1, line2;
 ARRAY (task, 280);
 
+/*
+ * TODO: Implement software I2C interface to 24LC515.
+ */
+
 void wait_for_button ()
 {
 	puts (&line2, "\fPress button B4.");
