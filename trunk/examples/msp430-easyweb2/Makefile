@@ -4,7 +4,7 @@ include target.cfg
 
 # Compile without kernel module in target.cfg.
 TESTS		= test_debug.hex test_task.hex test_timer.hex test_lcd.hex \
-		  test_uart.hex test_olimex.hex philosophers.hex test_cs8900.hex
+		  test_uart.hex test_olimex.hex philosophers.hex test_eth.hex
 # TODO: test_nvram.hex
 
 OUTS            = $(TESTS:%.srec=%.out)
@@ -23,7 +23,7 @@ clean:
 probe:
 		$(PROG) -D
 
-load:		test_cs8900.hex
+load:		test_eth.hex
 		$(PROG) -e $<
 
 # Original software from http://www.olimex.com/dev/soft/msp430/easyweb_test.tar.gz
@@ -39,8 +39,8 @@ test_nvram.out:	test_nvram.o startup.o libuos.a lcd.o
 test_olimex.out: test_olimex.o startup.o libuos.a lcd.o
 		$(CC) $(LDFLAGS) test_olimex.o lcd.o $(LIBS) -o $@
 
-test_cs8900.out: test_cs8900.o startup.o libuos.a lcd.o
-		$(CC) $(LDFLAGS) test_cs8900.o lcd.o $(LIBS) -o $@
+test_eth.out:	test_eth.o startup.o libuos.a lcd.o
+		$(CC) $(LDFLAGS) test_eth.o lcd.o $(LIBS) -o $@
 
 philosophers.out: philosophers.o startup.o libuos.a lcd.o
 		$(CC) $(LDFLAGS) philosophers.o lcd.o $(LIBS) -o $@
