@@ -244,9 +244,6 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
         /* Run the timer of the ACLK. */
         TACTL = TASSEL_1;
 
-        /* Clear everything to start with. */
-        TACTL |= TACLR;
-
         /* Set the compare match value according to the tick rate we want. */
         TACCR0 = t->khz * t->msec_per_tick / 2;
 

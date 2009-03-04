@@ -98,16 +98,16 @@ TARGET          = $(CURDIR)
 OS              = $(shell cd ../..; pwd)
 include target.cfg
 
-TESTS           = test_debug.sre
+TESTS           = test_debug.hex
 
 all:            $(TESTS)
                 for f in *.out; do $(SIZE) $$f; done
 clean:
-                rm -rf *~ *.[oasi] *.out *.srec *.lst *.dis .deps $(MODULES) $(TESTS)
+                rm -rf *~ *.[oasi] *.out *.hex *.lst *.dis .deps $(MODULES) $(TESTS)
 
 include $(OS)/sources/rules.mak
 }}}
-Запускаем "make". В результате получаем файл `test_debug.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World" (скорость 115200, 8 бит, без чётности).
+Запускаем "make". В результате получаем файл `test_debug.hex`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World" (скорость 115200, 8 бит, без чётности).
 
 === 8. Проектируем структуру контекста ===
 Определяем количество и порядок регистров, сохраняемых в стеке при входе в прерывание или исключение. [arch_msp430_notes Документируем] на будущее.
@@ -159,8 +159,8 @@ void uos_init (void)
         task_create (hello, "task", "hello", 1, task, sizeof (task));
 }
 }}}
-В файле Makefile устанавливаем `TESTS = test_task.sre`.
-Запускаем "make". В результате получаем файл `test_task.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и информация о свободной части стека задачи.
+В файле Makefile устанавливаем `TESTS = test_task.hex`.
+Запускаем "make". В результате получаем файл `test_task.hex`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и информация о свободной части стека задачи.
 
 === 12. Драйвер таймера ===
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c] добавляем объявление номера прерывания таймера:
@@ -174,7 +174,6 @@ void uos_init (void)
 #if MSP430
         TACTL = 0;
         TACTL = TASSEL_1;
-        TACTL |= TACLR;
         TACCR0 = t->khz * t->msec_per_tick / 2;
         TACTL |= TACLR;
         TACTL |= MC_1;
@@ -207,19 +206,19 @@ void uos_init (void)
         task_create (hello, "task", "hello", 1, task, sizeof (task));
 }
 }}}
-В файле Makefile устанавливаем `TESTS = test_timer.sre`.
+В файле Makefile устанавливаем `TESTS = test_timer.hex`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и счётчик миллисекунд.
 
 === 14. Драйвер асинхронного порта ===
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.h sources/uart/uart.h] в соответствующее место добавляем определение размера стека задачи асинхронного порта:
 {{{
 #if MSP430
-#   define UART_STACKSZ 0x400
+#   define UART_STACKSZ 0x180
 }}}
 Аналогично в файле протокола SLIP [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.h sources/uart/slip.h]:
 {{{
 #if MSP430
-#   define SLIP_STACKSZ 0x400
+#   define SLIP_STACKSZ 0x180
 }}}
 В начале файлов [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.c sources/uart/uart.c] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.c sources/uart/slip.c] добавляем включение файла макросов для MSP430:
 {{{
@@ -287,14 +286,14 @@ void uos_init (void)
         task_create (hello, 0, "hello", 1, task, sizeof (task));
 }
 }}}
-В файле Makefile устанавливаем `TESTS = test_uart.sre`.
+В файле Makefile устанавливаем `TESTS = test_uart.hex`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello, World".
 
 === 16. Комплексный тест: пять обедающих философов ===
 Проведём комплексную проверку микроядра, драйвера таймера и драйвера асинхронного порта.
 В каталоге uos/examples/msp430-easyweb2 создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2/philosophers.c examples/msp430-easyweb2/philosophers.c]. В нем помещаем код решения классической задачи [http://en.wikipedia.org/wiki/Dining_philosophers_problem пяти обедающих философов].
 
-В файле Makefile устанавливаем `TESTS = test_philosophers.sre`.
+В файле Makefile устанавливаем `TESTS = test_philosophers.hex`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоли будут отображаться пять философов и изменение их состояния во времени.
 
 Перенос системы uOS на архитектуру MSP430 можно считать завершённым.
