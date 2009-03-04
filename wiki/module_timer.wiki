@@ -8,8 +8,7 @@ typedef struct _timer_t {
     ...
 } timer_t;
 
-void timer_init (timer_t *t, int prio, unsigned long khz,
-	unsigned char msec_per_tick);
+void timer_init (timer_t *t, unsigned long khz, unsigned char msec_per_tick);
 void timer_delay (timer_t *t, unsigned long msec);
 unsigned long timer_milliseconds (timer_t *t);
 unsigned short timer_days (timer_t *t);

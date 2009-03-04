@@ -103,7 +103,7 @@ void uos_init (void)
 {
     task_create (main1, 0, "task1", 2, stack1, sizeof (stack1));
     task_create (main2, 0, "task2", 1, stack2, sizeof (stack2));
-    timer_init (&timer, 100, KHZ, 10);
+    timer_init (&timer, KHZ, 10);
 }
 }}}
 
@@ -165,7 +165,7 @@ void uos_init (void)
 {
     task_create (main1, 0, "task1", 2, stack1, sizeof (stack1));
     task_create (main2, 0, "task2", 1, stack2, sizeof (stack2));
-    timer_init (&timer, 100, KHZ, 10);
+    timer_init (&timer, KHZ, 10);
 }
 }}}
 

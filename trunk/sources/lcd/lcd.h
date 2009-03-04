@@ -1,3 +1,6 @@
+/*
+ * Generic two-line LCD display.
+ */
 #include <stream/stream.h>
 
 #define NCOL	16			/* Line width */

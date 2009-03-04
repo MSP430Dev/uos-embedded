@@ -1,5 +1,12 @@
 #include <stream/stream.h>
 
+/**\def TIMER_STACKSZ
+ * \~english
+ * Size of stack for UART task in bytes.
+ *
+ * \~russian
+ * Размер стека для задачи драйвера UART, в байтах.
+ */
 #ifndef UART_STACKSZ
 #   if __AVR__
 #      define UART_STACKSZ	0x100		/* 100 enough for AVR */
@@ -17,10 +24,29 @@
 #      define UART_STACKSZ	4000
 #   endif
 #endif
+
+/**\~english
+ * Size of input buffer.
+ *
+ * \~russian
+ * Размер буфера ввода.
+ */
 #define UART_INBUFSZ	8
 
+/**\~english
+ * Size of output buffer.
+ *
+ * \~russian
+ * Размер буфера вывода.
+ */
 #define UART_OUTBUFSZ	32
 
+/**\~english
+ * Data structure of UART driver.
+ *
+ * \~russian
+ * Структура данных для драйвера UART.
+ */
 typedef struct _uart_t {
 	stream_interface_t *interface;
 	lock_t transmitter;

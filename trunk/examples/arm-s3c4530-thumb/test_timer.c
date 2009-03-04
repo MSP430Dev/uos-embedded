@@ -24,6 +24,6 @@ ARM_UCON(0) = ARM_UCON_WL_8 | ARM_UCON_TMODE_IRQ;
 ARM_UBRDIV(0) = ((KHZ * 500L / 9600 + 8) / 16 - 1) << 4;
 
 	debug_puts ("\nTesting timer.\n");
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 	task_create (hello, "task", "hello", 1, task, sizeof (task));
 }

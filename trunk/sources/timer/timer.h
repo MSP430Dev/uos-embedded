@@ -5,34 +5,6 @@
 extern "C" {
 #endif
 
-/**\def TIMER_STACKSZ
- * \~english
- * Size of stack for timer task in bytes.
- *
- * \~russian
- * Размер стека для задачи таймера, в байтах.
- */
-#ifndef TIMER_STACKSZ
-#   if __AVR__
-#      define TIMER_STACKSZ	0x100
-#   endif
-#   if I386
-#      define TIMER_STACKSZ	0x400
-#   endif
-#   if MIPS32
-#      define TIMER_STACKSZ	0x400
-#   endif
-#   if MSP430
-#      define TIMER_STACKSZ	0x100
-#   endif
-#   if defined (__arm__) || defined (__thumb__)
-#      define TIMER_STACKSZ	300
-#   endif
-#endif
-#ifndef TIMER_STACKSZ
-#   define TIMER_STACKSZ	6000	/* LINUX386 */
-#endif
-
 /**\~english
  * Number of milliseconds per day.
  *
@@ -60,7 +32,6 @@ struct _timer_t {
 	unsigned long milliseconds;	/* real time counter */
 	unsigned long last_decisec;	/* when decisecond was signalled */
 	unsigned int days;		/* days counter */
-	ARRAY (stack, TIMER_STACKSZ);	/* task stack */
 };
 
 /**\~english
@@ -71,8 +42,7 @@ struct _timer_t {
  */
 typedef struct _timer_t timer_t;
 
-void timer_init (timer_t *t, int prio, unsigned long khz,
-	small_uint_t msec_per_tick);
+void timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick);
 
 /* Delay current task. */
 void timer_delay (timer_t *t, unsigned long msec);

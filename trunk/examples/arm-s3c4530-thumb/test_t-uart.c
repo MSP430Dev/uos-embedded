@@ -33,7 +33,7 @@ void hello (void *data)
 
 void uos_init (void)
 {
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 	uart_init (&uart, 0, 90, KHZ, 9600);
 	task_create (hello, 0, "hello", 1, task, sizeof (task));
 	task_create (msec, 0, "msec", 2, task_msec, sizeof (task_msec));

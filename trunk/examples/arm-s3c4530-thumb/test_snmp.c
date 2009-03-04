@@ -135,7 +135,7 @@ void uos_init (void)
 
 	mem_init (&pool, RAM_START, RAM_END);
 
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 
 	task_create (main_task, 0, "main", 1, task, sizeof (task));
 }

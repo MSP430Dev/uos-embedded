@@ -66,6 +66,7 @@ typedef bool_t (*handler_t) (void*);
 /* Interrupt management. */
 void lock_take_irq (lock_t*, int irq, handler_t func, void *arg);
 void lock_release_irq (lock_t*);
+void lock_attach_irq (lock_t *m, int irq, handler_t func, void *arg);
 
 /* User-supplied startup routine. */
 extern void uos_init (void);

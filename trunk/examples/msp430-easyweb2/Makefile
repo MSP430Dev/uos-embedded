@@ -23,7 +23,7 @@ clean:
 probe:
 		$(PROG) -D
 
-load:		test_eth.hex
+load:		test_timer.hex
 		$(PROG) -e $<
 
 # Original software from http://www.olimex.com/dev/soft/msp430/easyweb_test.tar.gz

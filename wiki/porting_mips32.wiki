@@ -194,18 +194,13 @@ void uos_init (void)
 Запускаем "make". В результате получаем файл `test_task.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и информация о свободной части стека задачи.
 
 === 12. Драйвер таймера ===
-В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.h sources/timer/timer.h] в соответствующее место добавляем определение размера стека задачи таймера:
-{{{
-#if MIPS32
-#   define TIMER_STACKSZ 0x400
-}}}
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c] добавляем объявление номера прерывания таймера:
 {{{
 #if ELVEES_MC24
 #   define TIMER_IRQ 29
 #endif
 }}}
-В функции `main_timer()` в соответствующее место добавляем инициализацию регистров таймера:
+В функции `timer_init()` в соответствующее место добавляем инициализацию регистров таймера:
 {{{
 #if ELVEES_MC24
         MC_ITCSR = 0;
@@ -214,7 +209,7 @@ void uos_init (void)
         MC_ITCSR = MC_ITCSR_EN;
 #endif
 }}}
-В цикле ожидания перед вызовом lock_wait() сбрасываем признак прерывания:
+В обработчике прерывания `timer_handler()` сбрасываем признак прерывания:
 {{{
 #if ELVEES_MC24
         MC_ITCSR &= ~MC_ITCSR_INT;
@@ -243,7 +238,7 @@ void hello (void *arg)
 void uos_init (void)
 {
         debug_puts ("\nTesting timer.\n");
-        timer_init (&timer, 100, KHZ, 1000);
+        timer_init (&timer, KHZ, 1000);
         task_create (hello, "task", "hello", 1, task, sizeof (task));
 }
 }}}

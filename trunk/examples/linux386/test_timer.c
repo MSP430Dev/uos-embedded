@@ -19,6 +19,6 @@ void hello (void *arg)
 
 void uos_init (void)
 {
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 	task_create (hello, "task", "hello", 1, task, sizeof (task));
 }

@@ -94,7 +94,7 @@ void poll_buttons (void *data)
 
 void uos_init (void)
 {
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 	lcd_init (&line1, &line2, &timer);
 	task_create (poll_buttons, 0, "poll", 1, task, sizeof (task));
 }

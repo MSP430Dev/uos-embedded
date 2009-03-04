@@ -117,15 +117,15 @@ include $(OS)/sources/rules.mak
 
 === 10. Перенос ядра ===
 Создаём каталог uos/sources/kernel/msp430 и в нём include-файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/msp430/machdep.h machdep.h] с описанием машинно-зависимых функций и макросов для платформы MSP430:
-  * `ARCH_INTERRUPTS` - количество аппаратный прерываний, 40 для MC-24
-  * `arch_state_t` - тип для хранения маски аппаратных прерываний, `int` для MIPS-32
-  * `arch_stack_t` - тип для хранения указателя стека, `void *` для MIPS-32
+  * `ARCH_INTERRUPTS` - количество аппаратный прерываний, 15 для MSP430
+  * `arch_state_t` - тип для хранения маски аппаратных прерываний, `int` для MSP430
+  * `arch_stack_t` - тип для хранения указателя стека, `void *` для MSP430
   * `arch_get_stack_pointer ()` - inline-функция, возвращающая текущий указатель стека
   * `arch_set_stack_pointer ()` - inline-функция, устанавливающая указатель стека
   * `arch_intr_disable ()` - inline-функция, запрещающая аппаратные прерывания
   * `arch_intr_restore ()` - inline-функция, восстанавливающая режим аппаратных прерываний
-  * `arch_intr_bind ()` - inline-функция, пустая для MIPS-32
-  * `arch_intr_unbind ()` - inline-функция, пустая для MIPS-32
+  * `arch_intr_bind ()` - inline-функция, пустая для MSP430
+  * `arch_intr_unbind ()` - inline-функция, пустая для MSP430
   * `arch_idle ()` - inline-функция, переводящая процессор в режим ожидания
 
 В файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/msp430/machdep.c machdep.c] помещаем код машинно-зависимых функций:
@@ -163,30 +163,21 @@ void uos_init (void)
 Запускаем "make". В результате получаем файл `test_task.sre`, который загружаем в ПЗУ целевой платы. При включении на консоль должна выдаваться строка "Hello from `task'" и информация о свободной части стека задачи.
 
 === 12. Драйвер таймера ===
-В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.h sources/timer/timer.h] в соответствующее место добавляем определение размера стека задачи таймера:
-{{{
-#if MSP430
-#   define TIMER_STACKSZ 0x400
-}}}
 В начале файла [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c] добавляем объявление номера прерывания таймера:
 {{{
-#if ELVEES_MC24
-#   define TIMER_IRQ 29
+#if MSP430
+#   define TIMER_IRQ	(TIMERA0_VECTOR / 2)
 #endif
 }}}
-В функции `main_timer()` в соответствующее место добавляем инициализацию регистров таймера:
+В функции `timer_init()` в соответствующее место добавляем инициализацию регистров таймера:
 {{{
-#if ELVEES_MC24
-        MC_ITCSR = 0;
-        MC_ITSCALE = 0;
-        MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
-        MC_ITCSR = MC_ITCSR_EN;
-#endif
-}}}
-В цикле ожидания перед вызовом lock_wait() сбрасываем признак прерывания:
-{{{
-#if ELVEES_MC24
-        MC_ITCSR &= ~MC_ITCSR_INT;
+#if MSP430
+        TACTL = 0;
+        TACTL = TASSEL_1;
+        TACTL |= TACLR;
+        TACCR0 = t->khz * t->msec_per_tick / 2;
+        TACTL |= TACLR;
+        TACTL |= MC_1;
 #endif
 }}}
 
@@ -212,7 +203,7 @@ void hello (void *arg)
 void uos_init (void)
 {
         debug_puts ("\nTesting timer.\n");
-        timer_init (&timer, 100, KHZ, 1000);
+        timer_init (&timer, KHZ, 1000);
         task_create (hello, "task", "hello", 1, task, sizeof (task));
 }
 }}}
@@ -230,49 +221,45 @@ void uos_init (void)
 #if MSP430
 #   define SLIP_STACKSZ 0x400
 }}}
-В начале файлов [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.c sources/uart/uart.c] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.c sources/uart/slip.c] добавляем включение файла макросов для MC-24:
+В начале файлов [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/uart.c sources/uart/uart.c] и [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/slip.c sources/uart/slip.c] добавляем включение файла макросов для MSP430:
 {{{
-#if ELVEES_MC24
-#   include "uart/elvees.h"
+#if MSP430
+#   include "msp430.h"
 #endif
 }}}
-Создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/elvees.h sources/uart/elvees.h] с макросами UART для MC-24:
+Создаём файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/elvees.h sources/uart/msp430.h] с макросами UART для MSP430:
 {{{
-#include "kernel/internal.h"
+#define RECEIVE_IRQ(p)			(USART0RX_VECTOR/2)
+#define TRANSMIT_IRQ(p)			(USART0TX_VECTOR/2)
 
-#define RECEIVE_IRQ(p)  4               /* both receive and transmit */
+#define enable_transmitter(p)		(U0ME |= UTXE0)
+#define disable_transmitter(p)		(U0ME &= ~UTXE0)
+#define test_transmitter_enabled(p)	(U0ME & UTXE0)
 
-#define enable_receiver(p)              /* already enabled in init() */
-#define enable_receive_interrupt(p)     (MC_IER |= MC_IER_ERXRDY | MC_IER_ERLS)
-#define disable_receive_interrupt(p)    (MC_IER &= ~(MC_IER_ERXRDY | MC_IER_ERLS))
-#define enable_transmit_interrupt(p)    (MC_IER |= MC_IER_ETXRDY)
-#define disable_transmit_interrupt(p)   (MC_IER &= ~MC_IER_ETXRDY)
+#define enable_receiver(p)		(U0ME |= URXE0)
+#define disable_receiver(p)		(U0ME &= ~URXE0)
 
-#define transmit_byte(p,c)              (MC_THR = (c))
-#define get_received_byte(p)            MC_RBR
+#define enable_receive_interrupt(p)	(U0IE |= URXIE0)
+#define enable_transmit_interrupt(p)	(U0IE |= UTXIE0)
+#define disable_transmit_interrupt(p)	(U0IE &= ~UTXIE0)
 
-#define test_transmitter_enabled(p)     1
-#define test_transmitter_empty(p)       (MC_LSR & MC_LSR_TXRDY)
-#define test_get_receive_data(p,d)      ((__uart_lsr & MC_LSR_RXRDY) ? \
-                                        ((*d) = MC_RBR, 1) : 0)
-#define test_frame_error(p)             ((__uart_lsr = MC_LSR) & MC_LSR_FE)
-#define test_parity_error(p)            (__uart_lsr & MC_LSR_PE)
-#define test_overrun_error(p)           (__uart_lsr & MC_LSR_OE)
-#define test_break_error(p)             (__uart_lsr & MC_LSR_BI)
-#define clear_frame_error(p)            /* Cleared by reading LSR */
-#define clear_parity_error(p)           /* --//-- */
-#define clear_overrun_error(p)          /* --//-- */
-#define clear_break_error(p)            /* --//-- */
+#define transmit_byte(p,c)		TXBUF0 = (c)
+#define get_received_byte(p)		RXBUF0
 
-#define setup_baud_rate(p, khz, baud) {                                 \
-                unsigned divisor = MC_DL_BAUD (khz * 1000, baud);       \
-                MC_LCR = MC_LCR_8BITS | MC_LCR_DLAB;                    \
-                MC_DLM = divisor >> 8;                                  \
-                MC_DLL = divisor;                                       \
-                MC_LCR = MC_LCR_8BITS;                                  \
-        }
+#define test_transmitter_empty(p)	(UTCTL0 & TXEPT)
+#define test_receive_data(p)		(U0IFG & (URXIFG0 | 1))
+#define test_get_receive_data(p,d)	((U0IFG & (URXIFG0 | 1)) ? \
+					((*d) = RXBUF0, 1) : 0)
 
-static unsigned __uart_lsr;
+#define test_frame_error(p)		(URCTL0 & FE)
+#define test_parity_error(p) 		(URCTL0 & PE)
+#define test_overrun_error(p) 		(URCTL0 & OE)
+#define test_break_error(p)		(URCTL0 & BRK)
+
+#define clear_frame_error(p)		(URCTL0 &= ~FE)
+#define clear_parity_error(p)		(URCTL0 &= ~PE)
+#define clear_overrun_error(p)		(URCTL0 &= ~OE)
+#define clear_break_error(p)		(URCTL0 &= ~BRK)
 }}}
 
 === 15. Четвёртый тест: асинхронный порт ===
@@ -310,4 +297,4 @@ void uos_init (void)
 В файле Makefile устанавливаем `TESTS = test_philosophers.sre`.
 Запускаем "make". В результате получаем файл, который загружаем в ПЗУ целевой платы. При включении на консоли будут отображаться пять философов и изменение их состояния во времени.
 
-Перенос системы uOS на процессор [http://multicore.ru/index.php?id=47 Элвис Мультикор MC-24] можно считать завершённым.
+Перенос системы uOS на архитектуру MSP430 можно считать завершённым.

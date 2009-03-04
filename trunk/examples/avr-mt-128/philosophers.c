@@ -115,7 +115,7 @@ void uos_init ()
 {
 	int i;
 
-	timer_init (&timer, 100, KHZ, 50);
+	timer_init (&timer, KHZ, 50);
 	lcd_init (&line1, &line2, &timer);
 	buzzer_init ();
 

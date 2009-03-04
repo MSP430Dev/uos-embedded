@@ -71,7 +71,6 @@ stream_t *streamtab [MAXSESS];
 #define PRIO_ETH_RX	70
 #define PRIO_HDLC_RX	80
 #define PRIO_UART	90
-#define PRIO_TIMER	100
 
 mem_pool_t pool;
 timer_t timer;
@@ -792,7 +791,7 @@ void uos_init (void)
 
 	/* Baud 9600. */
 	uart_init (&uart, 0, PRIO_UART, KHZ, 9600);
-	timer_init (&timer, PRIO_TIMER, KHZ, 50);
+	timer_init (&timer, KHZ, 50);
 	wdog_alive ();
 
 	/* Configure control pins. */

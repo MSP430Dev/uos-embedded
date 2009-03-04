@@ -4,7 +4,6 @@
 Full description of file timer.c.
 
 == Defines ==
-|| TIMER_STACKSZ || Size of stack for  task in bytes. ||
 || TIMER_MSEC_PER_DAY || Number of milliseconds per day. ||
 
 == Typedefs ==

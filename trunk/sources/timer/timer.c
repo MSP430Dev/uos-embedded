@@ -11,6 +11,7 @@
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
+#include <kernel/internal.h>
 #include <timer/timer.h>
 
 #if I386
@@ -70,98 +71,37 @@ interval_greater_or_equal (long interval, long msec)
 }
 
 /*
- * System timer task.
+ * Timer interrupt handler.
  */
-static void
-main_timer (void *arg)
+static bool_t
+timer_handler (timer_t *t)
 {
-	timer_t *t = arg;
+	int ret = 1;
 
-/*debug_printf ("main_timer\n");*/
-	/* Request the IRQ. */
-	lock_take_irq (&t->lock, TIMER_IRQ, 0, 0);
-
-	/* Initialize the hardware. */
-#if __AVR__
-	TCCR1A = 0;
-	TCCR1B = 0;
-	OCR1A = (t->khz * t->msec_per_tick) / 8 - 2;
-	TCNT1 = 0;
-	TCCR1B = 0x0A;	/* clock source CK/8, clear on match A */
-#endif
-#if I386
-	{
-	/* For I386, t->khz contains actually Hz (=1193182). */
-	unsigned short count = (t->khz * t->msec_per_tick + 500) / 1000;
-	outb (I8253_MODE_SEL0 | I8253_MODE_RATEGEN | I8253_MODE_16BIT,
-		I8253_MODE);
-	outb (count & 0xff, I8253_CNTR0);
-	outb (count >> 8, I8253_CNTR0);
-	}
-#endif
-#if ARM_S3C4530
-	/* Use timer 0 in toggle mode. */
-	ARM_TMOD &= ~(ARM_TMOD_TE0 | ARM_TMOD_TCLR0);
-	ARM_TDATA(0) = (t->khz * t->msec_per_tick) - 1;
-	ARM_TCNT(0) = 0;
-	ARM_TMOD |= ARM_TMOD_TE0 | ARM_TMOD_TMD0;
-#endif
+/*debug_printf ("<ms=%ld> ", t->milliseconds);*/
 #if ELVEES_MC24
-	/* Use interval timer with prescale 1:1. */
-	MC_ITCSR = 0;
-	MC_ITSCALE = 0;
-	MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
-	MC_ITCSR = MC_ITCSR_EN;
+	/* Clear interrupt. */
+	MC_ITCSR &= ~MC_ITCSR_INT;
 #endif
-#if MSP430
-        /* Ensure the timer is stopped. */
-        TACTL = 0;
-
-        /* Run the timer of the ACLK. */
-        TACTL = TASSEL_1;
-
-        /* Clear everything to start with. */
-        TACTL |= TACLR;
-
-        /* Set the compare match value according to the tick rate we want. */
-        TACCR0 = t->khz * t->msec_per_tick / 2;
-
-        /* Start up clean. */
-        TACTL |= TACLR;
-
-        /* Up mode. */
-        TACTL |= MC_1;
-#endif
-#if LINUX386
-	{
-	struct itimerval itv;
-
-	itv.it_interval.tv_sec = 0;
-	itv.it_interval.tv_usec = t->msec_per_tick * 1000L;
-	itv.it_value = itv.it_interval;
-	setitimer (ITIMER_REAL, &itv, 0);
-	}
-#endif
-	for (;;) {
-/*extern task_t *task_current; debug_printf ("t = %p, task_current = %p\n", t, task_current);*/
-/*debug_printf ("milliseconds = %ld\n", t->milliseconds);*/
-#if ELVEES_MC24
-		/* Clear interrupt. */
-		MC_ITCSR &= ~MC_ITCSR_INT;
-#endif
-		lock_wait (&t->lock);
-		t->milliseconds += t->msec_per_tick;
-		if (t->milliseconds >= t->last_decisec + 100) {
-			t->last_decisec = t->milliseconds;
+	t->milliseconds += t->msec_per_tick;
+	if (t->milliseconds >= t->last_decisec + 100) {
+		t->last_decisec = t->milliseconds;
 /*debug_putchar (0, '~');*/
-			lock_signal (&t->decisec, 0);
-		}
-		if (t->milliseconds >= TIMER_MSEC_PER_DAY) {
-			++t->days;
-			t->milliseconds -= TIMER_MSEC_PER_DAY;
-			t->last_decisec -= TIMER_MSEC_PER_DAY;
-		}
+		lock_activate (&t->decisec, 0);
+		ret = 0;
 	}
+	if (t->milliseconds >= TIMER_MSEC_PER_DAY) {
+		++t->days;
+		t->milliseconds -= TIMER_MSEC_PER_DAY;
+		t->last_decisec -= TIMER_MSEC_PER_DAY;
+	}
+	arch_intr_allow (TIMER_IRQ);
+
+	/* Must signal a lock, for timer_wait().
+	 * TODO: Optimize timer_delay, keeping a sorted
+	 * queue of delay values. */
+	ret = 0;
+	return ret;
 }
 
 /**\~english
@@ -257,10 +197,73 @@ timer_passed (timer_t *t, unsigned long t0, unsigned int msec)
  * Инициализация таймера.
  */
 void
-timer_init (timer_t *t, int prio, unsigned long khz,
-	small_uint_t msec_per_tick)
+timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 {
 	t->msec_per_tick = msec_per_tick;
 	t->khz = khz;
-	task_create (main_timer, t, "timer", prio, t->stack, sizeof (t->stack));
+
+	/* Attach fast handler to timer interrupt. */
+	lock_attach_irq (&t->lock, TIMER_IRQ, (handler_t) timer_handler, t);
+
+	/* Initialize the hardware. */
+#if __AVR__
+	TCCR1A = 0;
+	TCCR1B = 0;
+	OCR1A = (t->khz * t->msec_per_tick) / 8 - 2;
+	TCNT1 = 0;
+	TCCR1B = 0x0A;	/* clock source CK/8, clear on match A */
+#endif
+#if I386
+	{
+	/* For I386, t->khz contains actually Hz (=1193182). */
+	unsigned short count = (t->khz * t->msec_per_tick + 500) / 1000;
+	outb (I8253_MODE_SEL0 | I8253_MODE_RATEGEN | I8253_MODE_16BIT,
+		I8253_MODE);
+	outb (count & 0xff, I8253_CNTR0);
+	outb (count >> 8, I8253_CNTR0);
+	}
+#endif
+#if ARM_S3C4530
+	/* Use timer 0 in toggle mode. */
+	ARM_TMOD &= ~(ARM_TMOD_TE0 | ARM_TMOD_TCLR0);
+	ARM_TDATA(0) = (t->khz * t->msec_per_tick) - 1;
+	ARM_TCNT(0) = 0;
+	ARM_TMOD |= ARM_TMOD_TE0 | ARM_TMOD_TMD0;
+#endif
+#if ELVEES_MC24
+	/* Use interval timer with prescale 1:1. */
+	MC_ITCSR = 0;
+	MC_ITSCALE = 0;
+	MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
+	MC_ITCSR = MC_ITCSR_EN;
+#endif
+#if MSP430
+        /* Ensure the timer is stopped. */
+        TACTL = 0;
+
+        /* Run the timer of the ACLK. */
+        TACTL = TASSEL_1;
+
+        /* Clear everything to start with. */
+        TACTL |= TACLR;
+
+        /* Set the compare match value according to the tick rate we want. */
+        TACCR0 = t->khz * t->msec_per_tick / 2;
+
+        /* Start up clean. */
+        TACTL |= TACLR;
+
+        /* Up mode. */
+        TACTL |= MC_1;
+#endif
+#if LINUX386
+	{
+	struct itimerval itv;
+
+	itv.it_interval.tv_sec = 0;
+	itv.it_interval.tv_usec = t->msec_per_tick * 1000L;
+	itv.it_value = itv.it_interval;
+	setitimer (ITIMER_REAL, &itv, 0);
+	}
+#endif
 }

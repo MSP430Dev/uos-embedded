@@ -100,7 +100,7 @@ void uos_init (void)
 	unsigned char gw_ip[] = "\310\0\0\1";
 	unsigned char gw_netmask[] = "\0\0\0\0";
 
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 	mem_init (&pool, (size_t) memory, (size_t) memory + MEM_SIZE);
 
 	/*

@@ -95,7 +95,7 @@ void uos_init ()
 	int i;
 
 	uart_init (&uart, 0, 90, KHZ, 115200);
-	timer_init (&timer, 100, KHZ, 50);
+	timer_init (&timer, KHZ, 50);
 
 	/* Create N philosopher tasks. */
 	for (i=0; i<N; ++i)

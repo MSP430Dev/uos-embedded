@@ -33,7 +33,7 @@ void uos_init (void)
 
 /*outb (25, UBRR);*/
 	uart_init (&uart, 0, 90, KHZ, 9600);
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 
 	/*
 	 * Инициализируем все, что относится к процессору, без периферии.

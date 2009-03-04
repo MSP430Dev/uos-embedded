@@ -52,7 +52,7 @@ void uos_init (void)
 
 	arp = arp_init (arp_data, sizeof(arp_data), &ip);
 
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 
 	/*
 	 * Create a group of two locks: timer and eth.

@@ -36,7 +36,7 @@ outb (((int) (KHZ * 1000L / 38400) + 8) / 16 - 1, UBRR);
 	setb (SRE, MCUCR);
 	mem_init (&pool, RAM_START, RAM_END);
 
-/*	timer_init (&timer, 100, KHZ, 10);*/
+/*	timer_init (&timer, KHZ, 10);*/
 
 	/*
 	 * Create a group of two locks: timer and slip.

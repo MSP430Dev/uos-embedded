@@ -68,7 +68,7 @@ void uos_init (void)
 	lock_group_t *g;
 
 	srand15 (time(0));
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 
 	/*
 	 * Create a group of three locks A, B and C.

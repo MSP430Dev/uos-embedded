@@ -1,3 +1,6 @@
+/*
+ * Two-line LCD display.
+ */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <timer/timer.h>

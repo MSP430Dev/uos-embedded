@@ -16,7 +16,7 @@ void uos_init (void)
 {
 /*outb (25, UBRR);*/
 	uart_init (&uart, 90, KHZ, 9600);
-	timer_init (&timer, 100, KHZ, 10);
+	timer_init (&timer, KHZ, 10);
 
 	task_create (main_console, 0, "console", 1,
 		stack_console, sizeof (stack_console), 0);
