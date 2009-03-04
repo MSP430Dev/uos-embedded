@@ -1,5 +1,5 @@
 /*
- * Definitions of input signals and output actions for Olimex MT-128 board.
+ * Definitions of input signals and output actions for Olimex easyWeb2 board.
  */
 inline int button1_pressed (void)
 {

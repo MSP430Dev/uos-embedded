@@ -1,7 +1,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <timer/timer.h>
-#include "lcd.h"
+#include <lcd/lcd.h>
 #include "avr-mt-128.h"
 
 timer_t timer;

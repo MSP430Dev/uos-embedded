@@ -30,21 +30,6 @@ load:		test_eth.hex
 olimex:		easyweb.hex
 		$(PROG) -e $<
 
-test_lcd.out:	test_lcd.o startup.o libuos.a lcd.o
-		$(CC) $(LDFLAGS) test_lcd.o lcd.o $(LIBS) -o $@
-
-test_nvram.out:	test_nvram.o startup.o libuos.a lcd.o
-		$(CC) $(LDFLAGS) test_nvram.o lcd.o $(LIBS) -o $@
-
-test_olimex.out: test_olimex.o startup.o libuos.a lcd.o
-		$(CC) $(LDFLAGS) test_olimex.o lcd.o $(LIBS) -o $@
-
-test_eth.out:	test_eth.o startup.o libuos.a lcd.o
-		$(CC) $(LDFLAGS) test_eth.o lcd.o $(LIBS) -o $@
-
-philosophers.out: philosophers.o startup.o libuos.a lcd.o
-		$(CC) $(LDFLAGS) philosophers.o lcd.o $(LIBS) -o $@
-
 include $(OS)/sources/rules.mak
 
 ###

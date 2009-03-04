@@ -118,7 +118,7 @@ strncpy_flash (unsigned char *dest, const char *str, unsigned char maxlen)
 #endif /* __AVR__ */
 
 static inline unsigned char
-flash_fetch (const char *p)
+flash_fetch (const unsigned char *p)
 {
 	return FETCH_BYTE (p);
 }

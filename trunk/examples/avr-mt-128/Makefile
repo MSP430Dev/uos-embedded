@@ -35,18 +35,6 @@ load:		philosophers.srec
 olimex:		mt-128.olimex
 		$(PROG) -e -U$< $(FUSES)
 
-test_lcd.out:	test_lcd.o lcd.o
-		$(CC) $(LDFLAGS) test_lcd.o lcd.o $(LIBS) -o $@
-
-test_nvram.out:	test_nvram.o lcd.o
-		$(CC) $(LDFLAGS) test_nvram.o lcd.o $(LIBS) -o $@
-
-test_olimex.out: test_olimex.o lcd.o
-		$(CC) $(LDFLAGS) test_olimex.o lcd.o $(LIBS) -o $@
-
-philosophers.out: philosophers.o lcd.o
-		$(CC) $(LDFLAGS) philosophers.o lcd.o $(LIBS) -o $@
-
 include $(OS)/sources/rules.mak
 
 ###

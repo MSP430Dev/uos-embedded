@@ -1,109 +1,76 @@
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "stream/stream.h"
-#include "timer/timer.h"
-#include "lcd/lcd.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <timer/timer.h>
+#include "lcd.h"
 
-#define NCOL	16	/* Количество символов в строке */
+#ifdef __AVR__
+/*
+ * Olimex MT-128 board.
+ * LCD indicator is connected to port C.
+ */
+#define RS		0b00000001	/* 0 - command, 1 - data */
+#define E		0b00000100	/* strobe */
+#define D4		0b00010000	/* data */
+#define D5		0b00100000
+#define D6		0b01000000
+#define D7		0b10000000
+
+static void inline __attribute__((always_inline))
+set_bits (small_uint_t bits)
+{
+	PORTC |= bits;
+}
+
+static void inline __attribute__((always_inline))
+clear_bits (small_uint_t bits)
+{
+	PORTC &= ~bits;
+}
+#endif
+
+#ifdef MSP430
+/*
+ * Olimex easyWeb2 board.
+ * LCD indicator is connected to port 2.
+ */
+#define RS		0x04		/* 0 - command, 1 - data */
+#define E		0x08		/* strobe */
+#define D4		0x10		/* data */
+#define D5		0x20
+#define D6		0x40
+#define D7		0x80
+
+static void inline __attribute__((always_inline))
+set_bits (small_uint_t bits)
+{
+	P2OUT |= bits;
+}
+
+static void inline __attribute__((always_inline))
+clear_bits (small_uint_t bits)
+{
+	P2OUT &= ~bits;
+}
+#endif
 
 /*
- * Адреса для обращения к LCD.
- * Сигнал E подключен к адресной линии A15,
- * сигнал RS - к адресной линии A14.
- * Младшие разряды адреса игнорируются, но мы устанавливаем
- * их в 1 чтобы избежать влияния на данные при переключении шины.
- * Признак volatile нужен, чтобы компилятор не пытался оптимизировать
- * обращения к этим адресам, а выполнял все как написано.
+ * LCD commands.
  */
-#define CTL	(* (volatile unsigned char*) 0x80ff)
-#define DATA	(* (volatile unsigned char*) 0xc0ff)
+#define DISP_CLR	0x01
+#define DISP_ON		0x0C
+#define DISP_OFF	0x08
+#define CUR_HOME        0x02
+#define CUR_OFF 	0x0C
+#define CUR_ON_UNDER    0x0E
+#define CUR_ON_BLINK    0x0F
+#define CUR_LEFT        0x10
+#define CUR_RIGHT       0x14
+#define CUR_UP  	0x80
+#define CUR_DOWN	0xC0
+#define DD_RAM_ADDR	0x80
+#define DD_RAM_ADDR2	0xC0
 
-/*
- * Таблица перекодировки.
- */
-static unsigned char encoding [256]  = {
-	0377, 0377, 0377, 0377, 0377, 0377, 0377, 0377,
-	0377, 0377, 0377, 0377, 0377, 0377, 0377, 0377,
-	0377, 0377, 0377, 0377, 0377, 0377, 0377, 0377,
-	0377, 0377, 0377, 0377, 0377, 0377, 0377, 0377,
-	0040, 0041, 0042, 0043, 0044, 0045, 0046, 0047, /*  !"#$%&' */
-	0050, 0051, 0052, 0053, 0054, 0055, 0056, 0057,	/* ()*+,-./ */
-	0060, 0061, 0062, 0063, 0064, 0065, 0066, 0067,	/* 01234567 */
-	0070, 0071, 0072, 0073, 0074, 0075, 0076, 0077,	/* 89:;<=>? */
-
-	0100, 0101, 0102, 0103, 0104, 0105, 0106, 0107, /* @ABCDEFG */
-	0110, 0111, 0112, 0113, 0114, 0115, 0116, 0117, /* HIJKLMNO */
-	0120, 0121, 0122, 0123, 0124, 0125, 0126, 0127, /* PQRSTUVW */
-	0130, 0131, 0132, 0133, 0004, 0135, 0136, 0137, /* XYZ[\]^_ */
-	0140, 0141, 0142, 0143, 0144, 0145, 0146, 0147, /* `abcdefg */
-	0150, 0151, 0152, 0153, 0154, 0155, 0156, 0157, /* hijklmno */
-	0160, 0161, 0162, 0163, 0164, 0165, 0166, 0167, /* pqrstuvw */
-	0170, 0171, 0172, 0005, 0321, 0006, 0351, 0377, /* xyz{|}~\177 */
-
-	0134, 0173, 0174, 0175, 0176, 0177, 0347, 0376,	/* ........ */
-	0310, 0311, 0312, 0313, 0314, 0315, 0316, 0317,	/* ........ */
-	0320, 0321, 0322, 0323, 0324, 0325, 0326, 0327,	/* ........ */
-	0330, 0331, 0332, 0333, 0334, 0335, 0336, 0337,	/* ........ */
-	0350, 0355, 0352, 0265, 0353, 0354, 0355, 0356, /* ...ё.... */
-	0357, 0360, 0361, 0362, 0363, 0364, 0365, 0366,	/* ........ */
-	0367, 0370, 0371, 0242, 0372, 0373, 0374, 0375,	/* ...Ё.... */
-	0377, 0377, 0377, 0377, 0377, 0377, 0377, 0377,	/* ........ */
-
-	0306, 0141, 0262, 0345, 0343, 0145, 0344, 0264, /* юабцдефг */
-	0170, 0270, 0271, 0272, 0273, 0274, 0275, 0157, /* хийклмно */
-	0276, 0307, 0160, 0143, 0277, 0171, 0266, 0263, /* пярстужв */
-	0304, 0303, 0267, 0301, 0305, 0346, 0300, 0302, /* ьызшэщчъ */
-	0260, 0101, 0240, 0341, 0340, 0105, 0252, 0241, /* ЮАБЦДЕФГ */
-	0130, 0245, 0246, 0113, 0247, 0115, 0110, 0117, /* ХИЙКЛМНО */
-	0250, 0261, 0120, 0103, 0124, 0251, 0243, 0102, /* ПЯРСТУЖВ */
-	0007, 0256, 0244, 0254, 0257, 0342, 0253, 0255, /* ЬЫЗШЭЩЧЪ */
-};
-
-/*
- * Некоторых сиволов недостает, будем загружать их сами.
- */
-#define ROW(a,b,c,d,e) (a<<4 | b<<3 | c<<2 | d<<1 | e)
-
-static const char backslash [8]  = {
-	ROW( 0,0,0,0,0 ),
-	ROW( 1,0,0,0,0 ),
-	ROW( 0,1,0,0,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,0,0,1,0 ),
-	ROW( 0,0,0,0,1 ),
-	ROW( 0,0,0,0,0 ),
-	ROW( 0,0,0,0,0 ),
-};
-static const char leftbrace [8]  = {
-	ROW( 0,0,0,1,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,1,0,0,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,0,0,1,0 ),
-	ROW( 0,0,0,0,0 ),
-};
-static const char rightbrace [8]  = {
-	ROW( 0,1,0,0,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,0,0,1,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,0,1,0,0 ),
-	ROW( 0,1,0,0,0 ),
-	ROW( 0,0,0,0,0 ),
-};
-static const char hardsign [8]  = {
-	ROW( 1,0,0,0,0 ),
-	ROW( 1,0,0,0,0 ),
-	ROW( 1,0,0,0,0 ),
-	ROW( 1,1,1,0,0 ),
-	ROW( 1,0,0,1,0 ),
-	ROW( 1,0,0,1,0 ),
-	ROW( 1,1,1,0,0 ),
-	ROW( 0,0,0,0,0 ),
-};
+static void lcd_putchar (lcd_t *line, short c);
 
 static stream_interface_t lcd_interface = {
 	(void (*) (stream_t*, short)) lcd_putchar,
@@ -111,102 +78,233 @@ static stream_interface_t lcd_interface = {
 };
 
 /*
- * Ожидание готовности контроллера.
+ * Some symbols are missing.
+ * Prepare glyphs for download.
  */
-static void lcd_wait ()
-{
-	unsigned short cnt = 20000;
+#define ROW(a,b,c,d,e) (a<<4 | b<<3 | c<<2 | d<<1 | e)
 
-	while (--cnt > 0)
-		if (! (CTL & 0x80))
-			break;
+static const unsigned char backslash [8]  = {
+        ROW( 0,0,0,0,0 ),
+        ROW( 1,0,0,0,0 ),
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,0,0,1 ),
+        ROW( 0,0,0,0,0 ),
+        ROW( 0,0,0,0,0 ),
+};
+static const unsigned char leftbrace [8]  = {
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,0,0,0 ),
+};
+static const unsigned char rightbrace [8]  = {
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,0,1,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,0,1,0,0 ),
+        ROW( 0,1,0,0,0 ),
+        ROW( 0,0,0,0,0 ),
+};
+static const unsigned char softsign [8]  = {
+        ROW( 1,0,0,0,0 ),
+        ROW( 1,0,0,0,0 ),
+        ROW( 1,0,0,0,0 ),
+        ROW( 1,1,1,0,0 ),
+        ROW( 1,0,0,1,0 ),
+        ROW( 1,0,0,1,0 ),
+        ROW( 1,1,1,0,0 ),
+        ROW( 0,0,0,0,0 ),
+};
+
+/*
+ * Convert a symbol from Unicode-16 to local encoding.
+ * Olimex LED indicator K2-1602K-FSY-YBW-R has a non-standard charset,
+ * which includes ASCII and cyrillic letters.
+ */
+static unsigned char
+unicode_to_local (unsigned short val)
+{
+	static const unsigned char tab0 [128] = {
+/* 00 - 07 */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 08 - 0f */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 10 - 17 */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 18 - 1f */	0,    0,    0,    0,    0,    0,    0,    0,
+/*  !"#$%&' */	0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+/* ()*+,-./ */	0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+/* 01234567 */	0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+/* 89:;<=>? */	0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+/* @ABCDEFG */	0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+/* HIJKLMNO */	0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+/* PQRSTUVW */	0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+/* XYZ[\]^_ */	0x58, 0x59, 0x5a, 0x5b, 0x04, 0x5d, 0x5e, 0x5f,
+/* `abcdefg */	0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
+/* hijklmno */	0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
+/* pqrstuvw */	0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77,
+/* xyz{|}~  */	0x78, 0x79, 0x7a, 0x05, 0xd1, 0x06, 0xe9, 0xff,
+	};
+	static const unsigned char tab4 [128] = {
+/* 400 - 407 */	0,    0xa2, 0,    0,    0,    0,    0,    0,
+/* 408 - 40f */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 410 - 417 */	0x41, 0xa0, 0x42, 0xa1, 0xe0, 0x45, 0xa3, 0xa4,
+/* 418 - 41f */	0xa5, 0xa6, 0x4b, 0xa7, 0x4d, 0x48, 0x4f, 0xa8,
+/* 420 - 427 */	0x50, 0x43, 0x54, 0xa9, 0xaa, 0x58, 0xe1, 0xab,
+/* 428 - 42f */	0xac, 0xe2, 0xad, 0xae, 0x07, 0xaf, 0xb0, 0xb1,
+/* 430 - 437 */	0x61, 0xb2, 0xb3, 0xb4, 0xe3, 0x65, 0xb6, 0xb7,
+/* 438 - 43f */	0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0x6f, 0xbe,
+/* 440 - 447 */	0x70, 0x63, 0xbf, 0x79, 0xe4, 0x78, 0xe5, 0xc0,
+/* 448 - 44f */	0xc1, 0xe6, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7,
+/* 450 - 457 */	0,    0xb5, 0,    0,    0,    0,    0,    0,
+/* 458 - 45f */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 460 - 467 */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 468 - 46f */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 470 - 477 */	0,    0,    0,    0,    0,    0,    0,    0,
+/* 478 - 47f */	0,    0,    0,    0,    0,    0,    0,    0,
+	};
+	switch (val & ~0x7f) {
+	case 0x0000:
+		/* ASCII */
+		return flash_fetch (tab0 + val);
+	case 0x0400:
+		/* Cyrillic */
+		return flash_fetch (tab4 + (val & 0x7f));
+	}
+	return 0;
+}
+
+static void lcd_pulse ()
+{
+	set_bits (E);
+	udelay (5);
+	clear_bits (E);
 }
 
 /*
- * Запись команды, с ожиданием готовности.
+ * Write command.
  */
-static inline void lcd_write_ctl (unsigned char val)
+static void lcd_write_ctl (unsigned char val)
 {
-	CTL = val;
-	lcd_wait ();
+	/* High nibble. Set RS port to 0. */
+	clear_bits (D7 | D6 | D5 | D4 | RS);
+	set_bits (val & 0xF0);
+	lcd_pulse ();
+
+	/* Low nibble. */
+	clear_bits (D7 | D6 | D5 | D4);
+	set_bits (val << 4);
+	lcd_pulse ();
+
+	mdelay (2);
 }
 
 /*
- * Запись байта данных, с ожиданием готовности.
+ * Write a byte of data.
  */
-static inline void lcd_write_data (unsigned char val)
+static void lcd_write_data (unsigned char val)
 {
-	DATA = val;
-	lcd_wait ();
+	/* High nibble. Set RS port to 1. */
+	clear_bits (D7 | D6 | D5 | D4);
+	set_bits ((val & 0xF0) | RS);
+	lcd_pulse ();
+
+	/* Low nibble. */
+	clear_bits (D7 | D6 | D5 | D4);
+	set_bits (val << 4);
+	lcd_pulse ();
+
+	mdelay (2);
 }
 
 /*
- * Инициализация контроллера.
- * Экран состоит из двух строк.
- * Вывод на каждую из строк делается независимо.
+ * Initialize LCD controller. The screen contains two lines.
+ * Every line could be printed independently.
+ * When timer is give, then wide messages are slowly scrolled.
  */
-void lcd_init (lcd_t *line1, lcd_t *line2)
+void lcd_init (lcd_t *line1, lcd_t *line2, timer_t *timer)
 {
-	unsigned char i;
+	small_uint_t i;
 
-	/* Разрешаем внешнюю память: порты A - адрес/данные, C - адрес.
-	 * Устанавливаем бит ожидания для замедления. */
-	setb (SRE, MCUCR);
-	setb (SRW, MCUCR);
+	clear_bits (RS | E | D4 | D5 | D6 | D7);
 
-	/* Упрощенная инициализация 8-битного подключения. */
-	lcd_wait ();
-	lcd_write_ctl (0x30);
+#ifdef __AVR__
+	DDRC |= RS | E | D4 | D5 | D6 | D7;
+#endif
+#ifdef MSP430
+	P2SEL &= ~(RS | E | D4 | D5 | D6 | D7);
+	P2DIR |= RS | E | D4 | D5 | D6 | D7;
+#endif
+	mdelay (110);
 
-	/* Две строки, символы 5x7 */
-	lcd_write_ctl (0x38);
+	/* Initialize 4-bit bus. */
+	set_bits (D5 | D4);
+	lcd_pulse ();
+	mdelay (10);
 
-	/* Стираем экран */
-	lcd_write_ctl (0x01);
+	lcd_pulse ();
+	mdelay (10);
 
-	/* Включаем отображение */
-	lcd_write_ctl (0x0c);
+	lcd_pulse ();
+	mdelay (10);
 
-	/* Автоматический сдвиг курсора влево */
-	lcd_write_ctl (0x06);
+	clear_bits (D4);
+	lcd_pulse ();
+	mdelay (10);
+
+	/* Clear screen */
+	lcd_write_ctl (DISP_CLR);
+
+	/* Enable display */
+	lcd_write_ctl (DISP_ON);
 
 	line1->interface = &lcd_interface;
-	line1->timer = 0;
-	line1->base = 0x80;
+	line1->timer = timer;
+	line1->base = DD_RAM_ADDR;
 	line1->col = 0;
-	line1->timer = 0;
+	line1->c1 = 0;
+	line1->c2 = 0;
+
 	line2->interface = &lcd_interface;
-	line2->base = 0xc0;
+	line2->timer = timer;
+	line2->base = DD_RAM_ADDR2;
 	line2->col = 0;
+	line2->c1 = 0;
+	line2->c2 = 0;
+
 	for (i=0; i<NCOL; ++i) {
 		line1->data[i] = ' ';
 		line2->data[i] = ' ';
 	}
 
-	/* Загружаем недостающие символы:
-	 * 4 - \, 5 - {, 6 - }, 7 - Ь */
+	/* Load missing glyphs: 4 - \, 5 - {, 6 - }, 7 - Ь */
 	lcd_load_glyph (4, backslash);
 	lcd_load_glyph (5, leftbrace);
 	lcd_load_glyph (6, rightbrace);
-	lcd_load_glyph (7, hardsign);
+	lcd_load_glyph (7, softsign);
 }
 
 /*
- * Загрузка изображения символа.
- * Восемь символов с кодами 0-7 можно загружать.
- * Данные для загрузки должны находиться в памяти flash.
+ * Load a symbol glyph.
+ * Eight symbols with codes 0-7 are loadable.
+ * Glyph data must be placed in flash memory.
  */
-void lcd_load_glyph (char n, const char *data)
+void lcd_load_glyph (char n, const unsigned char *data)
 {
-	unsigned char i;
+	small_uint_t i;
 
 	lcd_write_ctl (0x40 + n * 8);		/* установка адреса */
 	for (i=0; i<8; ++i)
-		lcd_write_data (readb (data++));
+		lcd_write_data (flash_fetch (data++));
 }
 
 /*
- * Стирание одной строки.
+ * Clear a single line.
  */
 void lcd_clear (lcd_t *line)
 {
@@ -218,28 +316,34 @@ void lcd_clear (lcd_t *line)
 		line->data[i] = ' ';
 	}
 	line->col = 0;
+	line->c1 = 0;
+	line->c2 = 0;
 }
 
 /*
- * Стирание всего экрана.
+ * Clear all screen.
  */
 void lcd_clear_all (lcd_t *line1, lcd_t *line2)
 {
 	unsigned char i;
 
 	/* Стираем экран */
-	lcd_write_ctl (0x01);
+	lcd_write_ctl (DISP_CLR);
 
 	for (i=0; i<NCOL; ++i) {
 		line1->data[i] = ' ';
 		line2->data[i] = ' ';
 	}
 	line1->col = 0;
+	line1->c1 = 0;
+	line1->c2 = 0;
 	line2->col = 0;
+	line2->c1 = 0;
+	line2->c2 = 0;
 }
 
 /*
- * Прокрутка одной строки на один символ влево.
+ * Scroll a line by one character to the left.
  */
 static void lcd_scroll (lcd_t *line)
 {
@@ -248,7 +352,7 @@ static void lcd_scroll (lcd_t *line)
 	if (line->col <= 0)
 		return;
 
-	lcd_write_ctl (line->base);		/* установка адреса */
+	lcd_write_ctl (line->base);		/* setup address */
 	for (i=1; i<line->col; ++i) {
 		c = line->data[i];
 		lcd_write_data (c);
@@ -259,68 +363,77 @@ static void lcd_scroll (lcd_t *line)
 }
 
 /*
- * Печать одного символа.
- * Некоторые символы обрабатываются специальным образом.
+ * Move cursor to given position.
  */
-void lcd_putchar (lcd_t *line, short c)
+void lcd_move (lcd_t *line, int col)
+{
+	if (col < 0 || col >= NCOL)
+		return;
+	line->col = col;
+}
+
+/*
+ * Print one symbol. Decode from UTF8 to local encoding (if not raw mode).
+ * Some characters are handled specially.
+ */
+static void lcd_putchar (lcd_t *line, short c)
 {
 	switch (c) {
-	case '\n':		/* перевод строки игнорируем */
+	case '\n':		/* ignore line feeds */
 		return;
-	case '\t':		/* табуляцию заменяем на пробел */
+	case '\t':		/* tab replaced by space */
 		c = ' ';
 		break;
-	case '\f':		/* конец страницы - стираем строку */
+	case '\f':		/* page feed - clear line */
 		lcd_clear (line);
 		return;
-	case '\r':		/* возврат каретки - переход в начало строки */
+	case '\r':		/* carriage return - go to begin of line */
 		line->col = 0;
 		return;
 	}
 
-	/* Перекодировка по таблице. */
+	if (! line->raw) {
+		/* Decode UTF-8. */
+		if (! (c & 0x80)) {
+			line->c1 = 0;
+			line->c2 = 0;
+		} else if (line->c1 == 0) {
+			line->c1 = c;
+			return;
+		} else if (line->c2 == 0) {
+			if (line->c1 & 0x20) {
+				line->c2 = c;
+				return;
+			}
+			c = (line->c1 & 0x1f) << 6 | (c & 0x3f);
+			line->c1 = 0;
+		} else {
+			if (line->c1 == 0xEF && line->c2 == 0xBB && c == 0xBF) {
+				/* Skip zero width no-break space. */
+				line->c1 = 0;
+				line->c2 = 0;
+				return;
+			}
+			c = (line->c1 & 0x0f) << 12 |
+				(line->c2 & 0x3f) << 6 | (c & 0x3f);
+			line->c1 = 0;
+			line->c2 = 0;
+		}
+		/* Convert to LCD encoding. */
+		c = unicode_to_local (c);
+		if (c == 0)
+			c = 0315;
+	}
 	if (c < 0 || c >= 256)
-		c = '?';
-	c = readb (encoding + c);
+		c = 0315;
 
 	if (line->col >= NCOL) {
-		/* Прокрутка, с задержкой на 150 мсек. */
+		/* Scrolling. */
 		if (line->timer)
 			timer_delay (line->timer, 150);
 		lcd_scroll (line);
 	}
-	lcd_write_ctl (line->base | line->col);	/* установка адреса */
+	lcd_write_ctl (line->base | line->col);	/* setup address */
 	lcd_write_data (c);
 	line->data [line->col++] = c;
-}
-
-/*
- * Печать строки по формату, аналогично printf.
- */
-int lcd_printf (lcd_t *line, const char *fmt, ...)
-{
-	va_list	args;
-	int err;
-
-	va_start (args, fmt);
-	err = vprintf ((stream_t*) line, fmt, args);
-	va_end (args);
-	return err;
-}
-
-/*
- * Печать строки по формату, аналогично printf.
- * При выходе за границу экрана строка плавно прокручивается.
- */
-int lcd_rprintf (lcd_t *line, timer_t *timer, const char *fmt, ...)
-{
-	va_list	args;
-	int err;
-
-	line->timer = timer;
-	va_start (args, fmt);
-	err = vprintf ((stream_t*) line, fmt, args);
-	va_end (args);
-	line->timer = 0;
-	return err;
 }

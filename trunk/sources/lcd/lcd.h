@@ -1,47 +1,40 @@
-#define NCOL	16	/* Количество символов в строке */
+#include <stream/stream.h>
+
+#define NCOL	16			/* Line width */
 
 typedef struct {
-	stream_interface_t *interface;	/* для printf */
-	struct _timer_t *timer;		/* для прокрутки */
-	unsigned char base;		/* базовый адрес */
-	unsigned char col;		/* номер позиции */
-	unsigned char data [NCOL];	/* символы */
+	stream_interface_t *interface;	/* for printf */
+	struct _timer_t *timer;		/* for scrolling */
+	unsigned char base;		/* base address of this line */
+	unsigned char col;		/* current column */
+	unsigned char raw;		/* do not use Unicode mapping */
+	unsigned char c1, c2;		/* utf8 decoder */
+	unsigned char data [NCOL];	/* symbols */
 } lcd_t;
 
 /*
- * Инициализация контроллера.
+ * Initialization of LCD controller.
+ * When timer is present, the printed line will be slowly scrolled.
  */
-void lcd_init (lcd_t *line1, lcd_t *line2);
+void lcd_init (lcd_t *line1, lcd_t *line2, struct _timer_t *timer);
 
 /*
- * Загрузка изображения символа.
- * Восемь символов с кодами 0-7 можно загружать.
+ * Load character image.
+ * Eight symbols with codes 0-7 are loadable.
  */
-void lcd_load_glyph (char n, const char *data);
+void lcd_load_glyph (char n, const unsigned char *data);
 
 /*
- * Стирание всего экрана.
+ * Clear the whole screen.
  */
 void lcd_clear_all (lcd_t *line1, lcd_t *line2);
 
 /*
- * Стирание одной строки.
+ * Clear single line.
  */
 void lcd_clear (lcd_t *line);
 
 /*
- * Печать одного символа.
- * Некоторые символы обрабатываются специальным образом.
+ * Move cursor to given position.
  */
-void lcd_putchar (lcd_t *line, short c);
-
-/*
- * Печать строки по формату, аналогично printf.
- */
-int lcd_printf (lcd_t *line, const char *fmt, ...);
-
-/*
- * Печать строки по формату, аналогично printf.
- * При выходе за границу экрана строка плавно прокручивается.
- */
-int lcd_rprintf (lcd_t *line, struct _timer_t *timer, const char *fmt, ...);
+void lcd_move (lcd_t *line, int col);

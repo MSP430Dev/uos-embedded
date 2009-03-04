@@ -4,7 +4,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <nvram/eeprom.h>
-#include "lcd.h"
+#include <lcd/lcd.h>
 #include "msp430-easyweb2.h"
 
 #define EEPROM_BYTES	(64*1024L)

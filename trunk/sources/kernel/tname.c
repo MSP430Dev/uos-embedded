@@ -27,10 +27,10 @@ const char *
 task_name (task_t *t)
 {
 	small_uint_t n, c;
-	const char *p;
+	const unsigned char *p;
 
 	/* Task name could have up to 16 chars. */
-	p = t->name;
+	p = (unsigned char*) t->name;
 	for (n=0; n<16; n++) {
 		/* On AVR, task name is stored in flash memory.
 		 * On other architectures, there is no difference.  */

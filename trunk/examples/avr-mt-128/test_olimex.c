@@ -4,7 +4,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <uart/uart.h>
-#include "lcd.h"
+#include <lcd/lcd.h>
 #include "avr-mt-128.h"
 
 uart_t uart;
