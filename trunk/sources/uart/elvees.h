@@ -7,7 +7,6 @@
 
 #define enable_receiver(p)		/* already enabled in init() */
 #define enable_receive_interrupt(p)	(MC_IER |= MC_IER_ERXRDY | MC_IER_ERLS)
-#define disable_receive_interrupt(p)	(MC_IER &= ~(MC_IER_ERXRDY | MC_IER_ERLS))
 #define enable_transmit_interrupt(p)	(MC_IER |= MC_IER_ETXRDY)
 #define disable_transmit_interrupt(p)	(MC_IER &= ~MC_IER_ETXRDY)
 

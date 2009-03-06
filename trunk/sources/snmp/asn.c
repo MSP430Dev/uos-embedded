@@ -14,7 +14,7 @@
 #	define mem_pool(block) 0
 #	define debug_putchar(s,c) putchar(c)
 #	define debug_printf printf
-	static inline unsigned char flash_fetch (const char *p) {return *p;}
+	static inline unsigned char flash_fetch (const unsigned char *p) {return *p;}
 #endif /* TEST_ASN */
 #include <snmp/asn.h>
 
@@ -577,13 +577,13 @@ asn_make_oid (mem_pool_t *pool, const char *str)
 	b->type = ASN_OID;
 	b->oid.len = 0;
 	for (;;) {
-		while ((c = flash_fetch(str)) == '.')
+		while ((c = flash_fetch ((unsigned char*) str)) == '.')
 			++str;
 		if (c < '0' || c > '9')
 			break;
 		val = c - '0';
 		for (;;) {
-			c = flash_fetch (++str);
+			c = flash_fetch ((unsigned char*) ++str);
 			if (c < '0' || c > '9')
 				break;
 			val = val*10 + c - '0';
@@ -682,7 +682,7 @@ asn_make_oidn (mem_pool_t *pool, unsigned enterprise,
 	b->type = ASN_OID;
 	b->oid.len = len + cnt;
 	for (i=0; i<len; ++i) {
-		b->oid.id [i] = flash_fetch (id + i);
+		b->oid.id [i] = flash_fetch ((unsigned char*)id + i);
 
 		/* Value 255 is special, it designates the enterprise ID. */
 		if (b->oid.id [i] == 255)

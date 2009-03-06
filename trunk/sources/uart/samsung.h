@@ -29,8 +29,6 @@
 						ARM_UCON_RFRST))
 #define enable_receive_interrupt(p)	( ARM_UINTEN(p) |= ARM_UINTEN_RDVIE | \
 						ARM_UINTEN_RFREAIE)
-#define disable_receive_interrupt(p)	(ARM_UINTEN(p) &= ~(ARM_UINTEN_RDVIE | \
-						ARM_UINTEN_RFREAIE))
 #define enable_transmit_interrupt(p) {		\
 	int x;					\
 	arm_intr_disable (&x);		\
@@ -43,7 +41,6 @@
 	arm_intr_restore (x); }
 
 #define transmit_byte(p,c)		(ARM_UTXBUF(p) = (c))
-#define test_transmit_complete(p)	(ARM_USTAT(p) & ARM_USTAT_TC)
 #define get_received_byte(p)		ARM_URXBUF(p)
 
 #define test_transmitter_enabled(p)	(ARM_UCON(p) & ARM_UCON_TMODE_MASK)

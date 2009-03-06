@@ -1,0 +1,97 @@
+= Добавление новой модели семейства AVR =
+
+Семейство Atmel AVR содержит десятки разных моделей микроконтроллеров.
+Они различаются набором периферийных устройств, аппаратных прерываний,
+а также имеют некоторые отличия в функционировании.
+
+Операционная система uOS поддерживает не все, а только некоторые модели AVR.
+Вы можете самостоятельно реализовать поддержку нужной Вам модели
+по следующей инструкции.
+
+== Описание регистров ==
+Убедитесь, что модуль runtime содержит описания регистров для нужной Вам модели.
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/runtime/avr/io.h sources/runtime/avr/io.h]
+должны присутствовать строки вида:
+{{{
+#elif defined (__AVR_ATmega32__)
+#  include <runtime/avr/iom32.h>
+}}}
+
+== Таблица прерываний ==
+Распределение прерываний по номерам в разных моделях AVR отличается.
+Файл [http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/avr/interrupt.cfg sources/kernel/avr/interrupt.cfg]
+содержит таблицу номеров прерываний для всех моделей. Добавьте данные,
+соответствующие Вашей модели. Например:
+{{{
+ATmega161
+        0       GIMSK   6       # External interrupts
+        1       GIMSK   7
+        2       GIMSK   5
+        3       TIMSK   7       # Timer/counter interrupts
+        4       TIMSK   6
+        5       TIMSK   5
+        6       TIMSK   4
+        7       TIMSK   3
+        8       TIMSK   2
+        9       TIMSK   1
+        10      TIMSK   0
+        11      SPCR    SPIE    # SPI event
+        12      UCR     RXCIE   # UART receive complete
+        13      UCSR1B  RXCIE   # UART 1 receive complete
+        14      UCR     -UDRIE  # UART transmitter empty
+        15      UCSR1B  -UDRIE  # UART 1 transmitter empty
+        16      UCR     TXCIE   # UART transmit complete
+        17      UCSR1B  TXCIE   # UART 1 transmit complete
+        18      EECR    EERIE   # EEPROM ready
+        19      ACSR    ACIE    # Analog comparator event
+}}}
+Таблица содержит следующие данные:
+ * С начала строки - модель микроконтроллера.
+ * Первое поле - номер прерывания.
+ * Второе поле - имя регистра, содержащего маску прерывания.
+ * Третье поле - номер или имя бита, при уствновке которого разрешается данное прерывание. Если имеется префикс "-", маска не будет открываться автоматически. Это бывает полезно при реализации быстрых обработчиков, например передатчика UART.
+ * После "#" - комментарий.
+
+После изменения таблицы запустите скрипт
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/avr/mkintr.py sources/kernel/avr/mkintr.py].
+Будут созданы файлы с именами вида ATmegaNNN.c.
+
+В конец файла
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/kernel/avr/machdep.c sources/kernel/avr/machdep.c]
+добавьте строки вида:
+{{{
+#ifdef __AVR_ATmega161__
+#  include "ATmega161.c"
+#endif
+}}}
+
+== Таймер ==
+В начале файла
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/timer/timer.c sources/timer/timer.c]
+задайте номер, соответствующий прерыванию Timer 1 A, например:
+{{{
+#   ifdef __AVR_ATmega161__
+#      define TIMER_IRQ         6
+#   endif
+}}}
+
+== UART ==
+В начале файла
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/uart/avr.h sources/uart/avr.h]
+задайте номера прерываний UART, например:
+{{{
+#ifdef __AVR_ATmega161__
+#   define RECEIVE_IRQ(p)          (p ? 13 : 12)
+#   define TRANSMIT_IRQ(p)         (p ? 15 : 14)
+#endif
+}}}
+
+== EEPROM ==
+В начале файла
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/nvram/nvram-avr.h sources/nvram/nvram-avr.h]
+задайте номер прерывания EEPROM, например:
+{{{
+#ifdef __AVR_ATmega2561__
+#   define NVRAM_IRQ		29
+#endif
+}}}
