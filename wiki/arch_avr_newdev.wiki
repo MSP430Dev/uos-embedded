@@ -88,7 +88,7 @@ ATmega161
 
 == EEPROM ==
 В начале файла
-[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/nvram/nvram-avr.h sources/nvram/nvram-avr.h]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/sources/nvram/nvram-avr.c sources/nvram/nvram-avr.c]
 задайте номер прерывания EEPROM, например:
 {{{
 #ifdef __AVR_ATmega2561__
