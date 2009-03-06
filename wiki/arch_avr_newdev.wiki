@@ -81,8 +81,8 @@ ATmega161
 задайте номера прерываний UART, например:
 {{{
 #ifdef __AVR_ATmega161__
-#   define RECEIVE_IRQ(p)          (p ? 13 : 12)
-#   define TRANSMIT_IRQ(p)         (p ? 15 : 14)
+#   define RECEIVE_IRQ(p)       (p ? 13 : 12)
+#   define TRANSMIT_IRQ(p)      (p ? 15 : 14)
 #endif
 }}}
 
