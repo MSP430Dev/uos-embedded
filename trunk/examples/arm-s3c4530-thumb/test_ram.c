@@ -1,11 +1,11 @@
 /*
- * Testing RAM on STK500 board.
+ * Testing RAM on Cronyx ETV bridge board.
  */
 #include "runtime/lib.h"
 #include "kernel/uos.h"
 
 /*
- * Установлена микросхема 1M x 16 - имеем 2 мегабайта памяти.
+ * Installed DRAM chip 1M x 16 - total 2 megabytes of memory.
  */
 #define RAM_START	0x02000000
 #define RAM_SIZE	(2*1024*1024)
@@ -13,7 +13,7 @@
 #define REFRESH_USEC	8
 #define IO_START	0x03600000
 
-ARRAY (stack_console, 0x300);	/* Задача: меню на консоли */
+ARRAY (stack_console, 400);	/* Task: menu on console */
 
 void test_location (unsigned long addr, unsigned short val)
 {
@@ -223,19 +223,14 @@ void configure_ram (void)
 
 void main_console (void *data)
 {
-	debug_printf ("\nTesting RAM\n");
-
-	configure_ram ();
 	for (;;)
 		menu ();
 }
 
 void uos_init (void)
 {
-	/* Baud 9600 at 50/2 MHz. */
-	ARM_UCON(0) = ARM_UCON_WL_8 | ARM_UCON_TMODE_IRQ;
-	ARM_UBRDIV(0) = ((KHZ * 500L / 9600 + 8) / 16 - 1) << 4;
-
+	debug_printf ("\nTesting RAM\n");
+	configure_ram ();
 	task_create (main_console, 0, "console", 1,
 		stack_console, sizeof (stack_console));
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 1999 Marek Michalkiewicz <marekm@linux.org.pl>
+ * Copyright (C) 2001-2009 Serge Vakulenko <serge@vak.ru>
  *
  * Permission to use, copy, modify, and distribute this software and
  * its documentation for any purpose and without fee is hereby granted,
@@ -8,6 +9,12 @@
  */
 #include <runtime/lib.h>
 #include <watchdog/watchdog.h>
+
+#ifdef WDP3
+#   define WD_PS3_MASK	(1 << WDP3)
+#else
+#   define WD_PS3_MASK	0x00
+#endif
 
 void watchdog_enable (int timeout)
 {
@@ -19,7 +26,7 @@ void watchdog_enable (int timeout)
 	"	sts %1,%2 \n"
 	"	sts %1,%0 \n"
 	"	out __SREG__, __tmp_reg__"
-	: : "r" ((char) ((timeout & 0x08 ? _WD_PS3_MASK : 0x00) | (timeout) | 1<<WDE)),
+	: : "r" ((char) ((timeout & 0x08 ? WD_PS3_MASK : 0x00) | (timeout) | 1<<WDE)),
 	    "M" (_SFR_MEM_ADDR(WDTCR)),
 	    "r" ((char) (3<<WDE)));
 #else

@@ -66,10 +66,16 @@ _init_ (void)
 	/* Set stack to end of internal SRAM. */
 	arm_set_stack_pointer ((void*) (ARM_SRAM_BASE + ARM_SRAM_SIZE));
 
-	/*
-	 * Global interrupt enable.
-	 */
 #ifdef ARM_S3C4530
+        /* Uart 0 for debug output: baud 9600. */
+        ARM_UCON(0) = ARM_UCON_WL_8 | ARM_UCON_TMODE_IRQ;
+        ARM_UBRDIV(0) = ((KHZ * 500L / 9600 + 8) / 16 - 1) << 4;
+
+        /* On Cronyx board, hardware watchdog is attached to pin P21. */
+	ARM_IOPCON1 &= ~(1 << 21);
+	ARM_IOPMOD |= 1 << 21;
+
+	/* Global interrupt enable. */
 	ARM_INTMSK = 0x1fffff;
 #endif
 #ifdef ARM_AT91SAM
@@ -97,14 +103,21 @@ uos_valid_memory_address (void *ptr)
 #endif
 }
 
-#ifdef ARM_S3C4530
+/*
+ * This routine should be supplied by user.
+ * Implementation of watchdog is different on different boards.
+ */
 void __attribute ((weak))
 watchdog_alive ()
 {
-	/* This routine should be supplied by user.
-	 * Implementation of watchdog is different on different boards. */
-}
+#ifdef ARM_S3C4530
+        /* On Cronyx board, hardware watchdog is attached to pin P21.
+         * Alive pulse must be >250 nsec. */
+	ARM_IOPDATA &= ~(1ul << 21);
+	udelay (1);
+	ARM_IOPDATA |= 1ul << 21;
 #endif
+}
 
 unsigned long _dump_stack_ [13];
 

@@ -45,17 +45,18 @@ void arch_task_switch (task_t *target)
 "	nop \n"
 "	.code	32 \n\t"
 #endif
-	"stmfd	sp!, {lr} \n"		/* pc */
+	"push	{lr} \n"		/* pc */
 "	mrs	lr, cpsr \n"
 #if __thumb__
 "	orr	lr, lr, #0x20 \n"	/* thumb mode */
 #endif
-"	stmfd	sp!, {lr} \n"		/* cpsr (from lr) */
-"	stmfd	sp!, {r0-r12,lr}"	/* save r0-r12,lr */
+"	push	{lr} \n"		/* cpsr (from lr) */
+"	push	{r0-r12,lr}"		/* save r0-r12,lr */
 #if __thumb__
 "\n	ldr	lr, [pc] \n"		/* switch back to Thumb mode */
 "	bx	lr \n"
-"	.word	.+5"
+"	.word	.+5 \n"
+"	.code	16"
 #endif
 	);
 
@@ -77,18 +78,17 @@ void arch_task_switch (task_t *target)
 #endif
 "	.globl	restore_regs \n"
 "restore_regs: \n"
-"	.code	32 \n"
-"	ldmfd	sp!, {r0-r2} \n"	/* load r0-r2 */
+"	pop	{r0-r2} \n"	/* load r0-r2 */
 "	ldr	lr, =_irq_stack_+12 \n"
-"	stmfd	lr, {r0-r2} \n"		/* save r0-r2 to irq stack */
-"	ldmfd	sp!, {r3-r12, lr} \n"	/* load r3-r12, lr */
-"	ldmfd	sp!, {r0,r1} \n"	/* load saved cpsr,pc to r0,r1 */
+"	stmdb	lr, {r0-r2} \n"		/* save r0-r2 to irq stack */
+"	pop	{r3-r12, lr} \n"	/* load r3-r12, lr */
+"	pop	{r0,r1} \n"		/* load saved cpsr,pc to r0,r1 */
 "	mrs	r2, cpsr \n"		/* move cpsr to r0 */
 "	bic	r2, r2, #1 \n"
 "	msr	cpsr, r2 \n"		/* switch to irq mode */
 "	msr	spsr, r0 \n"		/* restore spsr */
 "	mov	lr, r1 \n"		/* restore lr */
-"	ldmea	sp, {r0-r2} \n"		/* load saved r0,r1 */
+"	ldmdb	sp, {r0-r2} \n"		/* load saved r0,r1 */
 "	movs	pc, lr");		/* changes mode and branches */
 }
 
