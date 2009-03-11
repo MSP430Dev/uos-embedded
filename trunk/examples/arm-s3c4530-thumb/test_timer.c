@@ -14,6 +14,7 @@ void hello (void *arg)
 		debug_printf ("Hello from `%s'! msec = %d\n",
 			arg, timer_milliseconds (&timer));
 		lock_wait (&timer.decisec);
+/*		mdelay (1000);*/
 	}
 }
 

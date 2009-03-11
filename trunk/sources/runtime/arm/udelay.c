@@ -5,10 +5,16 @@
  */
 void udelay (unsigned usec)
 {
-        unsigned i;
+	unsigned nloops;
 
-        do {
-                for (i=0; i<KHZ/1000; ++i)
-                        asm volatile ("nop");
-        } while (--usec);
+	if (! usec)
+		return;
+
+	nloops = (usec * (KHZ / 1000) + 7) >> 3;
+	do {
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+	} while (--nloops);
 }

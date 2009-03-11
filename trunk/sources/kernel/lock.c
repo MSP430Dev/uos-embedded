@@ -32,12 +32,6 @@ void __lock_init (lock_t *lock)
 #endif
 }
 
-void __lock_alarm_init (lock_t *lock)
-{
-	debug_printf ("\nWARNING: lock %p is not initialized!\n", lock);
-	__lock_init (lock);
-}
-
 /*
  * Get the lock. The calling task would block
  * waiting for the lock to be released by somebody.

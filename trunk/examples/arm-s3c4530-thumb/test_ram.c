@@ -158,7 +158,7 @@ void menu ()
 	char cmd;
 
 	debug_printf ("\n  1. Test address signals");
-	debug_printf ("\n  2. Test address 0x%08x", RAM_START + 0xaaaaa);
+	debug_printf ("\n  2. Test address 0x%08A", RAM_START + 0xaaaaa);
 	debug_printf ("\n  3. Test all RAM (%d Mbytes)", RAM_SIZE/1024/1024);
 	debug_puts ("\n\n");
 	for (;;) {
