@@ -3,7 +3,7 @@
  */
 /* Default linker script, for normal executables */
 OUTPUT_FORMAT("elf32-avr","elf32-avr","elf32-avr")
-OUTPUT_ARCH(avr:3)
+OUTPUT_ARCH(avr:5)
 MEMORY
 {
   text   (rx)   : ORIGIN = 0,    LENGTH = 128K

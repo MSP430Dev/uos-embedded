@@ -11,7 +11,7 @@
 #include <uart/slip.h>
 
 /*
- * Установлена микросхема 16kx8 - имеем 60 килобайт памяти.
+ * Installed SRAM 64k*8.
  */
 #define RAM_START	0x1000
 #define RAM_END		0xffff
@@ -28,15 +28,14 @@ void uos_init (void)
 	lock_group_t *g;
 	unsigned char my_ip[] = "\310\0\0\2";
 
-/* Baud 38400. */
-outb (((int) (KHZ * 1000L / 38400) + 8) / 16 - 1, UBRR);
+	/* Baud 38400. */
+	UBRR = ((int) (KHZ * 1000L / 38400) + 8) / 16 - 1;
 
-	/* Установлена микросхема 62256 - имеем 32 килобайта памяти. */
-	/* Разрешаем внешнюю память: порты A - адрес/данные, C - адрес. */
+	/* Enable external RAM: port A - address/data, port C - address. */
 	setb (SRE, MCUCR);
 	mem_init (&pool, RAM_START, RAM_END);
 
-/*	timer_init (&timer, KHZ, 10);*/
+	timer_init (&timer, KHZ, 10);
 
 	/*
 	 * Create a group of two locks: timer and slip.

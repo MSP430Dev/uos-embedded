@@ -1,19 +1,16 @@
 /*
- * Testing timer.
+ * Testing task switching.
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
-#include <timer/timer.h>
 
 ARRAY (task, 200);
-timer_t timer;
 
 void hello (void *arg)
 {
 	for (;;) {
-		debug_printf ("Hello from `%S'! msec = %d\n",
-			arg, timer_milliseconds (&timer));
-		lock_wait (&timer.decisec);
+		debug_printf ("Hello from `%S'! (Press Enter)\n", arg);
+		debug_getchar ();
 	}
 }
 
@@ -22,7 +19,6 @@ void uos_init (void)
 	/* Baud 9600. */
 	UBRR = ((int) (KHZ * 1000L / 9600) + 8) / 16 - 1;
 
-	debug_puts ("\nTesting timer.\n");
-	timer_init (&timer, KHZ, 10);
+	debug_puts ("\nTesting task.\n");
 	task_create (hello, "task", "hello", 1, task, sizeof (task));
 }

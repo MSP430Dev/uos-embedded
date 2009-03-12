@@ -1,13 +1,13 @@
 /*
  * Testing memory allocation.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "random/rand15.h"
-#include "mem/mem.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <random/rand15.h>
+#include <mem/mem.h>
 
 /*
- * Установлена микросхема 16kx8 - имеем 60 килобайт памяти.
+ * Installed SRAM 64k*8.
  */
 #define RAM_START	0x1000
 #define RAM_END		0xffff
@@ -116,10 +116,10 @@ void hello (void *arg)
 
 void uos_init (void)
 {
-/* Baud 9600. */
-outb (((int) (KHZ * 1000L / 9600) + 8) / 16 - 1, UBRR);
+	/* Baud 9600. */
+	UBRR = ((int) (KHZ * 1000L / 9600) + 8) / 16 - 1;
 
-	/* Разрешаем внешнюю память: порты A - адрес/данные, C - адрес. */
+	/* Enable external RAM: port A - address/data, port C - address. */
 	setb (SRE, MCUCR);
 	mem_init (&pool, RAM_START, RAM_END);
 

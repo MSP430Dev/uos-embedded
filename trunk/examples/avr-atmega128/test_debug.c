@@ -5,8 +5,9 @@
 
 int main (void)
 {
-/* Baud 9600. */
-outb (((int) (KHZ * 1000L / 9600) + 8) / 16 - 1, UBRR);
+	/* Baud 9600. */
+	UBRR = ((int) (KHZ * 1000L / 9600) + 8) / 16 - 1;
+
 	for (;;) {
 		debug_puts ("Hello, World!\n");
 		debug_getchar();

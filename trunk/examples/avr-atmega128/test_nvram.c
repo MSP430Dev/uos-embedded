@@ -1,14 +1,13 @@
 /*
  * Testing NVRAM.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "uart/uart.h"
-#include "nvram/nvram.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <uart/uart.h>
+#include <nvram/eeprom.h>
 
-ARRAY (task, 200);
 uart_t uart;
-nvram_t nvram;
+ARRAY (task, 280);
 
 void test (void *data)
 {
@@ -40,6 +39,6 @@ void test (void *data)
 void uos_init (void)
 {
 	uart_init (&uart, 0, 90, KHZ, 9600);
-	eeprom_init (&nvram);
+	eeprom_init ();
 	task_create (test, 0, "test", 1, task, sizeof (task));
 }

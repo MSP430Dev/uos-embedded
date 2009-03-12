@@ -1,7 +1,7 @@
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "uart/uart.h"
-#include "timer/timer.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <uart/uart.h>
+#include <timer/timer.h>
 
 uart_t uart;
 timer_t timer;
@@ -14,7 +14,6 @@ static void main_console (void *data);
 
 void uos_init (void)
 {
-/*outb (25, UBRR);*/
 	uart_init (&uart, 90, KHZ, 9600);
 	timer_init (&timer, KHZ, 10);
 

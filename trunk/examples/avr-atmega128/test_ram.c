@@ -1,88 +1,39 @@
 /*
  * Testing RAM on STK500 board.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "uart/uart.h"
-#include "timer/timer.h"
-#include "mem/mem.h"
-#include "kernel/internal.h"
-#include "watchdog/watchdog.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <uart/uart.h>
+#include <timer/timer.h>
+#include <mem/mem.h>
+#include <watchdog/watchdog.h>
 
 /*
- * Установлена микросхема 16kx8 - имеем 60 килобайт памяти.
+ * Installed SRAM 64k*8.
  */
 #define RAM_START	0x1000
 #define RAM_END		0xffff	/* For STK300 use 0x8000 */
 
 #define CTRL(c)  ((c) & 037)
 
-ARRAY (stack_console, 0x100);	/* Задача: меню на консоли */
-ARRAY (stack_poll, 0x100);	/* Задача: опрос по таймеру */
+ARRAY (stack_console, 200);	/* Task: menu on console */
+ARRAY (stack_poll, 200);	/* Task: polling wathdog */
 uart_t uart;
 timer_t timer;
 mem_pool_t pool;
 
-void main_console (void *data);
-void main_poll (void *data);
-void menu (void);
-
-void uos_init (void)
-{
-	extern char __bss_end;
-
-/*outb (25, UBRR);*/
-	uart_init (&uart, 0, 90, KHZ, 9600);
-	timer_init (&timer, KHZ, 10);
-
-	/*
-	 * Инициализируем все, что относится к процессору, без периферии.
-	 */
-	/* Разрешаем внешнюю память: порты A - адрес/данные, C - адрес. */
-	setb (SRE, MCUCR);
-
-	/* Порт B - светодиоды. */
-	outb (0xff, DDRB);
-
-	/* Инициализируем драйвер памяти.
-	 * Сначала внешняя память (в порядке убывания адресов).
-	 * Установлена микросхема 62256 - имеем 32 килобайта памяти. */
-	mem_init (&pool, RAM_START, RAM_END);
-
-	/* Память внутри процессора - 4000 байт.
-	 * Оставляем 128 байт для idle task.
-	 * У компилятора GCC адрес специальной переменной __bss_end отмечает
-	 * конец программы, с этого места остальная память свободна. */
-	mem_init (&pool, (unsigned short) &__bss_end, 0x1000 - 128);
-
-	task_create (main_console, 0, "console", 1,
-		stack_console, sizeof (stack_console));
-}
-
-void main_console (void *data)
-{
-	printf (&uart, "\nSTK500 Starter Kit\n\n");
-
-	/* Включаем сторожевой таймер на 2 секунды. */
-	watchdog_enable (7);
-
-	task_create (main_poll, 0, "poll", 5, stack_poll, sizeof (stack_poll));
-	for (;;)
-		menu ();
-}
-
 /*
- * Программный сброс устройства.
+ * Reset the CPU.
  */
 void reset ()
 {
-	cli ();
+	asm volatile ("cli");
 	for (;;)
 		asm volatile ("sleep");
 }
 
 /*
- * Ввод команды.
+ * Enter command from console.
  */
 char get_cmd ()
 {
@@ -196,32 +147,6 @@ void test_ram (void)
 		fflush (&uart);
 	}
 	puts (&uart, " done.\n");
-#if 0
-	puts (&uart, "Testing --------------------------------\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	fflush (&uart);
-	for (addr=1; addr; ++addr) {
-		unsigned short a = addr << 8 | addr >> 8;
-		if (a<RAM_START || a>RAM_END)
-			continue;
-		*(volatile unsigned char*) a = (unsigned char) a;
-	}
-	for (i=0; i<32; ++i) {
-		for (addr=1; addr; ++addr) {
-			unsigned short a = addr << 8 | addr >> 8;
-			unsigned char val;
-			if (a<RAM_START || a>RAM_END)
-				continue;
-			val = (unsigned char) a;
-			if (*(volatile unsigned char*) a != val) {
-				printf (&uart, "\nAddress %#x written %#x read %#x\n",
-					a, val, *(volatile unsigned char*) a);
-			}
-		}
-		putchar (&uart, '.');
-		fflush (&uart);
-	}
-	puts (&uart, " done.\n\n");
-#endif
 }
 
 void menu ()
@@ -254,7 +179,7 @@ void menu ()
 }
 
 /*
- * Задача периодического опроса.
+ * Poll watchdog periodically.
  */
 void main_poll (void *data)
 {
@@ -262,11 +187,44 @@ void main_poll (void *data)
 		/* Опрос через 30 мсек. */
 		timer_delay (&timer, 30);
 		watchdog_alive ();
-
-/*		lock_take (&periph);*/
-
-		/* TODO */
-
-/*		lock_release (&periph);*/
 	}
+}
+
+void main_console (void *data)
+{
+	printf (&uart, "\nSTK500 Starter Kit\n\n");
+
+	/* Turn on watchdog with 2 second timeout. */
+	watchdog_enable (7);
+
+	task_create (main_poll, 0, "poll", 5, stack_poll, sizeof (stack_poll));
+	for (;;)
+		menu ();
+}
+
+void uos_init (void)
+{
+	extern char __bss_end;
+
+	uart_init (&uart, 0, 90, KHZ, 9600);
+	timer_init (&timer, KHZ, 10);
+
+	/* Enable external RAM: port A - address/data, port C - address. */
+	setb (SRE, MCUCR);
+
+	/* Port B - LEDs. */
+	DDRB = 0xff;
+
+	/* Initialize memory allocator.
+	 * External RAM first, in order of desreasing addresses. */
+	mem_init (&pool, RAM_START, RAM_END);
+
+	/* Internal CPU memory - 4000 bytes.
+	 * Leave 128 bytes for idle task.
+	 * GCC places a symbol __bss_end at the program end,
+	 * all other memory is free. */
+	mem_init (&pool, (unsigned short) &__bss_end, 0x1000 - 128);
+
+	task_create (main_console, 0, "console", 1,
+		stack_console, sizeof (stack_console));
 }

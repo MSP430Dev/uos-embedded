@@ -8,12 +8,12 @@
 #include <uart/slip.h>
 
 /*
- * Установлена микросхема 16kx8 - имеем 60 килобайт памяти.
+ * Installed SRAM 64k*8.
  */
 #define RAM_START	0x1000
 #define RAM_END		0xffff
 
-ARRAY (task, 0x200);
+ARRAY (task, 400);
 mem_pool_t pool;
 slip_t slip;
 
@@ -39,10 +39,10 @@ void hello (void *data)
 
 void uos_init (void)
 {
-/* Baud 19200. */
-outb (((int) (KHZ * 1000L / 19200) + 8) / 16 - 1, UBRR);
+	/* Baud 19200. */
+	UBRR = ((int) (KHZ * 1000L / 19200) + 8) / 16 - 1;
 
-	/* Разрешаем внешнюю память: порты A - адрес/данные, C - адрес. */
+	/* Enable external RAM: port A - address/data, port C - address. */
 	setb (SRE, MCUCR);
 	mem_init (&pool, RAM_START, RAM_END);
 

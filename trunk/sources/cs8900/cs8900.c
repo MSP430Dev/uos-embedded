@@ -666,14 +666,14 @@ cs8900_probe ()
 	cs_init ();
 	for (m=0; ; ++m) {
 		/* Startup time is ~10 msec on Olimex easyWeb2 board. */
-		if (m > 20)
+		if (m > 4*20)
 			return 0;
 		cs_out (PACKETPP, 0);
 		v = cs_in (PPDATA);
 /*debug_printf ("CS8900 manufacturer = %#04x\n", v);*/
 		if (v == 0x630E)
 			break;
-		udelay (1000);
+		udelay (250);
 	}
 	for (v=1; v<0x1000; v<<=1) {
 		cs_out (PACKETPP, v);

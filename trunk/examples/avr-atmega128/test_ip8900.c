@@ -12,7 +12,7 @@
 #include <cs8900/cs8900.h>
 
 /*
- * Установлена микросхема 16kx8 - имеем 60 килобайт памяти.
+ * Installed SRAM 16k*8.
  */
 #define RAM_START	0x1000
 #define RAM_END		0x8000
@@ -25,10 +25,10 @@ ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 arp_t *arp;
 cs8900_t eth;
 route_t route;
-ARRAY (stack_poll, 0x100);	/* Задача: опрос по таймеру */
+ARRAY (stack_poll, 200);	/* Task: polling */
 
 /*
- * Задача периодического опроса.
+ * Task of polling ethernet controller.
  */
 void main_poll (void *data)
 {
@@ -43,10 +43,9 @@ void uos_init (void)
 	unsigned char my_ip[] = "\220\316\265\373";
 
 	/* Baud 38400. */
-	outb (((int) (KHZ * 1000L / 38400) + 8) / 16 - 1, UBRR);
+	UBRR = ((int) (KHZ * 1000L / 38400) + 8) / 16 - 1;
 
-	/* Установлена микросхема 62256 - имеем 32 килобайта памяти. */
-	/* Разрешаем внешнюю память: порты A - адрес/данные, C - адрес. */
+	/* Enable external RAM: port A - address/data, port C - address. */
 	setb (SRE, MCUCR);
 	mem_init (&pool, RAM_START, RAM_END);
 
@@ -65,12 +64,12 @@ void uos_init (void)
 	/*
 	 * Create interface eth0 144.206.181.251 / 255.255.255.0
 	 */
-	/* Reset чипа CS8900A заведен на порт G3.
-	 * Он в прямой логике, надо подать туда 0. */
-	outb_far (0x08, DDRG);
-	clearb_far (3, PORTG);
+	/* Reset of CS8900A is connected to port G3.
+	 * Direct logic, set to 0. */
+	DDRG = 0x08;
+	clearb (3, PORTG);
 
-	/* Добавляем один wait state, т.к. иначе cs8900 не успевает. */
+	/* Add 1 wait state, for cs8900 to get it right. */
 	setb (SRW, MCUCR);
 	cs8900_init (&eth, "eth0", 80, &pool, arp);
 
