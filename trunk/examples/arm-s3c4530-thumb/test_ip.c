@@ -12,7 +12,7 @@
 #include <s3c4530/eth.h>
 
 /*
- * Установлена микросхема 1M x 16 - имеем 2 мегабайта памяти.
+ * Installed DRAM chip 1M x 16 - total 2 megabytes of memory.
  */
 #define RAM_START      0x02000000		/* SDRAM start address */
 #define RAM_SIZE       (2*1024*1024)		/* SDRAM size (bytes) */
@@ -23,6 +23,7 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t ip;
+ARRAY (stack_wdog, 500);		/* Task: watchdog */
 ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 arp_t *arp;
@@ -69,13 +70,17 @@ void configure_ram (unsigned long ram_start, unsigned long ram_end,
 	ARM_SYSCFG |= ARM_SYSCFG_WE | ARM_SYSCFG_CE;
 }
 
+void main_watchdog (void *data)
+{
+	for (;;) {
+		watchdog_alive ();
+		mdelay (500);
+	}
+}
+
 void uos_init (void)
 {
 	lock_group_t *g;
-
-	/* Baud 9600. */
-	ARM_UCON(0) = ARM_UCON_WL_8 | ARM_UCON_TMODE_IRQ;
-	ARM_UBRDIV(0) = ((KHZ * 500L / 9600 + 8) / 16 - 1) << 4;
 
 	configure_ram (RAM_START, RAM_END, REFRESH_USEC, IO_START);
 	mem_init (&pool, RAM_START, RAM_END);
@@ -104,5 +109,7 @@ void uos_init (void)
 	route_add_netif (&ip, &route, (unsigned char*) "\220\316\265\273",
 		24, &eth->netif);
 
+	task_create (main_watchdog, 0, "wdog", 1,
+		stack_wdog, sizeof (stack_wdog));
 	debug_puts ("\nTesting IP.\n");
 }

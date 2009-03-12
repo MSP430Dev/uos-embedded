@@ -29,7 +29,7 @@
 #define IO_START	0x03600000
 
 ARRAY (task, 0xa00);
-char line [200];
+unsigned char line [200];
 mem_pool_t pool;
 
 /*
@@ -40,16 +40,16 @@ mem_pool_t pool;
  *	Standard TCL results.
  */
 static int
-loop_cmd (void *dummy, Tcl_Interp *interp, int argc, char **argv)
+loop_cmd (void *dummy, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	int result = TCL_OK;
 	int i, first, limit, incr = 1;
-	char *command;
-	char itxt [12];
+	unsigned char *command;
+	unsigned char itxt [12];
 
 	if ((argc < 5) || (argc > 6)) {
 		Tcl_AppendResult (interp, "bad # args: ", argv [0],
-			" var first limit [incr] command", (char*) 0);
+			" var first limit [incr] command", 0);
 		return TCL_ERROR;
 	}
 
@@ -82,7 +82,7 @@ loop_cmd (void *dummy, Tcl_Interp *interp, int argc, char **argv)
 				result = TCL_OK;
 				break;
 			} else if (result == TCL_ERROR) {
-				char buf [64];
+				unsigned char buf [64];
 
 				snprintf (buf, sizeof(buf),
 					"\n    (\"loop\" body line %d)",
@@ -107,7 +107,7 @@ loop_cmd (void *dummy, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-echo_cmd (void *clientData, Tcl_Interp *interp, int argc, char **argv)
+echo_cmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	int i;
 
@@ -124,7 +124,7 @@ echoError:			snprintf (interp->result, TCL_RESULT_SIZE,
 
 		if (i > 1)
 			debug_putchar (0, ' ');
-		debug_puts (argv[i]);
+		debug_puts ((char*) argv[i]);
 	}
 	debug_putchar (0, '\n');
 	return TCL_OK;
@@ -133,11 +133,11 @@ echoError:			snprintf (interp->result, TCL_RESULT_SIZE,
 /*
  * Read a newline-terminated string from stream.
  */
-char *
-debug_gets (char *buf, int len)
+unsigned char *
+debug_gets (unsigned char *buf, int len)
 {
 	int c;
-	char *s;
+	unsigned char *s;
 
 	s = buf;
         while (--len > 0) {
@@ -201,7 +201,7 @@ void configure_ram (void)
 
 void task_tcl (void *arg)
 {
-	char *cmd;
+	unsigned char *cmd;
 	unsigned char result, got_partial, quit_flag;
 	Tcl_Interp *interp;
 	Tcl_CmdBuf buffer;
@@ -212,8 +212,8 @@ again:
 	debug_printf ("\nEmbedded TCL\n\n");
 
 	interp = Tcl_CreateInterp (&pool);
-	Tcl_CreateCommand (interp, "loop", loop_cmd, 0, 0);
-	Tcl_CreateCommand (interp, "echo", echo_cmd, 0, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "loop", loop_cmd, 0, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "echo", echo_cmd, 0, 0);
 
 	buffer = Tcl_CreateCmdBuf (&pool);
 	got_partial = 0;
@@ -262,9 +262,5 @@ again:
 
 void uos_init (void)
 {
-	/* Baud 9600 at 50/2 MHz. */
-	ARM_UCON(0) = ARM_UCON_WL_8 | ARM_UCON_TMODE_IRQ;
-	ARM_UBRDIV(0) = ((KHZ * 500L / 9600 + 8) / 16 - 1) << 4;
-
 	task_create (task_tcl, 0, "tcl", 1, task, sizeof (task));
 }

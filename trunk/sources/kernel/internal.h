@@ -93,6 +93,9 @@ extern list_t task_active;
 /* Switch to most priority task. */
 void task_schedule (void);
 
+/* Initialize a data structure of the lock. */
+void lock_init (lock_t *);
+
 /* Activate all waiters of the lock. */
 void lock_activate (lock_t *m, void *message);
 
@@ -128,13 +131,6 @@ inline static task_t *task_policy (void)
 			r = t;
 	}
 	return r;
-}
-
-void __lock_init (lock_t *);
-
-inline static void __lock_check (lock_t *lock) {
-	if (! lock->item.next)
-		__lock_init (lock);
 }
 
 #define STACK_MAGIC		0xaau

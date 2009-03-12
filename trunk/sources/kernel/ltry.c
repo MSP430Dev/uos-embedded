@@ -31,7 +31,8 @@ lock_try (lock_t *m)
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 
  	if (m->master && m->master != task_current) {
  		/* Monitor is locked. */

@@ -28,9 +28,9 @@
  * in the "real" definition in tclInt.h.
  */
 typedef struct Tcl_Interp {
-    char *result;		/* Points to result string returned by last
+    unsigned char *result;	/* Points to result string returned by last
 				 * command. */
-    void (*freeProc) (char *blockPtr);
+    void (*freeProc) (unsigned char *blockPtr);
 				/* Zero means result is statically allocated.
 				 * If non-zero, gives address of procedure
 				 * to invoke to free the result.  Must be
@@ -77,13 +77,13 @@ typedef void *Tcl_CmdBuf;
  */
 typedef void (Tcl_CmdDeleteProc) (void *clientData);
 typedef int (Tcl_CmdProc) (void *clientData,
-	Tcl_Interp *interp, int argc, char *argv[]);
+	Tcl_Interp *interp, int argc, unsigned char *argv[]);
 typedef void (Tcl_CmdTraceProc) (void *clientData,
-	Tcl_Interp *interp, int level, char *command, Tcl_CmdProc *proc,
-	void *cmdClientData, int argc, char *argv[]);
-typedef void (Tcl_FreeProc) (char *blockPtr);
-typedef char *(Tcl_VarTraceProc) (void *clientData,
-	Tcl_Interp *interp, char *part1, char *part2, int flags);
+	Tcl_Interp *interp, int level, unsigned char *command, Tcl_CmdProc *proc,
+	void *cmdClientData, int argc, unsigned char *argv[]);
+typedef void (Tcl_FreeProc) (unsigned char *blockPtr);
+typedef unsigned char *(Tcl_VarTraceProc) (void *clientData,
+	Tcl_Interp *interp, unsigned char *part1, unsigned char *part2, int flags);
 
 /*
  * Flag values passed to Tcl_Eval (see the man page for details;  also
@@ -137,23 +137,23 @@ typedef char *(Tcl_VarTraceProc) (void *clientData,
 /*
  * Exported Tcl procedures:
  */
-extern void		Tcl_AppendElement (Tcl_Interp *interp, char *string,
+extern void		Tcl_AppendElement (Tcl_Interp *interp, unsigned char *string,
 				int noSep);
 extern void		Tcl_AppendResult (Tcl_Interp *interp, ...);
-extern char *		Tcl_AssembleCmd (Tcl_CmdBuf buffer, char *string);
-extern void		Tcl_AddErrorInfo (Tcl_Interp *interp, char *message);
-extern char		Tcl_Backslash (char *src, int *readPtr);
-extern int		Tcl_CommandComplete (char *cmd);
-extern char *		Tcl_Concat (struct _mem_pool_t *pool, int argc,
-				char **argv);
-extern int		Tcl_ConvertElement (char *src, char *dst, int flags);
+extern unsigned char *	Tcl_AssembleCmd (Tcl_CmdBuf buffer, unsigned char *string);
+extern void		Tcl_AddErrorInfo (Tcl_Interp *interp, unsigned char *message);
+extern char		Tcl_Backslash (unsigned char *src, int *readPtr);
+extern int		Tcl_CommandComplete (unsigned char *cmd);
+extern unsigned char *	Tcl_Concat (struct _mem_pool_t *pool, int argc,
+				unsigned char **argv);
+extern int		Tcl_ConvertElement (unsigned char *src, unsigned char *dst, int flags);
 extern Tcl_CmdBuf	Tcl_CreateCmdBuf (struct _mem_pool_t *pool);
-extern void		Tcl_CreateCommand (Tcl_Interp *interp, char *cmdName,
+extern void		Tcl_CreateCommand (Tcl_Interp *interp, unsigned char *cmdName,
 				Tcl_CmdProc *proc, void *clientData,
 				Tcl_CmdDeleteProc *deleteProc);
 extern Tcl_Interp *	Tcl_CreateInterp (struct _mem_pool_t *pool);
 extern int		Tcl_CreatePipeline (Tcl_Interp *interp, int argc,
-				char **argv, int **pidArrayPtr,
+				unsigned char **argv, int **pidArrayPtr,
 				int *inPipePtr, int *outPipePtr,
 				int *errFilePtr);
 extern Tcl_Trace	Tcl_CreateTrace (Tcl_Interp *interp,
@@ -161,84 +161,83 @@ extern Tcl_Trace	Tcl_CreateTrace (Tcl_Interp *interp,
 			    void *clientData);
 extern void		Tcl_DeleteCmdBuf (Tcl_CmdBuf buffer);
 extern int		Tcl_DeleteCommand (Tcl_Interp *interp,
-			    char *cmdName);
+			    unsigned char *cmdName);
 extern void		Tcl_DeleteInterp (Tcl_Interp *interp);
 extern void		Tcl_DeleteTrace (Tcl_Interp *interp,
 			    Tcl_Trace trace);
 extern void		Tcl_DetachPids (int numPids, int *pidPtr);
-extern char *		Tcl_ErrnoId (void);
-extern int		Tcl_Eval (Tcl_Interp *interp, char *cmd,
-			    int flags, char **termPtr);
+extern unsigned char *	Tcl_ErrnoId (void);
+extern int		Tcl_Eval (Tcl_Interp *interp, unsigned char *cmd,
+			    int flags, unsigned char **termPtr);
 extern int		Tcl_EvalFile (Tcl_Interp *interp,
-			    char *fileName);
-extern int		Tcl_ExprBoolean (Tcl_Interp *interp, char *string,
+			    unsigned char *fileName);
+extern int		Tcl_ExprBoolean (Tcl_Interp *interp, unsigned char *string,
 				int *ptr);
-extern int		Tcl_ExprLong (Tcl_Interp *interp, char *string,
+extern int		Tcl_ExprLong (Tcl_Interp *interp, unsigned char *string,
 				long *ptr);
-extern int		Tcl_ExprString (Tcl_Interp *interp, char *string);
+extern int		Tcl_ExprString (Tcl_Interp *interp, unsigned char *string);
 extern int		Tcl_Fork (void);
 extern void		Tcl_FreeResult (Tcl_Interp *interp);
 extern int		Tcl_GetBoolean (Tcl_Interp *interp,
-			    char *string, int *boolPtr);
+			    unsigned char *string, int *boolPtr);
 extern int		Tcl_GetInt (Tcl_Interp *interp,
-			    char *string, int *intPtr);
-extern char *		Tcl_GetVar (Tcl_Interp *interp,
-			    char *varName, int flags);
-extern char *		Tcl_GetVar2 (Tcl_Interp *interp,
-			    char *part1, char *part2, int flags);
+			    unsigned char *string, int *intPtr);
+extern unsigned char *	Tcl_GetVar (Tcl_Interp *interp,
+			    unsigned char *varName, int flags);
+extern unsigned char *	Tcl_GetVar2 (Tcl_Interp *interp,
+			    unsigned char *part1, unsigned char *part2, int flags);
 extern int		Tcl_GlobalEval (Tcl_Interp *interp,
-			    char *command);
+			    unsigned char *command);
 extern void		Tcl_InitHistory (Tcl_Interp *interp);
 extern void		Tcl_InitMemory (Tcl_Interp *interp);
-extern char *		Tcl_Merge (struct _mem_pool_t *pool, int argc,
-				char **argv);
-extern char *		Tcl_ParseVar (Tcl_Interp *interp,
-			    char *string, char **termPtr);
+extern unsigned char *	Tcl_Merge (struct _mem_pool_t *pool, int argc,
+				unsigned char **argv);
+extern unsigned char *	Tcl_ParseVar (Tcl_Interp *interp,
+			    unsigned char *string, unsigned char **termPtr);
 extern int		Tcl_RecordAndEval (Tcl_Interp *interp,
-			    char *cmd, int flags);
+			    unsigned char *cmd, int flags);
 extern void		Tcl_ResetResult (Tcl_Interp *interp);
-extern int		Tcl_ScanElement (char *string,
+extern int		Tcl_ScanElement (unsigned char *string,
 			    int *flagPtr);
 extern void		Tcl_SetErrorCode (Tcl_Interp *interp, ...);
 extern void		Tcl_SetResult (Tcl_Interp *interp,
-			    char *string, Tcl_FreeProc *freeProc);
-extern char *		Tcl_SetVar (Tcl_Interp *interp,
-			    char *varName, char *newValue, int flags);
-extern char *		Tcl_SetVar2 (Tcl_Interp *interp,
-			    char *part1, char *part2, char *newValue,
-			    int flags);
-extern char *		Tcl_SignalId (int sig);
-extern char *		Tcl_SignalMsg (int sig);
+			    unsigned char *string, Tcl_FreeProc *freeProc);
+extern unsigned char *	Tcl_SetVar (Tcl_Interp *interp,
+			    unsigned char *varName, unsigned char *newValue, int flags);
+extern unsigned char *	Tcl_SetVar2 (Tcl_Interp *interp,
+			    unsigned char *part1, unsigned char *part2,
+			    unsigned char *newValue, int flags);
+extern unsigned char *	Tcl_SignalId (int sig);
+extern unsigned char *	Tcl_SignalMsg (int sig);
 extern int		Tcl_SplitList (Tcl_Interp *interp,
-			    char *list, int *argcPtr, char ***argvPtr);
-extern int		Tcl_StringMatch (char *string,
-			    char *pattern);
-extern char *		Tcl_TildeSubst (Tcl_Interp *interp,
-			    char *name);
+			    unsigned char *list, int *argcPtr, unsigned char ***argvPtr);
+extern int		Tcl_StringMatch (unsigned char *string,
+			    unsigned char *pattern);
+extern unsigned char *	Tcl_TildeSubst (Tcl_Interp *interp,
+			    unsigned char *name);
 extern int		Tcl_TraceVar (Tcl_Interp *interp,
-			    char *varName, int flags, Tcl_VarTraceProc *proc,
+			    unsigned char *varName, int flags, Tcl_VarTraceProc *proc,
 			    void *clientData);
 extern int		Tcl_TraceVar2 (Tcl_Interp *interp,
-			    char *part1, char *part2, int flags,
+			    unsigned char *part1, unsigned char *part2, int flags,
 			    Tcl_VarTraceProc *proc, void *clientData);
-extern char *		Tcl_UnixError (Tcl_Interp *interp);
 extern int		Tcl_UnsetVar (Tcl_Interp *interp,
-			    char *varName, int flags);
+			    unsigned char *varName, int flags);
 extern int		Tcl_UnsetVar2 (Tcl_Interp *interp,
-			    char *part1, char *part2, int flags);
+			    unsigned char *part1, unsigned char *part2, int flags);
 extern void		Tcl_UntraceVar (Tcl_Interp *interp,
-			    char *varName, int flags, Tcl_VarTraceProc *proc,
+			    unsigned char *varName, int flags, Tcl_VarTraceProc *proc,
 			    void *clientData);
 extern void		Tcl_UntraceVar2 (Tcl_Interp *interp,
-			    char *part1, char *part2, int flags,
+			    unsigned char *part1, unsigned char *part2, int flags,
 			    Tcl_VarTraceProc *proc, void *clientData);
 extern int		Tcl_VarEval (Tcl_Interp *interp, ...);
 extern void *		Tcl_VarTraceInfo (Tcl_Interp *interp,
-			    char *varName, int flags,
+			    unsigned char *varName, int flags,
 			    Tcl_VarTraceProc *procPtr,
 			    void *prevClientData);
 extern void *		Tcl_VarTraceInfo2 (Tcl_Interp *interp,
-			    char *part1, char *part2, int flags,
+			    unsigned char *part1, unsigned char *part2, int flags,
 			    Tcl_VarTraceProc *procPtr,
 			    void *prevClientData);
 extern int		Tcl_WaitPids (int numPids, int *pidPtr,

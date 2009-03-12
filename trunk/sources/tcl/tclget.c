@@ -38,18 +38,18 @@
 int
 Tcl_GetInt(interp, string, intPtr)
     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
-    char *string;		/* String containing a (possibly signed)
+    unsigned char *string;	/* String containing a (possibly signed)
 				 * integer in a form acceptable to strtol. */
     int *intPtr;		/* Place to store converted result. */
 {
     unsigned char *end;
     int i;
 
-    i = strtol((unsigned char*) string, &end, 0);
+    i = strtol(string, &end, 0);
     while ((*end != '\0') && isspace(*end)) {
 	end++;
     }
-    if (((char*) end == string) || (*end != 0)) {
+    if ((end == string) || (*end != 0)) {
 	Tcl_AppendResult(interp, "expected integer but got \"", string,
 		"\"", (char *) 0);
 	return TCL_ERROR;
@@ -81,7 +81,7 @@ Tcl_GetInt(interp, string, intPtr)
 int
 Tcl_GetBoolean(interp, string, boolPtr)
     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
-    char *string;		/* String containing a boolean number
+    unsigned char *string;	/* String containing a boolean number
 				 * specified either as 1/0 or true/false or
 				 * yes/no. */
     int *boolPtr;		/* Place to store converted result, which

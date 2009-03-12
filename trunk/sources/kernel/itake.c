@@ -31,7 +31,8 @@ lock_take_irq (lock_t *m, int irq, handler_t func, void *arg)
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 
 	while (m->master && m->master != task_current) {
 		/* Monitor is locked, block the task. */

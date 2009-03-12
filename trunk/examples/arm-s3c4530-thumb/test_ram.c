@@ -1,8 +1,8 @@
 /*
  * Testing RAM on Cronyx ETV bridge board.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
 
 /*
  * Installed DRAM chip 1M x 16 - total 2 megabytes of memory.

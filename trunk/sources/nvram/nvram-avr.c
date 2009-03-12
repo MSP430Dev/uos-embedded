@@ -10,6 +10,9 @@
     defined (__AVR_ATmega168__)
 #	define NVRAM_IRQ		21	/* EEPROM write complete */
 #endif
+#ifdef __AVR_ATmega161__
+#	define NVRAM_IRQ		20	/* EEPROM write complete */
+#endif
 
 static lock_t lock;
 

@@ -1,16 +1,16 @@
 /*
- * Testing RAM on STK500 board.
+ * Testing Ethernet on Cronyx ETV bridge board.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "uart/uart.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <uart/uart.h>
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <net/netif.h>
 #include <s3c4530/eth.h>
 
 /*
- * Установлена микросхема 1M x 16 - имеем 2 мегабайта памяти.
+ * Installed DRAM chip 1M x 16 - total 2 megabytes of memory.
  */
 #define RAM_START      0x02000000		/* SDRAM start address */
 #define RAM_SIZE       (2*1024*1024)		/* SDRAM size (bytes) */
@@ -22,8 +22,9 @@
 
 uart_t uart;
 mem_pool_t pool;
-ARRAY (stack_console, 0x300);	/* Задача: меню на консоли */
-ARRAY (stack_test, 0x300);	/* Задача: передача-прием пакетов */
+ARRAY (stack_console, 500);		/* Task: menu on console */
+ARRAY (stack_test, 500);		/* Task: transmit/receive packets */
+ARRAY (stack_wdog, 500);		/* Task: watchdog */
 ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
 eth_t *eth;
 int packet_size = 1500;
@@ -234,6 +235,7 @@ void run_test ()
 			eth->netif.out_packets, eth->netif.in_packets,
 			eth->underrun, eth->overrun, eth->frame, eth->crc,
 			eth->netif.in_discards);
+		watchdog_alive ();
 
 		/* Break on any keyboard input. */
 		if (peekchar (&uart) >= 0) {
@@ -409,11 +411,6 @@ void configure_ram (unsigned long ram_start, unsigned long ram_end,
 
 	/* Enable write buffer and cache. */
 	ARM_SYSCFG |= ARM_SYSCFG_WE | ARM_SYSCFG_CE;
-#if 0
-        /* Invalidate the entire cache.
-         * Clear 1-kbyte tag memory. */
-        memset ((void*) ARM_CACHE_TAG_ADDR, 0, 1024);
-#endif
 }
 
 void main_console (void *data)
@@ -433,12 +430,16 @@ void main_console (void *data)
 		menu ();
 }
 
+void main_watchdog (void *data)
+{
+	for (;;) {
+		watchdog_alive ();
+		mdelay (500);
+	}
+}
+
 void uos_init (void)
 {
-	/* Baud 9600. */
-	ARM_UCON(0) = ARM_UCON_WL_8 | ARM_UCON_TMODE_IRQ;
-	ARM_UBRDIV(0) = ((KHZ * 500L / 9600 + 8) / 16 - 1) << 4;
-
 	configure_ram (RAM_START, RAM_END, REFRESH_USEC, IO_START);
 	mem_init (&pool, RAM_START, RAM_END);
 	uart_init (&uart, 0, 90, KHZ, 9600);
@@ -450,6 +451,8 @@ void uos_init (void)
 	eth_init (eth, "eth0", 80, 70, &pool, 0);
 	task_create (main_test, 0, "test", 5,
 		stack_test, sizeof (stack_test));
-	task_create (main_console, 0, "console", 1,
+	task_create (main_console, 0, "console", 2,
 		stack_console, sizeof (stack_console));
+	task_create (main_watchdog, 0, "wdog", 1,
+		stack_wdog, sizeof (stack_wdog));
 }

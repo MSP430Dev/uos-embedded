@@ -43,7 +43,8 @@ lock_group_add (lock_group_t *g, lock_t *m)
 {
 	lock_slot_t *s;
 
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 	if (g->num >= g->size)
 		return 0;
 	s = g->slot + g->num;

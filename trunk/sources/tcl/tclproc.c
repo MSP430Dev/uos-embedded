@@ -20,7 +20,7 @@
  */
 
 static  int	InterpProc (void *clientData, Tcl_Interp *interp,
-			int argc, char **argv);
+			int argc, unsigned char **argv);
 static  void	ProcDeleteProc (void *clientData);
 
 /*
@@ -46,14 +46,14 @@ Tcl_ProcCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     register Interp *iPtr = (Interp *) interp;
     register Proc *procPtr;
     int result, argCount, i;
-    char **argArray = 0;
+    unsigned char **argArray = 0;
     Arg *lastArgPtr;
-    register Arg *argPtr = 0;	/* Initialization not needed, but
+    register Arg *argPtr = 0;		/* Initialization not needed, but
 					 * prevents compiler warning. */
 
     if (argc != 4) {
@@ -64,8 +64,7 @@ Tcl_ProcCmd(dummy, interp, argc, argv)
 
     procPtr = (Proc*) mem_alloc (interp->pool, sizeof(Proc));
     procPtr->iPtr = iPtr;
-    procPtr->command = (char*) mem_alloc (interp->pool,
-	(unsigned) strlen(argv[3]) + 1);
+    procPtr->command = mem_alloc (interp->pool, strlen(argv[3]) + 1);
     strcpy(procPtr->command, argv[3]);
     procPtr->argPtr = 0;
 
@@ -81,7 +80,7 @@ Tcl_ProcCmd(dummy, interp, argc, argv)
     lastArgPtr = 0;
     for (i = 0; i < argCount; i++) {
 	int fieldCount, nameLength, valueLength;
-	char **fieldValues;
+	unsigned char **fieldValues;
 
 	/*
 	 * Now divide the specifier up into name and default.
@@ -180,7 +179,7 @@ Tcl_ProcCmd(dummy, interp, argc, argv)
 int
 TclGetFrame(interp, string, framePtrPtr)
     Tcl_Interp *interp;		/* Interpreter in which to find frame. */
-    char *string;		/* String describing frame. */
+    unsigned char *string;	/* String describing frame. */
     CallFrame **framePtrPtr;	/* Store pointer to frame here (or NULL
 				 * if global frame indicated). */
 {
@@ -189,7 +188,7 @@ TclGetFrame(interp, string, framePtrPtr)
     CallFrame *framePtr;
 
     if (iPtr->varFramePtr == 0) {
-	iPtr->result = "already at top level";
+	iPtr->result = (unsigned char*) "already at top level";
 	return -1;
     }
 
@@ -263,7 +262,7 @@ Tcl_UplevelCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     register Interp *iPtr = (Interp *) interp;
     int result;
@@ -302,16 +301,16 @@ Tcl_UplevelCmd(dummy, interp, argc, argv)
      */
 
     if (argc == 1) {
-	result = Tcl_Eval(interp, argv[0], 0, (char **) 0);
+	result = Tcl_Eval(interp, argv[0], 0, 0);
     } else {
-	char *cmd;
+	unsigned char *cmd;
 
 	cmd = Tcl_Concat (interp->pool, argc, argv);
-	result = Tcl_Eval (interp, cmd, 0, (char **) 0);
+	result = Tcl_Eval (interp, cmd, 0, 0);
 	mem_free(cmd);
     }
     if (result == TCL_ERROR) {
-	char msg[60];
+	unsigned char msg[60];
 	snprintf(msg, sizeof (msg), "\n    (\"uplevel\" body line %d)",
 		interp->errorLine);
 	Tcl_AddErrorInfo(interp, msg);
@@ -347,7 +346,7 @@ Tcl_UplevelCmd(dummy, interp, argc, argv)
 Proc *
 TclFindProc(iPtr, procName)
     Interp *iPtr;		/* Interpreter in which to look. */
-    char *procName;		/* Name of desired procedure. */
+    unsigned char *procName;	/* Name of desired procedure. */
 {
     Tcl_HashEntry *hPtr;
     Command *cmdPtr;
@@ -416,14 +415,14 @@ InterpProc(clientData, interp, argc, argv)
 				 * invoked. */
     int argc;			/* Count of number of arguments to this
 				 * procedure. */
-    char **argv;		/* Argument values. */
+    unsigned char **argv;	/* Argument values. */
 {
     register Proc *procPtr = (Proc *) clientData;
     register Arg *argPtr;
     register Interp *iPtr = (Interp *) interp;
-    char **args;
+    unsigned char **args;
     CallFrame frame;
-    char *value, *end;
+    unsigned char *value, *end;
     int result;
 
     /*
@@ -459,8 +458,8 @@ InterpProc(clientData, interp, argc, argv)
 	 * actual arguments.
 	 */
 
-	if ((argPtr->nextPtr == 0)
-		&& (strcmp(argPtr->name, "args") == 0)) {
+	if ((argPtr->nextPtr == 0) &&
+	  (strcmp (argPtr->name, (unsigned char*) "args") == 0)) {
 	    if (argc < 0) {
 		argc = 0;
 	    }
@@ -475,8 +474,7 @@ InterpProc(clientData, interp, argc, argv)
 	    value = argPtr->defValue;
 	} else {
 	    Tcl_AppendResult(interp, "no value given for parameter \"",
-		    argPtr->name, "\" to \"", argv[0], "\"",
-		    (char *) 0);
+		    argPtr->name, "\" to \"", argv[0], "\"", 0);
 	    result = TCL_ERROR;
 	    goto procDone;
 	}
@@ -484,7 +482,7 @@ InterpProc(clientData, interp, argc, argv)
     }
     if (argc > 0) {
 	Tcl_AppendResult(interp, "called \"", argv[0],
-		"\" with too many arguments", (char *) 0);
+		"\" with too many arguments", 0);
 	result = TCL_ERROR;
 	goto procDone;
     }
@@ -497,7 +495,7 @@ InterpProc(clientData, interp, argc, argv)
     if (result == TCL_RETURN) {
 	result = TCL_OK;
     } else if (result == TCL_ERROR) {
-	char msg[100];
+	unsigned char msg[100];
 
 	/*
 	 * Record information telling where the error occurred.
@@ -507,10 +505,10 @@ InterpProc(clientData, interp, argc, argv)
 		iPtr->errorLine);
 	Tcl_AddErrorInfo(interp, msg);
     } else if (result == TCL_BREAK) {
-	iPtr->result = "invoked \"break\" outside of a loop";
+	iPtr->result = (unsigned char*) "invoked \"break\" outside of a loop";
 	result = TCL_ERROR;
     } else if (result == TCL_CONTINUE) {
-	iPtr->result = "invoked \"continue\" outside of a loop";
+	iPtr->result = (unsigned char*) "invoked \"continue\" outside of a loop";
 	result = TCL_ERROR;
     }
 
@@ -553,14 +551,14 @@ ProcDeleteProc(clientData)
     register Proc *procPtr = (Proc *) clientData;
     register Arg *argPtr;
 
-    mem_free((char *) procPtr->command);
+    mem_free (procPtr->command);
     for (argPtr = procPtr->argPtr; argPtr != 0; ) {
 	Arg *nextPtr = argPtr->nextPtr;
 
-	mem_free((char *) argPtr);
+	mem_free (argPtr);
 	argPtr = nextPtr;
     }
-    mem_free((char *) procPtr);
+    mem_free (procPtr);
 }
 
 /*

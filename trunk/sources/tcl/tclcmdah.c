@@ -40,11 +40,11 @@ Tcl_BreakCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     if (argc != 1) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
-		argv[0], "\"", (char *) 0);
+		argv[0], "\"", 0);
 	return TCL_ERROR;
     }
     return TCL_BREAK;
@@ -73,23 +73,22 @@ Tcl_CaseCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     int i, result;
     int body;
-    char *string;
+    unsigned char *string;
     int caseArgc, splitArgs;
-    char **caseArgv;
+    unsigned char **caseArgv;
 
     if (argc < 3) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
-		argv[0], " string ?in? patList body ... ?default body?\"",
-		(char *) 0);
+		argv[0], " string ?in? patList body ... ?default body?\"", 0);
 	return TCL_ERROR;
     }
     string = argv[1];
     body = -1;
-    if (strcmp(argv[2], "in") == 0) {
+    if (strcmp(argv[2], (unsigned char*) "in") == 0) {
 	i = 3;
     } else {
 	i = 2;
@@ -113,11 +112,11 @@ Tcl_CaseCmd(dummy, interp, argc, argv)
 
     for (i = 0; i < caseArgc; i += 2) {
 	int patArgc, j;
-	char **patArgv;
-	register char *p;
+	unsigned char **patArgv;
+	register unsigned char *p;
 
 	if (i == (caseArgc-1)) {
-	    interp->result = "extra case pattern with no body";
+	    interp->result = (unsigned char*) "extra case pattern with no body";
 	    result = TCL_ERROR;
 	    goto cleanup;
 	}
@@ -134,7 +133,7 @@ Tcl_CaseCmd(dummy, interp, argc, argv)
 	}
 	if (*p == 0) {
 	    if ((*caseArgv[i] == 'd')
-		    && (strcmp(caseArgv[i], "default") == 0)) {
+		    && (strcmp(caseArgv[i], (unsigned char*) "default") == 0)) {
 		body = i+1;
 	    }
 	    if (Tcl_StringMatch(string, caseArgv[i])) {
@@ -159,7 +158,7 @@ Tcl_CaseCmd(dummy, interp, argc, argv)
 		break;
 	    }
 	}
-	mem_free((char *) patArgv);
+	mem_free (patArgv);
 	if (j < patArgc) {
 	    break;
 	}
@@ -167,9 +166,9 @@ Tcl_CaseCmd(dummy, interp, argc, argv)
 
     match:
     if (body != -1) {
-	result = Tcl_Eval(interp, caseArgv[body], 0, (char **) 0);
+	result = Tcl_Eval(interp, caseArgv[body], 0, 0);
 	if (result == TCL_ERROR) {
-	    char msg[100];
+	    unsigned char msg[100];
 	    snprintf(msg, sizeof (msg), "\n    (\"%.50s\" arm line %d)", caseArgv[body-1],
 		    interp->errorLine);
 	    Tcl_AddErrorInfo(interp, msg);
@@ -185,7 +184,7 @@ Tcl_CaseCmd(dummy, interp, argc, argv)
 
     cleanup:
     if (splitArgs) {
-	mem_free((char *) caseArgv);
+	mem_free (caseArgv);
     }
     return result;
 }
@@ -213,19 +212,19 @@ Tcl_CatchCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     int result;
 
     if ((argc != 2) && (argc != 3)) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
-		argv[0], " command ?varName?\"", (char *) 0);
+		argv[0], " command ?varName?\"", 0);
 	return TCL_ERROR;
     }
-    result = Tcl_Eval(interp, argv[1], 0, (char **) 0);
+    result = Tcl_Eval(interp, argv[1], 0, 0);
     if (argc == 3) {
 	if (Tcl_SetVar(interp, argv[2], interp->result, 0) == 0) {
-	    Tcl_SetResult(interp, "couldn't save command result in variable",
+	    Tcl_SetResult(interp, (unsigned char*) "couldn't save command result in variable",
 		    TCL_STATIC);
 	    return TCL_ERROR;
 	}
@@ -258,11 +257,11 @@ Tcl_ConcatCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     if (argc == 1) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" arg ?arg ...?\"", (char *) 0);
+		" arg ?arg ...?\"", 0);
 	return TCL_ERROR;
     }
 
@@ -294,11 +293,11 @@ Tcl_ContinueCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     if (argc != 1) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		"\"", (char *) 0);
+		"\"", 0);
 	return TCL_ERROR;
     }
     return TCL_CONTINUE;
@@ -327,13 +326,13 @@ Tcl_ErrorCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     Interp *iPtr = (Interp *) interp;
 
     if ((argc < 2) || (argc > 4)) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" message ?errorInfo? ?errorCode?\"", (char *) 0);
+		" message ?errorInfo? ?errorCode?\"", 0);
 	return TCL_ERROR;
     }
     if ((argc >= 3) && (argv[2][0] != 0)) {
@@ -341,7 +340,7 @@ Tcl_ErrorCmd(dummy, interp, argc, argv)
 	iPtr->flags |= ERR_ALREADY_LOGGED;
     }
     if (argc == 4) {
-	Tcl_SetVar2(interp, "errorCode", (char *) 0, argv[3],
+	Tcl_SetVar2(interp, (unsigned char*) "errorCode", 0, argv[3],
 		TCL_GLOBAL_ONLY);
 	iPtr->flags |= ERROR_CODE_SET;
     }
@@ -372,18 +371,18 @@ Tcl_EvalCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     int result;
-    char *cmd;
+    unsigned char *cmd;
 
     if (argc < 2) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" arg ?arg ...?\"", (char *) 0);
+		" arg ?arg ...?\"", 0);
 	return TCL_ERROR;
     }
     if (argc == 2) {
-	result = Tcl_Eval(interp, argv[1], 0, (char **) 0);
+	result = Tcl_Eval(interp, argv[1], 0, 0);
     } else {
 
 	/*
@@ -392,11 +391,11 @@ Tcl_EvalCmd(dummy, interp, argc, argv)
 	 */
 
 	cmd = Tcl_Concat (interp->pool, argc-1, argv+1);
-	result = Tcl_Eval(interp, cmd, 0, (char **) 0);
+	result = Tcl_Eval(interp, cmd, 0, 0);
 	mem_free(cmd);
     }
     if (result == TCL_ERROR) {
-	char msg[60];
+	unsigned char msg[60];
 	snprintf(msg, sizeof (msg), "\n    (\"eval\" body line %d)", interp->errorLine);
 	Tcl_AddErrorInfo(interp, msg);
     }
@@ -426,11 +425,11 @@ Tcl_ExprCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     if (argc != 2) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" expression\"", (char *) 0);
+		" expression\"", 0);
 	return TCL_ERROR;
     }
 
@@ -460,20 +459,20 @@ Tcl_ForCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     int result, value;
 
     if (argc != 5) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" start test next command\"", (char *) 0);
+		" start test next command\"", 0);
 	return TCL_ERROR;
     }
 
-    result = Tcl_Eval(interp, argv[1], 0, (char **) 0);
+    result = Tcl_Eval(interp, argv[1], 0, 0);
     if (result != TCL_OK) {
 	if (result == TCL_ERROR) {
-	    Tcl_AddErrorInfo(interp, "\n    (\"for\" initial command)");
+	    Tcl_AddErrorInfo(interp, (unsigned char*) "\n    (\"for\" initial command)");
 	}
 	return result;
     }
@@ -485,23 +484,23 @@ Tcl_ForCmd(dummy, interp, argc, argv)
 	if (!value) {
 	    break;
 	}
-	result = Tcl_Eval(interp, argv[4], 0, (char **) 0);
+	result = Tcl_Eval(interp, argv[4], 0, 0);
 	if (result == TCL_CONTINUE) {
 	    result = TCL_OK;
 	} else if (result != TCL_OK) {
 	    if (result == TCL_ERROR) {
-		char msg[60];
+		unsigned char msg[60];
 		snprintf(msg, sizeof (msg), "\n    (\"for\" body line %d)", interp->errorLine);
 		Tcl_AddErrorInfo(interp, msg);
 	    }
 	    break;
 	}
-	result = Tcl_Eval(interp, argv[3], 0, (char **) 0);
+	result = Tcl_Eval(interp, argv[3], 0, 0);
 	if (result == TCL_BREAK) {
 	    break;
 	} else if (result != TCL_OK) {
 	    if (result == TCL_ERROR) {
-		Tcl_AddErrorInfo(interp, "\n    (\"for\" loop-end command)");
+		Tcl_AddErrorInfo(interp, (unsigned char*) "\n    (\"for\" loop-end command)");
 	    }
 	    return result;
 	}
@@ -538,14 +537,14 @@ Tcl_ForeachCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
     int listArgc, i, result;
-    char **listArgv;
+    unsigned char **listArgv;
 
     if (argc != 4) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" varName list command\"", (char *) 0);
+		" varName list command\"", 0);
 	return TCL_ERROR;
     }
 
@@ -560,12 +559,12 @@ Tcl_ForeachCmd(dummy, interp, argc, argv)
     }
     for (i = 0; i < listArgc; i++) {
 	if (Tcl_SetVar(interp, argv[1], listArgv[i], 0) == 0) {
-	    Tcl_SetResult(interp, "couldn't set loop variable", TCL_STATIC);
+	    Tcl_SetResult(interp, (unsigned char*) "couldn't set loop variable", TCL_STATIC);
 	    result = TCL_ERROR;
 	    break;
 	}
 
-	result = Tcl_Eval(interp, argv[3], 0, (char **) 0);
+	result = Tcl_Eval(interp, argv[3], 0, 0);
 	if (result != TCL_OK) {
 	    if (result == TCL_CONTINUE) {
 		result = TCL_OK;
@@ -573,7 +572,7 @@ Tcl_ForeachCmd(dummy, interp, argc, argv)
 		result = TCL_OK;
 		break;
 	    } else if (result == TCL_ERROR) {
-		char msg[100];
+		unsigned char msg[100];
 		snprintf(msg, sizeof (msg), "\n    (\"foreach\" body line %d)",
 			interp->errorLine);
 		Tcl_AddErrorInfo(interp, msg);
@@ -583,7 +582,7 @@ Tcl_ForeachCmd(dummy, interp, argc, argv)
 	    }
 	}
     }
-    mem_free((char *) listArgv);
+    mem_free (listArgv);
     if (result == TCL_OK) {
 	Tcl_ResetResult(interp);
     }
@@ -613,11 +612,11 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
     void *dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    unsigned char **argv;		/* Argument strings. */
 {
-    register char *format;	/* Used to read characters from the format
+    register unsigned char *format; /* Used to read characters from the format
 				 * string. */
-    char newFormat[40];		/* A new format specifier is generated here. */
+    unsigned char newFormat[40]; /* A new format specifier is generated here. */
     int width;			/* Field width from field specifier, or 0 if
 				 * no width given. */
     int precision;		/* Field precision from field specifier, or 0
@@ -625,9 +624,9 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
     int size;			/* Number of bytes needed for result of
 				 * conversion, based on type of conversion
 				 * ("e", "s", etc.) and width from above. */
-    char *oneWordValue = 0;	/* Used to hold value to pass to snprintf, if
+    unsigned char *oneWordValue = 0; /* Used to hold value to pass to snprintf, if
 				 * it's a one-word value. */
-    char *dst = interp->result;	/* Where result is stored.  Starts off at
+    unsigned char *dst = interp->result; /* Where result is stored.  Starts off at
 				 * interp->resultSpace, but may get dynamically
 				 * re-allocated if this isn't enough. */
     int dstSize = 0;		/* Number of non-null characters currently
@@ -637,7 +636,7 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
 				 * in dst (not including null terminator. */
     int noPercent;		/* Special case for speed:  indicates there's
 				 * no field specifier, just a string to copy. */
-    char **curArg;		/* Remainder of argv array. */
+    unsigned char **curArg;	/* Remainder of argv array. */
     int useShort;		/* Value to be printed is short (half word). */
 
     /*
@@ -655,13 +654,13 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
 
     if (argc < 2) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" formatString ?arg arg ...?\"", (char *) 0);
+		" formatString ?arg arg ...?\"", 0);
 	return TCL_ERROR;
     }
     curArg = argv+2;
     argc -= 2;
     for (format = argv[1]; *format != 0; ) {
-	register char *newPtr = newFormat;
+	register unsigned char *newPtr = newFormat;
 
 	width = precision = noPercent = useShort = 0;
 #if 0
@@ -673,7 +672,7 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
 	 */
 
 	if (*format != '%') {
-	    register char *p;
+	    register unsigned char *p;
 	    int bsSize;
 
 	    oneWordValue = p = format;
@@ -816,7 +815,7 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
 		size = 1;
 		break;
 	    case 0:
-		interp->result =
+		interp->result = (unsigned char*)
 			"format string ended in middle of field specifier";
 		goto fmtError;
 	    default:
@@ -838,11 +837,11 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
 	    size = width;
 	}
 	if ((dstSize + size) > dstSpace) {
-	    char *newDst;
+	    unsigned char *newDst;
 	    int newSpace;
 
 	    newSpace = 2*(dstSize + size);
-	    newDst = (char *) mem_alloc (interp->pool, (unsigned) newSpace+1);
+	    newDst = mem_alloc (interp->pool, (unsigned) newSpace+1);
 	    if (dstSize != 0) {
 		memcpy ((void*) newDst, (void*) dst, dstSize);
 	    }
@@ -863,10 +862,9 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
 		 * (e.g. Pyramids as of 1/93) that don't like casts
 		 * directly from pointers to shorts.
 		 */
-
-		snprintf(dst+dstSize, TCL_RESULT_SIZE, newFormat, (short) (int) oneWordValue);
+		snprintf(dst+dstSize, TCL_RESULT_SIZE, (char*) newFormat, (short) (int) oneWordValue);
 	    } else {
-		snprintf(dst+dstSize, TCL_RESULT_SIZE, newFormat, (char *) oneWordValue);
+		snprintf(dst+dstSize, TCL_RESULT_SIZE, (char*) newFormat, oneWordValue);
 	    }
 	    dstSize += strlen(dst+dstSize);
 	}
@@ -881,7 +879,7 @@ Tcl_FormatCmd(dummy, interp, argc, argv)
     return TCL_OK;
 
     notEnoughArgs:
-    interp->result = "not enough arguments for all format specifiers";
+    interp->result = (unsigned char*) "not enough arguments for all format specifiers";
     fmtError:
     if (dstSpace != TCL_RESULT_SIZE) {
 	mem_free(dst);

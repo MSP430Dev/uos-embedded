@@ -120,7 +120,7 @@ typedef struct Var {
     unsigned char flags;	/* Miscellaneous bits of information about
 				 * variable.  See below for definitions. */
     union {
-	char string[4];		/* String value of variable.  The actual
+	unsigned char string[4]; /* String value of variable.  The actual
 				 * length of this field is given by the
 				 * valueSpace field above. */
 	Tcl_HashTable *tablePtr;/* For array variables, this points to
@@ -183,9 +183,9 @@ typedef struct Var {
 typedef struct Arg {
     struct Arg *nextPtr;	/* Next argument for this procedure,
 				 * or NULL if this is the last argument. */
-    char *defValue;		/* Pointer to arg's default value, or NULL
+    unsigned char *defValue;	/* Pointer to arg's default value, or NULL
 				 * if no default value. */
-    char name[4];		/* Name of argument starts here.  The name
+    unsigned char name[4];	/* Name of argument starts here.  The name
 				 * is followed by space for the default,
 				 * if there is one.  The actual size of this
 				 * field will be as large as necessary to
@@ -201,7 +201,7 @@ typedef struct Arg {
 typedef struct Proc {
     struct Interp *iPtr;	/* Interpreter for which this command
 				 * is defined. */
-    char *command;		/* Command that constitutes the body of
+    unsigned char *command;	/* Command that constitutes the body of
 				 * the procedure (dynamically allocated). */
     Arg *argPtr;		/* Pointer to first of procedure's formal
 				 * arguments, or NULL if none. */
@@ -233,7 +233,7 @@ typedef struct CallFrame {
 				 * outer-most procedure, 0 means top-level. */
     int argc;			/* This and argv below describe name and
 				 * arguments for this procedure invocation. */
-    char **argv;		/* Array of arguments. */
+    unsigned char **argv;	/* Array of arguments. */
     struct CallFrame *callerPtr;
 				/* Value of interp->framePtr when this
 				 * procedure was invoked (i.e. next in
@@ -252,7 +252,7 @@ typedef struct CallFrame {
  * command that can be re-executed in whole or in part).
  */
 typedef struct {
-    char *command;		/* String containing previously-executed
+    unsigned char *command;	/* String containing previously-executed
 				 * command. */
     unsigned short bytesAvl;	/* Total # of bytes available at *event (not
 				 * all are necessarily in use now). */
@@ -277,7 +277,7 @@ typedef struct HistoryRev {
     unsigned short lastIndex;	/* Index of last byte to replace in
 				 * current history event. */
     unsigned short newSize;	/* Number of bytes in newBytes. */
-    char *newBytes;		/* Replacement for the range given by
+    unsigned char *newBytes;	/* Replacement for the range given by
 				 * firstIndex and lastIndex. */
     struct HistoryRev *nextPtr;	/* Next in chain of revisions to apply, or
 				 * NULL for end of list. */
@@ -345,7 +345,7 @@ typedef struct Interp {
      * change the other.
      */
 
-    char *result;		/* Points to result returned by last
+    unsigned char *result;	/* Points to result returned by last
 				 * command. */
     Tcl_FreeProc *freeProc;	/* Zero means result is statically allocated.
 				 * If non-zero, gives address of procedure
@@ -396,24 +396,24 @@ typedef struct Interp {
     unsigned short curEventNum;	/* Event number associated with the slot
 				 * given by curEvent. */
     HistoryRev *revPtr;		/* First in list of pending revisions. */
-    char *historyFirst;		/* First char. of current command executed
+    unsigned char *historyFirst; /* First char. of current command executed
 				 * from history module or NULL if none. */
     unsigned short revDisables;	/* 0 means history revision OK;  > 0 gives
 				 * a count of number of times revision has
 				 * been disabled. */
-    char *evalFirst;		/* If TCL_RECORD_BOUNDS flag set, Tcl_Eval
+    unsigned char *evalFirst;	/* If TCL_RECORD_BOUNDS flag set, Tcl_Eval
 				 * sets this field to point to the first
 				 * char. of text from which the current
 				 * command came.  Otherwise Tcl_Eval sets
 				 * this to NULL. */
-    char *evalLast;		/* Similar to evalFirst, except points to
+    unsigned char *evalLast;	/* Similar to evalFirst, except points to
 				 * last character of current command. */
 
     /*
      * Information used by Tcl_AppendResult to keep track of partial
      * results.  See Tcl_AppendResult code for details.
      */
-    char *appendResult;		/* Storage space for results generated
+    unsigned char *appendResult; /* Storage space for results generated
 				 * by Tcl_AppendResult.  Malloc-ed.  NULL
 				 * means not yet allocated. */
     unsigned short appendAvl;	/* Total amount of space available at
@@ -441,7 +441,7 @@ typedef struct Interp {
      * in tclUtil.c for details.
      */
 #define NUM_REGEXPS 5
-    char *patterns [NUM_REGEXPS];
+    unsigned char *patterns [NUM_REGEXPS];
 				/* Strings corresponding to compiled
 				 * regular expression patterns.  NULL
 				 * means that this slot isn't used.
@@ -460,7 +460,7 @@ typedef struct Interp {
      */
     unsigned long cmdCount;	/* Total number of times a command procedure
 				 * has been called for this interpreter. */
-    char *scriptFile;		/* NULL means there is no nested source
+    unsigned char *scriptFile;	/* NULL means there is no nested source
 				 * command active;  otherwise this points to
 				 * the name of the file being sourced (it's
 				 * not malloc-ed:  it points to an argument
@@ -471,7 +471,7 @@ typedef struct Interp {
 				 * determined. */
     unsigned char flags;	/* Various flag bits.  See below. */
     Trace *tracePtr;		/* List of traces for this interpreter. */
-    char resultSpace [TCL_RESULT_SIZE+1];
+    unsigned char resultSpace [TCL_RESULT_SIZE+1];
 				/* Static space for storing small results. */
 } Interp;
 
@@ -515,11 +515,11 @@ typedef struct Interp {
  * space available if the current space runs out.
  */
 typedef struct ParseValue {
-    char *buffer;		/* Address of first character in
+    unsigned char *buffer;	/* Address of first character in
 				 * output buffer. */
-    char *next;			/* Place to store next character in
+    unsigned char *next;	/* Place to store next character in
 				 * output buffer. */
-    char *end;			/* Address of the last usable character
+    unsigned char *end;		/* Address of the last usable character
 				 * in the buffer. */
     void (*expandProc) (struct ParseValue *pvPtr, unsigned short needed,
 	struct _mem_pool_t *pool);
@@ -577,111 +577,112 @@ typedef struct ParseValue {
  *----------------------------------------------------------------
  */
 extern struct _regexp_t *TclCompileRegexp (Tcl_Interp *interp,
-			    char *string);
-extern void		TclCopyAndCollapse (int count, char *src,
-			    char *dst);
+			    unsigned char *string);
+extern void		TclCopyAndCollapse (int count, unsigned char *src,
+			    unsigned char *dst);
 extern void		TclDeleteVars (Interp *iPtr,
 			    Tcl_HashTable *tablePtr);
 extern void		TclExpandParseValue (ParseValue *pvPtr,
 			    unsigned short needed, struct _mem_pool_t *pool);
 extern int		TclFindElement (Tcl_Interp *interp,
-			    char *list, char **elementPtr, char **nextPtr,
-			    int *sizePtr, int *bracePtr);
+			    unsigned char *list, unsigned char **elementPtr,
+			    unsigned char **nextPtr, int *sizePtr, int *bracePtr);
 extern Proc *		TclFindProc (Interp *iPtr,
-			    char *procName);
+			    unsigned char *procName);
 extern int		TclGetFrame (Tcl_Interp *interp,
-			    char *string, CallFrame **framePtrPtr);
+			    unsigned char *string, CallFrame **framePtrPtr);
 extern int		TclGetListIndex (Tcl_Interp *interp,
-			    char *string, int *indexPtr);
+			    unsigned char *string, int *indexPtr);
 extern int		TclGetOpenFile (Tcl_Interp *interp,
-			    char *string, OpenFile **filePtrPtr);
+			    unsigned char *string, OpenFile **filePtrPtr);
 extern Proc *		TclIsProc (Command *cmdPtr);
 extern void		TclMakeFileTable (Interp *iPtr,
 			    int index);
 extern int		TclParseBraces (Tcl_Interp *interp,
-			    char *string, char **termPtr, ParseValue *pvPtr);
+			    unsigned char *string, unsigned char **termPtr,
+			    ParseValue *pvPtr);
 extern int		TclParseNestedCmd (Tcl_Interp *interp,
-			    char *string, int flags, char **termPtr,
+			    unsigned char *string, int flags, unsigned char **termPtr,
 			    ParseValue *pvPtr);
 extern int		TclParseQuotes (Tcl_Interp *interp,
-			    char *string, int termChar, int flags,
-			    char **termPtr, ParseValue *pvPtr);
+			    unsigned char *string, int termChar, int flags,
+			    unsigned char **termPtr, ParseValue *pvPtr);
 extern int		TclParseWords (Tcl_Interp *interp,
-			    char *string, int flags, int maxWords,
-			    char **termPtr, int *argcPtr, char **argv,
+			    unsigned char *string, int flags, int maxWords,
+			    unsigned char **termPtr, int *argcPtr, unsigned char **argv,
 			    ParseValue *pvPtr);
 extern void		TclSetupEnv (Tcl_Interp *interp);
-extern char *		TclWordEnd (char *start, int nested);
+extern unsigned char *	TclWordEnd (unsigned char *start, int nested);
 
 /*
  *----------------------------------------------------------------
  * Command procedures in the generic core:
  *----------------------------------------------------------------
  */
-extern int	Tcl_AppendCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ArrayCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_BreakCmd (void *clientData,	Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_CaseCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_CatchCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ConcatCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ContinueCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ErrorCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_EvalCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ExprCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ForCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ForeachCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_FormatCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_GlobalCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_HistoryCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_IfCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_IncrCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_InfoCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_JoinCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LappendCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LindexCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LinsertCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LlengthCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ListCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LrangeCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LreplaceCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LsearchCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_LsortCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ProcCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_RegexpCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_RegsubCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_RenameCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ReturnCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ScanCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_SetCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_SplitCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_StringCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_TraceCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_UnsetCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_UplevelCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_UpvarCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_WhileCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_Cmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_Cmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
+extern int	Tcl_AppendCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ArrayCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_BreakCmd (void *clientData,	Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_CaseCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_CatchCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ConcatCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ContinueCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ErrorCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_EvalCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ExprCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ForCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ForeachCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_FormatCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_GlobalCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_HistoryCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_IfCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_IncrCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_InfoCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_JoinCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LappendCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LindexCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LinsertCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LlengthCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ListCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LrangeCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LreplaceCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LsearchCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_LsortCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ProcCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_RegexpCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_RegsubCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_RenameCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ReturnCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ScanCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_SetCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_SplitCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_StringCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_TraceCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_UnsetCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_UplevelCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_UpvarCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_WhileCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_Cmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_Cmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
 
 /*
  *----------------------------------------------------------------
  * Command procedures in the UNIX core:
  *----------------------------------------------------------------
  */
-extern int	Tcl_CdCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_CloseCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_EofCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ExecCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ExitCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_FileCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_FlushCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_GetsCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_GlobCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_OpenCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_PutsCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_PwdCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_ReadCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_SeekCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_SourceCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_TellCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
-extern int	Tcl_TimeCmd (void *clientData, Tcl_Interp *interp, int argc, char **argv);
+extern int	Tcl_CdCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_CloseCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_EofCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ExecCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ExitCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_FileCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_FlushCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_GetsCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_GlobCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_OpenCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_PutsCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_PwdCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_ReadCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_SeekCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_SourceCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_TellCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);
+extern int	Tcl_TimeCmd (void *clientData, Tcl_Interp *interp, int argc, unsigned char **argv);

@@ -80,11 +80,11 @@ static void		SetupAppendBuffer (Interp *iPtr, int newSpace);
 int
 TclFindElement(interp, list, elementPtr, nextPtr, sizePtr, bracePtr)
     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
-    register char *list;	/* String containing Tcl list with zero
+    register unsigned char *list; /* String containing Tcl list with zero
 				 * or more elements (possibly in braces). */
-    char **elementPtr;		/* Fill in with location of first significant
+    unsigned char **elementPtr;	/* Fill in with location of first significant
 				 * character in first element of list. */
-    char **nextPtr;		/* Fill in with location of character just
+    unsigned char **nextPtr;	/* Fill in with location of character just
 				 * after all white space following end of
 				 * argument (i.e. next argument or end of
 				 * list). */
@@ -94,7 +94,7 @@ TclFindElement(interp, list, elementPtr, nextPtr, sizePtr, bracePtr)
 				 * to indicate that arg was/wasn't
 				 * in braces. */
 {
-    register char *p;
+    register unsigned char *p;
     int openBraces = 0;
     int inQuotes = 0;
     int size;
@@ -102,7 +102,7 @@ TclFindElement(interp, list, elementPtr, nextPtr, sizePtr, bracePtr)
     /*
      * Skim off leading white space and check for an opening brace or quote.
      */
-    while (isspace ((unsigned char) *list)) {
+    while (isspace (*list)) {
 	list++;
     }
     if (*list == '{') {
@@ -143,11 +143,11 @@ TclFindElement(interp, list, elementPtr, nextPtr, sizePtr, bracePtr)
 
 	    case '}':
 		if (openBraces == 1) {
-		    char *p2;
+		    unsigned char *p2;
 
 		    size = p - list;
 		    p++;
-		    if ((isspace ((unsigned char) *p)) || (*p == 0)) {
+		    if ((isspace (*p)) || (*p == 0)) {
 			goto done;
 		    }
 		    for (p2 = p; (*p2 != 0) && (!isspace(*p2)) && (p2 < p+20);
@@ -200,11 +200,11 @@ TclFindElement(interp, list, elementPtr, nextPtr, sizePtr, bracePtr)
 
 	    case '"':
 		if (inQuotes) {
-		    char *p2;
+		    unsigned char *p2;
 
 		    size = p-list;
 		    p++;
-		    if (isspace ((unsigned char) *p) || (*p == 0)) {
+		    if (isspace (*p) || (*p == 0)) {
 			goto done;
 		    }
 		    for (p2 = p; (*p2 != 0) && (!isspace(*p2)) && (p2 < p+20);
@@ -225,11 +225,11 @@ TclFindElement(interp, list, elementPtr, nextPtr, sizePtr, bracePtr)
 
 	    case 0:
 		if (openBraces != 0) {
-		    Tcl_SetResult(interp, "unmatched open brace in list",
+		    Tcl_SetResult(interp, (unsigned char*) "unmatched open brace in list",
 			    TCL_STATIC);
 		    return TCL_ERROR;
 		} else if (inQuotes) {
-		    Tcl_SetResult(interp, "unmatched open quote in list",
+		    Tcl_SetResult(interp, (unsigned char*) "unmatched open quote in list",
 			    TCL_STATIC);
 		    return TCL_ERROR;
 		}
@@ -241,7 +241,7 @@ TclFindElement(interp, list, elementPtr, nextPtr, sizePtr, bracePtr)
     }
 
     done:
-    while (isspace ((unsigned char) *p)) {
+    while (isspace (*p)) {
 	p++;
     }
     *elementPtr = list;
@@ -276,8 +276,8 @@ void
 TclCopyAndCollapse(count, src, dst)
     int count;			/* Total number of characters to copy
 				 * from src. */
-    register char *src;		/* Copy from here... */
-    register char *dst;		/* ... to here. */
+    register unsigned char *src; /* Copy from here... */
+    register unsigned char *dst; /* ... to here. */
 {
     register char c;
     int numRead;
@@ -331,16 +331,16 @@ TclCopyAndCollapse(count, src, dst)
 int
 Tcl_SplitList(interp, list, argcPtr, argvPtr)
     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
-    char *list;			/* Pointer to string with list structure. */
+    unsigned char *list;	/* Pointer to string with list structure. */
     int *argcPtr;		/* Pointer to location to fill in with
 				 * the number of elements in the list. */
-    char ***argvPtr;		/* Pointer to place to store pointer to array
+    unsigned char ***argvPtr;	/* Pointer to place to store pointer to array
 				 * of pointers to list elements. */
 {
-    char **argv;
-    register char *p;
+    unsigned char **argv;
+    register unsigned char *p;
     int size, i, result, elSize, brace;
-    char *element;
+    unsigned char *element;
 
     /*
      * Figure out how much space to allocate.  There must be enough
@@ -355,21 +355,21 @@ Tcl_SplitList(interp, list, argcPtr, argvPtr)
 	}
     }
     size++;			/* Leave space for final NULL pointer. */
-    argv = (char**) mem_alloc (interp->pool, (unsigned)
+    argv = (unsigned char**) mem_alloc (interp->pool, (unsigned)
 	    ((size * sizeof(char *)) + (p - list) + 1));
-    for (i = 0, p = ((char *) argv) + size*sizeof(char *);
+    for (i = 0, p = ((unsigned char *) argv) + size*sizeof(char *);
 	    *list != 0; i++) {
 	result = TclFindElement(interp, list, &element, &list, &elSize, &brace);
 	if (result != TCL_OK) {
-	    mem_free((char *) argv);
+	    mem_free (argv);
 	    return result;
 	}
 	if (*element == 0) {
 	    break;
 	}
 	if (i >= size) {
-	    mem_free((char *) argv);
-	    Tcl_SetResult(interp, "internal error in Tcl_SplitList",
+	    mem_free (argv);
+	    Tcl_SetResult(interp, (unsigned char*) "internal error in Tcl_SplitList",
 		    TCL_STATIC);
 	    return TCL_ERROR;
 	}
@@ -416,12 +416,12 @@ Tcl_SplitList(interp, list, argcPtr, argvPtr)
 
 int
 Tcl_ScanElement(string, flagPtr)
-    char *string;		/* String to convert to Tcl list element. */
+    unsigned char *string;	/* String to convert to Tcl list element. */
     int *flagPtr;		/* Where to store information to guide
 				 * Tcl_ConvertElement. */
 {
     int flags, nestingLevel;
-    register char *p;
+    register unsigned char *p;
 
     /*
      * This procedure and Tcl_ConvertElement together do two things:
@@ -460,7 +460,7 @@ Tcl_ScanElement(string, flagPtr)
     nestingLevel = 0;
     flags = 0;
     if (string == 0) {
-	string = "";
+	string = (unsigned char*) "";
     }
     p = string;
     if ((*p == '{') || (*p == '"') || (*p == 0)) {
@@ -538,11 +538,11 @@ Tcl_ScanElement(string, flagPtr)
 
 int
 Tcl_ConvertElement(src, dst, flags)
-    register char *src;		/* Source information for list element. */
-    char *dst;			/* Place to put list-ified element. */
+    register unsigned char *src; /* Source information for list element. */
+    unsigned char *dst;		/* Place to put list-ified element. */
     int flags;			/* Flags produced by Tcl_ScanElement. */
 {
-    register char *p = dst;
+    register unsigned char *p = dst;
 
     /*
      * See the comment block at the beginning of the Tcl_ScanElement
@@ -550,7 +550,7 @@ Tcl_ConvertElement(src, dst, flags)
      */
 
     if (src == 0) {
-	src = "";
+	src = (unsigned char*) "";
     }
     if ((flags & USE_BRACES) && !(flags & TCL_DONT_USE_BRACES)) {
 	*p = '{';
@@ -648,16 +648,16 @@ Tcl_ConvertElement(src, dst, flags)
  *
  *----------------------------------------------------------------------
  */
-char *
+unsigned char *
 Tcl_Merge (mem_pool_t *pool,
 	int argc,		/* How many strings to merge. */
-	char **argv)		/* Array of string values. */
+	unsigned char **argv)	/* Array of string values. */
 {
 #   define LOCAL_SIZE 20
     int localFlags[LOCAL_SIZE], *flagPtr;
     int numChars;
-    char *result;
-    register char *dst;
+    unsigned char *result;
+    register unsigned char *dst;
     int i;
 
     /*
@@ -678,7 +678,7 @@ Tcl_Merge (mem_pool_t *pool,
      * Pass two: copy into the result area.
      */
 
-    result = (char*) mem_alloc (pool, (unsigned) numChars);
+    result = mem_alloc (pool, numChars);
     dst = result;
     for (i = 0; i < argc; i++) {
 	numChars = Tcl_ConvertElement(argv[i], dst, flagPtr[i]);
@@ -693,7 +693,7 @@ Tcl_Merge (mem_pool_t *pool,
     }
 
     if (flagPtr != localFlags) {
-	mem_free((char *) flagPtr);
+	mem_free (flagPtr);
     }
     return result;
 }
@@ -717,25 +717,25 @@ Tcl_Merge (mem_pool_t *pool,
  *----------------------------------------------------------------------
  */
 
-char *
+unsigned char *
 Tcl_Concat (mem_pool_t *pool,
 	int argc,		/* Number of strings to concatenate. */
-	char **argv)		/* Array of strings to concatenate. */
+	unsigned char **argv)	/* Array of strings to concatenate. */
 {
     int totalSize, i;
-    register char *p;
-    char *result;
+    register unsigned char *p;
+    unsigned char *result;
 
     for (totalSize = 1, i = 0; i < argc; i++) {
 	totalSize += strlen(argv[i]) + 1;
     }
-    result = (char*) mem_alloc (pool, (unsigned) totalSize);
+    result = mem_alloc (pool, totalSize);
     if (argc == 0) {
 	*result = '\0';
 	return result;
     }
     for (p = result, i = 0; i < argc; i++) {
-	char *element;
+	unsigned char *element;
 	int length;
 
 	/*
@@ -790,9 +790,9 @@ Tcl_Concat (mem_pool_t *pool,
 
 int
 Tcl_StringMatch(string, pattern)
-    register char *string;	/* String. */
-    register char *pattern;	/* Pattern, which may contain
-				 * special characters. */
+    register unsigned char *string;	/* String. */
+    register unsigned char *pattern;	/* Pattern, which may contain
+					 * special characters. */
 {
     char c2;
 
@@ -923,7 +923,7 @@ void
 Tcl_SetResult(interp, string, freeProc)
     Tcl_Interp *interp;		/* Interpreter with which to associate the
 				 * return value. */
-    char *string;		/* Value to be returned.  If NULL,
+    unsigned char *string;	/* Value to be returned.  If NULL,
 				 * the result is set to an empty string. */
     Tcl_FreeProc *freeProc;	/* Gives information about the string:
 				 * TCL_STATIC, TCL_VOLATILE, or the address
@@ -932,7 +932,7 @@ Tcl_SetResult(interp, string, freeProc)
     register Interp *iPtr = (Interp *) interp;
     int length;
     Tcl_FreeProc *oldFreeProc = iPtr->freeProc;
-    char *oldResult = iPtr->result;
+    unsigned char *oldResult = iPtr->result;
 
     iPtr->freeProc = freeProc;
     if (string == 0) {
@@ -942,8 +942,7 @@ Tcl_SetResult(interp, string, freeProc)
     } else if (freeProc == TCL_VOLATILE) {
 	length = strlen(string);
 	if (length > TCL_RESULT_SIZE) {
-	    iPtr->result = (char*) mem_alloc (interp->pool,
-		(unsigned) length+1);
+	    iPtr->result = mem_alloc (interp->pool, length+1);
 	    iPtr->freeProc = (Tcl_FreeProc *) mem_free;
 	} else {
 	    iPtr->result = iPtr->resultSpace;
@@ -997,7 +996,7 @@ Tcl_AppendResult (Tcl_Interp *interp,	/* Interpreter whose result is to be
 {
     va_list argList;
     register Interp *iPtr = (Interp *) interp;
-    char *string;
+    unsigned char *string;
     int newSpace;
 
     /*
@@ -1007,7 +1006,7 @@ Tcl_AppendResult (Tcl_Interp *interp,	/* Interpreter whose result is to be
     va_start(argList, interp);
     newSpace = 0;
     while (1) {
-	string = va_arg(argList, char *);
+	string = va_arg(argList, unsigned char *);
 	if (string == 0) {
 	    break;
 	}
@@ -1030,7 +1029,7 @@ Tcl_AppendResult (Tcl_Interp *interp,	/* Interpreter whose result is to be
      */
     va_start(argList, interp);
     while (1) {
-	string = va_arg(argList, char *);
+	string = va_arg(argList, unsigned char *);
 	if (string == 0) {
 	    break;
 	}
@@ -1064,7 +1063,7 @@ void
 Tcl_AppendElement(interp, string, noSep)
     Tcl_Interp *interp;		/* Interpreter whose result is to be
 				 * extended. */
-    char *string;		/* String to convert to list element and
+    unsigned char *string;	/* String to convert to list element and
 				 * add to result. */
     int noSep;			/* If non-zero, then don't output a
 				 * space character before this element,
@@ -1073,7 +1072,7 @@ Tcl_AppendElement(interp, string, noSep)
 {
     register Interp *iPtr = (Interp *) interp;
     int size, flags;
-    char *dst;
+    unsigned char *dst;
 
     /*
      * See how much space is needed, and grow the append buffer if
@@ -1148,14 +1147,14 @@ SetupAppendBuffer(iPtr, newSpace)
     }
     totalSpace = newSpace + iPtr->appendUsed;
     if (totalSpace >= iPtr->appendAvl) {
-	char *new;
+	unsigned char *new;
 
 	if (totalSpace < 100) {
 	    totalSpace = 200;
 	} else {
 	    totalSpace *= 2;
 	}
-	new = (char*) mem_alloc (iPtr->pool, (unsigned) totalSpace);
+	new = mem_alloc (iPtr->pool, totalSpace);
 	strcpy(new, iPtr->result);
 	if (iPtr->appendResult != 0) {
 	    mem_free(iPtr->appendResult);
@@ -1229,7 +1228,7 @@ Tcl_SetErrorCode (Tcl_Interp *interp,	/* Interpreter whose errorCode variable is
 					 * terminated with NULL. */
 {
     va_list argList;
-    char *string;
+    unsigned char *string;
     int flags;
     Interp *iPtr = (Interp *) interp;
 
@@ -1240,12 +1239,12 @@ Tcl_SetErrorCode (Tcl_Interp *interp,	/* Interpreter whose errorCode variable is
     va_start(argList, interp);
     flags = TCL_GLOBAL_ONLY | TCL_LIST_ELEMENT;
     while (1) {
-	string = va_arg(argList, char *);
+	string = va_arg(argList, unsigned char *);
 	if (string == 0) {
 	    break;
 	}
-	(void) Tcl_SetVar2((Tcl_Interp *) iPtr, "errorCode",
-		(char *) 0, string, flags);
+	Tcl_SetVar2((Tcl_Interp *) iPtr, (unsigned char*) "errorCode",
+		0, string, flags);
 	flags |= TCL_APPEND_VALUE;
     }
     va_end(argList);
@@ -1278,7 +1277,7 @@ Tcl_SetErrorCode (Tcl_Interp *interp,	/* Interpreter whose errorCode variable is
 int
 TclGetListIndex(interp, string, indexPtr)
     Tcl_Interp *interp;			/* Interpreter for error reporting. */
-    char *string;			/* String containing list index. */
+    unsigned char *string;		/* String containing list index. */
     int *indexPtr;			/* Where to store index. */
 {
     if (isdigit(*string) || (*string == '-')) {
@@ -1288,11 +1287,11 @@ TclGetListIndex(interp, string, indexPtr)
 	if (*indexPtr < 0) {
 	    *indexPtr = 0;
 	}
-    } else if (strncmp(string, "end", strlen(string)) == 0) {
+    } else if (strncmp(string, (unsigned char*) "end", strlen(string)) == 0) {
 	*indexPtr = 32767;
     } else {
 	Tcl_AppendResult(interp, "bad index \"", string,
-		"\": must be integer or \"end\"", (char *) 0);
+		"\": must be integer or \"end\"", 0);
 	return TCL_ERROR;
     }
     return TCL_OK;
@@ -1325,7 +1324,7 @@ TclGetListIndex(interp, string, indexPtr)
 regexp_t *
 TclCompileRegexp(interp, string)
     Tcl_Interp *interp;			/* For use in error reporting. */
-    char *string;			/* String for which to produce
+    unsigned char *string;		/* String for which to produce
 					 * compiled regular expression. */
 {
     register Interp *iPtr = (Interp *) interp;
@@ -1343,7 +1342,7 @@ TclCompileRegexp(interp, string)
 
 	    if (i != 0) {
 		int j;
-		char *cachedString;
+		unsigned char *cachedString;
 
 		cachedString = iPtr->patterns[i];
 		result = iPtr->regexps[i];
@@ -1366,26 +1365,24 @@ TclCompileRegexp(interp, string)
      */
     size = regexp_size (string);
     if (size <= 0) {
-	Tcl_AppendResult(interp, "invalid regular expression pattern",
-	    (char *) 0);
+	Tcl_AppendResult(interp, "invalid regular expression pattern", 0);
 	return 0;
     }
     result = (regexp_t*) mem_alloc (interp->pool, size);
     if (! regexp_compile (result, string)) {
-	Tcl_AppendResult(interp, "couldn't compile regular expression pattern",
-	    (char *) 0);
+	Tcl_AppendResult(interp, "couldn't compile regular expression pattern", 0);
 	return 0;
     }
     if (iPtr->patterns[NUM_REGEXPS-1] != 0) {
-	mem_free(iPtr->patterns[NUM_REGEXPS-1]);
-	mem_free((char *) iPtr->regexps[NUM_REGEXPS-1]);
+	mem_free (iPtr->patterns[NUM_REGEXPS-1]);
+	mem_free (iPtr->regexps[NUM_REGEXPS-1]);
     }
     for (i = NUM_REGEXPS - 2; i >= 0; i--) {
 	iPtr->patterns[i+1] = iPtr->patterns[i];
 	iPtr->patLengths[i+1] = iPtr->patLengths[i];
 	iPtr->regexps[i+1] = iPtr->regexps[i];
     }
-    iPtr->patterns[0] = (char*) mem_alloc (interp->pool, (unsigned) (length+1));
+    iPtr->patterns[0] = mem_alloc (interp->pool, length+1);
     strcpy(iPtr->patterns[0], string);
     iPtr->patLengths[0] = length;
     iPtr->regexps[0] = result;

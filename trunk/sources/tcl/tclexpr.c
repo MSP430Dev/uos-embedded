@@ -29,7 +29,7 @@ typedef struct {
 	unsigned char	type;		/* Type: TYPE_INT or TYPE_STRING. */
 	long		int_value;	/* Integer value, if any. */
 	ParseValue	pv;		/* A string value, if any. */
-	char		static_space [STATIC_STRING_SPACE];
+	unsigned char	static_space [STATIC_STRING_SPACE];
 					/* Storage for small strings;
 					 * large ones are malloc-ed. */
 } Value_t;
@@ -45,9 +45,10 @@ typedef struct {
  * It's passed among the routines in this module.
  */
 typedef struct {
-	char	*original_expr;	/* The entire expression, as originally
+	unsigned char	*original_expr;
+				/* The entire expression, as originally
 				 * passed to Tcl_Expr. */
-	char	*expr;		/* Position to the next character to be
+	unsigned char	*expr;	/* Position to the next character to be
 				 * scanned from the expression string. */
 	unsigned char token;	/* Type of the last token to be parsed from
 				 * expr.  See below for definitions.
@@ -148,7 +149,7 @@ static void make_string (mem_pool_t *pool, Value_t *valuePtr);
  */
 static unsigned char
 parse_string (Tcl_Interp *interp,	/* Where to store error message. */
-	char *string,			/* String to turn into value. */
+	unsigned char *string,		/* String to turn into value. */
 	Value_t *valuePtr)		/* Where to store value information.
 					 * Caller must have initialized pv field. */
 {
@@ -159,7 +160,7 @@ parse_string (Tcl_Interp *interp,	/* Where to store error message. */
      */
     c = *string;
     if (((c >= '0') && (c <= '9')) || (c == '-')) {
-	char *term;
+	unsigned char *term;
 
 	valuePtr->type = TYPE_INT;
 	valuePtr->int_value = strtol (string, &term, 0);
@@ -213,7 +214,7 @@ get_lex (Tcl_Interp *interp,	/* Interpreter to use for error reporting. */
 				 * what's parsed from string.  Caller
 				 * must have initialized pv field correctly. */
 {
-    char *p, c, *var, *term;
+    unsigned char *p, c, *var, *term;
     unsigned char result;
 
     p = infoPtr->expr;
@@ -498,7 +499,7 @@ get_value (Tcl_Interp *interp,	/* Interpreter to use for error reporting. */
 	    Tcl_ResetResult(interp);
 	    Tcl_AppendResult(interp,
 		    "unmatched parentheses in expression \"",
-		    infoPtr->original_expr, "\"", (char *) 0);
+		    infoPtr->original_expr, "\"", 0);
 	    result = TCL_ERROR;
 	    goto done;
 	}
@@ -724,7 +725,7 @@ get_value (Tcl_Interp *interp,	/* Interpreter to use for error reporting. */
 	     */
 
 	    default:
-		interp->result = "unknown operator in expression";
+		interp->result = (unsigned char*) "unknown operator in expression";
 		result = TCL_ERROR;
 		goto done;
 	}
@@ -746,7 +747,7 @@ get_value (Tcl_Interp *interp,	/* Interpreter to use for error reporting. */
 		if (valuePtr->type == TYPE_INT) {
 		    if (value2.int_value == 0) {
 			divideByZero:
-			interp->result = "divide by zero";
+			interp->result = (unsigned char*) "divide by zero";
 			result = TCL_ERROR;
 			goto done;
 		    }
@@ -864,7 +865,7 @@ get_value (Tcl_Interp *interp,	/* Interpreter to use for error reporting. */
 		break;
 
 	    case COLON:
-		interp->result = "can't have : operator without ? first";
+		interp->result = (unsigned char*) "can't have : operator without ? first";
 		result = TCL_ERROR;
 		goto done;
 	}
@@ -879,13 +880,13 @@ get_value (Tcl_Interp *interp,	/* Interpreter to use for error reporting. */
     syntaxError:
     Tcl_ResetResult(interp);
     Tcl_AppendResult(interp, "syntax error in expression \"",
-	    infoPtr->original_expr, "\"", (char *) 0);
+	    infoPtr->original_expr, "\"", 0);
     result = TCL_ERROR;
     goto done;
 
     illegalType:
     Tcl_AppendResult(interp, "can't use non-numeric string as operand of \"",
-            operator_strings[operator], "\"", (char *) 0);
+            operator_strings[operator], "\"", 0);
     result = TCL_ERROR;
     goto done;
 }
@@ -936,7 +937,7 @@ make_string (mem_pool_t *pool,
 static unsigned char
 evaluate (Tcl_Interp *interp,	/* Context in which to evaluate the
 				 * expression. */
-	char *string,		/* Expression to evaluate. */
+	unsigned char *string,	/* Expression to evaluate. */
 	Value_t *valuePtr)	/* Where to store result.  Should
 				 * not be initialized by caller. */
 {
@@ -956,7 +957,7 @@ evaluate (Tcl_Interp *interp,	/* Context in which to evaluate the
     }
     if (info.token != END) {
 	Tcl_AppendResult(interp, "syntax error in expression \"",
-		string, "\"", (char *) 0);
+		string, "\"", 0);
 	return TCL_ERROR;
     }
     return TCL_OK;
@@ -980,7 +981,7 @@ evaluate (Tcl_Interp *interp,	/* Context in which to evaluate the
 int
 Tcl_ExprLong (Tcl_Interp *interp,	/* Context in which to evaluate the
 					 * expression. */
-	char *string,			/* Expression to evaluate. */
+	unsigned char *string,		/* Expression to evaluate. */
 	long *ptr)			/* Where to store result. */
 {
     Value_t value;
@@ -991,7 +992,7 @@ Tcl_ExprLong (Tcl_Interp *interp,	/* Context in which to evaluate the
 	if (value.type == TYPE_INT) {
 	    *ptr = value.int_value;
 	} else {
-	    interp->result = "expression didn't have numeric value";
+	    interp->result = (unsigned char*) "expression didn't have numeric value";
 	    result = TCL_ERROR;
 	}
     }
@@ -1004,7 +1005,7 @@ Tcl_ExprLong (Tcl_Interp *interp,	/* Context in which to evaluate the
 int
 Tcl_ExprBoolean (Tcl_Interp *interp,	/* Context in which to evaluate the
 					 * expression. */
-	char *string,			/* Expression to evaluate. */
+	unsigned char *string,		/* Expression to evaluate. */
 	int *ptr)			/* Where to store 0/1 result. */
 {
     Value_t value;
@@ -1015,7 +1016,7 @@ Tcl_ExprBoolean (Tcl_Interp *interp,	/* Context in which to evaluate the
 	if (value.type == TYPE_INT) {
 	    *ptr = value.int_value != 0;
 	} else {
-	    interp->result = "expression didn't have numeric value";
+	    interp->result = (unsigned char*) "expression didn't have numeric value";
 	    result = TCL_ERROR;
 	}
     }
@@ -1040,7 +1041,7 @@ Tcl_ExprBoolean (Tcl_Interp *interp,	/* Context in which to evaluate the
 int
 Tcl_ExprString (Tcl_Interp *interp,	/* Context in which to evaluate the
 					 * expression. */
-	char *string)			/* Expression to evaluate. */
+	unsigned char *string)		/* Expression to evaluate. */
 {
     Value_t value;
     unsigned char result;

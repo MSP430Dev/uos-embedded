@@ -4,8 +4,8 @@ include target.cfg
 
 TESTS		= test_debug.srec test_task.srec test_timer.srec \
 		  test_uart.srec test_t-uart.srec test_ram.srec \
-		  test_hdlc.srec test_eth.srec test_ip.srec test_snmp.srec
-#		  test_tcl.srec test_cronyx.srec
+		  test_hdlc.srec test_eth.srec test_ip.srec test_snmp.srec \
+		  test_tcl.srec test_cronyx.srec
 OUTS		= $(TESTS:%.srec=%.out)
 
 # Using Cronyx armprog utility.
@@ -22,7 +22,7 @@ clean:
 probe:		flashid
 		./flashid
 
-load:		test_hdlc.srec
+load:		test_tcl.srec
 		$(PROG) $<
 
 include $(OS)/sources/rules.mak

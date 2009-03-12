@@ -109,8 +109,8 @@ static const char tclTypeTable[] = {
  * Function prototypes for procedures local to this file:
  */
 
-static char *	QuoteEnd (char *string, int term);
-static char *	VarNameEnd (char *string);
+static unsigned char *	QuoteEnd (unsigned char *string, int term);
+static unsigned char *	VarNameEnd (unsigned char *string);
 
 /*
  *----------------------------------------------------------------------
@@ -138,12 +138,12 @@ static char *	VarNameEnd (char *string);
 
 char
 Tcl_Backslash(src, readPtr)
-    char *src;			/* Points to the backslash character of
+    unsigned char *src;		/* Points to the backslash character of
 				 * a backslash sequence. */
     int *readPtr;		/* Fill in with number of characters read
 				 * from src, unless NULL. */
 {
-    register char *p = src+1;
+    register unsigned char *p = src+1;
     char result;
     int count;
 
@@ -278,18 +278,18 @@ int
 TclParseQuotes(interp, string, termChar, flags, termPtr, pvPtr)
     Tcl_Interp *interp;		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
-    char *string;		/* Character just after opening double-
+    unsigned char *string;	/* Character just after opening double-
 				 * quote. */
     int termChar;		/* Character that terminates "quoted" string
 				 * (usually double-quote, but sometimes
 				 * right-paren or something else). */
     int flags;			/* Flags to pass to nested Tcl_Eval calls. */
-    char **termPtr;		/* Store address of terminating character
+    unsigned char **termPtr;	/* Store address of terminating character
 				 * here. */
     ParseValue *pvPtr;		/* Information about where to place
 				 * fully-substituted result of parse. */
 {
-    register char *src, *dst, c;
+    register unsigned char *src, *dst, c;
 
     src = string;
     dst = pvPtr->next;
@@ -319,7 +319,7 @@ TclParseQuotes(interp, string, termChar, flags, termPtr, pvPtr)
 	    continue;
 	} else if (c == '$') {
 	    int length;
-	    char *value;
+	    unsigned char *value;
 
 	    value = Tcl_ParseVar(interp, src-1, termPtr);
 	    if (value == 0) {
@@ -399,9 +399,9 @@ int
 TclParseNestedCmd(interp, string, flags, termPtr, pvPtr)
     Tcl_Interp *interp;		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
-    char *string;		/* Character just after opening bracket. */
+    unsigned char *string;	/* Character just after opening bracket. */
     int flags;			/* Flags to pass to nested Tcl_Eval. */
-    char **termPtr;		/* Store address of terminating character
+    unsigned char **termPtr;	/* Store address of terminating character
 				 * here. */
     register ParseValue *pvPtr;	/* Information about where to place
 				 * result of command. */
@@ -465,14 +465,14 @@ int
 TclParseBraces(interp, string, termPtr, pvPtr)
     Tcl_Interp *interp;		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
-    char *string;		/* Character just after opening bracket. */
-    char **termPtr;		/* Store address of terminating character
+    unsigned char *string;	/* Character just after opening bracket. */
+    unsigned char **termPtr;	/* Store address of terminating character
 				 * here. */
     register ParseValue *pvPtr;	/* Information about where to place
 				 * result of command. */
 {
     int level;
-    register char *src, *dst, *end;
+    register unsigned char *src, *dst, *end;
     register char c;
 
     src = string;
@@ -534,7 +534,7 @@ TclParseBraces(interp, string, termPtr, pvPtr)
 		}
 	    }
 	} else if (c == '\0') {
-	    Tcl_SetResult(interp, "missing close-brace", TCL_STATIC);
+	    Tcl_SetResult(interp, (unsigned char*) "missing close-brace", TCL_STATIC);
 	    *termPtr = string-1;
 	    return TCL_ERROR;
 	}
@@ -591,22 +591,22 @@ int
 TclParseWords(interp, string, flags, maxWords, termPtr, argcPtr, argv, pvPtr)
     Tcl_Interp *interp;		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
-    char *string;		/* First character of word. */
+    unsigned char *string;	/* First character of word. */
     int flags;			/* Flags to control parsing (same values as
 				 * passed to Tcl_Eval). */
     int maxWords;		/* Maximum number of words to parse. */
-    char **termPtr;		/* Store address of terminating character
+    unsigned char **termPtr;	/* Store address of terminating character
 				 * here. */
     int *argcPtr;		/* Filled in with actual number of words
 				 * parsed. */
-    char **argv;		/* Store addresses of individual words here. */
+    unsigned char **argv;	/* Store addresses of individual words here. */
     register ParseValue *pvPtr;	/* Information about where to place
 				 * fully-substituted word. */
 {
-    register char *src, *dst;
+    register unsigned char *src, *dst;
     register char c;
     int type, result, argc;
-    char *oldBuffer;		/* Used to detect when pvPtr's buffer gets
+    unsigned char *oldBuffer;	/* Used to detect when pvPtr's buffer gets
 				 * reallocated, so we can adjust all of the
 				 * argv pointers. */
 
@@ -656,7 +656,7 @@ TclParseWords(interp, string, flags, maxWords, termPtr, argcPtr, argv, pvPtr)
 		    goto wordEnd;
 		} else if (type == TCL_DOLLAR) {
 		    int length;
-		    char *value;
+		    unsigned char *value;
 
 		    value = Tcl_ParseVar(interp, src, termPtr);
 		    if (value == 0) {
@@ -715,7 +715,7 @@ TclParseWords(interp, string, flags, maxWords, termPtr, argcPtr, argv, pvPtr)
 	    if (type == TCL_COMMAND_END) {
 		if (flags & TCL_BRACKET_TERM) {
 		    if (c == '\0') {
-			Tcl_SetResult(interp, "missing close-bracket",
+			Tcl_SetResult(interp, (unsigned char*) "missing close-bracket",
 				TCL_STATIC);
 			return TCL_ERROR;
 		    }
@@ -761,10 +761,10 @@ TclParseWords(interp, string, flags, maxWords, termPtr, argcPtr, argv, pvPtr)
 	    type = CHAR_TYPE(c);
 	    if ((type != TCL_SPACE) && (type != TCL_COMMAND_END)) {
 		if (*src == '"') {
-		    Tcl_SetResult(interp, "extra characters after close-quote",
+		    Tcl_SetResult(interp, (unsigned char*) "extra characters after close-quote",
 			    TCL_STATIC);
 		} else {
-		    Tcl_SetResult(interp, "extra characters after close-brace",
+		    Tcl_SetResult(interp, (unsigned char*) "extra characters after close-brace",
 			    TCL_STATIC);
 		}
 		return TCL_ERROR;
@@ -832,7 +832,7 @@ TclExpandParseValue (ParseValue *pvPtr,	/* Information about buffer that
 	mem_pool_t *pool)		/* Get memory from here */
 {
     int newSpace;
-    char *new;
+    unsigned char *new;
 
     /*
      * Either double the size of the buffer or add enough new space
@@ -845,7 +845,7 @@ TclExpandParseValue (ParseValue *pvPtr,	/* Information about buffer that
     } else {
 	newSpace += newSpace;
     }
-    new = (char*) mem_alloc (pool, (unsigned) newSpace);
+    new = mem_alloc (pool, newSpace);
 
     /*
      * Copy from old buffer to new, free old buffer if needed, and
@@ -881,14 +881,14 @@ TclExpandParseValue (ParseValue *pvPtr,	/* Information about buffer that
  *----------------------------------------------------------------------
  */
 
-char *
+unsigned char *
 TclWordEnd(start, nested)
-    char *start;		/* Beginning of a word of a Tcl command. */
+    unsigned char *start;	/* Beginning of a word of a Tcl command. */
     int nested;			/* Zero means this is a top-level command.
 				 * One means this is a nested command (close
 				 * brace is a word terminator). */
 {
-    register char *p;
+    register unsigned char *p;
     int count;
 
     p = start;
@@ -1002,14 +1002,14 @@ TclWordEnd(start, nested)
  *----------------------------------------------------------------------
  */
 
-static char *
+static unsigned char *
 QuoteEnd(string, term)
-    char *string;		/* Pointer to character just after opening
+    unsigned char *string;	/* Pointer to character just after opening
 				 * "quote". */
     int term;			/* This character will terminate the
 				 * quoted string (e.g. '"' or ')'). */
 {
-    register char *p = string;
+    register unsigned char *p = string;
     int count;
 
     while (*p != term) {
@@ -1059,11 +1059,11 @@ QuoteEnd(string, term)
  *----------------------------------------------------------------------
  */
 
-static char *
+static unsigned char *
 VarNameEnd(string)
-    char *string;		/* Pointer to dollar-sign character. */
+    unsigned char *string;	/* Pointer to dollar-sign character. */
 {
-    register char *p = string+1;
+    register unsigned char *p = string+1;
 
     if (*p == '{') {
 	for (p++; (*p != '}') && (*p != 0); p++) {
@@ -1102,20 +1102,20 @@ VarNameEnd(string)
  *----------------------------------------------------------------------
  */
 
-char *
+unsigned char *
 Tcl_ParseVar(interp, string, termPtr)
     Tcl_Interp *interp;			/* Context for looking up variable. */
-    register char *string;		/* String containing variable name.
+    register unsigned char *string;	/* String containing variable name.
 					 * First character must be "$". */
-    char **termPtr;			/* If non-NULL, points to word to fill
+    unsigned char **termPtr;		/* If non-NULL, points to word to fill
 					 * in with character just after last
 					 * one in the variable specifier. */
 
 {
-    char *name1, *name1End, c, *result;
-    register char *name2;
+    unsigned char *name1, *name1End, c, *result;
+    register unsigned char *name2;
 #define NUM_CHARS 200
-    char copyStorage[NUM_CHARS];
+    unsigned char copyStorage[NUM_CHARS];
     ParseValue pv;
 
     /*
@@ -1141,7 +1141,7 @@ Tcl_ParseVar(interp, string, termPtr)
 	name1 = string;
 	while (*string != '}') {
 	    if (*string == 0) {
-		Tcl_SetResult(interp, "missing close-brace for variable name",
+		Tcl_SetResult(interp, (unsigned char*) "missing close-brace for variable name",
 			TCL_STATIC);
 		if (termPtr != 0) {
 		    *termPtr = string;
@@ -1161,11 +1161,11 @@ Tcl_ParseVar(interp, string, termPtr)
 	    if (termPtr != 0) {
 		*termPtr = string;
 	    }
-	    return "$";
+	    return (unsigned char*) "$";
 	}
 	name1End = string;
 	if (*string == '(') {
-	    char *end;
+	    unsigned char *end;
 
 	    /*
 	     * Perform substitutions on the array element name, just as
@@ -1178,7 +1178,7 @@ Tcl_ParseVar(interp, string, termPtr)
 	    pv.clientData = (void*) 0;
 	    if (TclParseQuotes(interp, string+1, ')', 0, &end, &pv)
 		    != TCL_OK) {
-		char msg[100];
+		unsigned char msg[100];
 		snprintf(msg, sizeof (msg), "\n    (parsing index for array \"%.*s\")",
 			(int) (string - name1), name1);
 		Tcl_AddErrorInfo(interp, msg);
@@ -1198,7 +1198,7 @@ Tcl_ParseVar(interp, string, termPtr)
     }
 
     if (((Interp *) interp)->noEval) {
-	return "";
+	return (unsigned char*) "";
     }
     c = *name1End;
     *name1End = 0;

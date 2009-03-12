@@ -1,7 +1,7 @@
 /*
  * Cronyx Bridge platform.
  *
- * Copyright (C) 2003-2006 Cronyx Engineering Ltd.
+ * Copyright (C) 2003-2009 Cronyx Engineering Ltd.
  * Author: Serge Vakulenko, <vak@cronyx.ru>
  */
 #include <runtime/lib.h>
@@ -20,8 +20,6 @@
 #include <net/tcp.h>
 #include <net/telnet.h>
 #include <tcl/tcl.h>
-
-#define KHZ		41250 		/* Oscillator 41.25 MHz */
 
 /*
  * Istalled two chips 1M x 16 - total 4 megabytes of RAM.
@@ -156,45 +154,21 @@ receive_hdlc (hdlc_t *c, buf_t *p)
 	return 0;
 }
 
-static void
-print_task (stream_t *stream, task_t *t)
-{
-	lock_t *m;
-
-	t = (task_t*) (((long) t + 3) & ~3);
-	printf (stream, "%s\t%08lx\t", t->name, (long) t);
-	printf (stream, t == task_current ? "*%d*" : "%d", t->prio);
-	printf (stream, "\t%08lx\t%n",
-		(long) t->stack_context, task_stack_avail (t));
-	if (t->wait)
-		printf (stream, "\tWaiting for %08lx", t->wait);
-	else if (t->lock)
-		printf (stream, "\tLocked by %08lx", t->lock);
-	putchar (stream, '\n');
-
-	if (t->slaves.head) {
-		printf (stream, "\t\t\t\t\t\t\tOwning:");
-		for (m=t->slaves.head; m; m=m->next)
-			printf (stream, " %08lx", m);
-		putchar (stream, '\n');
-	}
-}
-
 /*
  * Implement the TCL loop command:
  *	loop var start end [increment] command
  */
 static int
-loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+loop_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	int result = TCL_OK;
 	int i, first, limit, incr = 1;
-	char *command;
-	char itxt [12];
+	unsigned char *command;
+	unsigned char itxt [12];
 
 	if ((argc < 5) || (argc > 6)) {
 		Tcl_AppendResult (interp, "bad # args: ", argv [0],
-			" var first limit [incr] command", (char*) 0);
+			" var first limit [incr] command", 0);
 		return TCL_ERROR;
 	}
 
@@ -227,7 +201,7 @@ loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 				result = TCL_OK;
 				break;
 			} else if (result == TCL_ERROR) {
-				char buf [64];
+				unsigned char buf [64];
 
 				snprintf (buf, sizeof (buf),
 					"\n    (\"loop\" body line %d)",
@@ -255,7 +229,7 @@ loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
  *	echo arg ...
  */
 static int
-echo_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+echo_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	int i;
@@ -273,7 +247,7 @@ echoError:			snprintf (interp->result, TCL_RESULT_SIZE,
 
 		if (i > 1)
 			putchar (stream, ' ');
-		puts (stream, argv[i]);
+		puts (stream, (char*) argv[i]);
 	}
 	putchar (stream, '\n');
 	return TCL_OK;
@@ -283,7 +257,7 @@ echoError:			snprintf (interp->result, TCL_RESULT_SIZE,
  * Reset the device.
  */
 static int
-reboot_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+reboot_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	int x;
@@ -302,7 +276,7 @@ reboot_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 }
 
 static int
-mem_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+mem_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	int n;
@@ -311,34 +285,33 @@ mem_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 	printf (stream, "Free memory: %ld bytes\n", mem_available (&pool));
 
 	putchar (stream, '\n');
-	printf (stream, "Task\tAddress\t\tPrio\tSP\t\tSpace\tState\n");
-	print_task (stream, task_idle);
-	print_task (stream, (task_t*) stack_console);
-	print_task (stream, (task_t*) stack_poll);
-	print_task (stream, (task_t*) stack_telnet);
+	task_print (stream, 0);
+	task_print (stream, task_idle);
+	task_print (stream, (task_t*) stack_console);
+	task_print (stream, (task_t*) stack_poll);
+	task_print (stream, (task_t*) stack_telnet);
 	for (n=0; n<MAXSESS; ++n)
 		if (streamtab[n])
-			print_task (stream, (task_t*) tasktab[n]);
-	print_task (stream, (task_t*) ip->stack);
-	print_task (stream, (task_t*) eth->rstack);
-	print_task (stream, (task_t*) eth->tstack);
-	print_task (stream, (task_t*) hdlc->rstack);
-	print_task (stream, (task_t*) hdlc->tstack);
-	print_task (stream, (task_t*) uart.rstack);
-	print_task (stream, (task_t*) timer.stack);
+			task_print (stream, (task_t*) tasktab[n]);
+	task_print (stream, (task_t*) ip->stack);
+	task_print (stream, (task_t*) eth->rstack);
+	task_print (stream, (task_t*) eth->tstack);
+	task_print (stream, (task_t*) hdlc->rstack);
+	task_print (stream, (task_t*) hdlc->tstack);
+	task_print (stream, (task_t*) uart.rstack);
 
 	putchar (stream, '\n');
 	return TCL_OK;
 }
 
 static int
-eth_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+eth_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	int speed, full_duplex;
 
 	putchar (stream, '\n');
-	if (argv[1] && strcmp (argv[1], "hw") == 0) {
+	if (argv[1] && strcmp (argv[1], (unsigned char*) "hw") == 0) {
 		/* Print Ethernet hardware registers. */
 		puts (stream, "Ethernet hardware registers:\n");
 		eth_debug (eth, stream);
@@ -371,12 +344,12 @@ eth_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 }
 
 static int
-serial_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+serial_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 
 	putchar (stream, '\n');
-	if (argv[1] && strcmp (argv[1], "hw") == 0) {
+	if (argv[1] && strcmp (argv[1], (unsigned char*) "hw") == 0) {
 		/* Print HDLC hardware registers. */
 		puts (stream, "Serial hardware registers (HDLC):\n");
 		printf (stream, "tn=%d, te=%d, data[tn]=%08x, st[tn]=%04x\n",
@@ -392,8 +365,8 @@ serial_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 		printf (stream, "HCON=%b\n",
 			ARM_HCON(0), ARM_HCON_BITS);
 
-	} else if (argv[1] && argv[2] && strcmp (argv[1], "dtr") == 0) {
-		if (strcmp (argv[2], "off") == 0) {
+	} else if (argv[1] && argv[2] && strcmp (argv[1], (unsigned char*) "dtr") == 0) {
+		if (strcmp (argv[2], (unsigned char*) "off") == 0) {
 			hdlc_set_dtr (hdlc, 0);
 			puts (stream, "Set DTR = OFF\n");
 		} else {
@@ -401,8 +374,8 @@ serial_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 			puts (stream, "Set DTR = ON\n");
 		}
 
-	} else if (argv[1] && argv[2] && strcmp (argv[1], "rts") == 0) {
-		if (strcmp (argv[2], "off") == 0) {
+	} else if (argv[1] && argv[2] && strcmp (argv[1], (unsigned char*) "rts") == 0) {
+		if (strcmp (argv[2], (unsigned char*) "off") == 0) {
 			hdlc_set_rts (hdlc, 0);
 			puts (stream, "Set RTS = OFF\n");
 		} else {
@@ -480,12 +453,12 @@ static void print_tcp_socket (stream_t *stream, tcp_socket_t *s)
 }
 
 static int
-net_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+net_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 
 	putchar (stream, '\n');
-	if (argv[1] && strcmp (argv[1], "arp") == 0) {
+	if (argv[1] && strcmp (argv[1], (unsigned char*) "arp") == 0) {
 		arp_entry_t *e;
 
 		puts (stream, "ARP table\n\n");
@@ -498,7 +471,7 @@ net_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 				e->ethaddr[3], e->ethaddr[4], e->ethaddr[5],
 				e->age, e->netif->name);
 		}
-	} else if (argv[1] && strcmp (argv[1], "ip") == 0) {
+	} else if (argv[1] && strcmp (argv[1], (unsigned char*) "ip") == 0) {
 		puts (stream, "IP statistics\n");
 
 		puts (stream, "\nIP input:\n");
@@ -515,7 +488,7 @@ net_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 		printf (stream, "      Unknown routes: %ln\n", ip->out_no_routes);
 		printf (stream, "   Forwarded packets: %ln\n", ip->forw_datagrams);
 
-	} else if (argv[1] && strcmp (argv[1], "icmp") == 0) {
+	} else if (argv[1] && strcmp (argv[1], (unsigned char*) "icmp") == 0) {
 		puts (stream, "ICMP statistics\n");
 
 		puts (stream, "\nICMP input:\n");
@@ -530,7 +503,7 @@ net_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 		printf (stream, "     Time exceeds: %ln\n", ip->icmp_out_time_excds);
 		printf (stream, "     Echo replies: %ln\n", ip->icmp_out_echo_reps);
 
-	} else if (argv[1] && strcmp (argv[1], "tcp") == 0) {
+	} else if (argv[1] && strcmp (argv[1], (unsigned char*) "tcp") == 0) {
 		puts (stream, "TCP statistics\n\n");
 
 		printf (stream, "    Input packets: %ln\n", ip->tcp_in_datagrams);
@@ -556,7 +529,7 @@ net_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 }
 
 static int
-help_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+help_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 
@@ -574,11 +547,11 @@ help_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 /*
  * Read a newline-terminated string from stream.
  */
-static char *
-getline (stream_t *stream, char *buf, int len)
+static unsigned char *
+getline (stream_t *stream, unsigned char *buf, int len)
 {
 	int c;
-	char *s;
+	unsigned char *s;
 
 	s = buf;
         while (--len > 0) {
@@ -608,7 +581,7 @@ void tcl_main (void *arg)
 	stream_t *stream = (stream_t*) arg;
 	Tcl_Interp *interp;
 	Tcl_CmdBuf buffer;
-	char line [200], *cmd;
+	unsigned char line [200], *cmd;
 	int result, got_partial, quit_flag, n;
 
 	/* Give telnet some time to negotiate. */
@@ -622,14 +595,14 @@ void tcl_main (void *arg)
 	puts (stream, "\nEnter \"help\" for a list of commands\n\n");
 
 	interp = Tcl_CreateInterp (&pool);
-	Tcl_CreateCommand (interp, "loop", loop_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "echo", echo_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "help", help_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "reboot", reboot_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "mem", mem_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "eth", eth_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "serial", serial_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "net", net_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "loop", loop_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "echo", echo_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "help", help_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "reboot", reboot_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "mem", mem_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "eth", eth_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "serial", serial_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "net", net_cmd, stream, 0);
 
 	buffer = Tcl_CreateCmdBuf (&pool);
 	got_partial = 0;
@@ -685,7 +658,7 @@ void tcl_main (void *arg)
 void start_session (tcp_socket_t *sock)
 {
 	int n;
-	char *t;
+	array_t *t;
 	stream_t *stream;
 
 	for (n=0; n<MAXSESS; ++n)
@@ -701,7 +674,7 @@ void start_session (tcp_socket_t *sock)
 		mem_free (tasktab[n]);
 		tasktab[n] = 0;
 	}
-	t = mem_alloc (&pool, TASKSZ);
+	t = (array_t*) mem_alloc (&pool, TASKSZ);
 	if (! t) {
 		debug_printf ("No memory for task\n");
 		tcp_close (sock);
@@ -718,23 +691,6 @@ void start_session (tcp_socket_t *sock)
 }
 
 /*
- * Activate watchdog.
- */
-void
-wdog_alive ()
-{
-	/* Every gpio_set() call is about 100 nsec.
-	 * Alive pulse must be >250 nsec.
-	 * Make it 500 nsec, large enough. */
-	gpio_set (PIN_DSR, 0);
-	gpio_set (PIN_DSR, 0);
-	gpio_set (PIN_DSR, 0);
-	gpio_set (PIN_DSR, 0);
-	gpio_set (PIN_DSR, 0);
-	gpio_set (PIN_DSR, 1);
-}
-
-/*
  * Task of timer polling.
  */
 static void
@@ -742,7 +698,7 @@ main_poll (void *arg)
 {
 	for (;;) {
 		timer_delay (&timer, 200);
-		wdog_alive ();
+		watchdog_alive ();
 	}
 }
 
@@ -792,7 +748,7 @@ void uos_init (void)
 	/* Baud 9600. */
 	uart_init (&uart, 0, PRIO_UART, KHZ, 9600);
 	timer_init (&timer, KHZ, 50);
-	wdog_alive ();
+	watchdog_alive ();
 
 	/* Configure control pins. */
 	control_link_led (0);
@@ -803,7 +759,7 @@ void uos_init (void)
 
 	configure_ram (RAM_START, RAM_START + RAM_SIZE, REFRESH_USEC, IO_START);
 	mem_init (&pool, RAM_START, RAM_START + RAM_SIZE);
-	wdog_alive ();
+	watchdog_alive ();
 
 	/* Configure Ethernet. */
 	eth = mem_alloc (&pool, sizeof (eth_t));

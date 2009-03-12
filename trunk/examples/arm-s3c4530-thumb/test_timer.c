@@ -1,9 +1,9 @@
 /*
  * Testing timer.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "timer/timer.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <timer/timer.h>
 
 ARRAY (task, 400);
 timer_t timer;

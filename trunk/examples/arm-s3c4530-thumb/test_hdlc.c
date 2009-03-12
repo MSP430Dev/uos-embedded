@@ -1,9 +1,9 @@
 /*
  * Testing HDLC on Cronyx ETV bridge board.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "uart/uart.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <uart/uart.h>
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <net/netif.h>
@@ -235,6 +235,7 @@ void run_test ()
 			hdlc->netif.out_packets, hdlc->netif.in_packets,
 			hdlc->underrun, hdlc->overrun, hdlc->frame, hdlc->crc,
 			hdlc->netif.in_discards);
+		watchdog_alive ();
 
 		/* Break on any keyboard input. */
 		if (peekchar (&uart) >= 0) {

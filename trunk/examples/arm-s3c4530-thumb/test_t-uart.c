@@ -1,10 +1,10 @@
 /*
  * Testing UART.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "timer/timer.h"
-#include "uart/uart.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <timer/timer.h>
+#include <uart/uart.h>
 
 ARRAY (task, 400);
 ARRAY (task_msec, 400);

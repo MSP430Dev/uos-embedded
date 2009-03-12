@@ -18,7 +18,7 @@
 #include <kernel/uos.h>
 #include <kernel/internal.h>
 
-void __lock_init (lock_t *lock)
+void lock_init (lock_t *lock)
 {
 	list_init (&lock->item);
 	list_init (&lock->waiters);
@@ -46,7 +46,8 @@ lock_take (lock_t *m)
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	assert (task_current != m->master);
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 
 	while (m->master && m->master != task_current) {
 		/* Monitor is locked, block the task. */

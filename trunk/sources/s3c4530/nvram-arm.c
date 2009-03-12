@@ -1,11 +1,11 @@
 /*
  * Interface to 25c128 serial EEPROM.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "s3c4530/gpio.h"
-#include "timer/timer.h"
-#include "nvram/nvram.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <s3c4530/gpio.h>
+#include <timer/timer.h>
+#include <nvram/nvram.h>
 
 static lock_t lock;
 
@@ -205,7 +205,7 @@ nvram_protect (nvram_t *v, timer_t *timer)
 }
 
 void
-eeprom_init (nvram_t *v)
+eeprom_init ()
 {
 	lock_take (&lock);
 

@@ -51,7 +51,8 @@ lock_activate (lock_t *m, void *message)
 	lock_slot_t *s;
 
 	assert (m != 0);
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 
 	while (! list_is_empty (&m->waiters)) {
 		t = (task_t*) list_first (&m->waiters);

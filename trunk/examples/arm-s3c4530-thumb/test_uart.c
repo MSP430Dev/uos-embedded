@@ -1,9 +1,9 @@
 /*
  * Testing UART.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "uart/uart.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <uart/uart.h>
 
 ARRAY (task, 400);
 uart_t uart;

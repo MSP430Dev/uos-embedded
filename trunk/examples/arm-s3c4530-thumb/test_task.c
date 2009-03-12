@@ -1,8 +1,8 @@
 /*
  * Testing task switching.
  */
-#include "runtime/lib.h"
-#include "kernel/uos.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
 
 ARRAY (task, 400);
 

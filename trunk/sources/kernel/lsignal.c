@@ -29,7 +29,8 @@ lock_signal (lock_t *m, void *message)
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 
 	if (! list_is_empty (&m->waiters) || ! list_is_empty (&m->groups)) {
 		lock_activate (m, message);
@@ -55,7 +56,8 @@ lock_wait (lock_t *m)
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	assert (task_current->wait == 0);
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 
 	/* On pending irq, we must call fast handler. */
 	if (m->irq) {

@@ -21,7 +21,7 @@
  * and the C procedures that execute them.
  */
 typedef struct {
-	char *name;		/* Name of command. */
+	unsigned char *name;	/* Name of command. */
 	Tcl_CmdProc *proc;	/* Procedure that executes command. */
 } CmdInfo;
 
@@ -34,69 +34,69 @@ static CmdInfo builtin_cmds[] = {
      * Commands in the generic core:
      */
 
-    {"append",		Tcl_AppendCmd},
-    {"array",		Tcl_ArrayCmd},
-    {"break",		Tcl_BreakCmd},
-    {"case",		Tcl_CaseCmd},
-    {"catch",		Tcl_CatchCmd},
-    {"concat",		Tcl_ConcatCmd},
-    {"continue",	Tcl_ContinueCmd},
-    {"error",		Tcl_ErrorCmd},
-    {"eval",		Tcl_EvalCmd},
-    {"expr",		Tcl_ExprCmd},
-    {"for",		Tcl_ForCmd},
-    {"foreach",		Tcl_ForeachCmd},
-    {"format",		Tcl_FormatCmd},
-    {"global",		Tcl_GlobalCmd},
-    {"if",		Tcl_IfCmd},
-    {"incr",		Tcl_IncrCmd},
-    {"info",		Tcl_InfoCmd},
-    {"join",		Tcl_JoinCmd},
-    {"lappend",		Tcl_LappendCmd},
-    {"lindex",		Tcl_LindexCmd},
-    {"linsert",		Tcl_LinsertCmd},
-    {"list",		Tcl_ListCmd},
-    {"llength",		Tcl_LlengthCmd},
-    {"lrange",		Tcl_LrangeCmd},
-    {"lreplace",	Tcl_LreplaceCmd},
-    {"lsearch",		Tcl_LsearchCmd},
-    {"lsort",		Tcl_LsortCmd},
-    {"proc",		Tcl_ProcCmd},
-    {"regexp",		Tcl_RegexpCmd},
-    {"regsub",		Tcl_RegsubCmd},
-    {"rename",		Tcl_RenameCmd},
-    {"return",		Tcl_ReturnCmd},
-    {"scan",		Tcl_ScanCmd},
-    {"set",		Tcl_SetCmd},
-    {"split",		Tcl_SplitCmd},
-    {"string",		Tcl_StringCmd},
-    {"trace",		Tcl_TraceCmd},
-    {"unset",		Tcl_UnsetCmd},
-    {"uplevel",		Tcl_UplevelCmd},
-    {"upvar",		Tcl_UpvarCmd},
-    {"while",		Tcl_WhileCmd},
+    {(unsigned char*) "append",		Tcl_AppendCmd},
+    {(unsigned char*) "array",		Tcl_ArrayCmd},
+    {(unsigned char*) "break",		Tcl_BreakCmd},
+    {(unsigned char*) "case",		Tcl_CaseCmd},
+    {(unsigned char*) "catch",		Tcl_CatchCmd},
+    {(unsigned char*) "concat",		Tcl_ConcatCmd},
+    {(unsigned char*) "continue",	Tcl_ContinueCmd},
+    {(unsigned char*) "error",		Tcl_ErrorCmd},
+    {(unsigned char*) "eval",		Tcl_EvalCmd},
+    {(unsigned char*) "expr",		Tcl_ExprCmd},
+    {(unsigned char*) "for",		Tcl_ForCmd},
+    {(unsigned char*) "foreach",	Tcl_ForeachCmd},
+    {(unsigned char*) "format",		Tcl_FormatCmd},
+    {(unsigned char*) "global",		Tcl_GlobalCmd},
+    {(unsigned char*) "if",		Tcl_IfCmd},
+    {(unsigned char*) "incr",		Tcl_IncrCmd},
+    {(unsigned char*) "info",		Tcl_InfoCmd},
+    {(unsigned char*) "join",		Tcl_JoinCmd},
+    {(unsigned char*) "lappend",	Tcl_LappendCmd},
+    {(unsigned char*) "lindex",		Tcl_LindexCmd},
+    {(unsigned char*) "linsert",	Tcl_LinsertCmd},
+    {(unsigned char*) "list",		Tcl_ListCmd},
+    {(unsigned char*) "llength",	Tcl_LlengthCmd},
+    {(unsigned char*) "lrange",		Tcl_LrangeCmd},
+    {(unsigned char*) "lreplace",	Tcl_LreplaceCmd},
+    {(unsigned char*) "lsearch",	Tcl_LsearchCmd},
+    {(unsigned char*) "lsort",		Tcl_LsortCmd},
+    {(unsigned char*) "proc",		Tcl_ProcCmd},
+    {(unsigned char*) "regexp",		Tcl_RegexpCmd},
+    {(unsigned char*) "regsub",		Tcl_RegsubCmd},
+    {(unsigned char*) "rename",		Tcl_RenameCmd},
+    {(unsigned char*) "return",		Tcl_ReturnCmd},
+    {(unsigned char*) "scan",		Tcl_ScanCmd},
+    {(unsigned char*) "set",		Tcl_SetCmd},
+    {(unsigned char*) "split",		Tcl_SplitCmd},
+    {(unsigned char*) "string",		Tcl_StringCmd},
+    {(unsigned char*) "trace",		Tcl_TraceCmd},
+    {(unsigned char*) "unset",		Tcl_UnsetCmd},
+    {(unsigned char*) "uplevel",	Tcl_UplevelCmd},
+    {(unsigned char*) "upvar",		Tcl_UpvarCmd},
+    {(unsigned char*) "while",		Tcl_WhileCmd},
 
     /*
      * Commands in the UNIX core:
      */
 #ifdef TCL_FILE_CMDS
-    {"glob",		Tcl_GlobCmd},
-    {"cd",		Tcl_CdCmd},
-    {"close",		Tcl_CloseCmd},
-    {"eof",		Tcl_EofCmd},
-    {"exit",		Tcl_ExitCmd},
-    {"file",		Tcl_FileCmd},
-    {"flush",		Tcl_FlushCmd},
-    {"gets",		Tcl_GetsCmd},
-    {"open",		Tcl_OpenCmd},
-    {"puts",		Tcl_PutsCmd},
-    {"pwd",		Tcl_PwdCmd},
-    {"read",		Tcl_ReadCmd},
-    {"seek",		Tcl_SeekCmd},
-    {"source",		Tcl_SourceCmd},
-    {"tell",		Tcl_TellCmd},
+    {(unsigned char*) "glob",		Tcl_GlobCmd},
+    {(unsigned char*) "cd",		Tcl_CdCmd},
+    {(unsigned char*) "close",		Tcl_CloseCmd},
+    {(unsigned char*) "eof",		Tcl_EofCmd},
+    {(unsigned char*) "exit",		Tcl_ExitCmd},
+    {(unsigned char*) "file",		Tcl_FileCmd},
+    {(unsigned char*) "flush",		Tcl_FlushCmd},
+    {(unsigned char*) "gets",		Tcl_GetsCmd},
+    {(unsigned char*) "open",		Tcl_OpenCmd},
+    {(unsigned char*) "puts",		Tcl_PutsCmd},
+    {(unsigned char*) "pwd",		Tcl_PwdCmd},
+    {(unsigned char*) "read",		Tcl_ReadCmd},
+    {(unsigned char*) "seek",		Tcl_SeekCmd},
+    {(unsigned char*) "source",		Tcl_SourceCmd},
+    {(unsigned char*) "tell",		Tcl_TellCmd},
 #endif
-    {0,		(Tcl_CmdProc *) 0}
+    {0,					0}
 };
 
 /*
@@ -235,7 +235,7 @@ Tcl_DeleteInterp(interp)
 	if (c->deleteProc != 0) {
 	    (*c->deleteProc)(c->clientData);
 	}
-	mem_free((char *) c);
+	mem_free (c);
     }
     Tcl_DeleteHashTable(&iPtr->commandTable);
     TclDeleteVars(iPtr, &iPtr->globalTable);
@@ -245,12 +245,12 @@ Tcl_DeleteInterp(interp)
 	for (i = 0; i < iPtr->numEvents; i++) {
 	    mem_free(iPtr->events[i].command);
 	}
-	mem_free((char *) iPtr->events);
+	mem_free (iPtr->events);
     }
     while (iPtr->revPtr != 0) {
 	HistoryRev *nextPtr = iPtr->revPtr->nextPtr;
 
-	mem_free((char *) iPtr->revPtr);
+	mem_free (iPtr->revPtr);
 	iPtr->revPtr = nextPtr;
     }
     if (iPtr->appendResult != 0) {
@@ -272,28 +272,28 @@ Tcl_DeleteInterp(interp)
 		}
 		if (filePtr->numPids > 0) {
 		    /* Tcl_DetachPids(filePtr->numPids, filePtr->pidPtr); */
-		    mem_free((char *) filePtr->pidPtr);
+		    mem_free (filePtr->pidPtr);
 		}
 	    }
-	    mem_free((char *) filePtr);
+	    mem_free (filePtr);
 	}
-	mem_free((char *) iPtr->filePtrArray);
+	mem_free (iPtr->filePtrArray);
     }
 #endif
     for (i = 0; i < NUM_REGEXPS; i++) {
 	if (iPtr->patterns[i] == 0) {
 	    break;
 	}
-	mem_free(iPtr->patterns[i]);
-	mem_free((char *) iPtr->regexps[i]);
+	mem_free (iPtr->patterns[i]);
+	mem_free (iPtr->regexps[i]);
     }
     while (iPtr->tracePtr != 0) {
 	Trace *nextPtr = iPtr->tracePtr->nextPtr;
 
-	mem_free((char *) iPtr->tracePtr);
+	mem_free (iPtr->tracePtr);
 	iPtr->tracePtr = nextPtr;
     }
-    mem_free((char *) iPtr);
+    mem_free (iPtr);
 }
 
 /*
@@ -320,7 +320,7 @@ void
 Tcl_CreateCommand(interp, cmdName, proc, clientData, deleteProc)
     Tcl_Interp *interp;		/* Token for command interpreter (returned
 				 * by a previous call to Tcl_CreateInterp). */
-    char *cmdName;		/* Name of command. */
+    unsigned char *cmdName;	/* Name of command. */
     Tcl_CmdProc *proc;		/* Command procedure to associate with
 				 * cmdName. */
     void *clientData;		/* Arbitrary one-word value to pass to proc. */
@@ -375,7 +375,7 @@ int
 Tcl_DeleteCommand(interp, cmdName)
     Tcl_Interp *interp;		/* Token for command interpreter (returned
 				 * by a previous call to Tcl_CreateInterp). */
-    char *cmdName;		/* Name of command to remove. */
+    unsigned char *cmdName;	/* Name of command to remove. */
 {
     Interp *iPtr = (Interp *) interp;
     Tcl_HashEntry *he;
@@ -389,7 +389,7 @@ Tcl_DeleteCommand(interp, cmdName)
     if (c->deleteProc != 0) {
 	(*c->deleteProc)(c->clientData);
     }
-    mem_free((char *) c);
+    mem_free (c);
     Tcl_DeleteHashEntry(he);
     return 0;
 }
@@ -420,10 +420,10 @@ int
 Tcl_Eval(interp, cmd, flags, termPtr)
     Tcl_Interp *interp;		/* Token for command interpreter (returned
 				 * by a previous call to Tcl_CreateInterp). */
-    char *cmd;			/* Pointer to TCL command to interpret. */
+    unsigned char *cmd;		/* Pointer to TCL command to interpret. */
     int flags;			/* OR-ed combination of flags like
 				 * TCL_BRACKET_TERM and TCL_RECORD_BOUNDS. */
-    char **termPtr;		/* If non-NULL, fill in the address it points
+    unsigned char **termPtr;	/* If non-NULL, fill in the address it points
 				 * to with the address of the char. just after
 				 * the last one that was part of cmd.  See
 				 * the man page for details on this. */
@@ -435,9 +435,9 @@ Tcl_Eval(interp, cmd, flags, termPtr)
      */
 
 #   define NUM_CHARS 200
-    char copyStorage[NUM_CHARS];
+    unsigned char copyStorage[NUM_CHARS];
     ParseValue pv;
-    char *oldBuffer;
+    unsigned char *oldBuffer;
 
     /*
      * This procedure generates an (argv, argc) array for the command,
@@ -446,12 +446,12 @@ Tcl_Eval(interp, cmd, flags, termPtr)
      */
 
 #   define NUM_ARGS 10
-    char *(argStorage[NUM_ARGS]);
-    char **argv = argStorage;
+    unsigned char *(argStorage[NUM_ARGS]);
+    unsigned char **argv = argStorage;
     int argc;
     int argSize = NUM_ARGS;
 
-    register char *src;			/* Points to current character
+    register unsigned char *src;	/* Points to current character
 					 * in cmd. */
     char termChar;			/* Return when this character is found
 					 * (either ']' or '\0').  Zero means
@@ -460,12 +460,13 @@ Tcl_Eval(interp, cmd, flags, termPtr)
     register Interp *iPtr = (Interp *) interp;
     Tcl_HashEntry *he;
     Command *c;
-    char *dummy;			/* Make termPtr point here if it was
+    unsigned char *dummy;		/* Make termPtr point here if it was
 					 * originally NULL. */
-    char *cmdStart;			/* Points to first non-blank char. in
+    unsigned char *cmdStart;		/* Points to first non-blank char. in
 					 * command (used in calling trace
 					 * procedures). */
-    char *ellipsis = "";		/* Used in setting errorInfo variable;
+    unsigned char *ellipsis = (unsigned char*) "";
+					/* Used in setting errorInfo variable;
 					 * set to "..." to indicate that not
 					 * all of offending command is included
 					 * in errorInfo.  "" means that the
@@ -491,7 +492,7 @@ Tcl_Eval(interp, cmd, flags, termPtr)
     iPtr->numLevels++;
     if (iPtr->numLevels > MAX_NESTING_DEPTH) {
 	iPtr->numLevels--;
-	iPtr->result =  "too many nested calls to Tcl_Eval (infinite loop?)";
+	iPtr->result = (unsigned char*) "too many nested calls to Tcl_Eval (infinite loop?)";
 	return TCL_ERROR;
     }
 
@@ -565,7 +566,7 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 	argc = 0;
 	while (1) {
 	    int newArgs, maxArgs;
-	    char **newArgv;
+	    unsigned char **newArgv;
 	    int i;
 
 	    /*
@@ -581,7 +582,7 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 		    maxArgs, termPtr, &newArgs, &argv[argc], &pv);
 	    src = *termPtr;
 	    if (result != TCL_OK) {
-		ellipsis = "...";
+		ellipsis = (unsigned char*) "...";
 		goto done;
 	    }
 
@@ -601,7 +602,7 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 	    }
 	    argc += newArgs;
 	    if (newArgs < maxArgs) {
-		argv[argc] = (char *) 0;
+		argv[argc] = 0;
 		break;
 	    }
 
@@ -610,13 +611,13 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 	     */
 
 	    argSize *= 2;
-	    newArgv = (char**) mem_alloc (iPtr->pool,
+	    newArgv = (unsigned char**) mem_alloc (iPtr->pool,
 		(unsigned) argSize * sizeof(char *));
 	    for (i = 0; i < argc; i++) {
 		newArgv[i] = argv[i];
 	    }
 	    if (argv != argStorage) {
-		mem_free((char *) argv);
+		mem_free (argv);
 	    }
 	    argv = newArgv;
 	}
@@ -652,18 +653,18 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 	if (he == 0) {
 	    int i;
 
-	    he = Tcl_FindHashEntry(&iPtr->commandTable, "unknown");
+	    he = Tcl_FindHashEntry(&iPtr->commandTable, (unsigned char*) "unknown");
 	    if (he == 0) {
 		Tcl_ResetResult(interp);
 		Tcl_AppendResult(interp, "invalid command name: \"",
-			argv[0], "\"", (char *) 0);
+			argv[0], "\"", 0);
 		result = TCL_ERROR;
 		goto done;
 	    }
 	    for (i = argc; i >= 0; i--) {
 		argv[i+1] = argv[i];
 	    }
-	    argv[0] = "unknown";
+	    argv[0] = (unsigned char*) "unknown";
 	    argc++;
 	}
 	c = (Command *) Tcl_GetHashValue(he);
@@ -709,10 +710,10 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 
     done:
     if (pv.buffer != copyStorage) {
-	mem_free((char *) pv.buffer);
+	mem_free (pv.buffer);
     }
     if (argv != argStorage) {
-	mem_free((char *) argv);
+	mem_free (argv);
     }
     iPtr->numLevels--;
     if (iPtr->numLevels == 0) {
@@ -722,9 +723,9 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 	if ((result != TCL_OK) && (result != TCL_ERROR)) {
 	    Tcl_ResetResult(interp);
 	    if (result == TCL_BREAK) {
-		iPtr->result = "invoked \"break\" outside of a loop";
+		iPtr->result = (unsigned char*) "invoked \"break\" outside of a loop";
 	    } else if (result == TCL_CONTINUE) {
-		iPtr->result = "invoked \"continue\" outside of a loop";
+		iPtr->result = (unsigned char*) "invoked \"continue\" outside of a loop";
 	    } else {
 		iPtr->result = iPtr->resultSpace;
 		snprintf(iPtr->resultSpace, TCL_RESULT_SIZE, "command returned bad code: %d",
@@ -744,7 +745,7 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 
     if ((result == TCL_ERROR) && !(iPtr->flags & ERR_ALREADY_LOGGED)) {
 	int numChars;
-	register char *p;
+	register unsigned char *p;
 
 	/*
 	 * Compute the line number where the error occurred.
@@ -771,7 +772,7 @@ Tcl_Eval(interp, cmd, flags, termPtr)
 	numChars = src - cmdStart;
 	if (numChars > (NUM_CHARS-50)) {
 	    numChars = NUM_CHARS-50;
-	    ellipsis = " ...";
+	    ellipsis = (unsigned char*) " ...";
 	}
 
 	if (!(iPtr->flags & ERR_IN_PROGRESS)) {
@@ -813,11 +814,11 @@ Tcl_Eval(interp, cmd, flags, termPtr)
  *	    void *clientData;
  *	    Tcl_Interp *interp;
  *	    int level;
- *	    char *command;
+ *	    unsigned char *command;
  *	    int (*cmdProc)();
  *	    void *cmdClientData;
  *	    int argc;
- *	    char **argv;
+ *	    unsigned char **argv;
  *	{
  *	}
  *
@@ -885,13 +886,13 @@ Tcl_DeleteTrace(interp, trace)
 
     if (iPtr->tracePtr == tracePtr) {
 	iPtr->tracePtr = tracePtr->nextPtr;
-	mem_free((char *) tracePtr);
+	mem_free (tracePtr);
     } else {
 	for (tracePtr2 = iPtr->tracePtr; tracePtr2 != 0;
 		tracePtr2 = tracePtr2->nextPtr) {
 	    if (tracePtr2->nextPtr == tracePtr) {
 		tracePtr2->nextPtr = tracePtr->nextPtr;
-		mem_free((char *) tracePtr);
+		mem_free (tracePtr);
 		return;
 	    }
 	}
@@ -921,7 +922,7 @@ void
 Tcl_AddErrorInfo(interp, message)
     Tcl_Interp *interp;		/* Interpreter to which error information
 				 * pertains. */
-    char *message;		/* Message to record. */
+    unsigned char *message;	/* Message to record. */
 {
     register Interp *iPtr = (Interp *) interp;
 
@@ -934,7 +935,7 @@ Tcl_AddErrorInfo(interp, message)
      */
 
     if (!(iPtr->flags & ERR_IN_PROGRESS)) {
-	Tcl_SetVar2(interp, "errorInfo", (char *) 0, interp->result,
+	Tcl_SetVar2(interp, (unsigned char*) "errorInfo", 0, interp->result,
 		TCL_GLOBAL_ONLY);
 	iPtr->flags |= ERR_IN_PROGRESS;
 
@@ -944,11 +945,11 @@ Tcl_AddErrorInfo(interp, message)
 	 */
 
 	if (!(iPtr->flags & ERROR_CODE_SET)) {
-	    (void) Tcl_SetVar2(interp, "errorCode", (char *) 0, "NONE",
-		    TCL_GLOBAL_ONLY);
+		Tcl_SetVar2(interp, (unsigned char*) "errorCode", 0,
+			(unsigned char*) "NONE", TCL_GLOBAL_ONLY);
 	}
     }
-    Tcl_SetVar2(interp, "errorInfo", (char *) 0, message,
+    Tcl_SetVar2(interp, (unsigned char*) "errorInfo", 0, message,
 	    TCL_GLOBAL_ONLY|TCL_APPEND_VALUE);
 }
 
@@ -977,9 +978,9 @@ Tcl_VarEval (Tcl_Interp *interp,/* Interpreter in which to execute command. */
 {
     va_list argList;
 #define FIXED_SIZE 200
-    char fixedSpace[FIXED_SIZE+1];
+    unsigned char fixedSpace[FIXED_SIZE+1];
     int spaceAvl, spaceUsed, length;
-    char *string, *cmd;
+    unsigned char *string, *cmd;
     int result;
 
     /*
@@ -993,13 +994,13 @@ Tcl_VarEval (Tcl_Interp *interp,/* Interpreter in which to execute command. */
     spaceUsed = 0;
     cmd = fixedSpace;
     while (1) {
-	string = va_arg(argList, char *);
+	string = va_arg(argList, unsigned char *);
 	if (string == 0) {
 	    break;
 	}
 	length = strlen(string);
 	if ((spaceUsed + length) > spaceAvl) {
-	    char *new;
+	    unsigned char *new;
 
 	    spaceAvl = spaceUsed + length;
 	    spaceAvl += spaceAvl/2;
@@ -1016,7 +1017,7 @@ Tcl_VarEval (Tcl_Interp *interp,/* Interpreter in which to execute command. */
     va_end(argList);
     cmd[spaceUsed] = '\0';
 
-    result = Tcl_Eval(interp, cmd, 0, (char **) 0);
+    result = Tcl_Eval(interp, cmd, 0, 0);
     if (cmd != fixedSpace) {
 	mem_free(cmd);
     }
@@ -1046,7 +1047,7 @@ Tcl_VarEval (Tcl_Interp *interp,/* Interpreter in which to execute command. */
 int
 Tcl_GlobalEval(interp, command)
     Tcl_Interp *interp;		/* Interpreter in which to evaluate command. */
-    char *command;		/* Command to evaluate. */
+    unsigned char *command;	/* Command to evaluate. */
 {
     register Interp *iPtr = (Interp *) interp;
     int result;
@@ -1054,7 +1055,7 @@ Tcl_GlobalEval(interp, command)
 
     savedVarFramePtr = iPtr->varFramePtr;
     iPtr->varFramePtr = 0;
-    result = Tcl_Eval(interp, command, 0, (char **) 0);
+    result = Tcl_Eval(interp, command, 0, 0);
     iPtr->varFramePtr = savedVarFramePtr;
     return result;
 }

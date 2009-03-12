@@ -28,7 +28,8 @@ lock_attach_irq (lock_t *m, int irq, handler_t func, void *arg)
 	arch_state_t x;
 
 	arch_intr_disable (&x);
-	__lock_check (m);
+	if (! m->item.next)
+		lock_init (m);
 
 	m->irq = &lock_irq [irq];
 	assert (m->irq->lock == 0);

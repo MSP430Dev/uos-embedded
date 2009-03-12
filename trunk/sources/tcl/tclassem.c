@@ -27,7 +27,7 @@
  */
 
 typedef struct {
-    char *buffer;		/* Storage for command being assembled.
+    unsigned char *buffer;	/* Storage for command being assembled.
 				 * Malloc-ed, and grows as needed. */
     mem_pool_t *pool;		/* Pool for allocating memory. */
     int bufSize;		/* Total number of bytes in buffer. */
@@ -66,7 +66,7 @@ Tcl_CreateCmdBuf (mem_pool_t *pool)
 
     cbPtr = (CmdBuf*) mem_alloc (pool, sizeof(CmdBuf));
     cbPtr->pool = pool;
-    cbPtr->buffer = (char*) mem_alloc (pool, CMD_BUF_SIZE);
+    cbPtr->buffer = mem_alloc (pool, CMD_BUF_SIZE);
     cbPtr->buffer[0] = '\0';
     cbPtr->bufSize = CMD_BUF_SIZE;
     cbPtr->bytesUsed = 0;
@@ -97,8 +97,8 @@ Tcl_DeleteCmdBuf(buffer)
 {
     register CmdBuf *cbPtr = (CmdBuf *) buffer;
 
-    mem_free(cbPtr->buffer);
-    mem_free((char *) cbPtr);
+    mem_free (cbPtr->buffer);
+    mem_free (cbPtr);
 }
 
 /*
@@ -128,11 +128,11 @@ Tcl_DeleteCmdBuf(buffer)
  *----------------------------------------------------------------------
  */
 
-char *
+unsigned char *
 Tcl_AssembleCmd (buffer, string)
     Tcl_CmdBuf buffer;		/* Token for a command buffer previously
 				 * created by Tcl_CreateCmdBuf.  */
-    char *string;		/* Bytes to be appended to command stream.
+    unsigned char *string;	/* Bytes to be appended to command stream.
 				 * Note:  if the string is zero length,
 				 * then whatever is buffered will be
 				 * considered to be a complete command
@@ -164,13 +164,13 @@ Tcl_AssembleCmd (buffer, string)
     totalLength = cbPtr->bytesUsed + length + 1;
     if (totalLength > cbPtr->bufSize) {
 	unsigned int newSize;
-	char *newBuf;
+	unsigned char *newBuf;
 
 	newSize = cbPtr->bufSize*2;
 	if (newSize < totalLength) {
 	    newSize = totalLength;
 	}
-	newBuf = (char*) mem_alloc (cbPtr->pool, newSize);
+	newBuf = mem_alloc (cbPtr->pool, newSize);
 	strcpy(newBuf, cbPtr->buffer);
 	mem_free(cbPtr->buffer);
 	cbPtr->buffer = newBuf;
@@ -214,9 +214,9 @@ Tcl_AssembleCmd (buffer, string)
 
 int
 Tcl_CommandComplete(cmd)
-    char *cmd;			/* Command to check. */
+    unsigned char *cmd;		/* Command to check. */
 {
-    register char *p = cmd;
+    register unsigned char *p = cmd;
 
     p = cmd;
     while (1) {

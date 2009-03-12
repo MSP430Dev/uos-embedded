@@ -30,12 +30,12 @@ typedef struct Tcl_HashEntry {
     void *clientData;			/* Application stores something here
 					 * with Tcl_SetHashValue. */
     union {				/* Key has one of these forms: */
-	char *oneWordValue;		/* One-word value for key. */
+	unsigned char *oneWordValue;	/* One-word value for key. */
 	int words[1];			/* Multiple integer words for key.
 					 * The actual size will be as large
 					 * as necessary for this table's
 					 * keys. */
-	char string[4];			/* String for key.  The actual size
+	unsigned char string[4];	/* String for key.  The actual size
 					 * will be as large as needed to hold
 					 * the key. */
     } key;				/* MUST BE LAST FIELD IN RECORD!! */
@@ -72,9 +72,9 @@ typedef struct Tcl_HashTable {
 					 * TCL_ONE_WORD_KEYS, or an integer
 					 * giving the number of ints in a
 					 */
-    Tcl_HashEntry *(*findProc) (struct Tcl_HashTable *tablePtr, char *key);
+    Tcl_HashEntry *(*findProc) (struct Tcl_HashTable *tablePtr, unsigned char *key);
     Tcl_HashEntry *(*createProc) (struct Tcl_HashTable *tablePtr,
-	    char *key, int *newPtr);
+	    unsigned char *key, int *newPtr);
 } Tcl_HashTable;
 
 /*
@@ -101,8 +101,8 @@ typedef struct Tcl_HashSearch {
 #define Tcl_GetHashValue(h) ((h)->clientData)
 #define Tcl_SetHashValue(h, value) ((h)->clientData = (void*) (value))
 #define Tcl_GetHashKey(tablePtr, h) \
-    ((char *) (((tablePtr)->keyType == TCL_ONE_WORD_KEYS) ? (h)->key.oneWordValue \
-						: (h)->key.string))
+    (((tablePtr)->keyType == TCL_ONE_WORD_KEYS) ? (h)->key.oneWordValue \
+						: (h)->key.string)
 
 /*
  * Macros to use for clients to use to invoke find and create procedures
@@ -120,7 +120,7 @@ extern void		Tcl_DeleteHashEntry (Tcl_HashEntry *entryPtr);
 extern void		Tcl_DeleteHashTable (Tcl_HashTable *tablePtr);
 extern Tcl_HashEntry *	Tcl_FirstHashEntry (Tcl_HashTable *tablePtr,
 				Tcl_HashSearch *searchPtr);
-extern char *		Tcl_HashStats (Tcl_HashTable *tablePtr);
+extern unsigned char *	Tcl_HashStats (Tcl_HashTable *tablePtr);
 extern void		Tcl_InitHashTable (Tcl_HashTable *tablePtr,
 				struct _mem_pool_t *pool, int keyType);
 extern Tcl_HashEntry *	Tcl_NextHashEntry (Tcl_HashSearch *searchPtr);
