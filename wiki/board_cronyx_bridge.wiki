@@ -3,7 +3,9 @@
 [http://cronyx.ru/hardware/bridge.html http://cronyx.ru/img/hardware/bridge.jpg]
 
 Мост [http://cronyx.ru/hardware/bridge.html Cronyx-BRDG] построен на микроконтроллере Samsung S3C4530A
-([http://www.mr.inf.tu-dresden.de/lehre_ss/kpes/docs/versuch4/samsung/um_s3c4530a.pdf спецификация]). Процессор считается устаревшим, поэтому он отсутствует на сайте Samsung. Его уникальность состоит в наличии встроенного контроллера HDLC, работающего со скоростью до 10 Мбит/сек.
+([http://www.mculand.com/sub1/mcu/arm7tdmi_device/pdf/um_s3c4530a_rev1.pdf спецификация]) с архитектурой ARM7TDMI. Его уникальность состоит в наличии встроенного контроллера HDLC, работающего со скоростью до 10 Мбит/сек. Процессор считается устаревшим, поэтому он отсутствует на сайте Samsung. Информацию об S3C4530A можно отыскать на сайтах сторонних фирм, например [http://www.mculand.com/e/sub1/mcu/arm7tdmi_device/s3c4530.htm MCULand].
+
+Схема Cronyx Bridge недоступна, но принципиальную схему похожего устройства можно скачать с сайта [http://ucrouter.com/hardware.html проекта uCrouter]: [http://ucrouter.com/download/evm50100-sch.pdf]. 
 
 На плате имеется:
  * асинхронный порт RS-232 (консоль)
