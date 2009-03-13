@@ -10,10 +10,10 @@
 #include <s3c4530/hdlc.h>
 
 /*
- * Installed DRAM chip 1M x 16 - total 2 megabytes of memory.
+ * Installed two chips 1M x 16 - total 4 megabytes of RAM.
  */
 #define RAM_START      0x02000000		/* SDRAM start address */
-#define RAM_SIZE       (2*1024*1024)		/* SDRAM size (bytes) */
+#define RAM_SIZE       (4*1024*1024)		/* SDRAM size (bytes) */
 #define RAM_END        (RAM_START+RAM_SIZE)	/* SDRAM end address */
 #define REFRESH_USEC	8			/* refresh period (usec) */
 #define IO_START	0x03600000		/* address of i/o space */

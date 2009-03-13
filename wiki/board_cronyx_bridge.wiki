@@ -148,11 +148,11 @@ IP-адрес устройства зазаётся при вызове route_ad
 {{{
 Embedded TCL
 
-%
+% _
 }}}
 В качестве примера реализованы две дополнительные команды:
- * loop var first limit \[incr] command
- * echo \[arg...]
+ * loop var first limit [[incr] command
+ * echo [[arg...]
 
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_telnetd.c test_telnetd.c]
 - Пример устройства со встроенным языком TCL и возможностью удалённого входа по протоколу Telnet.
@@ -165,11 +165,11 @@ Free memory: 3768724 bytes
 
 Enter "help" for a list of commands
 
-%
+% _
 }}}
 Реализованы несколько дополнительных команд:
-|| loop var first limit \[incr] command	|| Цикл от var:=first до limit с шаком incr ||
-|| echo \[arg...]			|| Выдача аргументов через пробел ||
+|| loop var first limit [[incr] command	|| Цикл от var:=first до limit с шаком incr ||
+|| echo [[arg...]			|| Выдача аргументов через пробел ||
 || reboot				|| Перезагрузка устройства ||
 || mem					|| Выдача количества свободной памяти и списка задач ||
 || net					|| Отображение списка TCP-сокетов ||
@@ -181,8 +181,8 @@ Enter "help" for a list of commands
 || eth hw				|| Просмотр аппаратных регистров контроллера Ethernet ||
 || serial				|| Выдача состояния модемных сигналов и статистики драйвера Ethernet ||
 || serial hw				|| Просмотр аппаратных регистров контроллера HDLC ||
-|| serial dtr \[on | off]		|| Управление модемным сигналом DTR ||
-|| serial rts \[on | off]		|| Управление модемным сигналом RTS ||
+|| serial dtr [[on | off]		|| Управление модемным сигналом DTR ||
+|| serial rts [[on | off]		|| Управление модемным сигналом RTS ||
 
 Пример списка задач:
 {{{
@@ -209,5 +209,5 @@ hdlct	  2002d6c	 60	  2002ef8	296	(nil)	1
 uartr	   ff0604	 90	   ff078c	292	(nil)	10
 	Waiting for 0xff0590
 
-%
+% _
 }}}

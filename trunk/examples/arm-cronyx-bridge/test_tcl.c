@@ -22,8 +22,11 @@
 
 #include <tcl/tcl.h>
 
+/*
+ * Installed two chips 1M x 16 - total 4 megabytes of RAM.
+ */
 #define RAM_START	0x02000000
-#define RAM_SIZE	(2*1024*1024)
+#define RAM_SIZE	(4*1024*1024)
 #define RAM_END		(RAM_START+RAM_SIZE)
 #define REFRESH_USEC	8
 #define IO_START	0x03600000
