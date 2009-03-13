@@ -2,7 +2,6 @@
 #include <kernel/uos.h>
 #include <nvram/nvdata.h>
 #include <nvram/nvram.h>
-#include <watchdog/watchdog.h>
 
 static inline bool_t __nvdata_is_valid_addr (nvdata_t *v, unsigned addr)
 {

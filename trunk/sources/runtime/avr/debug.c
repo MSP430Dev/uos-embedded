@@ -1,5 +1,4 @@
 #include <runtime/lib.h>
-#include <watchdog/watchdog.h>
 
 #ifdef AVR_DEBUG_UART1
 /* Use UART1 for debug output (default UART0). */

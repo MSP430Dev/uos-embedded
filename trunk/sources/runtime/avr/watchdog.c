@@ -8,13 +8,14 @@
  * "as is" without express or implied warranty.
  */
 #include <runtime/lib.h>
-#include <watchdog/watchdog.h>
 
 #ifdef WDP3
 #   define WD_PS3_MASK	(1 << WDP3)
 #else
 #   define WD_PS3_MASK	0x00
 #endif
+
+#ifdef WDTCR
 
 void watchdog_enable (int timeout)
 {
@@ -74,3 +75,5 @@ void watchdog_disable (void)
 	    "I" (_SFR_IO_ADDR(WDTCR)));
 #endif
 }
+
+#endif /* WDTCR */

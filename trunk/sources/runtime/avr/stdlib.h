@@ -34,4 +34,11 @@ atol (const unsigned char *__p)
 }
 
 extern const unsigned char *strmatch (const unsigned char*, const unsigned char*);
-#define AVR_TASK_RESTART_KEY	((task_t *) 0xBEEFul)
+
+/*
+ * Watchdog timer..
+ */
+#define watchdog_alive()	asm volatile ("wdr")
+
+void watchdog_enable (int timeout);
+void watchdog_disable (void);
