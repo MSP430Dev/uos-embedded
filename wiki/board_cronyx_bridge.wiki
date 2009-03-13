@@ -3,12 +3,12 @@
 [http://cronyx.ru/hardware/bridge.html http://cronyx.ru/img/hardware/bridge.jpg]
 
 Мост [http://cronyx.ru/hardware/bridge.html Cronyx-BRDG] построен на микроконтроллере Samsung S3C4530A
-([http://www.mr.inf.tu-dresden.de/lehre_ss/kpes/docs/versuch4/samsung/um_s3c4530a.pdf спецификация]).
+([http://www.mr.inf.tu-dresden.de/lehre_ss/kpes/docs/versuch4/samsung/um_s3c4530a.pdf спецификация]). Процессор считается устаревшим, поэтому он отсутствует на сайте Samsung. Его уникальность состоит в наличии встроенного контроллера HDLC, работающего со скоростью до 10 Мбит/сек.
 
 На плате имеется:
  * асинхронный порт RS-232 (консоль)
- * порт Ethernet RJ-45 с трансивером NQ80225
- * последовательный порт RS-530 или V.35
+ * порт Ethernet RJ-45 с трансивером NQ80225 100 Мбит/сек
+ * синхронный порт HDLC с интерфейсом RS-530 или V.35
  * светодиоды питания (PWR), Ethernet (ACT, COL, FDX, 100) и статуса (LINK, программно-управляемый)
  * сторожевой таймер MAX823L
  * джампер PROG для перепрошивки
