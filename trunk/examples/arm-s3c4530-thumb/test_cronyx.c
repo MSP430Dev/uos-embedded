@@ -285,7 +285,6 @@ mem_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 
 	putchar (stream, '\n');
 	task_print (stream, 0);
-	task_print (stream, task_idle);
 	task_print (stream, (task_t*) stack_console);
 	task_print (stream, (task_t*) stack_poll);
 	task_print (stream, (task_t*) stack_telnet);
@@ -738,6 +737,21 @@ void main_telnet (void *data)
 		}
 		start_session (sock);
 	}
+}
+
+/*
+ * Check memory address.
+ * Board-dependent function.
+ */
+bool_t uos_valid_memory_address (void *ptr)
+{
+        unsigned u = (unsigned) ptr;
+
+        if (u >= ARM_SRAM_BASE && u < ARM_SRAM_BASE + 0x1000)
+                return 1;
+        if (u >= RAM_START && u < RAM_START + RAM_SIZE)
+                return 1;
+        return 0;
 }
 
 void uos_init (void)

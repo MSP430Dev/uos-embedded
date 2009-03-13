@@ -22,7 +22,7 @@ clean:
 probe:		flashid
 		./flashid
 
-load:		test_tcl.srec
+load:		test_cronyx.srec
 		$(PROG) $<
 
 include $(OS)/sources/rules.mak
