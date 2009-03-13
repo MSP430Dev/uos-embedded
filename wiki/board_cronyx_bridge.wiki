@@ -1,0 +1,213 @@
+#summary Target board: Cronyx Bridge.
+
+[http://cronyx.ru/hardware/bridge.html http://cronyx.ru/img/hardware/bridge.jpg]
+
+Мост [http://cronyx.ru/hardware/bridge.html Cronyx-BRDG] построен на микроконтроллере Samsung S3C4530A
+([http://www.mr.inf.tu-dresden.de/lehre_ss/kpes/docs/versuch4/samsung/um_s3c4530a.pdf спецификация]).
+
+На плате имеется:
+ * асинхронный порт RS-232 (консоль)
+ * порт Ethernet RJ-45 с трансивером NQ80225
+ * последовательный порт RS-530 или V.35
+ * светодиоды питания (PWR), Ethernet (ACT, COL, FDX, 100) и статуса (LINK, программно-управляемый)
+ * сторожевой таймер MAX823L
+ * джампер PROG для перепрошивки
+ * разъём питания
+
+Память:
+ * 1 мегабайт flash-памяти для программ (AM29LV800), выборка /RCS0
+ * 4 мегабайта внешней памяти данных (SDRAM 2xK4S161622), выборка /SDCS0
+ * 4 килобайта внутренней памяти данных в микроконтроллере, еще 4 килобайта используются как кэш
+ * 16 килобайт неразрушаемой памяти (EEPROM 25C128S)
+
+Питание от внешнего источника постоянного напряжения +7..12 вольт.
+
+В качестве опорной частоты используется генератор 25 MHz от трансивера Ethernet,
+частота которого делится на 4 и подаётся на вход PLL процессора.
+Блок PLL умножает частоту на 6.6, образуя частоту 41.25 MHz.
+
+Замена прошивки производится через консольный порт RS-232, посредством фирменной утилиты Cronyx armprog.
+При установке джампера PROG сигналы DTR, RTS, CTS и TXD подключаются к порту JTAG микроконтроллера.
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge examples/arm-cronyx-bridge]
+находятся примеры сборки uOS для Cronyx Bridge.
+
+Используется 16-битное подмножество команд [http://en.wikipedia.org/wiki/ARM_architecture#Thumb Thumb].
+По сравнению с 32-битным режимом это даёт 30%-ное уменьшение размера кода и примерно такое же ускорение выполнения.
+
+= Сигналы =
+Привязка сигналов платы к ножкам процессора:
+|| *На плате*     || *На процессоре* || *Дополнительные функции* ||
+|| Светодиод LINK || P16             || 0 - светится             ||
+|| Сигнал PCD     || P0              || К порту RS-232           ||
+|| Сигнал PRXD    || P20, UATXD0     || К порту RS-232           ||
+|| Сигнал PTXD    || P18, UARXD0     || От порта RS-232          ||
+|| Сигнал PDTR    || P19, /UADSR0    || От порта RS-232          ||
+|| Сигнал PDSR    || P21, /UADTR0    || К порту RS-232, к сторожевому таймеру ||
+|| Сигнал PRTS    || P3, /UACTS0     || От порта RS-232          ||
+|| Сигнал PCTS    || P4, /UARTS0     || К порту RS-232           ||
+|| Сигнал RXD     || RXDA            || От порта RS-530          ||
+|| Сигнал TXD     || TXDA            || К порту RS-530           ||
+|| Сигнал RXC     || RXCA            || От порта RS-530          ||
+|| Сигнал TXC     || TXCA            || От порта RS-530          ||
+|| Сигнал DTR     || /DTRA           || К порту RS-232           ||
+|| Сигнал CD      || /DCDA           || От порта RS-232          ||
+|| Сигнал RTS     || /RTSA           || К порту RS-232           ||
+|| Сигнал CTS     || /CTSA           || От порта RS-232          ||
+
+= Тесты =
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_debug.c test_debug.c]
+- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
+Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_task.c test_task.c]
+- Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
+общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_timer.c test_timer.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+каждые 100 миллисекунд печатает строку на консоли.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_uart.c test_uart.c]
+- Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
+циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_t-uart.c test_t-uart.c]
+- Проверка одновременной работы драйверов таймера и UART. Три задачи: драйвер UART и две программы пользователя.
+Одна циклически выдаёт строку "Hello, World!" и ждёт нажатия клавиши.
+Вторая каждые 100 миллисекунд печатает строку на консоли.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_ram.c test_ram.c]
+- Проверка внешней оперативной памяти SDRAM. Задача пользователя с простым диалоговым меню.
+Позволяет запускать:
+ * Тест адресных сигналов (бегущая единица). Запись данных по специально подобранным адресам и проверка.
+ * Тест одного адреса. Циклическая запись по фиксированному адресу данных AAAA и 5555, с проверкой.
+ * Тест всей внешней памяти. Запись данных AAAA и 5555, с проверкой.
+{{{
+Testing RAM
+
+  1. Test address signals
+  2. Test address 0x020AAAAA
+  3. Test all RAM (4 Mbytes)
+
+Command: _
+}}}
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_hdlc.c test_hdlc.c]
+- Проверка последовательного порта V.35/RS-530. Позволяет передавать и принимать HDLC-данные
+с разной скоростью и разным размером пакетов. Можно устанавливать режим шлейфа, замыкающий
+выход передатчика обратно на вход приёмника. Диалоговое меню:
+{{{
+Testing HDLC
+
+Free memory: 1952808 bytes
+
+  1. Transmit 1 packet
+  2. Transmit 2 packets
+  3. Transmit 100 packets
+  4. Run send/receive test
+  5. Bit rate: 2578 kbits/sec
+  6. Packet size: 1500 bytes
+  7. Local loopback: Disabled
+
+Command: _
+}}}
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_eth.c test_eth.c]
+- Проверка порта Ethernet. Позволяет передавать и принимать Ethernet-данные
+с разным размером пакетов. Можно устанавливать режим шлейфа, замыкающий
+выход передатчика обратно на вход приёмника. Диалоговое меню:
+{{{
+Testing Ethernet
+
+Free memory: 1818072 bytes
+Ethernet: No cable
+Transmit: 100 packets, 0 collisions, 0 errors
+Receive: 0 packets, 0 errors, 0 lost
+
+  1. Transmit 1 packet
+  2. Transmit 2 packets
+  3. Transmit 100 packets
+  4. Run send/receive test
+  5. Start auto-negotiation
+  6. Packet size: 1500 bytes
+  7. Local loopback: Disabled
+
+Command: _
+}}}
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_ip.c test_ip.c]
+- Проверка протокола IP. Три задачи: драйвер Ethernet, протокол IP и опрос сторожевого таймера.
+IP-адрес устройства зазаётся при вызове route_add_netif().
+Принимаемые IP-пакеты игнорируются. Для получения протокола рекомендуется
+раскомментировать отладочную печать в исходных файлах net/ip*.c.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_tcl.c test_tcl.c]
+- Проверка реализации встроенного языка TCL. Выдаёт диалоговое приглашение:
+{{{
+Embedded TCL
+
+%
+}}}
+В качестве примера реализованы две дополнительные команды:
+ * loop var first limit [incr] command
+ * echo [arg...]
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-cronyx-bridge/test_telnetd.c test_telnetd.c]
+- Пример устройства со встроенным языком TCL и возможностью удалённого входа по протоколу Telnet.
+Допускается до 4-х одновременных Telnet-входов. Выдаёт диалоговое приглашение:
+{{{
+Embedded TCL
+~~~~~~~~~~~~
+Session: #3
+Free memory: 3768724 bytes
+
+Enter "help" for a list of commands
+
+%
+}}}
+Реализованы несколько дополнительных команд:
+|| loop var first limit [incr] command	|| Цикл от var:=first до limit с шаком incr ||
+|| echo [arg...]			|| Выдача аргументов через пробел ||
+|| reboot				|| Перезагрузка устройства ||
+|| mem					|| Выдача количества свободной памяти и списка задач ||
+|| net					|| Отображение списка TCP-сокетов ||
+|| net ip				|| Выдача статистики IP ||
+|| net tcp				|| Выдача статистики TCP ||
+|| net icmp				|| Выдача статистики ICMP ||
+|| net arp				|| Отображение ARP-таблицы  ||
+|| eth					|| Выдача статистики драйвера Ethernet ||
+|| eth hw				|| Просмотр аппаратных регистров контроллера Ethernet ||
+|| serial				|| Выдача состояния модемных сигналов и статистики драйвера Ethernet ||
+|| serial hw				|| Просмотр аппаратных регистров контроллера HDLC ||
+|| serial dtr [on | off]		|| Управление модемным сигналом DTR ||
+|| serial rts [on | off]		|| Управление модемным сигналом RTS ||
+
+Пример списка задач:
+{{{
+% mem
+
+Free memory: 3765324 bytes
+
+Task	  Address	 Prio	    Stack	Space    Msg	Ticks
+idle	   ff01fc	 0	   ff0f5c	1	(nil)	8953
+console	  2045c74	>20	  2045f08	508	(nil)	28
+poll	  2067758	 10	  20679f8	572	(nil)	8936
+	Waiting for 0xff0320
+telnet	  2067a80	 30	  2067d10	556	(nil)	1
+	Waiting for 0x2067da8
+ipv4	  2001078	 40	  20015f8	1308	(nil)	4470
+ethr	  2000b44	 70	  2000cd0	296	(nil)	1
+	Waiting for 0x2000008
+etht	  2000d44	 50	  2000ed0	296	(nil)	1
+	Waiting for 0x20000bc
+hdlcr	  2002b6c	 80	  2002cfc	300	(nil)	1
+	Waiting for 0x2001680
+hdlct	  2002d6c	 60	  2002ef8	296	(nil)	1
+	Waiting for 0x2001700
+uartr	   ff0604	 90	   ff078c	292	(nil)	10
+	Waiting for 0xff0590
+
+%
+}}}

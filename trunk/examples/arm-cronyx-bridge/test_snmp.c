@@ -82,7 +82,7 @@ void main_task (void *data)
 	/*
 	 * Create interface slip0 200.0.0.2 / 255.255.255.0
 	 */
-	slip_init (&slip, 0, "slip0", 80, &pool, KHZ, 57600);
+	slip_init (&slip, 1, "slip0", 80, &pool, KHZ, 57600);
 	route_add_netif (ip, &route, (unsigned char*) "\310\0\0\2",
 		24, &slip.netif);
 
