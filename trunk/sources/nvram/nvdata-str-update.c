@@ -1,19 +1,19 @@
-#include "runtime/lib.h"
-#include "kernel/uos.h"
-#include "nvram/nvram.h"
+#include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <nvram/nvdata.h>
 
 /*
  * Update a zero-limited string in NVRAM, rewrite CRC.
  */
-small_int_t nvram_update_str (nvram_t *v, unsigned addr,
+small_int_t nvdata_update_str (nvdata_t *v, unsigned addr,
 	unsigned char *str, small_uint_t maxlen)
 {
 	small_int_t reason;
 
-	reason = nvram_begin_update (v, addr);
-	if (reason == NVRAM_OK) {
-		nvram_write_str (v, str, maxlen);
-		reason = nvram_finalize_update (v);
+	reason = nvdata_begin_update (v, addr);
+	if (reason == NVDATA_OK) {
+		nvdata_write_str (v, str, maxlen);
+		reason = nvdata_finalize_update (v);
 	}
 	return reason;
 }

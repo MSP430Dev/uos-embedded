@@ -1,6 +1,6 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
-#include <nvram/nvram.h>
+#include <nvram/eeprom.h>
 
 #ifdef __AVR_ATmega2561__
 #	define NVRAM_IRQ		29	/* EEPROM write complete */
