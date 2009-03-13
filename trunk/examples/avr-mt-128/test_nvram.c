@@ -3,7 +3,7 @@
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
-#include <nvram/eeprom.h>
+#include <nvram/nvram.h>
 #include <lcd/lcd.h>
 #include "avr-mt-128.h"
 
@@ -36,12 +36,12 @@ void test (void *data)
 		for (i=0; i<=E2END; ++i) {
 			if ((i & 63) == 0)
 				printf (&line2, "\fWriting %d...", i);
-			eeprom_write_byte (i, ~i);
+			nvram_write_byte (i, ~i);
 		}
 		for (i=0; i<=E2END; ++i) {
 			if ((i & 1023) == 0)
 				printf (&line2, "\fReading %d...", i);
-			c = eeprom_read_byte (i);
+			c = nvram_read_byte (i);
 			if (c != (unsigned char) ~i) {
 				++errors;
 				printf (&line1, "\f%d: w %02X r %02X\n",
@@ -60,6 +60,6 @@ void test (void *data)
 void uos_init (void)
 {
 	lcd_init (&line1, &line2, 0);
-	eeprom_init ();
+	nvram_init ();
 	task_create (test, 0, "lcd", 1, task, sizeof (task));
 }

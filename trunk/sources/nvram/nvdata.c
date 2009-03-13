@@ -1,7 +1,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <nvram/nvdata.h>
-#include <nvram/eeprom.h>
+#include <nvram/nvram.h>
 #include <watchdog/watchdog.h>
 
 static inline bool_t __nvdata_is_valid_addr (nvdata_t *v, unsigned addr)
@@ -13,7 +13,7 @@ void nvdata_write_byte (nvdata_t *v, unsigned char c)
 {
 	assert (__nvdata_is_valid_addr (v, v->__addr));
 	if (__nvdata_is_valid_addr (v, v->__addr)) {
-		eeprom_write_byte (v->__addr, c);
+		nvram_write_byte (v->__addr, c);
 		v->crc = crc32_vak_byte (v->crc, c);
 		v->__addr++;
 		watchdog_alive ();
@@ -26,7 +26,7 @@ unsigned char nvdata_read_byte (nvdata_t *v)
 
 	assert (__nvdata_is_valid_addr (v, v->__addr));
 	if (__nvdata_is_valid_addr (v, v->__addr)) {
-		c = eeprom_read_byte (v->__addr);
+		c = nvram_read_byte (v->__addr);
 		v->crc = crc32_vak_byte (v->crc, c);
 		v->__addr++;
 		watchdog_alive ();
@@ -289,7 +289,7 @@ void nvdata_init (nvdata_t *v, unsigned region_begin, unsigned region_end)
 	v->limit = region_end;
 	v->__addr = NVDATA_BAD_ADDRESS;
 	v->end = v->begin;
-	eeprom_init ();
+	nvram_init ();
 	assert (! nvdata_is_valid_addr (v, NVDATA_BAD_ADDRESS));
 	assert (! nvdata_is_valid_addr (v, 0));
 	assert (! __nvdata_is_valid_addr (v, NVDATA_BAD_ADDRESS));

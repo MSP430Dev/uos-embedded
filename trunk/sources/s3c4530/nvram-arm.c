@@ -27,12 +27,11 @@ static lock_t lock;
 #define PIN_NCS		11	/* P11 - output */
 
 /*
- * Для решения конфликта и ликвидации частых ошибок
- * номер пина вынесен во внешнюю переменную nvram_pin_so,
- * которая должна быть определена в клиентском коде.
- */
-extern const small_uint_t nvram_so_pin;
-/*
+ * Номер пина SO отличается на разных моделях.
+ * Он вынесен во внешний макрос NVRAM_PIN_SO и должен быть
+ * установлен в файле конфигурации target.cfg, например:
+ *	CFLAGS += -DNVRAM_PIN_SO=12 # Для RMC2
+ *
  * Раньше было так:
  * #if 0
  * #	define PIN_SO	22	/ * P22 - input, так на мостах ethernet * /
@@ -87,7 +86,7 @@ get_byte (bool_t last)
 	/* Receive 8 bit data */
 	val = 0;
 	for (i = 7; i >= 0; --i) {
-		val |= gpio_get (nvram_so_pin) << i;
+		val |= gpio_get (NVRAM_PIN_SO) << i;
 		if (last && i == 0)	/* Skip last clock */
 			break;
 		gpio_set (PIN_SCK, 1);
@@ -135,7 +134,7 @@ write_status (small_uint_t val, timer_t *timer)
  * Write a byte to NVRAM.
  */
 void
-eeprom_write_byte (unsigned addr, unsigned char val)
+nvram_write_byte (unsigned addr, unsigned char val)
 {
 	lock_take (&lock);
 
@@ -161,7 +160,7 @@ eeprom_write_byte (unsigned addr, unsigned char val)
  * Read a byte from NVRAM.
  */
 unsigned char
-eeprom_read_byte (unsigned addr)
+nvram_read_byte (unsigned addr)
 {
 	unsigned val;
 
@@ -179,33 +178,29 @@ eeprom_read_byte (unsigned addr)
 }
 
 void
-nvram_unprotect (nvram_t *v, timer_t *timer)
+nvram_unprotect (timer_t *timer)
 {
-	lock_take (&v->lock);
 	lock_take (&lock);
 
 	/* Clear WPEN, BP0, BP1. */
 	write_status (0, timer);
 
 	lock_release (&lock);
-	lock_release (&v->lock);
 }
 
 void
-nvram_protect (nvram_t *v, timer_t *timer)
+nvram_protect (timer_t *timer)
 {
-	lock_take (&v->lock);
 	lock_take (&lock);
 
 	/* Set BP0, BP1. */
 	write_status (STATUS_BP0 | STATUS_BP1, timer);
 
 	lock_release (&lock);
-	lock_release (&v->lock);
 }
 
 void
-eeprom_init ()
+nvram_init ()
 {
 	lock_take (&lock);
 
@@ -217,7 +212,7 @@ eeprom_init ()
 	gpio_config (PIN_NCS, 1);	/* P11 - output */
 	gpio_config (PIN_SI, 1);	/* P9 - output */
 	gpio_config (PIN_SCK, 1);	/* P10 - output */
-	gpio_config (nvram_so_pin, 0);	/* P22 - input */
+	gpio_config (NVRAM_PIN_SO, 0);	/* P22 - input */
 
 	/* Dummy transaction just to activate device. */
 	read_status ();

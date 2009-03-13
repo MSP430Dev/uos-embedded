@@ -1,6 +1,6 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
-#include <nvram/eeprom.h>
+#include <nvram/nvram.h>
 
 #ifdef __AVR_ATmega2561__
 #	define NVRAM_IRQ		29	/* EEPROM write complete */
@@ -20,7 +20,7 @@ static lock_t lock;
  * Write a byte to NVRAM.
  */
 void
-eeprom_write_byte (unsigned addr, unsigned char c)
+nvram_write_byte (unsigned addr, unsigned char c)
 {
 /*	assert (__arch_intr_is_enabled_now ());*/
 	lock_take (&lock);
@@ -47,7 +47,7 @@ eeprom_write_byte (unsigned addr, unsigned char c)
  * Read a byte from NVRAM.
  */
 unsigned char
-eeprom_read_byte (unsigned addr)
+nvram_read_byte (unsigned addr)
 {
 	unsigned char c;
 
@@ -66,7 +66,7 @@ eeprom_read_byte (unsigned addr)
 }
 
 void
-eeprom_init ()
+nvram_init ()
 {
 	/* Associate the interrupt. */
 	lock_take_irq (&lock, NVRAM_IRQ, 0, 0);

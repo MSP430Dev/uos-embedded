@@ -55,8 +55,6 @@ inline extern unsigned nvdata_get_addr (nvdata_t *nv)
 }
 
 void nvdata_init (nvdata_t *nv, unsigned region_begin, unsigned region_end);
-void nvdata_protect (nvdata_t *nv, struct _timer_t *timer);
-void nvdata_unprotect (nvdata_t *nv, struct _timer_t *timer);
 void nvdata_write_byte (nvdata_t *nv, unsigned char c);
 unsigned char nvdata_read_byte (nvdata_t *nv);
 

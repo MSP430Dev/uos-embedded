@@ -32,13 +32,13 @@
 #define ctl(c)         ((c) & 037)
 
 #define POLL_STACKSZ	800		/* Task: poll watchdog */
-char *stack_poll;
+array_t *stack_poll;
 
 #define CONSOLE_STACKSZ	1500		/* Task: console menu */
-char *stack_console;
+array_t *stack_console;
 
 #define TELNET_STACKSZ	800		/* Task: telnet daemon */
-char *stack_telnet;
+array_t *stack_telnet;
 
 #define TASKSZ		1500		/* Task: telnet menu */
 #define MAXSESS		4		/* Up to 4 telnet sessions */
@@ -73,7 +73,6 @@ stream_t *streamtab [MAXSESS];
 mem_pool_t pool;
 timer_t timer;
 uart_t uart;
-nvram_t nvram;
 hdlc_t *hdlc;
 eth_t *eth;
 arp_t *arp;
@@ -706,16 +705,16 @@ void
 main_console (void *data)
 {
 	/* Read parameters from NVRAM. */
-	nvram_init (&nvram);
-	reset_counter = nvram_read16 (&nvram, 0);
+	nvram_init ();
+	reset_counter = nvram_read16 (0);
 
 	/* Increment reset counter. */
 	++reset_counter;
 
 	/* Write reset counter to NVRAM. */
-	nvram_unprotect (&nvram, &timer);
-	nvram_write16 (&nvram, 0, reset_counter);
-	nvram_protect (&nvram, &timer);
+	nvram_unprotect (&timer);
+	nvram_write16 (0, reset_counter);
+	nvram_protect (&timer);
 
 	for (;;)
 		tcl_main ((stream_t*) &uart);
