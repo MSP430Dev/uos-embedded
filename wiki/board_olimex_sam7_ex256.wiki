@@ -1,0 +1,100 @@
+#summary Target board: Olimex SAM7-EX256.
+
+[http://www.olimex.com/dev/sam7-ex256.html http://www.olimex.com/dev/images/ARM/ATMEL/SAM7-EX256-1.jpg]
+
+Плата Olimex MSP430-SAM7-EX256 ([http://www.olimex.com/dev/images/sam7-ex256-sch.gif схема])
+построена на микроконтроллере Atmel AT91SAM7X256. Дополнительная информация доступна
+[http://www.olimex.com/dev/sam7-ex256.html на сайте производителя].
+Документация:
+ * [http://atmel.com/dyn/resources/prod_documents/DDI0029G_7TDMI_R3_trm.pdf Техническое описание архитектурыARM7TDMI]
+ * [http://atmel.com/dyn/resources/prod_documents/doc6120.pdf Описание семейства AT91SAM7X], [http://atmel.com/dyn/resources/prod_documents/6120s.pdf сокращённая версия]
+ * [http://www.sparkfun.com/tutorial/Nokia%206100%20LCD%20Display%20Driver.pdf Nokia LCD 6100], пример программирования графического дисплея
+
+На плате имеется:
+ * Порт Ethernet 10/100 с контроллером KS8721BL и двумя светодиодами состояния
+ * Порт USB 2.0 12 Mbit/sec, с возможностью питания от него
+ * Слот для карт SD/MMC
+ * Порт RS-232 DCE (сигналы TXD, RXD, RTS, CTS)
+ * Порт CAN DB-9 с трансивером MCP2551
+ * Графический цветной дисплей LCD TFT Nokia 6610 с подсветкой, разрешение 132x132, 12 бит на пиксел
+ * Джойстик с 4-мя направлениями и нажатием
+ * Кнопка сброса
+ * 2 кнопки общего назначения
+ * Подстроечный резистор, подсоединённый к АЦП
+ * Термистор, подсоединённый к АЦП
+ * Аудиовход моно с разъёмом для микрофона (10-битный АЦП, до 384 ksps)
+ * Аудиовыход моно с разъёмом для наушников (подсоединён к выходу PWM0)
+ * Динамик с регулятором громкости
+ * Разъёмы расширения EXT, UEXT
+ * Разъём программирования и отладки JTAG-20
+ * Кварц 18.432 МГц
+ * Разъём питания
+ * Светодиод питания
+
+Память:
+ * 256 килобайт flash-памяти для программ
+ * 64 килобайта памяти данных (RAM)
+
+Питание поступает от внешнего источника постоянного напряжения +6..9 вольт, или переменного напряжения 6 вольт.
+
+Программное обеспечение:
+ * {{http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256.zip | Пример работы с LCD и джойстиком}}.
+ * {{http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256_FreeRTOSV4.0.zip | FreeRTOS для SAM7-EX256}}, с поддержкой TCP/IP.
+ * {{http://www.olimex.com/dev/soft/BmpToArray.zip | Конвертер BMP}} в массив для LCD.
+
+= Программатор =
+Программный код можно загружать в плату через порт USB, используя утилиту SAM-BA:
+ * [http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3883 Версия для Windows] имеется на сайте Atmel
+ * [http://www.linux4sam.org/twiki/bin/view/Linux4SAM/SoftwareTools Версия для Linux] доступна на сайте проекта Linux4SAM.
+ * Существует открытая утилита [http://www.bluewatersys.com/quickstart/9260sambootassistant.php samba-script], на базе которой можно разработать версию простого программатора для SAM.
+
+Для установки под Linux скачайте [ftp://ftp.linux4sam.org/devel/tools/sam-ba_cdc_2.8.linux_01.zip версию SAM-BA CDC-2.8].
+Распакуйте её и установите утилиту sam-ba в каталог /usr/local/bin:
+{{{
+unzip sam-ba_cdc_2.8.linux_01.zip -d /usr/local/lib
+ln -s ../lib/sam-ba_cdc_2.8.linux_01/sam-ba_cdc_2.8.linux_01 /usr/local/bin/sam-ba
+chmod +x /usr/local/bin/sam-ba
+}}}
+
+Для работы sam-ba требуется загрузить драйвер usbserial:
+{{{
+rmmod usbserial
+modprobe usbserial vendor=0x03eb product=0x6124
+}}}
+
+Стирание старой прошивки:
+  - Отключите питание платы
+  - Установите джампер ERASE
+  - Включите питание на 10 секунд (или больше)
+  - Отключите питание
+  - Снимите джампер ERASE
+  - Включите питание
+После такой процедуры плата начнет определяться компьютером как "atm6124.Sys ATMEL AT91xxxxx Test Board".
+
+Для загрузки новой прошивки вызовите sam-prog.exe (Windows) или sam-ba (Linux).
+Если плата подключена, в поле статуса появится "Active Connection: 1".
+Выберите файл и нажмите кнопку "Write Flash".
+По завершении должен быть статус "Success: 1".
+Отключите и снова включите питание платы.
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256 examples/arm-sam7-ex256] находятся примеры сборки uOS для Olimex SAM7-EX256.
+
+TODO
+
+|| *Тест*                                                                                                             || *Описание*                                                                                || *Память программ* || *Память данных* ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                   || 476 байт (0.8%)   || 2 байта         ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                    || 4486 байта (7.3%) || 442 байта (22%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_timer.c test_timer.c]     || Проверка драйвера таймера. Одна задача пользователя.                                      || 6600 байта (11%)  || 506 байта (25%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                || 7644 байта (12%)  || 896 байт (44%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Одна задача пользователя.                                           || 8578 байт (14%)   || 652 байт (32%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Две задачи: программа пользователя и драйвер UART.   || 10222 байт (17%)  || 962 байт (47%)  ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Пять задач философов.                          || 9010 байт (15%)   || 1550 байт (76%) ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_eth.c test_eth.c]         || Проверка Ethernet. Одна задача: опрос драйвера CS8900A.                                   || 14130 байт (23%)  || 1102 байт (54%) ||
+
+= Сигналы =
+
+TODO
+
+Привязка сигналов платы к ножкам процессора:
+|| *На плате*                     || *На процессоре* || *Дополнительные функции* ||
