@@ -1,0 +1,79 @@
+#summary Target board: Starterkit SAM7-EX256.
+
+[http://www.starterkit.ru/new/index.php?name=Pages&op=page&pid=16 http://uos-embedded.googlecode.com/svn/wiki/images/sk_at91sam9xe512_s3e.jpg]
+
+Компания Starterkit.ru предлагает отладочную плату
+[http://www.starterkit.ru/new/index.php?name=Pages&op=page&pid=16 SK-AT91SAM9XE512-S3E]
+с процессором [http://atmel.com/dyn/products/product_card.asp?part_id=3870 AT91SAM9260]
+(в будущем [http://atmel.com/dyn/products/product_card.asp?part_id=4263 AT91SAM9XE512]).
+На плате имеется:
+  * 32 килобайта внутренней памяти команд (в будущем 256 килобайт)
+  * 8 килобайт внутренней памяти данных	(в будущем 64 килобайта)
+  * 256 мегабайт внешней памяти команд
+  * 64 мегабайта внешней памяти данных
+  * 4 мегабайта внешней последовательной памяти данных
+  * Порт Ethernet 100Base-T
+  * Порт USB 2.0 хост (12 Мбит/сек)
+  * Порт USB 2.0 устройство (12 Мбит/сек)
+  * Порт RS-232 (сигналы TXD, RXD)
+  * Слот для карты SD/MMC
+  * ПЛИС Xilinx Spartan3E-500
+
+На плату также можно установить GSM/GPS-модем SIM508 и видеовход ADV7108.
+Плата поставляется с установленной операционной системой Linux.
+Протокол загрузки можно [sam9-linux-boot-protocol посмотреть здесь].
+
+Документация:
+  * Плата SK-AT91SAM9XE512-S3E, [sk-at91sam9xe512-s3e.pdf схема электрическая принципиальная].
+  * Микроконтроллер [sam9260-summary-revi.pdf SAM9260 - краткое описание].
+  * Микроконтроллер [sam9260-revh.pdf SAM9260 - полное описание].
+  * [http://atmel.com/dyn/resources/prod_documents/doc6297.pdf Getting Started with the AT91SAM9260 Microcontroller].
+  * [http://atmel.com/dyn/resources/prod_documents/doc6132.pdf SAM Boot Assistant (SAM-BA) User Guide].
+
+Программное обеспечение:
+  * [http://atmel.com/dyn/resources/prod_documents/SAM9260_CDROM_image.zip AT91SAM9260 CD-ROM Image].
+  * [http://atmel.com/dyn/resources/prod_documents/linux_solutions_pack_1.3.zip AT91SAM9 Linux Software Package].
+  * [http://atmel.com/dyn/resources/prod_documents/softpack-1.4-at91sam9260-ek-web.zip AT91SAM9260-EK Software Package].
+  * [http://atmel.com/dyn/resources/prod_documents/AT91Bootstrap1.11.zip AT91 Bootstrap], [http://atmel.com/dyn/resources/prod_documents/doc6277.pdf Application Note].
+  * [http://atmel.com/dyn/resources/prod_documents/Install%20AT91-ISP%20v1.12.exe AT91-ISP.exe], [http://atmel.com/dyn/resources/prod_documents/doc6224.pdf AT91 In-System Programmer (ISP)].
+
+Расположение элементов на плате:
+
+[http://uos-embedded.googlecode.com/svn/wiki/images/sam9-spartan-board.gif]
+
+||*Разъём*||*Описание*||
+||  X1    || USB хост ||
+||  X2    || Асинхронный порт RS-232 ||
+||  X3    || Слот для подключения карточки SD/MMC ||
+||  X4    || Питание +5В...+12В ||
+||  X5    || USB устройство ||
+||  X6    || JTAG процессора ||
+||  X7    || Сигналы общего назначения от процессора ||
+||  X8    || JTAG ПЛИС ||
+||  X9    || Сигналы общего назначения от ПЛИС ||
+||  X10   || Порт загрузки ПЛИС ||
+||  X12   || Сигналы общего назначения от ПЛИС ||
+||  X13   || Сигналы общего назначения от ПЛИС ||
+||  J1    || Подача внешнего или внутреннего опорного напряжения для АЦП процессора ||
+
+||*Тумблер*|| *Описание*       ||
+||  SW1    || Сброс процессора ||
+
+||  *Джампер*      || *Описание* ||
+||  J7             || Разрешает использование последовательной памяти DataFlash (DD2) ||
+||  J11            || Сигнал WKUP процессора --- выход из спящего режима ||
+||  J13            || Задаёт генератор для спящего режима: внешний (1-2) или внутренний (2-3) ||
+||  J15            || Подаёт питание (1-2) или отключает (2-3) блок управления спящим режимом ||
+||  J16            || Замыкание приводит к очищению внутренней Flash памяти AT91SAM9XE512, с AT91SAM9260 не используется ||
+||  J19, J20, J21  || Определяют источник загрузки FPGA, для SPI DataFlash J21 должен быть замкнут ||
+||  J22            || Кратковременное замыкание инициирует процесс загрузки конфигурации в FPGA, во время программирования SPI DataFlash (DD7) должен быть замкнут ||
+||  J23            || Разрешает использование памяти NAND Flash (DD6) ||
+
+||*Светодиод*||*Описание*||
+||  HL1      || Питание  ||
+||  HL3      || Завершение загрузки конфигурации ПЛИС ||
+
+Остальные джамперы (J2-J6, J8-J10, J12, J14, J17, J18), светодиод HL2,
+разъёмы X11 и MD1 относятся к модему SIM508 и видеовходу ADV7108.
+Подробнее читайте
+[http://www.starterkit.ru/new/index.php?name=Forums&op=showtopic&id=136 обсуждение на форуме].
