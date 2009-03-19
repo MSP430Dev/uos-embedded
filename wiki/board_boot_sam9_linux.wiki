@@ -1,0 +1,183 @@
+#summary Booting Linux on Starterkit SAM9-S3E.
+
+Протокол загрузки Linux на плате [board_starterkit_sam9_s3e Starterkit SAM9-S3E]:
+{{{
+RomBOOT
+>Start AT91Bootstrap...
+Copy application ...
+Run ...
+
+
+U-Boot 1.1.5 (Apr 29 2008 - 20:23:52)
+
+DRAM:  64 MB
+NAND:  NAND device: Manufacturer ID: 0xec, Chip ID: 0xda ( NAND 256MiB 3,3V 8-bit)
+NAND: Pagesize: 2048, Blocksize: 128K, OOBsize: 64
+256 MiB
+DataFlash:AT45DB321
+Nb pages:   8192
+Page Size:    528
+Size= 4325376 bytes
+Logical address: 0xC0000000
+Area 0: C0000000 to C0003FFF (RO)
+Area 1: C0004000 to C0007FFF
+Area 2: C0008000 to C0037FFF (RO)
+Area 3: C0038000 to C041FFFF
+*** Warning - bad CRC, using default environment
+
+In:    serial
+Out:   serial
+Err:   serial
+KS8721 PHY Detected
+No link
+MAC: error during RMII initialization
+Hit any key to stop autoboot:  0
+## Booting image at 20400000 ...
+   Image Name:   Linux Kernel Image
+   Image Type:   ARM Linux Kernel Image (gzip compressed)
+   Data Size:    1422821 Bytes =  1.4 MB
+   Load Address: 20008000
+   Entry Point:  20008000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+
+Starting kernel ...
+
+Linux version 2.6.24 (root@armmaker) (gcc version 4.2.0 20070413 (prerelease) (CodeSourcery Sourcery G++ Lite 2007q1-10)) #91 Sat May 17 02:50:14 MSD 2008
+CPU: ARM926EJ-S [41069265] revision 5 (ARMv5TEJ), cr=00053177
+Machine: StarterKit.ru SK-AT91SAM9XE512-S3E
+Memory policy: ECC disabled, Data cache writeback
+Clocks: CPU 200 MHz, master 100 MHz, main 12.000 MHz
+CPU0: D VIVT write-back cache
+CPU0: I cache: 8192 bytes, associativity 4, 32 byte lines, 64 sets
+CPU0: D cache: 8192 bytes, associativity 4, 32 byte lines, 64 sets
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 16256
+Kernel command line: root=/dev/ram0 rw initrd=0x23100000,0x500000 console=ttyS0,115200 mem=64M
+AT91: 96 gpio irqs in 3 banks
+PID hash table entries: 256 (order: 8, 1024 bytes)
+Console: colour dummy device 80x30
+console [ttyS0] enabled
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 64MB = 64MB total
+Memory: 56832KB available (2612K code, 230K data, 116K init)
+Mount-cache hash table entries: 512
+CPU: Testing write buffer coherency: ok
+net_namespace: 64 bytes
+NET: Registered protocol family 16
+SCSI subsystem initialized
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+NET: Registered protocol family 2
+Time: pit clocksource has been installed.
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 2048 (order: 2, 16384 bytes)
+TCP bind hash table entries: 2048 (order: 1, 8192 bytes)
+TCP: Hash tables configured (established 2048 bind 2048)
+TCP reno registered
+checking if image is initramfs...it isn't (no cpio magic); looks like an initrd
+Freeing initrd memory: 5120K
+NetWinder Floating Point Emulator V0.97 (double precision)
+JFFS2 version 2.2. (NAND) (SUMMARY)  © 2001-2006 Red Hat, Inc.
+yaffs Apr 22 2008 10:39:18 Installing.
+io scheduler noop registered (default)
+atmel_usart.0: ttyS0 at MMIO 0xfefff200 (irq = 1) is a ATMEL_SERIAL
+atmel_usart.1: ttyS1 at MMIO 0xfffb0000 (irq = 6) is a ATMEL_SERIAL
+atmel_usart.2: ttyS2 at MMIO 0xfffb8000 (irq = 8) is a ATMEL_SERIAL
+RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
+loop: module loaded
+ssc ssc.0: Atmel SSC device at 0xc4870000 (irq 14)
+MACB_mii_bus: probed
+eth0: Atmel MACB at 0xfffc4000 irq 21 (00:00:00:00:00:00)
+eth0: attached PHY driver [Generic PHY] (mii_bus:phy_addr=ffffffff:01, irq=-1)
+Driver 'sd' needs updating - please use bus_type methods
+NFTL driver: nftlcore.c $Revision: 1.98 $, nftlmount.c $Revision: 1.41 $
+NAND device: Manufacturer ID: 0xec, Chip ID: 0xda (Samsung NAND 256MiB 3,3V 8-bit)
+AT91 NAND: 8-bit, <NULL> ECC
+Scanning device for bad blocks
+Creating 2 MTD partitions on "at91_nand":
+0x00000000-0x00800000 : "Partition 1"
+0x00800000-0x10000000 : "Partition 2"
+atmel_spi atmel_spi.0: Atmel SPI Controller at 0xfffc8000 (irq 12)
+mtd_dataflash spi0.0: AT45DB321x (4224 KBytes)
+usbmon: debugfs is not available
+at91_ohci at91_ohci: AT91 OHCI
+at91_ohci at91_ohci: new USB bus registered, assigned bus number 1
+at91_ohci at91_ohci: irq 20, io mem 0x00500000
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 2 ports detected
+Initializing USB Mass Storage driver...
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+udc: at91_udc version 3 May 2006
+mice: PS/2 mouse device common for all mice
+i2c /dev entries driver
+usbcore: registered new interface driver usbhid
+drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
+TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+RAMDISK: Compressed image found at block 0
+EXT2-fs warning: maximal mount count reached, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing init memory: 116K
+
+
+Starting system...
+mount: Mounting none on /dev/pts failed: No such file or directory
+SIOCSIFFLAGS: Invalid argument
+SIOCSIFFLAGS: Invalid argument
+chgrp: unknown group name: utmp
+yaffs: dev is 32505857 name is "mtdblock1"
+yaffs: passed flags ""
+yaffs: Attempting MTD mount on 31.1, "mtdblock1"
+yaffs: auto selecting yaffs2
+yaffs: restored from checkpoint
+umount: Couldn't umount /mnt/mmc: Invalid argument
+rmmod: at91_mci: No such file or directory
+mount: Mounting /dev/mmc1 on /mnt/mmc failed: No such device or address
+mount: Mounting /dev/sda1 on /mnt/usb failed: No such device or
+Please press Enter to activate this console.
+
+
+BusyBox v1.1.2 (2008.04.21-23:55+0000) Built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+[@SK-AT91SAM9 /]$mount
+/dev/root on / type ext2 (rw)
+none on /dev/shm type tmpfs (rw)
+/proc on /proc type proc (rw)
+/dev/mtdblock1 on /mnt/nand type yaffs (rw,sync)
+[@SK-AT91SAM9 /]$df
+Filesystem           1k-blocks      Used Available Use% Mounted on
+/dev/ram0                 3963      3380       583  85% /
+none                     31040         0     31040   0% /dev/shm
+/dev/mtdblock1          253952      1152    252800   0% /mnt/nand
+[@SK-AT91SAM9 /]$ps aux
+  PID  Uid     VmSize Stat Command
+    1 0           336 S   init
+    2 0               SW< [kthreadd]
+    3 0               SW< [ksoftirqd/0]
+    4 0               SW< [watchdog/0]
+    5 0               SW< [events/0]
+    6 0               SW< [khelper]
+   47 0               SW< [kblockd/0]
+   60 0               SW< [khubd]
+   65 0               SW< [kmmcd]
+   86 0               SW  [pdflush]
+   87 0               SW  [pdflush]
+   88 0               SW< [kswapd0]
+   89 0               SW< [aio/0]
+  232 0               SW< [mtdblockd]
+  233 0               SW< [nftld]
+  265 0               SW< [rpciod/0]
+  283 0            84 S   /bin/telnetd -l /bin/ash
+  285 0            96 S   /bin/httpd -h /mnt/www
+  301 0           444 S   -ash
+  307 0           372 R   ps aux
+[@SK-AT91SAM9 /]$
+}}}

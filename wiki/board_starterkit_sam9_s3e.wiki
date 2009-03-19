@@ -1,4 +1,4 @@
-#summary Target board: Starterkit SAM7-EX256.
+#summary Target board: Starterkit SAM9-S3E.
 
 [http://www.starterkit.ru/new/index.php?name=Pages&op=page&pid=16 http://uos-embedded.googlecode.com/svn/wiki/images/sk_at91sam9xe512_s3e.jpg]
 
@@ -21,12 +21,12 @@
 
 На плату также можно установить GSM/GPS-модем SIM508 и видеовход ADV7108.
 Плата поставляется с установленной операционной системой Linux.
-Протокол загрузки можно [sam9-linux-boot-protocol посмотреть здесь].
+Протокол загрузки можно [board_boot_sam9_linux посмотреть здесь].
 
 Документация:
-  * Плата SK-AT91SAM9XE512-S3E, [sk-at91sam9xe512-s3e.pdf схема электрическая принципиальная].
-  * Микроконтроллер [sam9260-summary-revi.pdf SAM9260 - краткое описание].
-  * Микроконтроллер [sam9260-revh.pdf SAM9260 - полное описание].
+  * Плата SK-AT91SAM9XE512-S3E, [http://uos-embedded.googlecode.com/svn/trunk/examples/arm-sam9-s3e/sk-at91sam9xe512-s3e.pdf схема электрическая принципиальная].
+  * Микроконтроллер [http://atmel.com/dyn/resources/prod_documents/6221s.pdf SAM9260 - краткое описание].
+  * Микроконтроллер [http://atmel.com/dyn/resources/prod_documents/doc6221.pdf SAM9260 - полное описание].
   * [http://atmel.com/dyn/resources/prod_documents/doc6297.pdf Getting Started with the AT91SAM9260 Microcontroller].
   * [http://atmel.com/dyn/resources/prod_documents/doc6132.pdf SAM Boot Assistant (SAM-BA) User Guide].
 
