@@ -47,6 +47,47 @@ _init_ (void)
 	ARM_SYSCFG = syscfg;
 #endif /* ARM_S3C4530 */
 
+#ifdef ARM_AT91SAM
+	/* Flash mode register: set 1 flash wait state and
+	 * a number of master clock cycles in 1.5 microseconds. */
+	AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS |
+		(AT91C_MC_FMCN & (((KHZ * 3 + 1000) / 2000) << 16));
+
+	/* Disable watchdog. */
+	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
+
+	// Main oscillator register: enabling the main oscillator.
+	// Slow clock is 32768 Hz, or 30.51 usec.
+	// Start up time = 8 * 6 / SCK = 1,46 msec.
+	AT91C_BASE_PMC->PMC_MOR = AT91C_CKGR_MOSCEN |
+		(AT91C_CKGR_OSCOUNT & (6 << 8));
+	while (! (AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MOSCS))
+		continue;
+
+	// PLL register: set multiplier and divider.
+	// We have quartz 18.432 MHz.
+	// After multiplying by (25+1) and dividing by 5
+	// we have MCK = 95.8464 MHz.
+	// PLL startup time estimated at 0.844 msec.
+	AT91C_BASE_PMC->PMC_PLLR = (AT91C_CKGR_DIV & 0x05) |
+		(AT91C_CKGR_PLLCOUNT & (28 << 8)) |
+		(AT91C_CKGR_MUL & (25 << 16));
+	while (! (AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK))
+		continue;
+	while (! (AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY))
+		continue;
+
+	// Master clock register: selection of processor clock.
+	// Use PLL clock divided by 2.
+	AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_PRES_CLK_2;
+	while (! (AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY))
+		continue;
+
+	AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLL_CLK;
+	while (! (AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY))
+		continue;
+#endif
+
 #ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
@@ -78,8 +119,37 @@ _init_ (void)
 	/* Global interrupt enable. */
 	ARM_INTMSK = 0x1fffff;
 #endif
+
 #ifdef ARM_AT91SAM
-	/* TODO */
+        /* Set USART0 for debug output: baud 115200. */
+	// Disable the PIO from controlling the corresponding pin (enables peripheral control of the pin).
+	// Assign the I/O line to the peripheral B function.
+	AT91C_BASE_PIOA->PIO_PDR = 3;
+	AT91C_BASE_PIOA->PIO_ASR = 3;
+	AT91C_BASE_PIOA->PIO_BSR = 0;
+
+	// Enable the clock of USART
+	AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_US0;
+
+	// Reset receiver and transmitter
+	AT91C_BASE_US0->US_CR = AT91C_US_RSTRX | AT91C_US_RSTTX |
+		AT91C_US_RXDIS | AT91C_US_TXDIS ;
+
+	// Set baud rate divisor register
+	AT91C_BASE_US0->US_BRGR = (KHZ * 1000 / 115200 + 8) / 16;
+
+	// Write the Timeguard Register
+	AT91C_BASE_US0->US_TTGR = 0;
+
+	// Set the USART mode
+	AT91C_BASE_US0->US_MR = AT91C_US_CHRL_8_BITS |
+		AT91C_US_PAR_NONE;
+
+	// Enable the RX and TX PDC transfer requests
+	AT91C_BASE_PDC_US0->PDC_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+
+	// Enable usart - enable RX receiver and TX transmiter
+	AT91C_BASE_US0->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;
 #endif
 
 	main ();
@@ -94,13 +164,9 @@ uos_valid_memory_address (void *ptr)
 {
 	unsigned u = (unsigned) ptr;
 
-#ifdef ARM_S3C4530
-	if (u >= ARM_SRAM_BASE && u < ARM_SRAM_BASE + 0x1000)
+	if (u >= ARM_SRAM_BASE && u < ARM_SRAM_BASE + ARM_SRAM_SIZE)
 		return 1;
 	return 0;
-#else
-	return 1;
-#endif
 }
 
 /*
