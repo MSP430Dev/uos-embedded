@@ -33,16 +33,6 @@ again:
 		c = '\r';
 		goto again;
 	}
-
-#if 0 /*ndef NDEBUG*/
-	if (ARM_USTAT(0) & ARM_USTAT_RDV) {
-		debug_char = ARM_URXBUF(0);
-		if (debug_char == 3) {
-			debug_char = -1;
-			breakpoint ();
-		}
-	}
-#endif
 	arm_intr_restore (x);
 }
 
@@ -65,30 +55,22 @@ debug_getchar (void)
 
 	/* Enable receiver. */
 	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_RMODE_MASK) | ARM_UCON_RMODE_IRQ;
-	for (;;) {
-		/* Wait until receive data available. */
-		while (! (ARM_USTAT(0) & ARM_USTAT_RDV)) {
-			if (ARM_USTAT(0) & (ARM_USTAT_FER | ARM_USTAT_PER |
-			    ARM_USTAT_OER | ARM_USTAT_ROVFF)) {
+
+	/* Wait until receive data available. */
+	while (! (ARM_USTAT(0) & ARM_USTAT_RDV)) {
+		if (ARM_USTAT(0) & (ARM_USTAT_FER | ARM_USTAT_PER |
+		    ARM_USTAT_OER | ARM_USTAT_ROVFF)) {
 /*debug_printf ("ustat 0x%x\n", ARM_USTAT(0));*/
-				ARM_USTAT(0) = ARM_USTAT_FER | ARM_USTAT_PER |
-				    ARM_USTAT_OER | ARM_USTAT_ROVFF;
-			}
-			watchdog_alive ();
-			arm_intr_restore (x);
-			arm_intr_disable (&x);
-			continue;
+			ARM_USTAT(0) = ARM_USTAT_FER | ARM_USTAT_PER |
+			    ARM_USTAT_OER | ARM_USTAT_ROVFF;
 		}
-		/* TODO: utf8 to unicode conversion. */
-		c = ARM_URXBUF(0);
-#if 0 /*ndef NDEBUG*/
-		if (c == 3) {
-			breakpoint ();
-			continue;
-		}
-#endif
-		break;
+		watchdog_alive ();
+		arm_intr_restore (x);
+		arm_intr_disable (&x);
 	}
+	/* TODO: utf8 to unicode conversion. */
+	c = ARM_URXBUF(0);
+
 	arm_intr_restore (x);
 	return c;
 }
@@ -121,13 +103,7 @@ debug_peekchar (void)
 	}
 	/* TODO: utf8 to unicode conversion. */
 	c = ARM_URXBUF(0);
-#if 0 /*ndef NDEBUG*/
-	if (c == 3) {
-		breakpoint ();
-		arm_intr_restore (x);
-		return -1;
-	}
-#endif
+
 	arm_intr_restore (x);
 	debug_char = c;
 	return c;
@@ -145,18 +121,17 @@ debug_putchar (void *arg, short c)
 
 	arm_intr_disable (&x);
 
-	/* Enable transmitter. */
-	/* TODO */
-
 	/* Wait for transmitter holding register empty. */
-	/* TODO */
+	while (! (AT91C_BASE_US0->US_CSR & AT91C_US_TXRDY))
+		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	/* TODO */
+	AT91C_BASE_US0->US_THR = (unsigned char) c;
 
 	/* Wait for transmitter holding register empty. */
-	/* TODO */
+	while (! (AT91C_BASE_US0->US_CSR & AT91C_US_TXRDY))
+		continue;
 
 	if (c == '\n') {
 		c = '\r';
@@ -182,17 +157,17 @@ debug_getchar (void)
 	}
 	arm_intr_disable (&x);
 
-	/* Enable receiver. */
-	/* TODO */
-	for (;;) {
-		/* Wait until receive data available. */
-		/* TODO */
-
-		/* Get byte. */
-		/* TODO */
-		c = '?';
-		break;
+	/* Wait until receive data available. */
+	while (! (AT91C_BASE_US0->US_CSR & AT91C_US_RXRDY)) {
+/*debug_printf ("<%x> ", AT91C_BASE_US0->US_CSR);*/
+		arm_intr_restore (x);
+		arm_intr_disable (&x);
 	}
+
+	/* Get byte. */
+	/* TODO: utf8 to unicode conversion. */
+	c = AT91C_BASE_US0->US_RHR;
+
 	arm_intr_restore (x);
 	return c;
 }
@@ -211,16 +186,15 @@ debug_peekchar (void)
 
 	arm_intr_disable (&x);
 
-	/* Enable receiver. */
-	/* TODO */
-
 	/* Wait until receive data available. */
-	/* TODO */
+	if (! (AT91C_BASE_US0->US_CSR & AT91C_US_RXRDY)) {
+		arm_intr_restore (x);
+		return -1;
+	}
 
 	/* Get byte. */
 	/* TODO: utf8 to unicode conversion. */
-	/* TODO */
-	c = 0;
+	c = AT91C_BASE_US0->US_RHR;
 
 	arm_intr_restore (x);
 	debug_char = c;

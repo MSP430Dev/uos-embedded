@@ -14,7 +14,7 @@ libuos.a:	always
 
 always:
 
-.SUFFIXES:	.i .srec .hex .dis .cpp .cxx .fl
+.SUFFIXES:	.i .srec .hex .dis .cpp .cxx .fl .bin
 
 .PHONY:		$(MODULES) depend
 
@@ -56,6 +56,10 @@ always:
 
 .out.hex:
 		$(OBJCOPY) -O ihex $< $@
+		@chmod -x $@
+
+.out.bin:
+		$(OBJCOPY) -O binary $< $@
 		@chmod -x $@
 
 .out.dis:
