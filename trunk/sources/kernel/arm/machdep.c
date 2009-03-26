@@ -191,11 +191,11 @@ _irq_handler_ (void)
  */
 void arch_intr_allow (int irq)
 {
+#ifdef ARM_S3C4530
 	if (irq == 4 || irq == 6) {
 		/* Do not enable UART transmit interrupt here. */
 		return;
 	}
-#ifdef ARM_S3C4530
 	ARM_INTMSK &= ~(1 << irq);
 #endif
 #ifdef ARM_AT91SAM

@@ -12,6 +12,10 @@
 #   include "samsung.h"
 #endif
 
+#if ARM_AT91SAM
+#   include "at91sam.h"
+#endif
+
 #if ELVEES_MC24
 #   include "elvees.h"
 #endif

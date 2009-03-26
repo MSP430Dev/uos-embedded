@@ -10,6 +10,10 @@
 #   include "samsung.h"
 #endif
 
+#if ARM_AT91SAM
+#   include "at91sam.h"
+#endif
+
 #if ELVEES_MC24
 #   include "elvees.h"
 #endif
@@ -195,6 +199,9 @@ uart_receiver (void *arg)
 	for (;;) {
 		lock_wait (&u->receiver);
 
+#ifdef clear_receive_errors
+		clear_receive_errors (u->port);
+#else
 		if (test_frame_error (u->port)) {
 			/*debug_printf ("FRAME ERROR\n");*/
 			clear_frame_error (u->port);
@@ -211,6 +218,7 @@ uart_receiver (void *arg)
 			/*debug_printf ("BREAK DETECTED\n");*/
 			clear_break_error (u->port);
 		}
+#endif
 #ifndef TRANSMIT_IRQ
 		if (test_transmitter_enabled (u->port))
 			uart_transmit_start (u);

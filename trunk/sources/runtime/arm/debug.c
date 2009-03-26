@@ -122,15 +122,15 @@ debug_putchar (void *arg, short c)
 	arm_intr_disable (&x);
 
 	/* Wait for transmitter holding register empty. */
-	while (! (AT91C_BASE_US0->US_CSR & AT91C_US_TXRDY))
+	while (! (*AT91C_US0_CSR & AT91C_US_TXRDY))
 		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	AT91C_BASE_US0->US_THR = (unsigned char) c;
+	*AT91C_US0_THR = (unsigned char) c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (AT91C_BASE_US0->US_CSR & AT91C_US_TXRDY))
+	while (! (*AT91C_US0_CSR & AT91C_US_TXRDY))
 		continue;
 
 	if (c == '\n') {
@@ -158,15 +158,15 @@ debug_getchar (void)
 	arm_intr_disable (&x);
 
 	/* Wait until receive data available. */
-	while (! (AT91C_BASE_US0->US_CSR & AT91C_US_RXRDY)) {
-/*debug_printf ("<%x> ", AT91C_BASE_US0->US_CSR);*/
+	while (! (*AT91C_US0_CSR & AT91C_US_RXRDY)) {
+/*debug_printf ("<%x> ", *AT91C_US0_CSR);*/
 		arm_intr_restore (x);
 		arm_intr_disable (&x);
 	}
 
 	/* Get byte. */
 	/* TODO: utf8 to unicode conversion. */
-	c = AT91C_BASE_US0->US_RHR;
+	c = *AT91C_US0_RHR;
 
 	arm_intr_restore (x);
 	return c;
@@ -187,14 +187,14 @@ debug_peekchar (void)
 	arm_intr_disable (&x);
 
 	/* Wait until receive data available. */
-	if (! (AT91C_BASE_US0->US_CSR & AT91C_US_RXRDY)) {
+	if (! (*AT91C_US0_CSR & AT91C_US_RXRDY)) {
 		arm_intr_restore (x);
 		return -1;
 	}
 
 	/* Get byte. */
 	/* TODO: utf8 to unicode conversion. */
-	c = AT91C_BASE_US0->US_RHR;
+	c = *AT91C_US0_RHR;
 
 	arm_intr_restore (x);
 	debug_char = c;
