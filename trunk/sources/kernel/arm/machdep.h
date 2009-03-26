@@ -23,7 +23,12 @@
 /*
  * The total number of different hardware interrupts.
  */
-#define ARCH_INTERRUPTS		21
+#ifdef ARM_S3C4530
+#   define ARCH_INTERRUPTS		21
+#endif
+#ifdef ARM_AT91SAM
+#   define ARCH_INTERRUPTS		32
+#endif
 
 /*
  * Type for saving task stack context.

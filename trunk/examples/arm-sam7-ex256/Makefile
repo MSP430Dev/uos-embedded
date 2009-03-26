@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TESTS		= test_debug.bin #test_task.bin test_timer.bin \
+TESTS		= test_debug.bin test_task.bin test_timer.bin #\
 #		  test_uart.bin test_t-uart.bin test_ram.bin \
 #		  test_hdlc.bin test_eth.bin test_ip.bin \
 #		  test_tcl.bin test_telnetd.bin
@@ -22,7 +22,7 @@ clean:
 probe:
 		$(PROG)
 
-load:		test_debug.bin
+load:		test_timer.bin
 		$(PROG) $<
 
 olimex:		load-flash.tcl sam7-ex256-ge12.olimex

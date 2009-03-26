@@ -38,6 +38,10 @@
 #   define TIMER_IRQ		10	/* Timer 0 interrupt */
 #endif
 
+#if ARM_AT91SAM
+#   define TIMER_IRQ		AT91C_ID_SYS
+#endif
+
 #if ELVEES_MC24
 #   define TIMER_IRQ		29	/* Interval Timer interrupt */
 #endif
@@ -82,6 +86,10 @@ timer_handler (timer_t *t)
 #if ELVEES_MC24
 	/* Clear interrupt. */
 	MC_ITCSR &= ~MC_ITCSR_INT;
+#endif
+#if ARM_AT91SAM
+	/* Clear interrupt. */
+	*AT91C_PITC_PIVR;
 #endif
 	t->milliseconds += t->msec_per_tick;
 	if (t->milliseconds >= t->last_decisec + 100) {
@@ -229,6 +237,10 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	ARM_TDATA(0) = (t->khz * t->msec_per_tick) - 1;
 	ARM_TCNT(0) = 0;
 	ARM_TMOD |= ARM_TMOD_TE0 | ARM_TMOD_TMD0;
+#endif
+#if ARM_AT91SAM
+	*AT91C_PITC_PIMR = (((t->khz * t->msec_per_tick + 8) >> 4) - 1) |
+		AT91C_PITC_PITEN | AT91C_PITC_PITIEN;
 #endif
 #if ELVEES_MC24
 	/* Use interval timer with prescale 1:1. */

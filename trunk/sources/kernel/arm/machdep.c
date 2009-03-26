@@ -109,7 +109,8 @@ _irq_handler_ (void)
 		irq = ARM_INTOFFSET_IRQ >> 2;
 #endif
 #ifdef ARM_AT91SAM
-		irq = *AT91C_AIC_ISR & 0x1f;
+		irq = *AT91C_AIC_IVR;		/* get most priority irq */
+		*AT91C_AIC_EOICR = 0;		/* clear it */
 #endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
@@ -120,10 +121,9 @@ _irq_handler_ (void)
 		ARM_INTMSK |= 1 << irq;		/* disable */
 #endif
 #ifdef ARM_AT91SAM
-		*AT91C_AIC_EOICR = 0;		/* end of current irq */
 		*AT91C_AIC_IDCR = 1 << irq;	/* disable */
 #endif
-/*if (irq != 10) debug_printf ("<%c>", '0'+irq);*/
+/*debug_printf ("<%d> ", irq);*/
 		h = &lock_irq [irq];
 		if (! h->lock)
 			continue;
@@ -200,6 +200,7 @@ void arch_intr_allow (int irq)
 #endif
 #ifdef ARM_AT91SAM
 	*AT91C_AIC_IECR = 1 << irq;
+/*debug_printf ("<IECR:=%x> ", 1 << irq);*/
 #endif
 }
 
