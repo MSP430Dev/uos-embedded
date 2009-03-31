@@ -6,9 +6,9 @@
 построена на микроконтроллере Atmel AT91SAM7X256. Дополнительная информация доступна
 [http://www.olimex.com/dev/sam7-ex256.html на сайте производителя].
 Документация:
- * [http://atmel.com/dyn/resources/prod_documents/DDI0029G_7TDMI_R3_trm.pdf Техническое описание архитектурыARM7TDMI]
- * [http://atmel.com/dyn/resources/prod_documents/doc6120.pdf Описание семейства AT91SAM7X], [http://atmel.com/dyn/resources/prod_documents/6120s.pdf сокращённая версия]
- * [http://www.sparkfun.com/tutorial/Nokia%206100%20LCD%20Display%20Driver.pdf Nokia LCD 6100], пример программирования графического дисплея
+ * [http://atmel.com/dyn/resources/prod_documents/DDI0029G_7TDMI_R3_trm.pdf Техническое описание архитектурыARM7TDMI].
+ * [http://atmel.com/dyn/resources/prod_documents/doc6120.pdf Описание семейства AT91SAM7X], [http://atmel.com/dyn/resources/prod_documents/6120s.pdf сокращённая версия].
+ * Графический дисплей Nokia LCD 6100: [http://www.nxp.com/acrobat_download/datasheets/PCF8833_1.pdf описание контроллера Philips PCF8833], [http://www.sparkfun.com/tutorial/Nokia%206100%20LCD%20Display%20Driver.pdf пример программирования].
 
 На плате имеется:
  * Порт Ethernet 10/100 с контроллером KS8721BL и двумя светодиодами состояния
