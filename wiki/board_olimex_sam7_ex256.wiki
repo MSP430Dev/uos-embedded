@@ -6,9 +6,14 @@
 построена на микроконтроллере Atmel AT91SAM7X256. Дополнительная информация доступна
 [http://www.olimex.com/dev/sam7-ex256.html на сайте производителя].
 Документация:
- * [http://atmel.com/dyn/resources/prod_documents/DDI0029G_7TDMI_R3_trm.pdf Техническое описание архитектурыARM7TDMI].
+ * [http://atmel.com/dyn/resources/prod_documents/DDI0029G_7TDMI_R3_trm.pdf Техническое описание архитектуры ARM7TDMI].
  * [http://atmel.com/dyn/resources/prod_documents/doc6120.pdf Описание семейства AT91SAM7X], [http://atmel.com/dyn/resources/prod_documents/6120s.pdf сокращённая версия].
- * Графический дисплей Nokia LCD 6100: [http://www.nxp.com/acrobat_download/datasheets/PCF8833_1.pdf описание контроллера Philips PCF8833], [http://www.sparkfun.com/tutorial/Nokia%206100%20LCD%20Display%20Driver.pdf пример программирования].
+ * Графический дисплей Nokia LCD 6100: 
+   * [http://www.nxp.com/acrobat_download/datasheets/PCF8833_1.pdf описание контроллера Philips PCF8833];
+   * [http://www.sparkfun.com/tutorial/Nokia%206100%20LCD%20Display%20Driver.pdf пример программирования];
+   * [http://www.sparkfun.com/commerce/product_info.php?products_id=569 В продаже на SparkFun.com];
+   * [http://linuxmaximus.blogspot.com/2008/05/nokia-6100-lcd-linux-driver.html Драйвер для Linux];
+   * [http://www.xakep.ru/post/43590/ Статья в журнале "Хакер"].
 
 На плате имеется:
  * Порт Ethernet 10/100 с контроллером KS8721BL и двумя светодиодами состояния
@@ -38,9 +43,9 @@
 Питание поступает от внешнего источника постоянного напряжения +6..9 вольт, или переменного напряжения 6 вольт.
 
 Программное обеспечение:
- * {{http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256.zip | Пример работы с LCD и джойстиком}}.
- * {{http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256_FreeRTOSV4.0.zip | FreeRTOS для SAM7-EX256}}, с поддержкой TCP/IP.
- * {{http://www.olimex.com/dev/soft/BmpToArray.zip | Конвертер BMP}} в массив для LCD.
+ * [http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256.zip Пример работы с LCD и джойстиком].
+ * [http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256_FreeRTOSV4.0.zip FreeRTOS для SAM7-EX256], с поддержкой TCP/IP.
+ * [http://www.olimex.com/dev/soft/BmpToArray.zip Конвертер BMP] в массив для LCD.
 
 = Программатор =
 Программный код можно загружать в плату через порт USB, используя утилиту SAM-BA:
