@@ -144,57 +144,57 @@ getopts(int *pac, char ***pav)
 			break;
 		case 'l':			/* set encoding limit*/
 			if (*p) {
-				limit_char = atoi(p);
+				limit_char = strtol (p, 0, 0);
 				while (*p && *p != ' ')
 					p++;
 			} else {
 				av++; ac--;
 				if (ac > 0)
-					limit_char = atoi(av[0]);
+					limit_char = strtol (av[0], 0, 0);
 			}
 			break;
 		case 's':			/* set encoding start*/
 			if (*p) {
-				start_char = atoi(p);
+				start_char = strtol (p, 0, 0);
 				while (*p && *p != ' ')
 					p++;
 			} else {
 				av++; ac--;
 				if (ac > 0)
-					start_char = atoi(av[0]);
+					start_char = strtol (av[0], 0, 0);
 			}
 			break;
 		case 'a':			/* ascent correction */
 			if (*p) {
-				ascent_correction = atoi(p);
+				ascent_correction = strtol (p, 0, 0);
 				while (*p && *p != ' ')
 					p++;
 			} else {
 				av++; ac--;
 				if (ac > 0)
-					ascent_correction = atoi(av[0]);
+					ascent_correction = strtol (av[0], 0, 0);
 			}
 			break;
 		case 'd':			/* descent correction */
 			if (*p) {
-				descent_correction = atoi(p);
+				descent_correction = strtol (p, 0, 0);
 				while (*p && *p != ' ')
 					p++;
 			} else {
 				av++; ac--;
 				if (ac > 0)
-					descent_correction = atoi(av[0]);
+					descent_correction = strtol (av[0], 0, 0);
 			}
 			break;
 		case 'u':			/* unknown char */
 			if (*p) {
-				default_char = atoi(p);
+				default_char = strtol (p, 0, 0);
 				while (*p && *p != ' ')
 					p++;
 			} else {
 				av++; ac--;
 				if (ac > 0)
-					default_char = atoi(av[0]);
+					default_char = strtol (av[0], 0, 0);
 			}
 			break;
 		default:

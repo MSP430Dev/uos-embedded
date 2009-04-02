@@ -4,7 +4,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <nvram/nvram.h>
-#include <lcd/lcd.h>
+#include <lcd2/lcd.h>
 #include "avr-mt-128.h"
 
 lcd_t line1, line2;

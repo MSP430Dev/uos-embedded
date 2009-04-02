@@ -6,7 +6,7 @@
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <cs8900/cs8900.h>
-#include <lcd/lcd.h>
+#include <lcd2/lcd.h>
 
 ARRAY (stack_poll, 0x100);	/* Task: polling CS8900 */
 mem_pool_t pool;

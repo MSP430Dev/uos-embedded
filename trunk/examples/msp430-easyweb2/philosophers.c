@@ -5,7 +5,7 @@
 #include <kernel/uos.h>
 #include <timer/timer.h>
 #include <random/rand15.h>
-#include <lcd/lcd.h>
+#include <lcd2/lcd.h>
 #include "msp430-easyweb2.h"
 
 #define NPHIL	5			/* Number of philosophers */
