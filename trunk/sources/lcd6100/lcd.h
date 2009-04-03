@@ -49,14 +49,14 @@ typedef struct {
 void lcd_init (lcd_t *lcd);
 void lcd_backlight (lcd_t *lcd, int on);
 void lcd_contrast (lcd_t *lcd, int contrast);
-void lcd_image (lcd_t *lcd, int x, int y, int width, int height,
-	const unsigned short *data);
-void lcd_clear (lcd_t *lcd, unsigned color);
 void lcd_pixel (lcd_t *lcd, int x, int y, int color);
 void lcd_line (lcd_t *lcd, int x0, int y0, int x1, int y1, int color);
 void lcd_rect (lcd_t *lcd, int x0, int y0, int x1, int y1, int color);
 void lcd_rect_filled (lcd_t *lcd, int x0, int y0, int x1, int y1, int color);
 void lcd_circle (lcd_t *lcd, int x0, int y0, int radius, int color);
+void lcd_image (lcd_t *lcd, int x, int y, int width, int height,
+	const unsigned short *data);
+void lcd_clear (lcd_t *lcd, unsigned color);
 void lcd_move (lcd_t *lcd, int x, int y);
 void lcd_color (lcd_t *lcd, int fg, int bg);
 int lcd_text_width (lcd_t *lcd, const unsigned char *text);

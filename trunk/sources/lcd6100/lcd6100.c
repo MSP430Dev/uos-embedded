@@ -131,7 +131,7 @@ void lcd_init (lcd_t *lcd)
 
 	AT91C_SPI0_CSR[0] = AT91C_SPI_CPOL |	/* Clock inactive high */
 		AT91C_SPI_BITS_9 |		/* 9 bits per transfer */
-		(AT91C_SPI_SCBR & (12 << 8)) |	/* 48MHz/12 = 4 MHz */
+		(AT91C_SPI_SCBR & (8 << 8)) |	/* 48MHz/8 = 6 MHz */
 		(AT91C_SPI_DLYBS & (1 << 16)) |	/* Delay Before SPCK */
 		(AT91C_SPI_DLYBCT & (1 << 24));	/* Delay between transfers */
 
@@ -190,7 +190,6 @@ void lcd_image (lcd_t *lcd, int x, int y, int width, int height,
 	unsigned i, pixels = height * width;
 	unsigned long rgbrgb;
 
-	write_command (PHILIPS_DISPOFF);
 	write_command (PHILIPS_PASET);
 	write_data (y + 1);
 	write_data (y + height);
@@ -207,7 +206,6 @@ void lcd_image (lcd_t *lcd, int x, int y, int width, int height,
 		write_data (rgbrgb >> 8);
 		write_data (rgbrgb);
 	}
-	write_command (PHILIPS_DISPON);
 }
 
 /*
@@ -218,7 +216,6 @@ void lcd_clear (lcd_t *lcd, unsigned color)
 {
 	unsigned i;
 
-	write_command (PHILIPS_DISPOFF);
 	write_command (PHILIPS_CASET);
 	write_data (0);
 	write_data (LCD_NCOL + 1);
@@ -232,7 +229,6 @@ void lcd_clear (lcd_t *lcd, unsigned color)
 			      ((color >> 8) & 0xF));
 		write_data (color);
 	}
-	write_command (PHILIPS_DISPON);
 
 	lcd->row = 0;
 	lcd->col = 0;
