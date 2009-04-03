@@ -2,7 +2,7 @@
 
 [http://www.olimex.com/dev/sam7-ex256.html http://www.olimex.com/dev/images/ARM/ATMEL/SAM7-EX256-1.jpg]
 
-Плата Olimex MSP430-SAM7-EX256 ([http://www.olimex.com/dev/images/sam7-ex256-sch.gif схема])
+Плата Olimex SAM7-EX256 ([http://www.olimex.com/dev/images/sam7-ex256-sch.gif схема])
 построена на микроконтроллере Atmel AT91SAM7X256. Дополнительная информация доступна
 [http://www.olimex.com/dev/sam7-ex256.html на сайте производителя].
 
