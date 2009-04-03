@@ -22,7 +22,7 @@ clean:
 png2rgb:	../../sources/lcd6100/png2rgb.c
 		gcc -Wall -O ../../sources/lcd6100/png2rgb.c -lpng -o $@
 
-test_lcd.o:	test_lcd.c ../../sources/lcd6100/lucidasans11.c image_frog.c
+test_lcd.o:	test_lcd.c image_frog.c
 		$(CC) $(CFLAGS) -c test_lcd.c
 
 image_frog.c:	frog.png png2rgb

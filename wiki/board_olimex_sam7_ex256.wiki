@@ -38,13 +38,6 @@
  * [http://atmel.com/dyn/resources/prod_documents/doc6120.pdf Описание семейства AT91SAM7X], [http://atmel.com/dyn/resources/prod_documents/6120s.pdf сокращённая версия].
  * [http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256.zip Пример работы с LCD и джойстиком].
  * [http://www.olimex.com/dev/soft/arm/SAM7/SAM7_EX256_FreeRTOSV4.0.zip FreeRTOS для SAM7-EX256], с поддержкой TCP/IP.
- * Графический дисплей от Nokia LCD 6100: 
-   * [http://www.nxp.com/acrobat_download/datasheets/PCF8833_1.pdf Описание контроллера Philips PCF8833];
-   * [http://www.sparkfun.com/tutorial/Nokia%206100%20LCD%20Display%20Driver.pdf Пример программирования];
-   * [http://www.sparkfun.com/commerce/product_info.php?products_id=569 В продаже на SparkFun.com];
-   * [http://linuxmaximus.blogspot.com/2008/05/nokia-6100-lcd-linux-driver.html Драйвер для Linux];
-   * [http://www.xakep.ru/post/43590/ Статья в журнале "Хакер"].
-   * [http://www.olimex.com/dev/soft/BmpToArray.zip Конвертер BMP] в массив для LCD.
 
 = Программатор =
 Программный код можно загружать в плату через порт USB, используя утилиту SAM-BA:
@@ -67,34 +60,68 @@ modprobe usbserial vendor=0x03eb product=0x6124
 }}}
 
 Стирание старой прошивки:
- * Отключите питание платы
+ * Включите питание платы
  * Установите джампер ERASE
- * Включите питание на 10 секунд (или больше)
- * Отключите питание
  * Снимите джампер ERASE
- * Включите питание
+ * Нажмите кнопку RESET
 После такой процедуры плата начнет определяться компьютером как "atm6124.Sys ATMEL AT91xxxxx Test Board".
 
 Для загрузки новой прошивки вызовите sam-prog.exe (Windows) или sam-ba (Linux).
 Если плата подключена, в поле статуса появится "Active Connection: 1".
 Выберите файл и нажмите кнопку "Write Flash".
 По завершении должен быть статус "Success: 1".
-Отключите и снова включите питание платы.
+Нажмите кнопку RESET и новая прошивка запустится.
+
+= Прошивка в пакетном режиме =
+Для прошивки в неинтерактивном режиме (в Линуксе) я пользуюсь следующим вызовом:
+{{{
+sam-ba /dev/ttyUSB? AT91SAM7X256-EK load-flash.tcl test.bin
+}}}
+Здесь test.bin - загружаемый бинарный образ программы.
+Скрипт load-flash.tcl содержит директивы для программатора:
+{{{
+send_file Flash [lindex $::argv 3] 0x100000 0
+FLASH::ScriptGPNMV 4
+}}}
+Первая строка записывает файл во flash-память с адреса 100000h.
+Вторая строка устанавливает служебный бит GPNVM2,
+чтобы после RESET процессор загружался из flash-памяти.
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256 examples/arm-sam7-ex256] находятся примеры сборки uOS для Olimex SAM7-EX256.
 
-TODO
+|| *Тест*                                                                                                            || *Описание*                                                                                ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                   ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                    ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_timer.c test_timer.c]     || Проверка драйвера таймера. Одна задача пользователя.                                      ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_t-uart.c test_t-uart.c]   || Проверка совместной работы таймера и драйвера UART. Две задачи: программа пользователя и драйвер UART. ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_lcd.c test_lcd.c]         || Проверка графического дисплея LCD. Одна задача пользователя.                              ||
 
-|| *Тест*                                                                                                             || *Описание*                                                                                || *Память программ* || *Память данных* ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_debug.c test_debug.c]     || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.                   || 476 байт (0.8%)   || 2 байта         ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_task.c test_task.c]       || Проверка переключения задач. Одна задача пользователя.                                    || 4486 байта (7.3%) || 442 байта (22%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_timer.c test_timer.c]     || Проверка драйвера таймера. Одна задача пользователя.                                      || 6600 байта (11%)  || 506 байта (25%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_uart.c test_uart.c]       || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART.                || 7644 байта (12%)  || 896 байт (44%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_lcd.c test_lcd.c]         || Проверка дисплея LCD. Одна задача пользователя.                                           || 8578 байт (14%)   || 652 байт (32%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_olimex.c test_olimex.c]   || Тест, аналогичный родному от Olimex. Две задачи: программа пользователя и драйвер UART.   || 10222 байт (17%)  || 962 байт (47%)  ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/philosophers.c philosophers.c] || Пять обедающих философов с выводом на LCD. Пять задач философов.                          || 9010 байт (15%)   || 1550 байт (76%) ||
-|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_eth.c test_eth.c]         || Проверка Ethernet. Одна задача: опрос драйвера CS8900A.                                   || 14130 байт (23%)  || 1102 байт (54%) ||
+= Графический дисплей =
+На плате установлен цветной графический дисплей, аналогичный используемому в телефоне Nokia 6100.
+В интернете имеется много информации по работе с ним:
+ * [http://www.nxp.com/acrobat_download/datasheets/PCF8833_1.pdf Описание контроллера Philips PCF8833];
+ * [http://www.sparkfun.com/tutorial/Nokia%206100%20LCD%20Display%20Driver.pdf Пример программирования];
+ * [http://www.sparkfun.com/commerce/product_info.php?products_id=569 В продаже на SparkFun.com];
+ * [http://linuxmaximus.blogspot.com/2008/05/nokia-6100-lcd-linux-driver.html Драйвер для Linux];
+ * [http://www.xakep.ru/post/43590/ Статья в журнале "Хакер"].
+
+Для дисплея разработан драйвер, обеспечивающий следующие функции:
+ * Отрисовка линий, прямоугольников, окружностей, точек.
+ * Отрисовка изображений в формате RGB 4/4/4. Предоставляется конвертер из PNG в массив Си.
+ * Управление контрастом и подсветкой.
+ * Отрисовка символов Unicode.
+ * Подключение пропорциональных и моноширинных шрифтов. Есть конвертер из TTF во встраиваемый формат шрифта.
+
+Пример [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam7-ex256/test_lcd.c test_lcd.c]
+состоит из пяти тестовых изображений. Переключение между ними делается отклонением джойстика вправо-влево.
+Джойстик вверх-вниз управляет контрастностью.
+ * Первый экран - заливка экрана восемью основными цветами, в виде горизонтальных полос.
+ * Второй экран - прямоугольники.
+ * Третий экран - "дождь" из кругов
+ * Четвёртый экран - заливка прямоугольниками случайных размеров и цветов.
+ * Пятый экран - отображение фотографии.
 
 = Сигналы =
 
