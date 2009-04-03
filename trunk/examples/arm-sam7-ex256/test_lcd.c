@@ -6,6 +6,8 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <stream/stream.h>
+#include <random/rand15.h>
+#include "sam7-ex256.h"
 
 /*
  * Proportional/fixed font structure.
@@ -29,6 +31,7 @@ typedef struct {
 	lcd_font_t *font;		/* selected font */
 	unsigned foreground;		/* color for putchar */
 	unsigned background;		/* background for putchar */
+	small_uint_t contrast;		/* current contrast */
 	small_uint_t row;		/* current row */
 	small_uint_t col;		/* current column */
 	small_uint_t c1, c2;		/* utf8 decoder */
@@ -48,9 +51,9 @@ static stream_interface_t lcd_interface = {
         0, 0,
 };
 
-#include "lucidasans11.c"
+#include <lcd6100/lucidasans11.c>
 
-#include "image.c"
+#include "image_frog.c"
 
 ARRAY (task, 400);
 lcd_t display;
@@ -147,6 +150,16 @@ static inline void write_data (unsigned data)
  */
 void lcd_init (lcd_t *lcd)
 {
+	lcd->interface = &lcd_interface;
+	lcd->font = &font_lucidasans11;
+	lcd->foreground = LCD_WHITE;
+	lcd->background = LCD_BLACK;
+	lcd->contrast = 0x38;
+	lcd->row = 0;
+	lcd->col = 0;
+	lcd->c1 = 0;
+	lcd->c2 = 0;
+
 	/* Backlight is controlled by pin PB20. */
 	*AT91C_PIOB_SODR = AT91C_PIO_PB20;	/* Set high: enable backlight */
 	*AT91C_PIOB_OER	 = AT91C_PIO_PB20;	/* Configure PB20 as output */
@@ -182,10 +195,7 @@ void lcd_init (lcd_t *lcd)
 	/* Software Reset. */
 	write_command (PHILIPS_NOP);
 	write_command (PHILIPS_SWRESET);
-#if 0
-	/* Disable super frame inversion. */
-	write_command (PHILIPS_DISCTR);
-#endif
+
 	/* Normal display mode. */
 	write_command (PHILIPS_NORON);
 
@@ -198,22 +208,13 @@ void lcd_init (lcd_t *lcd)
 
 	/* Set contrast. */
 	write_command (PHILIPS_SETCON);
-	write_data (0x38);
+	write_data (lcd->contrast);
 
 	/* Booster voltage on. */
 	write_command (PHILIPS_BSTRON);
 
 	/* Display on. */
 	write_command (PHILIPS_DISPON);
-
-	lcd->interface = &lcd_interface;
-	lcd->font = &font_lucidasans11;
-	lcd->foreground = LCD_WHITE;
-	lcd->background = LCD_BLACK;
-	lcd->row = 0;
-	lcd->col = 0;
-	lcd->c1 = 0;
-	lcd->c2 = 0;
 }
 
 /*
@@ -232,14 +233,15 @@ void lcd_backlight (lcd_t *lcd, int on)
  */
 void lcd_contrast (lcd_t *lcd, int contrast)
 {
+	lcd->contrast = contrast & 0x7f;
 	write_command (PHILIPS_SETCON);
-	write_data (contrast & 0x7f);
+	write_data (lcd->contrast);
 }
 
 /*
  * Write an image to LCD screen.
  */
-void lcd_write_image (lcd_t *lcd, int x, int y, int width, int height,
+void lcd_image (lcd_t *lcd, int x, int y, int width, int height,
 	const unsigned short *data)
 {
 	unsigned i, pixels = height * width;
@@ -288,6 +290,9 @@ void lcd_clear (lcd_t *lcd, unsigned color)
 		write_data (color);
 	}
 	write_command (PHILIPS_DISPON);
+
+	lcd->row = 0;
+	lcd->col = 0;
 }
 
 /*
@@ -593,94 +598,158 @@ static void lcd_putchar (lcd_t *lcd, short c)
 	lcd->col += width;
 }
 
-void test (void *arg)
+void draw (unsigned page)
 {
-#if 0
-	int color_value [11] = {
-		LCD_WHITE, LCD_BLACK, LCD_RED, LCD_GREEN, LCD_BLUE, LCD_CYAN,
-		LCD_MAGENTA, LCD_YELLOW, LCD_BROWN, LCD_ORANGE, LCD_PINK
-	};
-	char *color_name [11] = {
-		"White", "Black", "Red", "Green", "Blue", "Cyan",
-		"Magenta", "Yellow", "Brown", "Orange", "Pink"
-	};
-	unsigned j;
+	lcd_clear (&display, LCD_BLACK);
+	switch (page % 5) {
+	case 0:
+		/* Color test - show boxes of different colors. */
+		lcd_rect_filled (&display, 0, 0, 129, 15, LCD_RED);
+		lcd_move (&display, 0, 0);
+		lcd_color (&display, LCD_WHITE, LCD_RED);
+		puts (&display, "Красный");
 
-	/* Color test - show boxes of different colors. */
-	for (j = 0; j < 11; j++) {
-		lcd_clear (&display, LCD_BLACK);
+		lcd_rect_filled (&display, 0, 16, 129, 16+15, LCD_GREEN);
+		lcd_move (&display, 0, 16);
+		lcd_color (&display, LCD_WHITE, LCD_GREEN);
+		puts (&display, "Зелёный");
 
-		/* Draw a filled box. */
-		lcd_rect_filled (&display, 10, 25, 120, 120, color_value[j]);
+		lcd_rect_filled (&display, 0, 2*16, 129, 2*16+15, LCD_BLUE);
+		lcd_move (&display, 0, 2*16);
+		lcd_color (&display, LCD_WHITE, LCD_BLUE);
+		puts (&display, "Синий");
 
-		/* Label the color. */
-		lcd_move (&display, 40, 5);
-		lcd_color (&display, LCD_YELLOW, LCD_BLACK);
-		puts (&display, " ");
-		puts (&display, color_name[j]);
+		lcd_rect_filled (&display, 0, 3*16, 129, 3*16+15, LCD_MAGENTA);
+		lcd_move (&display, 0, 3*16);
+		lcd_color (&display, LCD_WHITE, LCD_MAGENTA);
+		puts (&display, "Лиловый");
 
-		/* Wait a bit. */
-		mdelay (500);
+		lcd_rect_filled (&display, 0, 4*16, 129, 4*16+15, LCD_CYAN);
+		lcd_move (&display, 0, 4*16);
+		lcd_color (&display, LCD_BLACK, LCD_CYAN);
+		puts (&display, "Бирюзовый");
+
+		lcd_rect_filled (&display, 0, 5*16, 129, 5*16+15, LCD_YELLOW);
+		lcd_move (&display, 0, 5*16);
+		lcd_color (&display, LCD_BLACK, LCD_YELLOW);
+		puts (&display, "Жёлтый");
+
+		lcd_rect_filled (&display, 0, 6*16, 129, 6*16+15, LCD_WHITE);
+		lcd_move (&display, 0, 6*16);
+		lcd_color (&display, LCD_BLACK, LCD_WHITE);
+		puts (&display, "Белый");
+
+		lcd_move (&display, 0, 7*16);
+		lcd_color (&display, LCD_WHITE, LCD_BLACK);
+		puts (&display, "Чёрный");
+		break;
+	case 1:
+		/* Boxes. */
+		lcd_rect (&display,    0,    0, NCOL-1,      NROW-1,      LCD_CYAN);
+		lcd_rect (&display,   11,   11, NCOL-1-11,   NROW-1-11,   LCD_GREEN);
+		lcd_rect (&display, 2*11, 2*11, NCOL-1-2*11, NROW-1-2*11, LCD_YELLOW);
+		lcd_rect (&display, 3*11, 3*11, NCOL-1-3*11, NROW-1-3*11, LCD_RED);
+		lcd_rect (&display, 4*11, 4*11, NCOL-1-4*11, NROW-1-4*11, LCD_MAGENTA);
+		lcd_rect (&display, 5*11, 5*11, NCOL-1-5*11, NROW-1-5*11, LCD_BLUE);
+		break;
+	case 4:
+		/* Image. */
+		lcd_image (&display, 0, 0, NROW, NCOL, image_frog);
+		break;
 	}
+}
 
-	/* Character and line tests - draw lines, strings, etc. */
-	lcd_clear (&display, LCD_BLACK);
+void draw_next (unsigned page)
+{
+	static int x0, y0, radius;
+	int x1, y1;
 
-	// set a few pixels
-	lcd_pixel (&display, 30, 120, LCD_RED);
-	lcd_pixel (&display, 34, 120, LCD_GREEN);
-	lcd_pixel (&display, 38, 120, LCD_BLUE);
-	lcd_pixel (&display, 40, 120, LCD_WHITE);
+	switch (page % 5) {
+	case 2:
+		/* Rain. */
+		if (radius == 0) {
+			/* Generate next circle. */
+			x0 = 10 + rand15() % (NCOL - 20);
+			y0 = 10 + rand15() % (NROW - 20);
+		} else {
+			/* Clear previous circle. */
+			lcd_circle (&display, x0, y0, radius, LCD_BLACK);
+			lcd_circle (&display, x0, y0, radius-1, LCD_BLACK);
+		}
+		radius += 2;
+		if (radius > 10)
+			radius = 0;
+		else {
+			/* Draw next circle. */
+			lcd_circle (&display, x0, y0, radius, LCD_WHITE);
+			lcd_circle (&display, x0, y0, radius-1, LCD_WHITE);
+		}
+		break;
+	case 3:
+		/* Rectangles. */
+		do {
+			x0 = rand15() % NCOL;
+			y0 = rand15() % NROW;
+			x1 = rand15() % NCOL;
+			y1 = rand15() % NROW;
+		} while (abs (x0-x1) < 2 || abs (y0-y1) < 2);
+		lcd_rect_filled (&display, x0, y0, x1, y1, rand15());
+		break;
+	}
+}
 
-	// draw some characters
-	lcd_move (&display, 10, 10);
-	lcd_color (&display, LCD_WHITE, LCD_BLACK);
-	putchar (&display, 'E');
+/*
+ * Task of polling buttons.
+ */
+void poll_buttons (void *arg)
+{
+	unsigned pagenum = 0;
+	unsigned up_pressed = 0, left_pressed = 0;
+	unsigned right_pressed = 0, down_pressed = 0;
 
-	// draw a string
-	lcd_move (&display, 20, 5);
-	lcd_color (&display, LCD_PINK, LCD_BLACK);
-	puts (&display, "Hello World");
-
-	// draw filled box
-	lcd_rect_filled (&display, 120, 60, 80, 80, LCD_BROWN);
-
-	// draw empty box
-	lcd_rect (&display, 120, 85, 80, 105, LCD_CYAN);
-
-	// draw some lines
-	lcd_line (&display, 120, 10, 120, 50, LCD_YELLOW);
-	lcd_line (&display, 120, 50, 80, 50, LCD_YELLOW);
-	lcd_line (&display, 80, 50, 80, 10, LCD_YELLOW);
-	lcd_line (&display, 80, 10, 120, 10, LCD_YELLOW);
-	lcd_line (&display, 120, 85, 80, 105, LCD_YELLOW);
-	lcd_line (&display, 80, 85, 120, 105, LCD_YELLOW);
-
-	// draw a circle
-	lcd_circle (&display, 65, 100, 10, LCD_RED);
-	mdelay (1000);
-#if 0
-	/* Image display test. */
-	lcd_clear (&display, LCD_BLACK);
-	lcd_write_image (&display, 0, 0, NROW, NCOL, image);
-
-	lcd_move (&display, 2, 115);
-	lcd_color (&display, LCD_BLACK, LCD_CYAN);
-	puts (&display, "This guy is nuts");
-
-	lcd_rect_filled (&display, 90, 70, 75, 120, LCD_YELLOW);
-	lcd_move (&display, 80, 80);
-	lcd_color (&display, LCD_BLACK, LCD_YELLOW);
-	puts (&display, "HELP!");
-#endif
-#else
-	lcd_clear (&display, LCD_BLACK);
-	puts (&display, "Hello, World!\r\n");
-	puts (&display, "Есть русские буквы.");
-#endif
-	// Endless loop
+	draw (pagenum);
 	for (;;) {
-		mdelay (1000);
+		mdelay (20);
+		draw_next (pagenum);
+
+		if (! joystick_up ())
+			up_pressed = 0;
+		else if (! up_pressed) {
+			up_pressed = 1;
+
+			/* Up: increase contrast. */
+			lcd_contrast (&display, display.contrast + 1);
+			lcd_move (&display, 10, 130-17);
+			lcd_color (&display, LCD_WHITE, LCD_BLACK);
+			printf (&display, "Contrast = %02x", display.contrast);
+		}
+		if (! joystick_left ())
+			left_pressed = 0;
+		else if (! left_pressed) {
+			left_pressed = 1;
+
+			/* Left button: show previous page of symbols. */
+			draw (--pagenum);
+		}
+		if (! joystick_right ())
+			right_pressed = 0;
+		else if (! right_pressed) {
+			right_pressed = 1;
+
+			/* Right button: show next page of symbols. */
+			draw (++pagenum);
+		}
+		if (! joystick_down ())
+			down_pressed = 0;
+		else if (! down_pressed) {
+			down_pressed = 1;
+
+			/* Up: decrease contrast. */
+			lcd_contrast (&display, display.contrast - 1);
+			lcd_move (&display, 10, 130-17);
+			lcd_color (&display, LCD_WHITE, LCD_BLACK);
+			printf (&display, "Contrast = %02x", display.contrast);
+		}
 	}
 }
 
@@ -688,5 +757,5 @@ void uos_init (void)
 {
 	debug_puts ("\nTesting LCD.\n");
 	lcd_init (&display);
-	task_create (test, 0, "test", 1, task, sizeof (task));
+	task_create (poll_buttons, 0, "poll", 1, task, sizeof (task));
 }
