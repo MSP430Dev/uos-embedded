@@ -41,3 +41,5 @@ R0...R1 (в случае `long long` или `double`).
 
 = Программное обеспечение =
 Компилятор GNU и отладчик GDB можно скачать отсюда: http://www.gnuarm.org/files.html
+
+Для отладки я использую J-Link. Инструкция есть на сайте производителя: http://www.segger.com/jlink_gdb.html
