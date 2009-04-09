@@ -71,5 +71,10 @@
 /*
  * Internal SRAM address and size.
  */
+#ifdef AT91C_ISRAM
 #define ARM_SRAM_BASE		((int) AT91C_ISRAM)
 #define ARM_SRAM_SIZE		((int) AT91C_ISRAM_SIZE)
+#else
+#define ARM_SRAM_BASE		((int) AT91C_IRAM_2)
+#define ARM_SRAM_SIZE		((int) AT91C_IRAM_2_SIZE)
+#endif

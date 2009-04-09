@@ -1,3 +1,4 @@
+#ifndef AT91BOOTSTRAP
 		.section .init
 		.code	32
 _start_:	.global	_start_
@@ -9,19 +10,21 @@ _start_:	.global	_start_
 		b	_undefined_		@ reserved
 		b	_irq_
 		b	_fiq_
-
+_reset_:
+#endif
 		@
 		@ Space for irq stack. We need 2 words here,
 		@ to save LR and SPSR before switching
 		@ from IRQ to supervisor mode.
 		@
 		.comm	_irq_stack_, 12
-
 		.section .text
 		@
 		@ Startup initialization.
 		@
-_reset_:
+#ifdef AT91BOOTSTRAP
+_start_:	.global	_start_
+#endif
 		mrs	r0, cpsr
 		bic	r0, r0, #0x1f
 		orr	r0, r0, #0xd2

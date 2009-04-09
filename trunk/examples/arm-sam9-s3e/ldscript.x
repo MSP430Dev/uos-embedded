@@ -1,5 +1,5 @@
 /*
- * Linker script for AT91SAM
+ * Linker script for AT91SAM with AT91Bootstrap.
  */
 /* Default linker script, for normal executables */
 OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm",
@@ -8,8 +8,7 @@ OUTPUT_ARCH(arm)
 ENTRY(_start_)
 MEMORY
 {
-  text   (rx)   : ORIGIN = 0,		LENGTH = 1M
-  data   (rw!x) : ORIGIN = 0x00200000,	LENGTH = 4k
+  sdram   (rw!x) : ORIGIN = 0x21d00000,	LENGTH = 191k
 }
 SECTIONS
 {
@@ -69,7 +68,7 @@ SECTIONS
     /* Align here to ensure that the .data section start on word boundary. */
     . = ALIGN (32 / 8);
     _etext = .;
-  } > text
+  } > sdram
 
   /* Start data (internal SRAM).  */
   .data		  : AT (ADDR (.text) + SIZEOF (.text))
@@ -81,7 +80,7 @@ SECTIONS
        we can shorten the on-disk segment size.  */
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     _edata = .;
-  } > data
+  } > sdram
 
   .bss  SIZEOF(.data) + ADDR(.data) :
        AT (ADDR (.text) + SIZEOF (.text) + SIZEOF (.data))
@@ -94,7 +93,7 @@ SECTIONS
       _end.  Align after .bss to ensure correct alignment even if the
       .bss section disappears because there are no input sections.  */
    . = ALIGN (32 / 8);
-  } > data
+  } > sdram
   __bss_end = . ;
   _end = .;
 

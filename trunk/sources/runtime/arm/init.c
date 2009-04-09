@@ -52,24 +52,27 @@ _init_ (void)
 	*AT91C_RSTC_RMR = 0xA5000000 |
 		(AT91C_RSTC_ERSTL & (4 << 8)) | AT91C_RSTC_URSTEN;
 
+#ifdef AT91C_MC_FMR
 	/* Flash mode register: set 1 flash wait state and
 	 * a number of master clock cycles in 1.5 microseconds. */
 	*AT91C_MC_FMR = AT91C_MC_FWS_1FWS |
 		(AT91C_MC_FMCN & (((KHZ * 3 + 1000) / 2000) << 16));
-
+#endif
 	/* Disable watchdog. */
 	*AT91C_WDTC_WDMR = AT91C_WDTC_WDDIS;
 
 	/* Main oscillator register: enabling the main oscillator.
 	 * Slow clock is 32768 Hz, or 30.51 usec.
-	 * Start up time = 8 * 6 / SCK = 1,46 msec. */
+	 * Start up time = OSCOUNT * 8 / SCK = 1,46 msec.
+	 * Worst case is 15ms, so OSCOUNT = 15 * SCK / 8000 = 61. */
 	*AT91C_PMC_MOR = AT91C_CKGR_MOSCEN |
-		(AT91C_CKGR_OSCOUNT & (6 << 8));
+		(AT91C_CKGR_OSCOUNT & (61 << 8));
 	while (! (*AT91C_PMC_SR & AT91C_PMC_MOSCS))
 		continue;
 
-	/* PLL register: set multiplier and divider.
-	 * We have quartz 18.432 MHz.
+	/* PLL register: set multiplier and divider. */
+#ifdef AT91C_PMC_PLLR
+	/* SAM7 development board: we have quartz 18.432 MHz.
 	 * After multiplying by (25+1) and dividing by 5
 	 * we have MCK = 95.8464 MHz.
 	 * PLL startup time estimated at 0.844 msec. */
@@ -78,16 +81,39 @@ _init_ (void)
 		(AT91C_CKGR_MUL & (25 << 16));
 	while (! (*AT91C_PMC_SR & AT91C_PMC_LOCK))
 		continue;
+#else
+	/* SAM9 development board: quartz 12 MHz.
+	 * Set PLLA to 200 MHz = 12 MHz * (99+1) / 6.
+	 * PLL startup time is 63 slow clocks, or about 2ms. */
+	*AT91C_PMC_PLLAR = AT91C_CKGR_SRCA |
+		(AT91C_CKGR_MULA & (99 << 16)) |
+		AT91C_CKGR_OUTA_2 |
+		(AT91C_CKGR_PLLACOUNT & (63 << 8)) |
+		(AT91C_CKGR_DIVA & 6);
+	while (! (*AT91C_PMC_SR & AT91C_PMC_LOCKA))
+		continue;
+#endif
 	while (! (*AT91C_PMC_SR & AT91C_PMC_MCKRDY))
 		continue;
 
+#ifdef ARM_AT91SAM7X256
 	/* Master clock register: selection of processor clock.
 	 * Use PLL clock divided by 2. */
 	*AT91C_PMC_MCKR = AT91C_PMC_PRES_CLK_2;
+#endif
+#ifdef ARM_AT91SAM9260
+	/* Set processor clock to PLLA=200MHz.
+	 * For master clock MCK use PLL clock divided by 2. */
+	*AT91C_PMC_MCKR = AT91C_PMC_PRES_CLK | AT91C_PMC_MDIV_2;
+#endif
 	while (! (*AT91C_PMC_SR & AT91C_PMC_MCKRDY))
 		continue;
 
+#ifdef AT91C_PMC_CSS_PLL_CLK
 	*AT91C_PMC_MCKR |= AT91C_PMC_CSS_PLL_CLK;
+#else
+	*AT91C_PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
+#endif
 	while (! (*AT91C_PMC_SR & AT91C_PMC_MCKRDY))
 		continue;
 #endif
