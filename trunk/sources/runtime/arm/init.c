@@ -47,7 +47,7 @@ _init_ (void)
 	ARM_SYSCFG = syscfg;
 #endif /* ARM_S3C4530 */
 
-#ifdef ARM_AT91SAM
+#if defined (ARM_AT91SAM) && !defined (AT91BOOTSTRAP)
 	/* Enable RESET. */
 	*AT91C_RSTC_RMR = 0xA5000000 |
 		(AT91C_RSTC_ERSTL & (4 << 8)) | AT91C_RSTC_URSTEN;
@@ -116,7 +116,7 @@ _init_ (void)
 #endif
 	while (! (*AT91C_PMC_SR & AT91C_PMC_MCKRDY))
 		continue;
-#endif
+#endif /* ARM_AT91SAM && !AT91BOOTSTRAP */
 
 #ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.
@@ -151,6 +151,7 @@ _init_ (void)
 #endif
 
 #ifdef ARM_AT91SAM
+#ifndef AT91BOOTSTRAP
         /* Set USART0 for debug output.
 	 * RXD0 and TXD0 lines: disable PIO and assign to A function. */
 	*AT91C_PIOA_PDR = 3;
@@ -180,6 +181,12 @@ _init_ (void)
 
 	/* Enable USART0: RX receiver and TX transmiter. */
 	*AT91C_US0_CR = AT91C_US_TXEN | AT91C_US_RXEN;
+#endif /* !AT91BOOTSTRAP */
+
+#ifdef ARM_AT91SAM9260
+        /* Use DBGU for debug output.
+	 * PIO and DBGU are already initialized by bootstrap. */
+#endif /* ARM_AT91SAM9260 */
 
 	/* Setup interrupt vectors. */
 	{

@@ -111,6 +111,16 @@ debug_peekchar (void)
 #endif /* ARM_S3C4530 */
 
 #ifdef ARM_AT91SAM
+#ifdef AT91BOOTSTRAP
+#   define AT91C_CONSOLE_CSR AT91C_DBGU_CSR
+#   define AT91C_CONSOLE_THR AT91C_DBGU_THR
+#   define AT91C_CONSOLE_RHR AT91C_DBGU_RHR
+#else
+#   define AT91C_CONSOLE_CSR AT91C_US0_CSR
+#   define AT91C_CONSOLE_THR AT91C_US0_THR
+#   define AT91C_CONSOLE_RHR AT91C_US0_RHR
+#endif
+
 /*
  * Send a byte to the UART transmitter, with interrupts disabled.
  */
@@ -122,15 +132,15 @@ debug_putchar (void *arg, short c)
 	arm_intr_disable (&x);
 
 	/* Wait for transmitter holding register empty. */
-	while (! (*AT91C_US0_CSR & AT91C_US_TXRDY))
+	while (! (*AT91C_CONSOLE_CSR & AT91C_US_TXRDY))
 		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	*AT91C_US0_THR = (unsigned char) c;
+	*AT91C_CONSOLE_THR = (unsigned char) c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (*AT91C_US0_CSR & AT91C_US_TXRDY))
+	while (! (*AT91C_CONSOLE_CSR & AT91C_US_TXRDY))
 		continue;
 
 	if (c == '\n') {
@@ -158,15 +168,15 @@ debug_getchar (void)
 	arm_intr_disable (&x);
 
 	/* Wait until receive data available. */
-	while (! (*AT91C_US0_CSR & AT91C_US_RXRDY)) {
-/*debug_printf ("<%x> ", *AT91C_US0_CSR);*/
+	while (! (*AT91C_CONSOLE_CSR & AT91C_US_RXRDY)) {
+/*debug_printf ("<%x> ", *AT91C_CONSOLE_CSR);*/
 		arm_intr_restore (x);
 		arm_intr_disable (&x);
 	}
 
 	/* Get byte. */
 	/* TODO: utf8 to unicode conversion. */
-	c = *AT91C_US0_RHR;
+	c = *AT91C_CONSOLE_RHR;
 
 	arm_intr_restore (x);
 	return c;
@@ -187,14 +197,14 @@ debug_peekchar (void)
 	arm_intr_disable (&x);
 
 	/* Wait until receive data available. */
-	if (! (*AT91C_US0_CSR & AT91C_US_RXRDY)) {
+	if (! (*AT91C_CONSOLE_CSR & AT91C_US_RXRDY)) {
 		arm_intr_restore (x);
 		return -1;
 	}
 
 	/* Get byte. */
 	/* TODO: utf8 to unicode conversion. */
-	c = *AT91C_US0_RHR;
+	c = *AT91C_CONSOLE_RHR;
 
 	arm_intr_restore (x);
 	debug_char = c;

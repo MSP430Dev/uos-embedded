@@ -8,7 +8,8 @@ OUTPUT_ARCH(arm)
 ENTRY(_start_)
 MEMORY
 {
-  sdram   (rw!x) : ORIGIN = 0x21d00000,	LENGTH = 191k
+  sdram   (rw!x) : ORIGIN = 0x20000000,	LENGTH = 64M
+  boot    (rx)   : ORIGIN = 0x21d00000,	LENGTH = 192k
 }
 SECTIONS
 {
@@ -68,7 +69,7 @@ SECTIONS
     /* Align here to ensure that the .data section start on word boundary. */
     . = ALIGN (32 / 8);
     _etext = .;
-  } > sdram
+  } > boot
 
   /* Start data (internal SRAM).  */
   .data		  : AT (ADDR (.text) + SIZEOF (.text))
@@ -80,7 +81,7 @@ SECTIONS
        we can shorten the on-disk segment size.  */
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     _edata = .;
-  } > sdram
+  } > boot
 
   .bss  SIZEOF(.data) + ADDR(.data) :
        AT (ADDR (.text) + SIZEOF (.text) + SIZEOF (.data))
@@ -93,7 +94,7 @@ SECTIONS
       _end.  Align after .bss to ensure correct alignment even if the
       .bss section disappears because there are no input sections.  */
    . = ALIGN (32 / 8);
-  } > sdram
+  } > boot
   __bss_end = . ;
   _end = .;
 
