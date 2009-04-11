@@ -9,7 +9,7 @@
 Эклипс представляет собой "конструктор", состоящий из отдельных пакетов, интегрируемых в общую систему, в соответствии с потребностями разработчика. Для uOS требуются следущие пакеты:
  * [http://www.eclipse.org/platform/ Платформа Эклипс] как текстовый редактор и управление проектами.
  * [http://www.eclipse.org/cdt/ CDT] - C/C++ Development Tools - средства разработки для языков Си и Си++.
- * [http://www.eclipse.org/dsdp/tm/ TM] - Target Management - управление целевой платформой.
+ * [http://www.eclipse.org/dsdp/tm/ TM] - Target Management - управление целевой платформой. Он же RSE - Remote System Explorer.
  * [http://www.eclipse.org/dsdp/dd/ DD] - Device Debugging - удалённая отладка.
 
 = Ссылки =
