@@ -18,3 +18,6 @@
   * [http://wiki.eclipse.org/Main_Page Eclipse Wiki].
   * Статья Брайана Хэдли [http://opensource.sys-con.com/node/400929 "A Low-Cost Cross-Development Environment Using the Eclipse Framework"]. Она же в [http://www.macraigor.com/downloads/Macraigor_with_Eclipse.pdf формате PDF]. Она же [http://www.eetasia.com/ARTICLES/2007JUN/PDF/EEOL_2007JUN01_EMS_INTD_TA.pdf в журнале EE Times-Asia].
  * [http://msp430.techcontent.net/wiki/index.php/IDEs/EclipseTutor Пример установки Эклипс c MSPGCC].
+ * Статья на русском: [http://netsago.org/ru/docs/1/13/ Разработка на C/C++ в Eclipse IDE].
+ * Статья на русском: [http://www.ibm.com/developerworks/ru/library/os-ecl-vscdt/index.html Перенос разработок Visual Studio C и C++ в Eclipse CDT].
+ * Статья на русском: [http://www.ibm.com/developerworks/ru/library/os-eclipse-snippet/index.html Создаем расширение для Eclipse: шаг за шагом].
