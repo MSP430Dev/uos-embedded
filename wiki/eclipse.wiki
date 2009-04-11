@@ -21,3 +21,4 @@
  * Статья на русском: [http://netsago.org/ru/docs/1/13/ Разработка на C/C++ в Eclipse IDE].
  * Статья на русском: [http://www.ibm.com/developerworks/ru/library/os-ecl-vscdt/index.html Перенос разработок Visual Studio C и C++ в Eclipse CDT].
  * Статья на русском: [http://www.ibm.com/developerworks/ru/library/os-eclipse-snippet/index.html Создаем расширение для Eclipse: шаг за шагом].
+ * [http://electronix.ru/forum/index.php?showtopic=45936 Обсуждение Eclipse и CDT] на форуме electronix.ru.
