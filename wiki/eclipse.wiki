@@ -8,4 +8,4 @@
 
   * [http://www.eclipse.org/home/categories/embedded_device.php Страница о разработке встроенных систем] на сайте eclipse.org.
   * [http://wiki.eclipse.org/Main_Page Eclipse Wiki].
-  * Статья Брайана Хэдли [http://opensource.sys-con.com/node/400929 "A Low-Cost Cross-Development Environment Using the Eclipse Framework"]. Она же в [PDF]. Она же [http://www.eetasia.com/ARTICLES/2007JUN/PDF/EEOL_2007JUN01_EMS_INTD_TA.pdf в журнале EE Times-Asia].
+  * Статья Брайана Хэдли [http://opensource.sys-con.com/node/400929 "A Low-Cost Cross-Development Environment Using the Eclipse Framework"]. Она же в [http://www.macraigor.com/downloads/Macraigor_with_Eclipse.pdf формате PDF]. Она же [http://www.eetasia.com/ARTICLES/2007JUN/PDF/EEOL_2007JUN01_EMS_INTD_TA.pdf в журнале EE Times-Asia].
