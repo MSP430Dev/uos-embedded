@@ -27,3 +27,5 @@
 [http://e2fsprogs.sourceforge.net/ext2intro.html Design and Implementation of the Second Extended Filesystem] - хорошее описание файловой системы EXT2
 
 [http://libusb.sourceforge.net/ libusb] - библиотека для доступа к USB-устройствам
+
+[http://www.embedded.com/201200638;jsessionid=HFEH2LTUK30W4QSNDLRSKH0CJUNN2JVN?printable=true The basics of programming embedded processors: Part 1]
