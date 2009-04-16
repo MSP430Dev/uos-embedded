@@ -1,14 +1,41 @@
 		.section .init
 		.code	32
 _start_:	.global	_start_
+
+#ifdef AT91BOOTSTRAP
+		@
+		@ Branch instruction could address only lower 64 Mbytes.
+		@ We use LDR instruction to jump to higher flash memory.
+		@
+		ldr	pc, [pc, #24]
+		ldr	pc, [pc, #24]
+		ldr	pc, [pc, #24]
+		ldr	pc, [pc, #24]
+		ldr	pc, [pc, #24]
+		.word	_edata - _start_	@ length of code+data
+		ldr	pc, [pc, #24]
+		ldr	pc, [pc, #24]
+		.word	_reset_
+		.word	_undefined_
+		.word	_swi_
+		.word	_prefetch_
+		.word	_abort_
+		.word	_reset_			@ cannot happen
+		.word	_irq_
+		.word	_fiq_
+#else
+		@
+		@ Jump to exception handlers.
+		@
 		b	_reset_
 		b	_undefined_
 		b	_swi_
 		b	_prefetch_
 		b	_abort_
-		.word	_edata - _start_	@ length of code+data
+		b	_reset_			@ cannot happen
 		b	_irq_
 		b	_fiq_
+#endif
 
 		@
 		@ Space for irq stack. We need 2 words here,

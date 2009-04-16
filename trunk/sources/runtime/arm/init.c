@@ -186,6 +186,16 @@ _init_ (void)
 #ifdef ARM_AT91SAM9260
         /* Use DBGU for debug output.
 	 * PIO and DBGU are already initialized by bootstrap. */
+
+	/* Setup exception vectors at address 0. */
+	{
+	extern unsigned _start_ [];
+	unsigned *p;
+	for (p=0; p<(unsigned*)0x20; ++p) {
+		*p = 0xe59ff018;	/* ldr pc, [pc, #24] */
+		p[8] = *(unsigned*) ((unsigned) &_start_[8] + (unsigned) p);
+	}
+	}
 #endif /* ARM_AT91SAM9260 */
 
 	/* Setup interrupt vectors. */
@@ -200,7 +210,7 @@ _init_ (void)
 	*AT91C_AIC_IDCR = ~0;
 	*AT91C_AIC_ICCR = ~0;
 	*AT91C_AIC_EOICR = 0;
-#endif
+#endif /* ARM_AT91SAM */
 
 	main ();
 }
