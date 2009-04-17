@@ -1,4 +1,4 @@
-#summary Target board: IPMCE "ПКБИ".
+#summary Target board: IPMCE MC-24.
 
 [http://www.ipmce.ru/about/news/461b64a3185f7/ http://uos-embedded.googlecode.com/svn/wiki/images/itmvt_pkbi.jpg]
 
