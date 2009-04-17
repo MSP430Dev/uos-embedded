@@ -137,3 +137,12 @@ sam-ba /dev/ttyUSB? AT91SAM9260-SK load-flash.tcl test.bin
 DATAFLASH::SelectDataflash AT91C_SPI0_CS0
 send_file "DataFlash AT45DB/DCB" [lindex $::argv 3] 0x8000 0
 }}}
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e examples/arm-sam9-s3e] находятся примеры сборки uOS для Starterkit SAM9-S3E.
+
+|| *Тест*                                                                                                      || *Описание*                                                                 ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/test_debug.c test_debug.c] || Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.    ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/test_task.c test_task.c]   || Проверка переключения задач. Одна задача пользователя.                     ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/test_timer.c test_timer.c] || Проверка драйвера таймера. Одна задача пользователя.                       ||
+|| [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/test_uart.c test_uart.c]   || Проверка драйвера UART. Две задачи: программа пользователя и драйвер UART. ||
