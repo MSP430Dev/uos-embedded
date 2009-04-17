@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TESTS		= test_debug.bin test_task.bin test_timer.bin
+TESTS		= test_debug.bin test_task.bin test_timer.bin test_uart.bin
 OUTS		= $(TESTS:%.bin=%.out)
 
 # Using SAM-BA utility.
@@ -19,7 +19,7 @@ clean:
 probe:
 		$(PROG)
 
-load:		test_timer.bin
+load:		test_uart.bin
 		$(PROG) $<
 
 include $(OS)/sources/rules.mak

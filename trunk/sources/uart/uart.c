@@ -34,7 +34,7 @@
 static bool_t
 uart_transmit_start (uart_t *u)
 {
-/*debug_puts ("{s} ");*/
+/*debug_printf ("[%08x] ", *AT91C_DBGU_CSR);*/
 	if (u->out_first == u->out_last)
 		lock_signal (&u->transmitter, 0);
 
@@ -49,7 +49,7 @@ uart_transmit_start (uart_t *u)
 	    (u->cts_query && u->cts_query (u) == 0)) {
 		/* Disable `transmitter empty' interrupt. */
 		disable_transmit_interrupt (u->port);
-/*debug_printf ("{d%02x}", IE1);*/
+/*debug_putchar (0, '#');*/
 		return 0;
 	}
 
@@ -198,6 +198,7 @@ uart_receiver (void *arg)
 
 	for (;;) {
 		lock_wait (&u->receiver);
+/*debug_printf ("<%08x> ", *AT91C_DBGU_CSR);*/
 
 #ifdef clear_receive_errors
 		clear_receive_errors (u->port);
@@ -225,7 +226,6 @@ uart_receiver (void *arg)
 #endif
 		/* Check that receive data is available,
 		 * and get the received byte. */
-/*debug_printf ("{i%02x}", U0IFG);*/
 		if (! test_get_receive_data (u->port, &c))
 			continue;
 /*debug_printf ("%02x", c);*/
