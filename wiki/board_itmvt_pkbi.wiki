@@ -1,0 +1,37 @@
+#summary Target board: IPMCE "ПКБИ".
+
+[http://www.ipmce.ru/about/news/461b64a3185f7/ http://uos-embedded.googlecode.com/svn/wiki/images/itmvt_pkbi.jpg]
+
+Плата контроллера бортовых интерфейсов [http://www.ipmce.ru/about/news/461b64a3185f7/ ИТМиВТ ПКБИ] построена на микроконтроллере [http://multicore.ru/index.php?id=47 Элвис MC-24, он же 1892ВМ2Я]
+([http://www.elvees.ru/mc/data_sheets/Manual_MC24_231007.pdf спецификация]) с архитектурой MIPS32.
+
+Память:
+ * 2 мегабайта flash-памяти для загрузки, адрес 1FC00000
+ * 2 мегабайта flash-памяти для данных, адрес 1FA00000
+ * 4 мегабайта flash-памяти для программ, адрес 02000000
+ * 8 мегабайт памяти данных
+
+Частота процессора равна 80 MHz.
+
+Замена прошивки производится через порт JTAG, посредством утилиты [http://code.google.com/p/mcprog/wiki/Home_ru mcprog].
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24 examples/mips32-mc24]
+находятся примеры сборки uOS для ПКБИ.
+
+= Тесты =
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/test_debug.c test_debug.c]
+- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
+Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/test_task.c test_task.c]
+- Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
+общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/test_timer.c test_timer.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+каждые 100 миллисекунд печатает строку на консоли.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/test_uart.c test_uart.c]
+- Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
+циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
