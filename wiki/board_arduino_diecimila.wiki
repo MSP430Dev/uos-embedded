@@ -23,6 +23,21 @@
 
 Встроенный начальный загрузчик позволяет загружать в плату программный код без использования специализированного программатора. Он поддерживает стандартный протокол STK500 ([http://www.atmel.com/dyn/resources/prod_documents/doc2525.pdf спецификация]). Можно обходиться без начального загрузчика и прошивать код через разъем программирования ICSP.
 
+Можно прошивать плату мимо начального загрузчика, непосредственно в Flash-память, используя LPT-адаптер STK200 [http://www.masterkit.ru/main/set.php?num=1106 или совместимый] ([http://www.ln.com.ua/~real/avreal/img/stkx00.png схема]). Понадобится шлейф-переходник с [http://olimex.com/dev/images/avr-icsp-10.gif 10-контактного разъёма ISCP] на 6-контактный:
+|| *Сигнал* || *ICSP-10* || *ICSP-6* ||
+|| MOSI     || 1         || 4        ||
+|| +5V      || 2         || 2        ||
+|| /RESET   || 5         || 5        ||
+|| GND      || 6         || 6        ||
+|| SCK      || 7         || 3        ||
+|| MISO     || 9         || 1        ||
+
+Восстановить начальный загрузчик можно командами:
+{{{
+avrdude -cstk200 -patmega168 -e -u -Ulock:w:0x3f:m -Uefuse:w:0x00:m -Uhfuse:w:0xDD:m -Ulfuse:w:0xFF:m
+avrdude -cstk200 -patmega168 -Uflash:w:ATmegaBOOT_168_diecimila.hex -Ulock:w:0x0f:m
+}}}
+
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/avr-arduino-diecimila examples/avr-arduino-diecimila] находятся примеры сборки uOS для Arduino Diecimila.
 
@@ -56,18 +71,3 @@
 || Analog 3   || PC3             || ADC3           ||
 || Analog 4   || PC4             || ADC4 / SDA     ||
 || Analog 5   || PC5             || ADC5 / SCL     ||
-
-Можно прошивать плату мимо начального загрузчика, непосредственно в Flash-память, используя LPT-адаптер STK200 [http://www.masterkit.ru/main/set.php?num=1106 или совместимый] ([http://www.ln.com.ua/~real/avreal/img/stkx00.png схема]). Понадобится шлейф-переходник с [http://olimex.com/dev/images/avr-icsp-10.gif 10-контактного разъёма ISCP] на 6-контактный:
-|| *Сигнал* || *ICSP-10* || *ICSP-6* ||
-|| MOSI     || 1         || 4        ||
-|| +5V      || 2         || 2        ||
-|| /RESET   || 5         || 5        ||
-|| GND      || 6         || 6        ||
-|| SCK      || 7         || 3        ||
-|| MISO     || 9         || 1        ||
-
-Восстановить начальный загрузчик можно командами:
-{{{
-avrdude -cstk200 -patmega168 -e -u -Ulock:w:0x3f:m -Uefuse:w:0x00:m -Uhfuse:w:0xDD:m -Ulfuse:w:0xFF:m
-avrdude -cstk200 -patmega168 -Uflash:w:ATmegaBOOT_168_diecimila.hex -Ulock:w:0x0f:m
-}}}
