@@ -13,7 +13,7 @@
 
 Частота процессора равна 80 MHz.
 
-Замена прошивки производится через порт JTAG, посредством утилиты [http://code.google.com/p/mcprog/wiki/Home_ru mcprog].
+Замена прошивки производится через порт JTAG, посредством утилиты [http://code.google.com/p/mcprog/wiki/Home_ru mcprog] и адаптера [http://multicore.ru/index.php?id=54 JTAG-EPP].
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24 examples/mips32-mc24]
