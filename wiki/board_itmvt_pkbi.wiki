@@ -35,3 +35,6 @@
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/test_uart.c test_uart.c]
 - Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
 циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24/philosophers.c philosophers.c]
+- Пять обедающих философов. Шесть задач: драйвер UART и пять задач философов.
