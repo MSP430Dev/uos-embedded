@@ -63,25 +63,25 @@ endmodule
 В результате синтеза будем порождать следующие файлы:
   * firmware.bit - бинарный файл прошивки для FPGA.
   * firmware.mcs - бинарный файл прошивки для микросхемы последовательной памяти.
-  * 1-compile.log - протокол утитилиты XST.	[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/1-compile.log  Пример].
-  * 2-build.log - протокол утитилиты NGDBuild.  [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/2-build.log    Пример].
-  * 3-map.log - протокол утитилиты MAP.         [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/3-map.log      Пример].
-  * 4-route.log - протокол утитилиты PAR.       [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/4-route.log    Пример].
-  * 5-trace.log - протокол утитилиты TRCE.      [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/5-trace.log    Пример].
-  * 6-bitgen.log - протокол утитилиты BITGEN.   [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/6-bitgen.log   Пример].
-  * 7-promgen.log - протокол утитилиты PROMGEN. [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/7-promgen.log  Пример].
-  * 8-download.log - протокол утитилиты iMPACT. [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/8-download.log Пример].
+  * 1-compile.log - протокол утитилиты XST.	[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/1-compile.log  Пример].
+  * 2-build.log - протокол утитилиты NGDBuild.  [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/2-build.log    Пример].
+  * 3-map.log - протокол утитилиты MAP.         [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/3-map.log      Пример].
+  * 4-route.log - протокол утитилиты PAR.       [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/4-route.log    Пример].
+  * 5-trace.log - протокол утитилиты TRCE.      [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/5-trace.log    Пример].
+  * 6-bitgen.log - протокол утитилиты BITGEN.   [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/6-bitgen.log   Пример].
+  * 7-promgen.log - протокол утитилиты PROMGEN. [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/7-promgen.log  Пример].
+  * 8-download.log - протокол утитилиты iMPACT. [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/8-download.log Пример].
 
 = Пакетные файлы для Windows =
 Дапуска синтезатора Xilinx под Windows можно использовать следующие пакетные файлы:
-  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/compile.bat   compile.bat] - запуск синтезатора.
-  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/loadfpga.bat  loadfpga.bat] - загрузка FPGA.
-  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/progflash.bat progflash.bat] - прошивка микросхемы последовательной памяти.
-  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/clean.bat     clean.bat] - удаление временных файлов.
-  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/cleanall.bat  cleanall.bat] - удаление временных файлов и результатов компиляции.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat   compile.bat] - запуск синтезатора.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/loadfpga.bat  loadfpga.bat] - загрузка FPGA.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/progflash.bat progflash.bat] - прошивка микросхемы последовательной памяти.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/clean.bat     clean.bat] - удаление временных файлов.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/cleanall.bat  cleanall.bat] - удаление временных файлов и результатов компиляции.
 
 = Обобщающий Makefile для Linux =
-Все этапы синтеза можно объединить в одном файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/Makefile Makefile]. Запуск:
+Все этапы синтеза можно объединить в одном файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/Makefile Makefile]. Запуск:
   * "make" или "make all" - компиляция прошивки, создание файлов firmware.bit и firmware.mcs.
   * "make load" - загрузка прошивки в микросхему FPGA.
   * "make prog" - загрузка прошивки в микросхему последовательной памяти.
