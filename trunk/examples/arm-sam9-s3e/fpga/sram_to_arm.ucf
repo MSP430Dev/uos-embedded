@@ -1,0 +1,66 @@
+NET "ARM_A<0>"  LOC = "p164"  ;
+NET "ARM_A<1>"  LOC = "p165"  ;
+NET "ARM_A<2>"  LOC = "p162"  ;
+NET "ARM_A<3>"  LOC = "p161"  ;
+NET "ARM_A<4>"  LOC = "p160"  ;
+NET "ARM_A<5>"  LOC = "p159"  ;
+NET "ARM_A<6>"  LOC = "p167"  ;
+NET "ARM_A<7>"  LOC = "p169"  ;
+NET "ARM_A<8>"  LOC = "p168"  ;
+NET "ARM_A<9>"  LOC = "p171"  ;
+NET "ARM_A<10>"  LOC = "p172"  ;
+NET "ARM_A<11>"  LOC = "p174"  ;
+NET "ARM_A<12>"  LOC = "p175"  ;
+NET "ARM_A<13>"  LOC = "p177"  ;
+NET "ARM_A<14>"  LOC = "p179"  ;
+NET "ARM_A<15>"  LOC = "p178"  ;
+NET "ARM_A<16>"  LOC = "p180"  ;
+NET "ARM_A<17>"  LOC = "p181"  ;
+NET "ARM_A<18>"  LOC = "p154"  ;
+
+NET "ARM_D<0>"  LOC = "p153"  ;
+NET "ARM_D<1>"  LOC = "p152"  ;
+NET "ARM_D<2>"  LOC = "p151"  ;
+NET "ARM_D<3>"  LOC = "p150"  ;
+NET "ARM_D<4>"  LOC = "p147"  ;
+NET "ARM_D<5>"  LOC = "p146"  ;
+NET "ARM_D<6>"  LOC = "p145"  ;
+NET "ARM_D<7>"  LOC = "p144"  ;
+
+NET "ARM_CS"  LOC = "p148"  ;
+NET "ARM_OE"  LOC = "p194"  ;
+NET "ARM_WE"  LOC = "p184"  ;
+
+
+NET "SRAM_A<0>"  LOC = "p120"  ;
+NET "SRAM_A<1>"  LOC = "p119"  ;
+NET "SRAM_A<2>"  LOC = "p116"  ;
+NET "SRAM_A<3>"  LOC = "p115"  ;
+NET "SRAM_A<4>"  LOC = "p113"  ;
+NET "SRAM_A<5>"  LOC = "p97"  ;
+NET "SRAM_A<6>"  LOC = "p98"  ;
+NET "SRAM_A<7>"  LOC = "p99"  ;
+NET "SRAM_A<8>"  LOC = "p100"  ;
+NET "SRAM_A<9>"  LOC = "p102"  ;
+NET "SRAM_A<10>"  LOC = "p122"  ;
+NET "SRAM_A<11>"  LOC = "p123"  ;
+NET "SRAM_A<12>"  LOC = "p126"  ;
+NET "SRAM_A<13>"  LOC = "p127"  ;
+NET "SRAM_A<14>"  LOC = "p128"  ;
+NET "SRAM_A<15>"  LOC = "p137"  ;
+NET "SRAM_A<16>"  LOC = "p138"  ;
+NET "SRAM_A<17>"  LOC = "p139"  ;
+NET "SRAM_A<18>"  LOC = "p140"  ;
+
+NET "SRAM_D<0>"  LOC = "p112"  ;
+NET "SRAM_D<1>"  LOC = "p109"  ;
+NET "SRAM_D<2>"  LOC = "p108"  ;
+NET "SRAM_D<3>"  LOC = "p107"  ;
+NET "SRAM_D<4>"  LOC = "p129"  ;
+NET "SRAM_D<5>"  LOC = "p132"  ;
+NET "SRAM_D<6>"  LOC = "p133"  ;
+NET "SRAM_D<7>"  LOC = "p134"  ;
+
+NET "SRAM_OE"  LOC = "p135"  ;
+NET "SRAM_WE"  LOC = "p106"  ;
+NET "SRAM_CS"  LOC = "p197"  ;

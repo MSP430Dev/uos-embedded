@@ -1,0 +1,19 @@
+# Boundary-scan configuration mode.
+setMode -bscan
+
+# Use Xilinx platform cable USB.
+#setCable -p usb21
+
+# Use Xilinx platform cable LPT.
+# Limit cable speed.
+setcable -port lpt1
+setcablespeed -speed 625000
+
+# Identify the devices in the boundary-scan chain.
+identify
+
+# Load FPGA.
+assignFile -p 1 -file firmware.bit
+program -p 1
+
+quit
