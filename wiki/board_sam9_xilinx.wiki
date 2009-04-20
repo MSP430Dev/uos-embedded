@@ -90,8 +90,8 @@ endmodule
 
 В начале файлов Makefile и compile.bat находятся параметры:
   * FPGA - тип целевой микросхемы FPGA.
-  * XSTFLAGS - дополнительные флаги для синтезатора XST. [[http://toolbox.xilinx.com/docsan/xilinx8/books/data/docs/xst/xst0064_8.html | Описание на сайте Xilinx]].
-  * BGFLAGS - дополнительные флаги для утилиты BITGEN. [[http://toolbox.xilinx.com/docsan/data/alliance/dev/dev13_4.htm | Описание на сайте Xilinx]].
+  * XSTFLAGS - дополнительные флаги для синтезатора XST. [http://toolbox.xilinx.com/docsan/xilinx8/books/data/docs/xst/xst0064_8.html Описание на сайте Xilinx].
+  * BGFLAGS - дополнительные флаги для утилиты BITGEN. [http://toolbox.xilinx.com/docsan/data/alliance/dev/dev13_4.htm Описание на сайте Xilinx].
   * PROMFLAGS - флаги утилиты PROMGEN, в частности тип микросхемы последовательной памяти, используемой для загрузки FPGA при подаче питания.
   * SRCV - список исходных файлов на языке Verilog.
   * SRCVHD - список исходных файлов на языке VHDL.
