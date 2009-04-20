@@ -1,1 +1,125 @@
 #summary Xilinx FPGA on Starterkit SAM9-S3E target board.
+
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga examples/arm-sam9-s3e/fpga]
+находятся исходные тексты и скрипты для сборки прошивки FPGA Xilinx XC3S500E платы Starterkit SAM9-S3E.
+
+Чтобы скомпилировать прошивку, необходимо установить
+[http://www.xilinx.com/ise/logic_design_prod/webpack.htm Xilinx ISE Webpack].
+Это бесплатная система разработки, включающая синтезатор и симулятор для языков
+Verilog и VHDL, а также JTAG-программатор.
+
+= Исходные тексты =
+Файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/sram_to_arm.v examples/arm-sam9-s3e/fpga/sram_to_arm.v]
+содержит Verilog-тексты простейшей прошивки, транслирующей обращения чтения-записи
+от процессора к статической памяти Samsung K6R4008V1D.
+{{{
+module sram_to_arm (ARM_D, ARM_A, ARM_CS, ARM_OE, ARM_WE, SRAM_D, SRAM_A, SRAM_CS, SRAM_OE, SRAM_WE);
+	inout [7:0] ARM_D;
+	input [18:0] ARM_A;
+	input ARM_CS;
+	input ARM_OE;
+	input ARM_WE;
+	inout [7:0] SRAM_D;
+	output [18:0] SRAM_A;
+	output SRAM_CS;
+	output SRAM_OE;
+	output SRAM_WE;
+
+	wire SRAM_CS;
+	wire SRAM_OE;
+	wire SRAM_WE;
+	wire [7:0] SRAM_D;
+	wire [18:0] SRAM_A;
+	wire [7:0] ARM_D;
+
+	assign SRAM_CS = ARM_CS;
+	assign SRAM_OE = ARM_OE;
+	assign SRAM_WE = ARM_WE;
+	assign SRAM_A  = ARM_A;
+
+	assign ARM_D[7:0]  = (!ARM_OE && !ARM_CS) ? SRAM_D[7:0] : 8'hzz;
+	assign SRAM_D[7:0] = (!ARM_WE && !ARM_CS) ? ARM_D[7:0]  : 8'hzz;
+endmodule
+}}}
+
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/sram_to_arm.ucf examples/arm-sam9-s3e/fpga/sram_to_arm.ucf]
+описана привязка внешних сигналов FPGA к ножкам корпуса.
+
+= Синтез прошивки =
+Для компиляции прошивки надо в каталоге `examples/arm-sam9-s3e/fpga/` выполнить команду "make" (для Linux)
+или скрипт [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/compile.bat]
+(для Windows). Временные файлы размещаются в подкаталоге "build".
+
+Сборка прошивки для FPGA Xilinx состоит из восьми этапов:
+  # [http://toolbox.xilinx.com/docsan/xilinx8/books/data/docs/xst/xst0003_2.html XST] - преобразование исходного кода на языке VHDL или Verilog в список логических цепей.
+  # [http://toolbox.xilinx.com/docsan/data/alliance/dev/dev2.htm  NGDBuild] - разбиение схемы на элементарные логические элементы.
+  # [http://toolbox.xilinx.com/docsan/data/alliance/dev/dev6.htm  MAP] - отображение элементарных логических элементов на компоненты заданной конкретной микросхемы программируемой логики.
+  # [http://toolbox.xilinx.com/docsan/data/alliance/dev/dev10.htm PAR] - размещение компонентов и трассировка соединений.
+  # [http://toolbox.xilinx.com/docsan/data/alliance/dev/dev12.htm TRCE] - временной анализ синтезированной схемы.
+  # [http://toolbox.xilinx.com/docsan/data/alliance/dev/dev13.htm BITGEN] - создание файла прошивки для загрузки в микросхему FPGA.
+  # [http://toolbox.xilinx.com/docsan/data/alliance/dev/dev14.htm PROMGEN] - преобразование файла прошивки для записи в микросхему последовательной памяти.
+  # [http://toolbox.xilinx.com/docsan/xilinx4/data/docs/pac/preface.html iMPACT] - загрузка прошивки в микросхему FPGA или в микросхему последовательной памяти.
+
+В результате синтеза будем порождать следующие файлы:
+  * firmware.bit - бинарный файл прошивки для FPGA.
+  * firmware.mcs - бинарный файл прошивки для микросхемы последовательной памяти.
+  * 1-compile.log - протокол утитилиты XST.	[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/1-compile.log  Пример].
+  * 2-build.log - протокол утитилиты NGDBuild.  [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/2-build.log    Пример].
+  * 3-map.log - протокол утитилиты MAP.         [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/3-map.log      Пример].
+  * 4-route.log - протокол утитилиты PAR.       [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/4-route.log    Пример].
+  * 5-trace.log - протокол утитилиты TRCE.      [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/5-trace.log    Пример].
+  * 6-bitgen.log - протокол утитилиты BITGEN.   [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/6-bitgen.log   Пример].
+  * 7-promgen.log - протокол утитилиты PROMGEN. [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/7-promgen.log  Пример].
+  * 8-download.log - протокол утитилиты iMPACT. [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/8-download.log Пример].
+
+= Пакетные файлы для Windows =
+Дапуска синтезатора Xilinx под Windows можно использовать следующие пакетные файлы:
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/compile.bat   compile.bat] - запуск синтезатора.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/loadfpga.bat  loadfpga.bat] - загрузка FPGA.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/progflash.bat progflash.bat] - прошивка микросхемы последовательной памяти.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/clean.bat     clean.bat] - удаление временных файлов.
+  * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/cleanall.bat  cleanall.bat] - удаление временных файлов и результатов компиляции.
+
+= Обобщающий Makefile для Linux =
+Все этапы синтеза можно объединить в одном файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/compile.bat examples/arm-sam9-s3e/fpga/Makefile Makefile]. Запуск:
+  * "make" или "make all" - компиляция прошивки, создание файлов firmware.bit и firmware.mcs.
+  * "make load" - загрузка прошивки в микросхему FPGA.
+  * "make prog" - загрузка прошивки в микросхему последовательной памяти.
+  * "make clean" - удаление временных файлов.
+  * "make cleanall" - удаление временных файлов и результатов синтеза.
+
+В начале файлов Makefile и compile.bat находятся параметры:
+  * FPGA - тип целевой микросхемы FPGA.
+  * XSTFLAGS - дополнительные флаги для синтезатора XST. [[http://toolbox.xilinx.com/docsan/xilinx8/books/data/docs/xst/xst0064_8.html | Описание на сайте Xilinx]].
+  * BGFLAGS - дополнительные флаги для утилиты BITGEN. [[http://toolbox.xilinx.com/docsan/data/alliance/dev/dev13_4.htm | Описание на сайте Xilinx]].
+  * PROMFLAGS - флаги утилиты PROMGEN, в частности тип микросхемы последовательной памяти, используемой для загрузки FPGA при подаче питания.
+  * SRCV - список исходных файлов на языке Verilog.
+  * SRCVHD - список исходных файлов на языке VHDL.
+  * PINS - файл, содержащий распределение ножек микросхемы и параметры синтеза.
+
+= Скрипты для программатора IMPACT =
+В качестве JTAG-интерфейса я использую LPT-адаптер, совместимый с
+[http://www.xilinx.com/itp/xilinx4/data/docs/pac/appendixb.html Xilinx Parallel Cable III].
+
+Файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/loadfpga.impact loadfpga.impact]
+содержит скрипт для загрузки прошивки в FPGA командой "impact -batch loadfpga.impact".
+{{{
+setMode -bscan
+setcable -port lpt1
+setcablespeed -speed 625000
+identify
+assignFile -p 1 -file firmware.bit
+program -p 1
+quit
+}}}
+
+В файле [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/progflash.impact progflash.impact]
+имеется скрипт для записи прошивки в микросхему последовательной памяти конфигурации FPGA командой "impact -batch progflash.impact".
+{{{
+setmode -spi
+setcable -port lpt1
+setcablespeed -speed 625000
+adddevice -p 1 -spi AT45DB321B -file firmware.mcs
+program -p 1 -e -v
+quit
+}}}
