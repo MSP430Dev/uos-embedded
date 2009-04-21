@@ -8,7 +8,7 @@ Target Device  : xc3s500e
 Target Package : pq208
 Target Speed   : -4
 Mapper Version : spartan3e -- $Revision: 1.46.12.2 $
-Mapped Date    : Mon Apr 20 19:27:18 2009
+Mapped Date    : Tue Apr 21 18:45:46 2009
 
 Design Summary
 --------------
@@ -25,7 +25,7 @@ Logic Distribution:
   Number of bonded IOBs:                 60 out of     158   37%
 
 Peak Memory Usage:  151 MB
-Total REAL time to MAP completion:  5 secs 
+Total REAL time to MAP completion:  3 secs 
 Total CPU time to MAP completion:   2 secs 
 
 NOTES:
@@ -89,7 +89,6 @@ Section 6 - IOB Properties
 | IOB Name                           | Type             | Direction | IO Standard          | Drive    | Slew | Reg (s)      | Resistor | IOB      |
 |                                    |                  |           |                      | Strength | Rate |              |          | Delay    |
 +-------------------------------------------------------------------------------------------------------------------------------------------------+
-| ARM_A<0>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<1>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<2>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<3>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
@@ -117,6 +116,7 @@ Section 6 - IOB Properties
 | ARM_D<5>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<6>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<7>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_NLB                            | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_OE                             | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_WE                             | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | SRAM_A<0>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |

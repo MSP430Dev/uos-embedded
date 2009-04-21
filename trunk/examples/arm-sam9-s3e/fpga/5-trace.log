@@ -33,7 +33,6 @@ Pad to Pad
 ---------------+---------------+---------+
 Source Pad     |Destination Pad|  Delay  |
 ---------------+---------------+---------+
-ARM_A<0>       |SRAM_A<0>      |    7.192|
 ARM_A<1>       |SRAM_A<1>      |    6.910|
 ARM_A<2>       |SRAM_A<2>      |    7.508|
 ARM_A<3>       |SRAM_A<3>      |    7.167|
@@ -77,6 +76,7 @@ ARM_D<4>       |SRAM_D<4>      |    5.532|
 ARM_D<5>       |SRAM_D<5>      |    5.705|
 ARM_D<6>       |SRAM_D<6>      |    5.434|
 ARM_D<7>       |SRAM_D<7>      |    5.557|
+ARM_NLB        |SRAM_A<0>      |    7.192|
 ARM_OE         |ARM_D<0>       |    9.456|
 ARM_OE         |ARM_D<1>       |    9.217|
 ARM_OE         |ARM_D<2>       |    9.208|
@@ -106,7 +106,7 @@ SRAM_D<7>      |ARM_D<7>       |    5.731|
 ---------------+---------------+---------+
 
 
-Analysis completed Mon Apr 20 19:27:35 2009 
+Analysis completed Tue Apr 21 18:46:00 2009 
 --------------------------------------------------------------------------------
 
 Trace Settings:

@@ -2,7 +2,7 @@ Release 10.1.03 ngdbuild K.39 (lin)
 Copyright (c) 1995-2008 Xilinx, Inc.  All rights reserved.
 
 Command Line: /opt/Xilinx/10.1/ISE/bin/lin/unwrapped/ngdbuild -p
-xc3s500e-pq208-4 project.ngc -uc ../sram_to_arm.ucf
+xc3s500e-pq208-4 project.ngc -uc ../sam9_s3e.ucf
 
 Reading NGO file
 "/home/vak/Project/uos-embedded/trunk/examples/arm-sam9-s3e/fpga/build/project.n
@@ -10,7 +10,7 @@ gc" ...
 Gathering constraint information from source properties...
 Done.
 
-Applying constraints in "../sram_to_arm.ucf" to the design...
+Applying constraints in "../sam9_s3e.ucf" to the design...
 Resolving constraint associations...
 Checking Constraint Associations...
 Done...
@@ -29,7 +29,7 @@ NGDBUILD Design Results Summary:
   Number of errors:     0
   Number of warnings:   0
 
-Total memory usage is 59796 kilobytes
+Total memory usage is 60128 kilobytes
 
 Writing NGD file "project.ngd" ...
 

@@ -1,0 +1,179 @@
+#
+# Раскладка сигналов по ножкам для микросхемы Xilinx XC3S500E
+# в корпусе PQ208 на плате SK-AT91SAM9XE512-S3E.
+#
+
+#
+# Локальная шина ARM9, 16 бит.
+#
+NET "ARM_D<0>"		LOC = "p153" ;
+NET "ARM_D<1>"		LOC = "p152" ;
+NET "ARM_D<2>"		LOC = "p151" ;
+NET "ARM_D<3>"		LOC = "p150" ;
+NET "ARM_D<4>"		LOC = "p147" ;
+NET "ARM_D<5>"		LOC = "p146" ;
+NET "ARM_D<6>"		LOC = "p145" ;
+NET "ARM_D<7>"		LOC = "p144" ;
+#NET "ARM_D<8>"		LOC = "p185" ;
+#NET "ARM_D<9>"		LOC = "p186" ;
+#NET "ARM_D<10>"	LOC = "p187" ;
+#NET "ARM_D<11>"	LOC = "p189" ;
+#NET "ARM_D<12>"	LOC = "p190" ;
+#NET "ARM_D<13>"	LOC = "p192" ;
+#NET "ARM_D<14>"	LOC = "p193" ;
+#NET "ARM_D<15>"	LOC = "p196" ;
+
+NET "ARM_A<1>"		LOC = "p165" ;	# SD_DQL2
+NET "ARM_A<2>"		LOC = "p162" ;	# SD_A0 = A2 и так далее
+NET "ARM_A<3>"		LOC = "p161" ;
+NET "ARM_A<4>"		LOC = "p160" ;
+NET "ARM_A<5>"		LOC = "p159" ;
+NET "ARM_A<6>"		LOC = "p167" ;
+NET "ARM_A<7>"		LOC = "p169" ;
+NET "ARM_A<8>"		LOC = "p168" ;
+NET "ARM_A<9>"		LOC = "p171" ;
+NET "ARM_A<10>"		LOC = "p172" ;
+NET "ARM_A<11>"		LOC = "p174" ;
+NET "ARM_A<12>"		LOC = "p175" ;	# A12
+NET "ARM_A<13>"		LOC = "p177" ;
+NET "ARM_A<14>"		LOC = "p179" ;
+NET "ARM_A<15>"		LOC = "p178" ;	# A15
+NET "ARM_A<16>"		LOC = "p180" ;	# SD_BA0
+NET "ARM_A<17>"		LOC = "p181" ;	# SD_BA1
+NET "ARM_A<18>"		LOC = "p154" ;	# A18
+
+NET "ARM_OE"		LOC = "p194" ;
+NET "ARM_WE"		LOC = "p184" ;
+NET "ARM_NLB"		LOC = "p164" ;	# SD_DQL1
+#NET "ARM_NUB"		LOC = "p163" ;	# SD_DQH1
+
+NET "ARM_CS"		LOC = "p148" ;	# F_CS0
+#NET "ARM_CS1"		LOC = "p204" ; 	# F_CS1
+
+#
+# Внешняя память Samsung K6R4008V1D.
+#
+NET "SRAM_A<0>"		LOC = "p120" ;
+NET "SRAM_A<1>"		LOC = "p119" ;
+NET "SRAM_A<2>"		LOC = "p116" ;
+NET "SRAM_A<3>"		LOC = "p115" ;
+NET "SRAM_A<4>"		LOC = "p113" ;
+NET "SRAM_A<5>"		LOC = "p97" ;
+NET "SRAM_A<6>"		LOC = "p98" ;
+NET "SRAM_A<7>"		LOC = "p99" ;
+NET "SRAM_A<8>"		LOC = "p100" ;
+NET "SRAM_A<9>"		LOC = "p102" ;
+NET "SRAM_A<10>"	LOC = "p122" ;
+NET "SRAM_A<11>"	LOC = "p123" ;
+NET "SRAM_A<12>"	LOC = "p126" ;
+NET "SRAM_A<13>"	LOC = "p127" ;
+NET "SRAM_A<14>"	LOC = "p128" ;
+NET "SRAM_A<15>"	LOC = "p137" ;
+NET "SRAM_A<16>"	LOC = "p138" ;
+NET "SRAM_A<17>"	LOC = "p139" ;
+NET "SRAM_A<18>"	LOC = "p140" ;
+
+NET "SRAM_D<0>"		LOC = "p112" ;
+NET "SRAM_D<1>"		LOC = "p109" ;
+NET "SRAM_D<2>"		LOC = "p108" ;
+NET "SRAM_D<3>"		LOC = "p107" ;
+NET "SRAM_D<4>"		LOC = "p129" ;
+NET "SRAM_D<5>"		LOC = "p132" ;
+NET "SRAM_D<6>"		LOC = "p133" ;
+NET "SRAM_D<7>"		LOC = "p134" ;
+
+NET "SRAM_OE"		LOC = "p135" ;
+NET "SRAM_WE"		LOC = "p106" ;
+NET "SRAM_CS"		LOC = "p197" ;
+
+#
+# Незадействованные сигналы.
+#
+#NET "FP2"		LOC = "p2" ; 	# IO_L01P_3
+#NET "FP3"		LOC = "p3" ; 	# IO_L01N_3
+#NET "FP4"		LOC = "p4" ; 	# IO_L02P_3
+#NET "FP5"		LOC = "p5" ; 	# IO_L02N_3/VREF_3
+#NET "FP6"		LOC = "p6" ; 	# IP
+#NET "FP8"		LOC = "p8" ; 	# IO_L03P_3
+#NET "FP9"		LOC = "p9" ; 	# IO_L03N_3
+#NET "FP11"		LOC = "p11" ; 	# IO_L04P_3
+#NET "FP12"		LOC = "p12" ; 	# IO_L04N_3
+#NET "FP14"		LOC = "p14" ; 	# IP
+#NET "FP15"		LOC = "p15" ; 	# IO_L05P_3
+#NET "FP16"		LOC = "p16" ; 	# IO_L05N_3
+#NET "FP18"		LOC = "p18" ; 	# IO_L06P_3
+#NET "FP19"		LOC = "p19" ; 	# IO_L06N_3
+#NET "FP20"		LOC = "p20" ; 	# IP/VREF_3
+#NET "FP22"		LOC = "p22" ; 	# IO_L07P_3/LHCLK0
+#NET "FP23"		LOC = "p23" ; 	# IO_L07N_3/LHCLK1
+#NET "FP24"		LOC = "p24" ; 	# IO_L08P_3/LHCLK2
+#NET "FP25"		LOC = "p25" ; 	# IO_L08N_3/LHCLK3/IRDY2
+#NET "FP26"		LOC = "p26" ; 	# IP
+#NET "FP28"		LOC = "p28" ; 	# IO_L09P_3/LHCLK4/TRDY2
+#NET "FP29"		LOC = "p29" ; 	# IO_L09N_3/LHCLK5
+#NET "FP30"		LOC = "p30" ; 	# IO_L10P_3/LHCLK6
+#NET "FP31"		LOC = "p31" ; 	# IO_L10N_3/LHCLK7
+#NET "FP32"		LOC = "p32" ; 	# IP
+#NET "FP33"		LOC = "p33" ; 	# IO_L11P_3
+#NET "FP34"		LOC = "p34" ; 	# IO_L11N_3
+#NET "FP35"		LOC = "p35" ; 	# IO_L12P_3
+#NET "FP36"		LOC = "p36" ; 	# IO_L12N_3
+#NET "FP39"		LOC = "p39" ; 	# IO_L13P_3
+#NET "FP40"		LOC = "p40" ; 	# IO_L13N_3
+#NET "FP41"		LOC = "p41" ; 	# IO_L14P_3
+#NET "FP42"		LOC = "p42" ; 	# IO_L14N_3
+#NET "FP43"		LOC = "p43" ; 	# IP
+#NET "FP45"		LOC = "p45" ; 	# IO/VREF_3
+#NET "FP47"		LOC = "p47" ; 	# IO_L15P_3
+#NET "FP48"		LOC = "p48" ; 	# IO_L15N_3
+#NET "FP49"		LOC = "p49" ; 	# IO_L16P_3
+#NET "FP50"		LOC = "p50" ; 	# IO_L16N_3
+#NET "FP51"		LOC = "p51" ; 	# IP
+#NET "FP54"		LOC = "p54" ; 	# IP
+#NET "FP55"		LOC = "p55" ; 	# IO_L01P_2/CSO_B
+#NET "FP56"		LOC = "p56" ; 	# IO_L01N_2/INIT_B
+#NET "FP57"		LOC = "p57" ; 	# IP_L02P_2
+#NET "FP58"		LOC = "p58" ; 	# IP_L02N_2
+#NET "FP60"		LOC = "p60" ; 	# IO_L03P_2/DOUT/BUSY
+#NET "FP61"		LOC = "p61" ; 	# IO_L03N_2/MOSI/CSI_B
+#NET "FP62"		LOC = "p62" ; 	# IO_L04P_2
+#NET "FP63"		LOC = "p63" ; 	# IO_L04N_2
+#NET "FP64"		LOC = "p64" ; 	# IO_L05P_2
+#NET "FP65"		LOC = "p65" ; 	# IO_L05N_2
+#NET "FP68"		LOC = "p68" ; 	# IO_L06P_2
+#NET "FP69"		LOC = "p69" ; 	# IO_L06N_2
+#NET "FP71"		LOC = "p71" ; 	# IP_L07P_2
+#NET "FP72"		LOC = "p72" ; 	# IP_L07N_2/VREF_2
+#NET "FP74"		LOC = "p74" ; 	# IO_L08P_2/D7/GCLK12
+#NET "FP75"		LOC = "p75" ; 	# IO_L08N_2/D6/GCLK13
+#NET "FP76"		LOC = "p76" ; 	# IO/D5
+#NET "FP77"		LOC = "p77" ; 	# IO_L09P_2/D4/GCLK14
+#NET "FP78"		LOC = "p78" ; 	# IO_L09N_2/D3/GCLK15
+#NET "FP80"		LOC = "p80" ; 	# IP_L10P_2/RDWR_B/GCLK0
+#NET "FP81"		LOC = "p81" ; 	# IP_L10N_2/M2/GCLK1
+#NET "FP82"		LOC = "p82" ; 	# IO_L11P_2/D2/GCLK2
+#NET "FP83"		LOC = "p83" ; 	# IO_L11N_2/D1/GCLK3
+#NET "FP84"		LOC = "p84" ; 	# IO/M1
+#NET "FP86"		LOC = "p86" ; 	# IO_L12P_2/M0
+#NET "FP87"		LOC = "p87" ; 	# IO_L12N_2/DIN/D0
+#NET "FP89"		LOC = "p89" ; 	# IO_L13P_2
+#NET "FP90"		LOC = "p90" ; 	# IO_L13N_2
+#NET "FP91"		LOC = "p91" ; 	# IP
+#NET "FP93"		LOC = "p93" ; 	# IO_L14P_2/A23
+#NET "FP94"		LOC = "p94" ; 	# IO_L14N_2/A22
+#NET "FP96"		LOC = "p96" ; 	# IO_L15P_2/A21
+#NET "FP101"		LOC = "p101" ; 	# IP
+#NET "FP103"		LOC = "p103" ; 	# IO_L17N_2/CCLK
+#NET "FP110"		LOC = "p110" ; 	# IP
+#NET "FP118"		LOC = "p118" ; 	# IP
+#NET "FP124"		LOC = "p124" ; 	# IP
+#NET "FP130"		LOC = "p130" ; 	# IP
+#NET "FP136"		LOC = "p136" ; 	# IP/VREF_1
+#NET "FP142"		LOC = "p142" ; 	# IP
+#NET "FP183"		LOC = "p183" ; 	# IP_L09P_0/GCLK8
+#NET "FP199"		LOC = "p199" ; 	# IO_L14P_0
+#NET "FP200"		LOC = "p200" ; 	# IO_L14N_0/VREF_0
+#NET "FP202"		LOC = "p202" ; 	# IO_L15P_0
+#NET "FP203"		LOC = "p203" ; 	# IO_L15N_0
+#NET "FP205"		LOC = "p205" ; 	# IO_L16P_0
+#NET "FP206"		LOC = "p206" ; 	# IO_L16N_0/HSWAP

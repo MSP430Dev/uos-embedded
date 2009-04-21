@@ -88,7 +88,7 @@ PROMGENFLAGS	= -p mcs -w -c FF -s 512 -spi
 #
 SRCV		= sram_to_arm.v
 SRCVHD		=
-PINS		= sram_to_arm.ucf
+PINS		= sam9_s3e.ucf
 
 all:		firmware.bit firmware.mcs
 
