@@ -72,6 +72,7 @@ Performing bidirectional port resolution...
 
 Synthesizing Unit <sram_to_arm>.
     Related source file is "../sram_to_arm.v".
+WARNING:Xst:647 - Input <ARM_nLB> is never used. This port will be preserved and left unconnected if it belongs to a top-level block or it belongs to a sub-block and the hierarchy of this sub-block is preserved.
     Found 8-bit tristate buffer for signal <SRAM_D>.
     Found 16-bit tristate buffer for signal <$mux0000>.
     Summary:
@@ -139,7 +140,7 @@ Optimization Goal                  : Speed
 Keep Hierarchy                     : no
 
 Design Statistics
-# IOs                              : 68
+# IOs                              : 69
 
 Cell Usage :
 # BELS                             : 3
@@ -159,7 +160,7 @@ Selected Device : 3s500epq208-4
 
  Number of Slices:                        1  out of   4656     0%  
  Number of 4 input LUTs:                  2  out of   9312     0%  
- Number of IOs:                          68
+ Number of IOs:                          69
  Number of bonded IOBs:                  68  out of    158    43%  
 
 ---------------------------
@@ -204,14 +205,14 @@ Timing constraint: Default path analysis
   Total number of paths / destination ports: 86 / 46
 -------------------------------------------------------------------------
 Delay:               6.850ns (Levels of Logic = 3)
-  Source:            ARM_OE (PAD)
+  Source:            ARM_nOE (PAD)
   Destination:       ARM_D<4> (PAD)
 
-  Data Path: ARM_OE to ARM_D<4>
+  Data Path: ARM_nOE to ARM_D<4>
                                 Gate     Net
     Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
     ----------------------------------------  ------------
-     IBUF:I->O             2   1.218   0.622  ARM_OE_IBUF (SRAM_OE_OBUF)
+     IBUF:I->O             2   1.218   0.622  ARM_nOE_IBUF (SRAM_nOE_OBUF)
      LUT2:I0->O           16   0.704   1.034  mux0000_and0000_inv1 (mux0000_and0000_inv)
      OBUFT:T->O                3.272          ARM_D_8_OBUFT (ARM_D<8>)
     ----------------------------------------
@@ -221,15 +222,15 @@ Delay:               6.850ns (Levels of Logic = 3)
 =========================================================================
 
 
-Total REAL time to Xst completion: 5.00 secs
-Total CPU time to Xst completion: 4.78 secs
+Total REAL time to Xst completion: 4.00 secs
+Total CPU time to Xst completion: 4.81 secs
  
 --> 
 
 
-Total memory usage is 137376 kilobytes
+Total memory usage is 137448 kilobytes
 
 Number of errors   :    0 (   0 filtered)
-Number of warnings :    0 (   0 filtered)
+Number of warnings :    1 (   0 filtered)
 Number of infos    :    0 (   0 filtered)
 

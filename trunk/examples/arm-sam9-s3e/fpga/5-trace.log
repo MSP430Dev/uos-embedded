@@ -33,6 +33,7 @@ Pad to Pad
 ---------------+---------------+---------+
 Source Pad     |Destination Pad|  Delay  |
 ---------------+---------------+---------+
+ARM_A<0>       |SRAM_A<0>      |    7.192|
 ARM_A<1>       |SRAM_A<1>      |    6.910|
 ARM_A<2>       |SRAM_A<2>      |    7.508|
 ARM_A<3>       |SRAM_A<3>      |    7.167|
@@ -51,31 +52,6 @@ ARM_A<15>      |SRAM_A<15>     |    7.494|
 ARM_A<16>      |SRAM_A<16>     |    8.149|
 ARM_A<17>      |SRAM_A<17>     |    7.602|
 ARM_A<18>      |SRAM_A<18>     |    6.050|
-ARM_CS         |ARM_D<0>       |    7.960|
-ARM_CS         |ARM_D<1>       |    7.703|
-ARM_CS         |ARM_D<2>       |    7.961|
-ARM_CS         |ARM_D<3>       |    8.199|
-ARM_CS         |ARM_D<4>       |    7.443|
-ARM_CS         |ARM_D<5>       |    8.267|
-ARM_CS         |ARM_D<6>       |    7.694|
-ARM_CS         |ARM_D<7>       |    7.740|
-ARM_CS         |ARM_D<8>       |    8.317|
-ARM_CS         |ARM_D<9>       |    9.041|
-ARM_CS         |ARM_D<10>      |    8.593|
-ARM_CS         |ARM_D<11>      |    8.595|
-ARM_CS         |ARM_D<12>      |    8.795|
-ARM_CS         |ARM_D<13>      |    9.014|
-ARM_CS         |ARM_D<14>      |    9.356|
-ARM_CS         |ARM_D<15>      |    9.293|
-ARM_CS         |SRAM_CS        |    7.585|
-ARM_CS         |SRAM_D<0>      |   10.710|
-ARM_CS         |SRAM_D<1>      |   11.504|
-ARM_CS         |SRAM_D<2>      |   11.215|
-ARM_CS         |SRAM_D<3>      |   11.474|
-ARM_CS         |SRAM_D<4>      |    9.226|
-ARM_CS         |SRAM_D<5>      |    8.663|
-ARM_CS         |SRAM_D<6>      |    9.475|
-ARM_CS         |SRAM_D<7>      |    8.417|
 ARM_D<0>       |SRAM_D<0>      |    7.336|
 ARM_D<1>       |SRAM_D<1>      |    7.460|
 ARM_D<2>       |SRAM_D<2>      |    7.984|
@@ -84,33 +60,57 @@ ARM_D<4>       |SRAM_D<4>      |    5.532|
 ARM_D<5>       |SRAM_D<5>      |    6.240|
 ARM_D<6>       |SRAM_D<6>      |    5.434|
 ARM_D<7>       |SRAM_D<7>      |    5.557|
-ARM_NLB        |SRAM_A<0>      |    7.192|
-ARM_OE         |ARM_D<0>       |    9.475|
-ARM_OE         |ARM_D<1>       |    9.218|
-ARM_OE         |ARM_D<2>       |    9.476|
-ARM_OE         |ARM_D<3>       |    9.714|
-ARM_OE         |ARM_D<4>       |    8.958|
-ARM_OE         |ARM_D<5>       |    9.782|
-ARM_OE         |ARM_D<6>       |    9.209|
-ARM_OE         |ARM_D<7>       |    9.255|
-ARM_OE         |ARM_D<8>       |    9.832|
-ARM_OE         |ARM_D<9>       |   10.556|
-ARM_OE         |ARM_D<10>      |   10.108|
-ARM_OE         |ARM_D<11>      |   10.110|
-ARM_OE         |ARM_D<12>      |   10.310|
-ARM_OE         |ARM_D<13>      |   10.529|
-ARM_OE         |ARM_D<14>      |   10.871|
-ARM_OE         |ARM_D<15>      |   10.808|
-ARM_OE         |SRAM_OE        |    7.956|
-ARM_WE         |SRAM_D<0>      |   12.117|
-ARM_WE         |SRAM_D<1>      |   12.911|
-ARM_WE         |SRAM_D<2>      |   12.622|
-ARM_WE         |SRAM_D<3>      |   12.881|
-ARM_WE         |SRAM_D<4>      |   10.633|
-ARM_WE         |SRAM_D<5>      |   10.070|
-ARM_WE         |SRAM_D<6>      |   10.882|
-ARM_WE         |SRAM_D<7>      |    9.824|
-ARM_WE         |SRAM_WE        |    8.415|
+ARM_nCS        |ARM_D<0>       |    7.960|
+ARM_nCS        |ARM_D<1>       |    7.703|
+ARM_nCS        |ARM_D<2>       |    7.961|
+ARM_nCS        |ARM_D<3>       |    8.199|
+ARM_nCS        |ARM_D<4>       |    7.443|
+ARM_nCS        |ARM_D<5>       |    8.267|
+ARM_nCS        |ARM_D<6>       |    7.694|
+ARM_nCS        |ARM_D<7>       |    7.740|
+ARM_nCS        |ARM_D<8>       |    8.317|
+ARM_nCS        |ARM_D<9>       |    9.041|
+ARM_nCS        |ARM_D<10>      |    8.593|
+ARM_nCS        |ARM_D<11>      |    8.595|
+ARM_nCS        |ARM_D<12>      |    8.795|
+ARM_nCS        |ARM_D<13>      |    9.014|
+ARM_nCS        |ARM_D<14>      |    9.356|
+ARM_nCS        |ARM_D<15>      |    9.293|
+ARM_nCS        |SRAM_D<0>      |   10.710|
+ARM_nCS        |SRAM_D<1>      |   11.504|
+ARM_nCS        |SRAM_D<2>      |   11.215|
+ARM_nCS        |SRAM_D<3>      |   11.474|
+ARM_nCS        |SRAM_D<4>      |    9.226|
+ARM_nCS        |SRAM_D<5>      |    8.663|
+ARM_nCS        |SRAM_D<6>      |    9.475|
+ARM_nCS        |SRAM_D<7>      |    8.417|
+ARM_nCS        |SRAM_nCS       |    7.585|
+ARM_nOE        |ARM_D<0>       |    9.475|
+ARM_nOE        |ARM_D<1>       |    9.218|
+ARM_nOE        |ARM_D<2>       |    9.476|
+ARM_nOE        |ARM_D<3>       |    9.714|
+ARM_nOE        |ARM_D<4>       |    8.958|
+ARM_nOE        |ARM_D<5>       |    9.782|
+ARM_nOE        |ARM_D<6>       |    9.209|
+ARM_nOE        |ARM_D<7>       |    9.255|
+ARM_nOE        |ARM_D<8>       |    9.832|
+ARM_nOE        |ARM_D<9>       |   10.556|
+ARM_nOE        |ARM_D<10>      |   10.108|
+ARM_nOE        |ARM_D<11>      |   10.110|
+ARM_nOE        |ARM_D<12>      |   10.310|
+ARM_nOE        |ARM_D<13>      |   10.529|
+ARM_nOE        |ARM_D<14>      |   10.871|
+ARM_nOE        |ARM_D<15>      |   10.808|
+ARM_nOE        |SRAM_nOE       |    7.956|
+ARM_nWE        |SRAM_D<0>      |   12.117|
+ARM_nWE        |SRAM_D<1>      |   12.911|
+ARM_nWE        |SRAM_D<2>      |   12.622|
+ARM_nWE        |SRAM_D<3>      |   12.881|
+ARM_nWE        |SRAM_D<4>      |   10.633|
+ARM_nWE        |SRAM_D<5>      |   10.070|
+ARM_nWE        |SRAM_D<6>      |   10.882|
+ARM_nWE        |SRAM_D<7>      |    9.824|
+ARM_nWE        |SRAM_nWE       |    8.415|
 SRAM_D<0>      |ARM_D<0>       |    7.919|
 SRAM_D<1>      |ARM_D<1>       |    7.430|
 SRAM_D<2>      |ARM_D<2>       |    7.516|
@@ -122,7 +122,7 @@ SRAM_D<7>      |ARM_D<7>       |    5.457|
 ---------------+---------------+---------+
 
 
-Analysis completed Tue Apr 21 19:02:29 2009 
+Analysis completed Tue Apr 21 20:25:53 2009 
 --------------------------------------------------------------------------------
 
 Trace Settings:

@@ -22,6 +22,7 @@ NET "ARM_D<13>"		LOC = "p192" ;
 NET "ARM_D<14>"		LOC = "p193" ;
 NET "ARM_D<15>"		LOC = "p196" ;
 
+NET "ARM_A<0>"		LOC = "p164" ;	# SD_DQL1
 NET "ARM_A<1>"		LOC = "p165" ;	# SD_DQL2
 NET "ARM_A<2>"		LOC = "p162" ;	# SD_A0 = A2 и так далее
 NET "ARM_A<3>"		LOC = "p161" ;
@@ -41,13 +42,10 @@ NET "ARM_A<16>"		LOC = "p180" ;	# SD_BA0
 NET "ARM_A<17>"		LOC = "p181" ;	# SD_BA1
 NET "ARM_A<18>"		LOC = "p154" ;	# A18
 
-NET "ARM_OE"		LOC = "p194" ;
-NET "ARM_WE"		LOC = "p184" ;
-NET "ARM_NLB"		LOC = "p164" ;	# SD_DQL1
-#NET "ARM_NUB"		LOC = "p163" ;	# SD_DQH1
+NET "ARM_nCS"		LOC = "p148" ;	# F_CS0
+NET "ARM_nOE"		LOC = "p194" ;
+NET "ARM_nWE"		LOC = "p184" ;
 
-NET "ARM_CS"		LOC = "p148" ;	# F_CS0
-#NET "ARM_CS1"		LOC = "p204" ; 	# F_CS1
 
 #
 # External SRAM Samsung K6R4008V1D.
@@ -81,9 +79,9 @@ NET "SRAM_D<5>"		LOC = "p132" ;
 NET "SRAM_D<6>"		LOC = "p133" ;
 NET "SRAM_D<7>"		LOC = "p134" ;
 
-NET "SRAM_OE"		LOC = "p135" ;
-NET "SRAM_WE"		LOC = "p106" ;
-NET "SRAM_CS"		LOC = "p197" ;
+NET "SRAM_nOE"		LOC = "p135" ;
+NET "SRAM_nWE"		LOC = "p106" ;
+NET "SRAM_nCS"		LOC = "p197" ;
 
 #
 # Unused pins.
@@ -169,10 +167,12 @@ NET "SRAM_CS"		LOC = "p197" ;
 #NET "FP130"		LOC = "p130" ; 	# IP
 #NET "FP136"		LOC = "p136" ; 	# IP/VREF_1
 #NET "FP142"		LOC = "p142" ; 	# IP
-#NET "FP183"		LOC = "p183" ; 	# IP_L09P_0/GCLK8
-#NET "FP199"		LOC = "p199" ; 	# IO_L14P_0
+#NET "ARM_nUB"		LOC = "p163" ;	# SD_DQH1
+#NET "M50"		LOC = "p183" ; 	# IP_L09P_0/GCLK8
+#NET "IRQ1"		LOC = "p199" ; 	# IO_L14P_0
 #NET "FP200"		LOC = "p200" ; 	# IO_L14N_0/VREF_0
 #NET "FP202"		LOC = "p202" ; 	# IO_L15P_0
 #NET "FP203"		LOC = "p203" ; 	# IO_L15N_0
+#NET "nRST"		LOC = "p204" ; 	# F_CS1, PC5
 #NET "FP205"		LOC = "p205" ; 	# IO_L16P_0
 #NET "FP206"		LOC = "p206" ; 	# IO_L16N_0/HSWAP

@@ -8,12 +8,12 @@ Target Device  : xc3s500e
 Target Package : pq208
 Target Speed   : -4
 Mapper Version : spartan3e -- $Revision: 1.46.12.2 $
-Mapped Date    : Tue Apr 21 19:02:16 2009
+Mapped Date    : Tue Apr 21 20:25:40 2009
 
 Design Summary
 --------------
 Number of errors:      0
-Number of warnings:    0
+Number of warnings:    1
 Logic Utilization:
   Number of 4 input LUTs:                 2 out of   9,312    1%
 Logic Distribution:
@@ -68,6 +68,7 @@ Section 1 - Errors
 
 Section 2 - Warnings
 --------------------
+WARNING:LIT:243 - Logical network ARM_nLB has no load.
 
 Section 3 - Informational
 -------------------------
@@ -94,6 +95,7 @@ Section 6 - IOB Properties
 | IOB Name                           | Type             | Direction | IO Standard          | Drive    | Slew | Reg (s)      | Resistor | IOB      |
 |                                    |                  |           |                      | Strength | Rate |              |          | Delay    |
 +-------------------------------------------------------------------------------------------------------------------------------------------------+
+| ARM_A<0>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<1>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<2>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<3>                           | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
@@ -112,7 +114,6 @@ Section 6 - IOB Properties
 | ARM_A<16>                          | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<17>                          | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_A<18>                          | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
-| ARM_CS                             | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_D<0>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<1>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<2>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
@@ -129,9 +130,9 @@ Section 6 - IOB Properties
 | ARM_D<13>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<14>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<15>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
-| ARM_NLB                            | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
-| ARM_OE                             | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
-| ARM_WE                             | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
+| ARM_nCS                            | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
+| ARM_nOE                            | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
+| ARM_nWE                            | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | SRAM_A<0>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_A<1>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_A<2>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
@@ -151,7 +152,6 @@ Section 6 - IOB Properties
 | SRAM_A<16>                         | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_A<17>                         | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_A<18>                         | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
-| SRAM_CS                            | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_D<0>                          | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_D<1>                          | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_D<2>                          | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
@@ -160,8 +160,9 @@ Section 6 - IOB Properties
 | SRAM_D<5>                          | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_D<6>                          | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | SRAM_D<7>                          | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
-| SRAM_OE                            | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
-| SRAM_WE                            | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| SRAM_nCS                           | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| SRAM_nOE                           | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| SRAM_nWE                           | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 +-------------------------------------------------------------------------------------------------------------------------------------------------+
 
 Section 7 - RPMs
