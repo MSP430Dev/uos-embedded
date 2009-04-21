@@ -31,6 +31,9 @@
   * Микроконтроллер [http://atmel.com/dyn/resources/prod_documents/doc6221.pdf SAM9260 - полное описание].
   * [http://atmel.com/dyn/resources/prod_documents/doc6297.pdf Getting Started with the AT91SAM9260 Microcontroller].
   * [http://atmel.com/dyn/resources/prod_documents/doc6132.pdf SAM Boot Assistant (SAM-BA) User Guide].
+  * [http://rtds.cs.tamu.edu/web_462/techdocs/ARM/instruct/DDI0100E_ARM_ARM.pdf ARM Architecture] Reference Manual.
+  * [http://rtds.cs.tamu.edu/web_462/techdocs/ARM/instruct/QRC_ARM.pdf ARM Instruction Set] Quick Reference Card.
+  * [http://rtds.cs.tamu.edu/web_462/techdocs/ARM/instruct/QRC_Thumb.pdf Thumb Instruction Set] Quick Reference Card.
 
 Программное обеспечение:
   * [http://atmel.com/dyn/resources/prod_documents/SAM9260_CDROM_image.zip AT91SAM9260 CD-ROM Image].
