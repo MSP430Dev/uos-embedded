@@ -8,7 +8,7 @@ Target Device  : xc3s500e
 Target Package : pq208
 Target Speed   : -4
 Mapper Version : spartan3e -- $Revision: 1.46.12.2 $
-Mapped Date    : Tue Apr 21 18:45:46 2009
+Mapped Date    : Tue Apr 21 19:02:16 2009
 
 Design Summary
 --------------
@@ -22,10 +22,10 @@ Logic Distribution:
     Number of Slices containing unrelated logic:          0 out of       1   0%
       *See NOTES below for an explanation of the effects of unrelated logic.
   Total Number of 4 input LUTs:           2 out of   9,312    1%
-  Number of bonded IOBs:                 60 out of     158   37%
+  Number of bonded IOBs:                 68 out of     158   43%
 
 Peak Memory Usage:  151 MB
-Total REAL time to MAP completion:  3 secs 
+Total REAL time to MAP completion:  2 secs 
 Total CPU time to MAP completion:   2 secs 
 
 NOTES:
@@ -78,9 +78,14 @@ INFO:LIT:244 - All of the single ended outputs in this design are using slew
 
 Section 4 - Removed Logic Summary
 ---------------------------------
+   1 block(s) optimized away
 
 Section 5 - Removed Logic
 -------------------------
+
+Optimized Block(s):
+TYPE 		BLOCK
+GND 		XST_GND
 
 Section 6 - IOB Properties
 --------------------------
@@ -116,6 +121,14 @@ Section 6 - IOB Properties
 | ARM_D<5>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<6>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_D<7>                           | IOB              | BIDIR     | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<8>                           | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<9>                           | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<10>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<11>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<12>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<13>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<14>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
+| ARM_D<15>                          | IOB              | OUTPUT    | LVCMOS25             | 12       | SLOW |              |          | 0 / 0    |
 | ARM_NLB                            | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_OE                             | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |
 | ARM_WE                             | IBUF             | INPUT     | LVCMOS25             |          |      |              |          | 0 / 0    |

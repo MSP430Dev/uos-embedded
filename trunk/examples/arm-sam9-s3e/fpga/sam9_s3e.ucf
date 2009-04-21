@@ -1,10 +1,9 @@
 #
-# Раскладка сигналов по ножкам для микросхемы Xilinx XC3S500E
-# в корпусе PQ208 на плате SK-AT91SAM9XE512-S3E.
+# Pins for Xilinx XC3S500E in package PQ208 on board SK-AT91SAM9XE512-S3E.
 #
 
 #
-# Локальная шина ARM9, 16 бит.
+# Local ARM9 bus, 16 bits.
 #
 NET "ARM_D<0>"		LOC = "p153" ;
 NET "ARM_D<1>"		LOC = "p152" ;
@@ -14,14 +13,14 @@ NET "ARM_D<4>"		LOC = "p147" ;
 NET "ARM_D<5>"		LOC = "p146" ;
 NET "ARM_D<6>"		LOC = "p145" ;
 NET "ARM_D<7>"		LOC = "p144" ;
-#NET "ARM_D<8>"		LOC = "p185" ;
-#NET "ARM_D<9>"		LOC = "p186" ;
-#NET "ARM_D<10>"	LOC = "p187" ;
-#NET "ARM_D<11>"	LOC = "p189" ;
-#NET "ARM_D<12>"	LOC = "p190" ;
-#NET "ARM_D<13>"	LOC = "p192" ;
-#NET "ARM_D<14>"	LOC = "p193" ;
-#NET "ARM_D<15>"	LOC = "p196" ;
+NET "ARM_D<8>"		LOC = "p185" ;
+NET "ARM_D<9>"		LOC = "p186" ;
+NET "ARM_D<10>"		LOC = "p187" ;
+NET "ARM_D<11>"		LOC = "p189" ;
+NET "ARM_D<12>"		LOC = "p190" ;
+NET "ARM_D<13>"		LOC = "p192" ;
+NET "ARM_D<14>"		LOC = "p193" ;
+NET "ARM_D<15>"		LOC = "p196" ;
 
 NET "ARM_A<1>"		LOC = "p165" ;	# SD_DQL2
 NET "ARM_A<2>"		LOC = "p162" ;	# SD_A0 = A2 и так далее
@@ -51,7 +50,7 @@ NET "ARM_CS"		LOC = "p148" ;	# F_CS0
 #NET "ARM_CS1"		LOC = "p204" ; 	# F_CS1
 
 #
-# Внешняя память Samsung K6R4008V1D.
+# External SRAM Samsung K6R4008V1D.
 #
 NET "SRAM_A<0>"		LOC = "p120" ;
 NET "SRAM_A<1>"		LOC = "p119" ;
@@ -87,7 +86,7 @@ NET "SRAM_WE"		LOC = "p106" ;
 NET "SRAM_CS"		LOC = "p197" ;
 
 #
-# Незадействованные сигналы.
+# Unused pins.
 #
 #NET "FP2"		LOC = "p2" ; 	# IO_L01P_3
 #NET "FP3"		LOC = "p3" ; 	# IO_L01N_3
