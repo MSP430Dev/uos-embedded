@@ -34,7 +34,7 @@
   * [http://rtds.cs.tamu.edu/web_462/techdocs/ARM/instruct/DDI0100E_ARM_ARM.pdf ARM architecture] reference manual.
   * [http://rtds.cs.tamu.edu/web_462/techdocs/ARM/instruct/QRC_ARM.pdf ARM instruction set] quick reference card.
   * [http://rtds.cs.tamu.edu/web_462/techdocs/ARM/instruct/QRC_Thumb.pdf Thumb instruction set] quick reference card.
-  * [http://www.nalanda.nitc.ac.in/industry/appnotes/arm/cores/DDI0198B_926.pdf ARM926EJ-S] technical reference manual.
+  * [http://infocenter.arm.com/help/topic/com.arm.doc.ddi0198d/DDI0198_926_TRM.pdf ARM926EJ-S] technical reference manual.
 
 Программное обеспечение:
   * [http://atmel.com/dyn/resources/prod_documents/SAM9260_CDROM_image.zip AT91SAM9260 CD-ROM Image].
