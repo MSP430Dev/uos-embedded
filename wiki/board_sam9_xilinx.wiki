@@ -17,6 +17,9 @@ Verilog и VHDL, а также JTAG-программатор.
 || NWE/NWR0  || ——>         || nWE      || F_WE          ||
 || NBS0      || ——>         || nLB      || SD_DQL1       ||
 || NBS1/NWR1 || ——>         || nUB      || SD_DQH1       ||
+|| —         || ——>         || M50      || 50M           ||
+|| PC5       || ——>         || nRST     || F_CS1         ||
+|| PC15/IRQ1 || <——         || nIRQ     || FP_199        ||
 
 = Исходные тексты =
 Файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/sram_to_arm.v examples/arm-sam9-s3e/fpga/sram_to_arm.v]
