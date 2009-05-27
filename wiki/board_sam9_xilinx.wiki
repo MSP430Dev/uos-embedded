@@ -9,9 +9,14 @@
 Verilog и VHDL, а также JTAG-программатор.
 
 Шина между процессором и FPGA устроена следующим образом:
-|| Процессор || Направление || FPGA     || На схеме        ||
-|| D0..D15   || <-->       || D[0..15]  || SD_D0...SD_D15  ||
-|| A1..A15   || --->       || A[1..15]  || SD_DQL2, SD_A0...SD_A11, A12, SD_A13...SD_A14, A15 ||
+|| Процессор || Направление || FPGA     || На схеме      ||
+|| D0-D15    || <—>         || D[0—15]  || SD_D0-SD_D15  ||
+|| A1-A15    || ——>         || A[1—15]  || SD_DQL2, SD_A0-SD_A11, A12, SD_A13-SD_A14, A15 ||
+|| NCS0      || ——>         || nCS      || F_CS0         ||
+|| NRD       || ——>         || nOE      || F_OE          ||
+|| NWE       || ——>         || nWE      || F_WE          ||
+|| NBS0      || ——>         || nLB      || SD_DQL1       ||
+|| NBS1      || ——>         || nUB      || SD_DQH1       ||
 
 = Исходные тексты =
 Файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/sram_to_arm.v examples/arm-sam9-s3e/fpga/sram_to_arm.v]
