@@ -21,6 +21,8 @@ Verilog и VHDL, а также JTAG-программатор.
 || PC5       || ——>         || nRST     || F_CS1         ||
 || PC15/IRQ1 || <——         || nIRQ     || FP_199        ||
 
+Базовый адрес для обращений к FPGA - 0x10000000 (AT91C_EBIC_CS0).
+
 = Исходные тексты =
 Файл [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-sam9-s3e/fpga/sram_to_arm.v examples/arm-sam9-s3e/fpga/sram_to_arm.v]
 содержит Verilog-тексты простейшей прошивки, транслирующей обращения чтения-записи
