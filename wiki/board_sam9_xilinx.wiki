@@ -14,9 +14,9 @@ Verilog и VHDL, а также JTAG-программатор.
 || A1-A20    || ——>         || A[1—20]  || SD_DQL2, SD_A0-SD_A11, A12, SD_A13-SD_A14, A15, SD_BA0, SD_BA1, A18-A20 ||
 || NCS0      || ——>         || nCS      || F_CS0         ||
 || NRD       || ——>         || nOE      || F_OE          ||
-|| NWE/NWR0  || ——>         || nWE      || F_WE          ||
+|| NWE       || ——>         || nWE      || F_WE          ||
 || NBS0      || ——>         || nLB      || SD_DQL1       ||
-|| NBS1/NWR1 || ——>         || nUB      || SD_DQH1       ||
+|| NBS1      || ——>         || nUB      || SD_DQH1       ||
 || —         || ——>         || M50      || 50M           ||
 || PC5       || ——>         || nRST     || F_CS1         ||
 || PC15/IRQ1 || <——         || nIRQ     || FP_199        ||
