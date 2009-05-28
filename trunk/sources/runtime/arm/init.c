@@ -226,6 +226,11 @@ uos_valid_memory_address (void *ptr)
 
 	if (u >= ARM_SRAM_BASE && u < ARM_SRAM_BASE + ARM_SRAM_SIZE)
 		return 1;
+#ifdef ARM_AT91SAM
+	/* SAM9-S3E board: 64 Mbytes at NCS1. */
+	if (u >= 0x20000000 && u < 0x24000000)
+		return 1;
+#endif
 	return 0;
 }
 

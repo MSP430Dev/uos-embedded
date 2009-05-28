@@ -72,11 +72,10 @@ Performing bidirectional port resolution...
 
 Synthesizing Unit <sram_to_arm>.
     Related source file is "../sram_to_arm.v".
-WARNING:Xst:647 - Input <ARM_nLB> is never used. This port will be preserved and left unconnected if it belongs to a top-level block or it belongs to a sub-block and the hierarchy of this sub-block is preserved.
+    Found 8-bit tristate buffer for signal <ARM_D>.
     Found 8-bit tristate buffer for signal <SRAM_D>.
-    Found 16-bit tristate buffer for signal <$mux0000>.
     Summary:
-	inferred  24 Tristate(s).
+	inferred  16 Tristate(s).
 Unit <sram_to_arm> synthesized.
 
 
@@ -85,8 +84,7 @@ HDL Synthesis Report
 
 Macro Statistics
 # Tristates                                            : 2
- 16-bit tristate buffer                                : 1
- 8-bit tristate buffer                                 : 1
+ 8-bit tristate buffer                                 : 2
 
 =========================================================================
 
@@ -140,17 +138,15 @@ Optimization Goal                  : Speed
 Keep Hierarchy                     : no
 
 Design Statistics
-# IOs                              : 69
+# IOs                              : 60
 
 Cell Usage :
-# BELS                             : 3
-#      GND                         : 1
+# BELS                             : 2
 #      LUT2                        : 2
-# IO Buffers                       : 68
+# IO Buffers                       : 60
 #      IBUF                        : 22
 #      IOBUF                       : 16
 #      OBUF                        : 22
-#      OBUFT                       : 8
 =========================================================================
 
 Device utilization summary:
@@ -160,8 +156,8 @@ Selected Device : 3s500epq208-4
 
  Number of Slices:                        1  out of   4656     0%  
  Number of 4 input LUTs:                  2  out of   9312     0%  
- Number of IOs:                          69
- Number of bonded IOBs:                  68  out of    158    43%  
+ Number of IOs:                          60
+ Number of bonded IOBs:                  60  out of    158    37%  
 
 ---------------------------
 Partition Resource Summary:
@@ -194,7 +190,7 @@ Speed Grade: -4
    Minimum period: No path found
    Minimum input arrival time before clock: No path found
    Maximum output required time after clock: No path found
-   Maximum combinational path delay: 6.850ns
+   Maximum combinational path delay: 6.573ns
 
 Timing Detail:
 --------------
@@ -202,35 +198,35 @@ All values displayed in nanoseconds (ns)
 
 =========================================================================
 Timing constraint: Default path analysis
-  Total number of paths / destination ports: 86 / 46
+  Total number of paths / destination ports: 70 / 38
 -------------------------------------------------------------------------
-Delay:               6.850ns (Levels of Logic = 3)
-  Source:            ARM_nOE (PAD)
-  Destination:       ARM_D<4> (PAD)
+Delay:               6.573ns (Levels of Logic = 3)
+  Source:            ARM_nWE (PAD)
+  Destination:       SRAM_D<7> (PAD)
 
-  Data Path: ARM_nOE to ARM_D<4>
+  Data Path: ARM_nWE to SRAM_D<7>
                                 Gate     Net
     Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
     ----------------------------------------  ------------
-     IBUF:I->O             2   1.218   0.622  ARM_nOE_IBUF (SRAM_nOE_OBUF)
-     LUT2:I0->O           16   0.704   1.034  mux0000_and0000_inv1 (mux0000_and0000_inv)
-     OBUFT:T->O                3.272          ARM_D_8_OBUFT (ARM_D<8>)
+     IBUF:I->O             2   1.218   0.622  ARM_nWE_IBUF (SRAM_nWE_OBUF)
+     LUT2:I0->O            8   0.704   0.757  SRAM_D_and0000_inv1 (SRAM_D_and0000_inv)
+     IOBUF:T->IO               3.272          SRAM_D_7_IOBUF (SRAM_D<7>)
     ----------------------------------------
-    Total                      6.850ns (5.194ns logic, 1.656ns route)
-                                       (75.8% logic, 24.2% route)
+    Total                      6.573ns (5.194ns logic, 1.379ns route)
+                                       (79.0% logic, 21.0% route)
 
 =========================================================================
 
 
-Total REAL time to Xst completion: 4.00 secs
-Total CPU time to Xst completion: 4.81 secs
+Total REAL time to Xst completion: 5.00 secs
+Total CPU time to Xst completion: 4.76 secs
  
 --> 
 
 
-Total memory usage is 137448 kilobytes
+Total memory usage is 137308 kilobytes
 
 Number of errors   :    0 (   0 filtered)
-Number of warnings :    1 (   0 filtered)
+Number of warnings :    0 (   0 filtered)
 Number of infos    :    0 (   0 filtered)
 

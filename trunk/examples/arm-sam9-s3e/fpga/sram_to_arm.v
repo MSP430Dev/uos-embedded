@@ -4,9 +4,8 @@
 `timescale 1ns / 1ps
 
 module sram_to_arm (
-		inout [15:0] ARM_D,
+		inout [7:0] ARM_D,
 		input [18:0] ARM_A,
-		input ARM_nLB,
 		input ARM_nCS,
 		input ARM_nOE,
 		input ARM_nWE,
@@ -23,7 +22,7 @@ module sram_to_arm (
 	assign SRAM_nWE = ARM_nWE;
 	assign SRAM_A   = ARM_A;
 
-	assign ARM_D[15:0] = (!ARM_nOE && !ARM_nCS) ? { 8'h00, SRAM_D[7:0] } : 16'hzzzz;
-	assign SRAM_D[7:0] = (!ARM_nWE && !ARM_nCS) ? ARM_D[7:0] : 8'hzz;
+	assign ARM_D  = (!ARM_nOE && !ARM_nCS) ? SRAM_D : 8'hzz;
+	assign SRAM_D = (!ARM_nWE && !ARM_nCS) ? ARM_D  : 8'hzz;
 
 endmodule

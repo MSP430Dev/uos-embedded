@@ -3,9 +3,9 @@
 /*
  * Millisecond delay.
  */
-void mdelay (unsigned usec)
+void mdelay (unsigned msec)
 {
-	while (usec-- > 0) {
+	while (msec-- > 0) {
 		udelay (1000);
 	}
 }

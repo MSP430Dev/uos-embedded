@@ -13,38 +13,38 @@ NET "ARM_D<4>"		LOC = "p147" ;
 NET "ARM_D<5>"		LOC = "p146" ;
 NET "ARM_D<6>"		LOC = "p145" ;
 NET "ARM_D<7>"		LOC = "p144" ;
-NET "ARM_D<8>"		LOC = "p185" ;
-NET "ARM_D<9>"		LOC = "p186" ;
-NET "ARM_D<10>"		LOC = "p187" ;
-NET "ARM_D<11>"		LOC = "p189" ;
-NET "ARM_D<12>"		LOC = "p190" ;
-NET "ARM_D<13>"		LOC = "p192" ;
-NET "ARM_D<14>"		LOC = "p193" ;
-NET "ARM_D<15>"		LOC = "p196" ;
+#NET "ARM_D<8>"		LOC = "p185" ;
+#NET "ARM_D<9>"		LOC = "p186" ;
+#NET "ARM_D<10>"	LOC = "p187" ;
+#NET "ARM_D<11>"	LOC = "p189" ;
+#NET "ARM_D<12>"	LOC = "p190" ;
+#NET "ARM_D<13>"	LOC = "p192" ;
+#NET "ARM_D<14>"	LOC = "p193" ;
+#NET "ARM_D<15>"	LOC = "p196" ;
 
-NET "ARM_A<0>"		LOC = "p164" ;	# SD_DQL1
-NET "ARM_A<1>"		LOC = "p165" ;	# SD_DQL2
-NET "ARM_A<2>"		LOC = "p162" ;	# SD_A0 = A2 и так далее
-NET "ARM_A<3>"		LOC = "p161" ;
-NET "ARM_A<4>"		LOC = "p160" ;
-NET "ARM_A<5>"		LOC = "p159" ;
-NET "ARM_A<6>"		LOC = "p167" ;
-NET "ARM_A<7>"		LOC = "p169" ;
-NET "ARM_A<8>"		LOC = "p168" ;
-NET "ARM_A<9>"		LOC = "p171" ;
-NET "ARM_A<10>"		LOC = "p172" ;
-NET "ARM_A<11>"		LOC = "p174" ;
+NET "ARM_A<0>"		LOC = "p164" ;	# SD_DQL1 = A0
+NET "ARM_A<1>"		LOC = "p165" ;	# SD_DQL2 = A1
+NET "ARM_A<2>"		LOC = "p162" ;	# SD_A0 = A2
+NET "ARM_A<3>"		LOC = "p161" ;	# SD_A1 = A3
+NET "ARM_A<4>"		LOC = "p160" ;	# SD_A2 = A4
+NET "ARM_A<5>"		LOC = "p159" ;	# SD_A3 = A5
+NET "ARM_A<6>"		LOC = "p167" ;	# SD_A4 = A6
+NET "ARM_A<7>"		LOC = "p169" ;	# SD_A5 = A7
+NET "ARM_A<8>"		LOC = "p168" ;	# SD_A6 = A8
+NET "ARM_A<9>"		LOC = "p171" ;	# SD_A7 = A9
+NET "ARM_A<10>"		LOC = "p172" ;	# SD_A8 = A10
+NET "ARM_A<11>"		LOC = "p174" ;	# SD_A9 = A11
 NET "ARM_A<12>"		LOC = "p175" ;	# A12
-NET "ARM_A<13>"		LOC = "p177" ;
-NET "ARM_A<14>"		LOC = "p179" ;
+NET "ARM_A<13>"		LOC = "p177" ;	# SD_A11 = A13
+NET "ARM_A<14>"		LOC = "p179" ;	# SD_A12 = A14
 NET "ARM_A<15>"		LOC = "p178" ;	# A15
-NET "ARM_A<16>"		LOC = "p180" ;	# SD_BA0
-NET "ARM_A<17>"		LOC = "p181" ;	# SD_BA1
+NET "ARM_A<16>"		LOC = "p180" ;	# SD_BA0 = A16
+NET "ARM_A<17>"		LOC = "p181" ;	# SD_BA1 = A17
 NET "ARM_A<18>"		LOC = "p154" ;	# A18
 
 NET "ARM_nCS"		LOC = "p148" ;	# F_CS0
-NET "ARM_nOE"		LOC = "p194" ;
-NET "ARM_nWE"		LOC = "p184" ;
+NET "ARM_nOE"		LOC = "p194" ;	# F_OE
+NET "ARM_nWE"		LOC = "p184" ;	# F_WE
 
 
 #

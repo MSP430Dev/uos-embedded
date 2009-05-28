@@ -8,79 +8,8 @@ IMPACT		:= export LD_PRELOAD=/usr/local/lib/libusb-driver.so && impact
 # Target
 #
 FPGA		= xc3s500e-pq208-4
-
 XSTFLAGS	= -top sram_to_arm -opt_mode Speed -opt_level 1 -glob_opt allclocknets
-#  		  -iuc NO
-#		  -lso sram_to_arm.lso
-#		  -keep_hierarchy NO
-#		  -rtlview Yes
-#		  -read_cores YES
-#		  -write_timing_constraints NO
-#		  -cross_clock_analysis NO
-#		  -hierarchy_separator /
-#		  -bus_delimiter <>
-#		  -case maintain
-#		  -slice_utilization_ratio 100
-#		  -verilog2001 YES
-#		  -fsm_extract YES -fsm_encoding Auto
-#		  -safe_implementation No
-#		  -fsm_style lut
-#		  -ram_extract Yes
-#		  -ram_style Auto
-#		  -rom_extract Yes
-#		  -mux_style Auto
-#		  -decoder_extract YES
-#		  -priority_extract YES
-#		  -shreg_extract YES
-#		  -shift_extract YES
-#		  -xor_collapse YES
-#		  -rom_style Auto
-#		  -mux_extract YES
-#		  -resource_sharing YES
-#		  -mult_style auto
-#		  -iobuf YES
-#		  -max_fanout 500
-#		  -bufg 8
-#		  -register_duplication YES
-#		  -register_balancing No
-#		  -slice_packing YES
-#		  -optimize_primitives NO
-#		  -use_clock_enable Yes
-#		  -use_sync_set Yes
-#		  -use_sync_reset Yes
-#		  -iob auto
-#		  -equivalent_register_removal YES
-#		  -slice_utilization_ratio_maxmargin 5
-
-BGFLAGS		= -g DebugBitstream:No \
-		  -g Binary:no \
-		  -g CRC:Enable \
-		  -g ConfigRate:1 \
-		  -g CclkPin:PullUp \
-		  -g M0Pin:PullUp \
-		  -g M1Pin:PullUp \
-		  -g M2Pin:PullUp \
-		  -g ProgPin:PullUp \
-		  -g DonePin:PullUp \
-		  -g TckPin:PullUp \
-		  -g TdiPin:PullUp \
-		  -g TdoPin:PullUp \
-		  -g TmsPin:PullUp \
-		  -g UnusedPin:PullDown \
-		  -g UserID:0xFFFFFFFF \
-		  -g DCMShutdown:Disable \
-		  -g DCIUpdateMode:AsRequired \
-		  -g StartUpClk:CClk \
-		  -g DONE_cycle:4 \
-		  -g GTS_cycle:5 \
-		  -g GWE_cycle:6 \
-		  -g LCK_cycle:NoWait \
-		  -g Security:None \
-		  -m \
-		  -g ReadBack \
-		  -g DonePipe:No \
-		  -g DriveDone:Yes
-
+BGFLAGS		= -g TdoPin:PullUp -g DriveDone:Yes -g CRC:enable -g StartUpClk:CCLK
 PROMGENFLAGS	= -p mcs -w -c FF -s 512 -spi
 
 #
@@ -92,20 +21,17 @@ PINS		= sam9_s3e.ucf
 
 all:		firmware.bit firmware.mcs
 
-load:
-		@[ -f firmware.mcs ] || $(MAKE) firmware.mcs
+load:		firmware.bit
 		$(IMPACT) -batch loadfpga.impact
 
-prog:
-		@[ -f firmware.mcs ] || $(MAKE) firmware.mcs
+prog:		firmware.mcs
 		$(IMPACT) -batch progflash.impact
-		@mv -f _impactbatch.log 8-download.log
 
 clean:
 		rm -f *~ _impact.* _impactbatch.log
 
 cleanall:	clean
-		rm -rf build firmware.bit firmware.mcs *.log
+		rm -rf build *.mcs
 
 #
 # Synthesis

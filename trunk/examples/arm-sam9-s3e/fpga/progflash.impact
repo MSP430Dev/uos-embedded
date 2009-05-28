@@ -1,10 +1,13 @@
 # SPI configuration mode.
 setmode -spi
 
+# Use Xilinx platform cable USB.
+setCable -p usb21
+
 # Use Xilinx platform cable LPT.
 # Limit cable speed.
-setcable -port lpt1
-setcablespeed -speed 625000
+#setcable -port lpt1
+#setcablespeed -speed 625000
 
 # Setup device type.
 adddevice -p 1 -spi AT45DB321B -file firmware.mcs

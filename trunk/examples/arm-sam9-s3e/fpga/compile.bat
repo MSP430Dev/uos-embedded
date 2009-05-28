@@ -3,7 +3,7 @@
 set     FPGA=xc3s500e-pq208-4
 set     PINS=sram_to_arm.ucf
 set XSTFLAGS=-top sram_to_arm -opt_mode Speed -opt_level 1 -glob_opt allclocknets
-set  BGFLAGS=-g TdoPin:PULLUP -g DonePin:PULLUP -g CRC:enable -g StartUpClk:CCLK
+set  BGFLAGS=-g TdoPin:PullUp -g DriveDone:Yes -g CRC:enable -g StartUpClk:CCLK
 set PRMFLAGS=-p mcs -w -c FF -s 512 -spi
 
 if not exist build md build
