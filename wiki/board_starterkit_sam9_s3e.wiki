@@ -111,8 +111,8 @@ chmod +x /usr/local/bin/sam-ba
 
 Для работы sam-ba требуется загрузить драйвер usbserial:
 {{{
-rmmod usbserial
-modprobe usbserial vendor=0x03eb product=0x6124
+sudo rmmod usbserial
+sudo modprobe usbserial vendor=0x03eb product=0x6124
 }}}
 
 Чтобы добавить в SAM-BA поддержку платы Starterkit SAM9260,
