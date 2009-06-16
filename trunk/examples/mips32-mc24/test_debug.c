@@ -11,7 +11,7 @@ int main (void)
 	}
 }
 
-void _interrupt_handler_ ()
+void _irq_handler_ ()
 {
 /*	uos_halt (0);*/
 }

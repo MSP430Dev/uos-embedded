@@ -1,7 +1,7 @@
 Release 10.1.03 par K.39 (lin)
 Copyright (c) 1995-2008 Xilinx, Inc.  All rights reserved.
 
-vak::  Thu May 28 21:05:59 2009
+vak::  Wed Jun 10 16:47:49 2009
 
 par -ol high -w project.ncd project_r.ncd 
 
@@ -135,7 +135,7 @@ Generating Pad Report.
 All signals are completely routed.
 
 Total REAL time to PAR completion: 6 secs 
-Total CPU time to PAR completion: 6 secs 
+Total CPU time to PAR completion: 5 secs 
 
 Peak Memory Usage:  121 MB
 

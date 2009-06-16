@@ -187,6 +187,6 @@ _interrupt_vector_: .globl _interrupt_vector_
 		SAVE_REGS				# Save all registers in stack
 		addi	$sp, $sp, -16			# Make an arg frame
 
-		.extern _interrupt_handler_
-		j	_interrupt_handler_		# Jump to C code, no return
+		.extern _irq_handler_
+		j	_irq_handler_			# Jump to C code, no return
 		lui	$gp, 0xb800			# Set global pointer (delay slot)
