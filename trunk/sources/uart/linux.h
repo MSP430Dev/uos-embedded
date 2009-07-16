@@ -26,7 +26,7 @@
 
 #define transmit_byte(p,c)			{ \
 	unsigned char _val = (c); \
-	write (1, &_val, 1); \
+	if (write (1, &_val, 1) != 1) /*ignore*/; \
 	kill (uart_pid, TRANSMIT_IRQ(p)); }
 #define get_received_byte(p)			0 /* empty */
 

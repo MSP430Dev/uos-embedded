@@ -48,7 +48,8 @@ tap_output (tap_t *u, buf_t *p, small_uint_t prio)
 		debug_printf ("-%02x", buf [i+16]);
 	debug_printf ("\n");
 
-	write (u->fd, buf, p->tot_len + 16);
+	if (write (u->fd, buf, p->tot_len + 16) != p->tot_len + 16)
+		/*ignore*/;
 
 	lock_take (&u->netif.lock);
 	++u->netif.out_packets;

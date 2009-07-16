@@ -16,7 +16,7 @@ typedef unsigned short uint16_t;
 #define INT_SIZE 4
 
 /* Defined in stdlib.h: typedef long int32_t; */
-/* Defined in stdlib.h: typedef unsigned long uint32_t; */
+typedef unsigned long uint32_t;
 
 typedef long long int64_t;
 typedef unsigned long long uint64_t;

@@ -98,6 +98,24 @@ arch_intr_unbind (int irq)
 }
 
 /*
+ * Last version of LIBC implemented a pointer mangling:
+ * encrypting of finction addresses, stored in memory.
+ * So we need this stuff to use longjmp() without
+ * corresponding setjmp().
+ */
+static unsigned inline __attribute__ ((always_inline))
+mangle_pointer (unsigned val)
+{
+	int result;
+
+	asm volatile (
+	"xor	%%gs:0x18, %0 \n"
+"	rol	$9, %0"
+	: "=r" (result) : "0" (val));
+	return result;
+}
+
+/*
  * Build the initial task's stack frame.
  * Arguments:
  * t	- the task object
@@ -116,8 +134,8 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg, unsigned sta
 	memset (&t->stack_context, 0, sizeof (t->stack_context));
 
 	/* Calling environment. */
-	t->stack_context->__jmpbuf[4] = (unsigned) sp;	/* SP */
-	t->stack_context->__jmpbuf[5] = (unsigned) func; /* PC */
+	t->stack_context->__jmpbuf[4] = mangle_pointer ((unsigned) sp);	/* SP */
+	t->stack_context->__jmpbuf[5] = mangle_pointer ((unsigned) func); /* PC */
 
 	/* Saved the signal mask? */
 	t->stack_context->__mask_was_saved = 1;

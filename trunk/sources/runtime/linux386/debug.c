@@ -6,7 +6,8 @@ static int debug_char = -1;
 void
 debug_putchar (void *arg, short c)
 {
-	write (2, &c, 1);
+	if (write (2, &c, 1) != 1)
+		/* ignore */;
 }
 
 /*
