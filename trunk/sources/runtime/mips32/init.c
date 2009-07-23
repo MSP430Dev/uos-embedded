@@ -30,8 +30,8 @@ void __attribute ((noreturn))_init_ (void)
 	/*
 	 * Setup all essential system registers.
 	 */
-	/* Fixed mapping, clock multiply by 5 (from 16 MHz to 80 MHz). */
-	MC_CSR = MC_CSR_FM | MC_CSR_CLK(5) | MC_CSR_CLKEN;
+	/* Fixed mapping, clock multiply from CLKIN to KHZ. */
+	MC_CSR = MC_CSR_FM | MC_CSR_CLK(KHZ/CLKIN) | MC_CSR_CLKEN;
 	MC_MASKR = 0;
 	MC_ITCSR = 0;
 	MC_RTCSR = 0;
@@ -87,6 +87,7 @@ void __attribute ((noreturn))_init_ (void)
 
 #endif /* ELVEES_MC24 */
 
+#ifndef BOOT_SRAM_SIZE
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
 	src = (unsigned*) &_etext;
@@ -94,7 +95,7 @@ void __attribute ((noreturn))_init_ (void)
 	limit = &_edata;
 	while (dest < limit)
 		*dest++ = *src++;
-
+#endif
 	src = 0;
 	/* Initialize .bss segment by zeroes. */
 	dest = &_edata;
@@ -115,6 +116,12 @@ uos_valid_memory_address (void *ptr)
 	/* Internal SRAM. */
 	if (address >= 0xb8000000 && address < 0xb8008000)
 		return 1;
+
+#ifdef BOOT_SRAM_SIZE
+	/* Boot SRAM. */
+	if (address >= 0xbfc00000 && address < 0xbfc00000+BOOT_SRAM_SIZE)
+		return 1;
+#endif /* BOOT_SRAM_SIZE */
 
 #endif /* ELVEES_MC24 */
 	return 0;
