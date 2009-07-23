@@ -15,12 +15,12 @@
 
 Карта памяти:
 || *Тип*    || *Начало*  || *Конец*   || *Объем* || *Примечания* ||
-|| SRAM     || bfc0 0000 || bfcf ffff || 1 Mb    ||              ||
-|| SDRAM    || а000 0000 || а7ff ffff || 128 Mb  || В зависимости от регистра CSCON0 ||
-|| MEM      || b800 0000 || b800 7fff || 32 Kb   ||              ||
-|| DSP XRAM || b840 0000 || b841 ffff || 128 Kb  ||              ||
-|| DSP YRAM || b842 0000 || b842 7fff || 32 Kb   ||              ||
-|| DSP PRAM || b844 0000 || b844 3fff || 16 Kb   ||              ||
+|| SRAM     ||`bfc0 0000`||`bfcf ffff`|| 1 Mb    ||              ||
+|| SDRAM    ||`а000 0000`||`а7ff ffff`|| 128 Mb  || В зависимости от регистра CSCON0 ||
+|| MEM      ||`b800 0000`||`b800 7fff`|| 32 Kb   ||              ||
+|| DSP XRAM ||`b840 0000`||`b841 ffff`|| 128 Kb  ||              ||
+|| DSP YRAM ||`b842 0000`||`b842 7fff`|| 32 Kb   ||              ||
+|| DSP PRAM ||`b844 0000`||`b844 3fff`|| 16 Kb   ||              ||
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em examples/mips32-mc24em]
