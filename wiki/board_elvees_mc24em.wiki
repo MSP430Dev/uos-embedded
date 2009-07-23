@@ -1,0 +1,38 @@
+#summary Target board: Elvees MC-24EM.
+
+[http://multicore.ru/index.php?id=55 http://uos-embedded.googlecode.com/svn/wiki/images/mc24em.jpg]
+
+Отладочная плата [http://multicore.ru/index.php?id=55 MC-24EM] построена на микроконтроллере [http://multicore.ru/index.php?id=47 Элвис MC-24, он же 1892ВМ2Я]
+([http://www.elvees.ru/mc/data_sheets/Manual_MC24_231007.pdf спецификация]) с архитектурой MIPS32.
+
+Память:
+ * 1 мегабайт статической памяти данных (две микросхемы SRAM Cypress CY7C1041CV33-10ZI)
+ * 128 мегабайт динамической памяти данных (четыре микросхемы SDRAM Micron MT48LC16M16A2-75)
+
+Частота процессора равна 100 MHz.
+
+Загрузка прошивки производится через порт JTAG, посредством утилиты [http://code.google.com/p/mcprog/wiki/Home_ru mcprog] и адаптера [http://multicore.ru/index.php?id=54 JTAG-EPP].
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em examples/mips32-mc24em]
+находятся примеры сборки uOS для ПКБИ.
+
+= Тесты =
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_debug.c test_debug.c]
+- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
+Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_task.c test_task.c]
+- Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
+общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_timer.c test_timer.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+каждые 100 миллисекунд печатает строку на консоли.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_uart.c test_uart.c]
+- Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
+циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/philosophers.c philosophers.c]
+- Пять обедающих философов. Шесть задач: драйвер UART и пять задач философов.
