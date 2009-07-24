@@ -12,7 +12,7 @@ void hello (void *arg)
 		debug_printf ("Hello from `%s'!\n", arg);
 		debug_printf ("Task space %d bytes, free %d bytes\n",
 			sizeof (task), task_stack_avail ((task_t*) task));
-		debug_printf ("(Press Enter)\n");
+		debug_puts ("(Press Enter)\n");
 		debug_getchar ();
 	}
 }

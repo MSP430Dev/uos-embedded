@@ -31,7 +31,7 @@ void __attribute ((noreturn))_init_ (void)
 	 * Setup all essential system registers.
 	 */
 	/* Fixed mapping, clock multiply from CLKIN to KHZ. */
-	MC_CSR = MC_CSR_FM | MC_CSR_CLK(KHZ/CLKIN) | MC_CSR_CLKEN;
+	MC_CSR = MC_CSR_FM | MC_CSR_CLK(KHZ/ELVEES_CLKIN) | MC_CSR_CLKEN;
 	MC_MASKR = 0;
 	MC_ITCSR = 0;
 	MC_RTCSR = 0;
@@ -87,7 +87,6 @@ void __attribute ((noreturn))_init_ (void)
 
 #endif /* ELVEES_MC24 */
 
-#ifndef BOOT_SRAM_SIZE
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
 	src = (unsigned*) &_etext;
@@ -95,8 +94,7 @@ void __attribute ((noreturn))_init_ (void)
 	limit = &_edata;
 	while (dest < limit)
 		*dest++ = *src++;
-#endif
-	src = 0;
+
 	/* Initialize .bss segment by zeroes. */
 	dest = &_edata;
 	limit = &_end;

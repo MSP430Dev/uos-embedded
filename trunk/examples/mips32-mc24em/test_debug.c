@@ -6,7 +6,7 @@
 int main (void)
 {
 	for (;;) {
-		debug_printf ("Hello, World!\n");
+		debug_puts ("Hello, World!\n");
 		debug_getchar();
 	}
 }

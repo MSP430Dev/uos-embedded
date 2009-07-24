@@ -2,18 +2,19 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-# Compile without kernel module in target.cfg.
-#TESTS		= test_debug.srec
 
-TESTS		= test_task.srec test_timer.srec test_uart.srec philosophers.srec
+TESTS		= test_task.bin test_timer.bin test_uart.bin philosophers.bin
+
+# Compile without kernel module in target.cfg.
+TESTS		+= test_debug.bin
 
 all:		$(TESTS)
-		$(SIZE) --target=srec *.srec
+		$(SIZE) --target=binary *.bin
 
 $(TESTS):	startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.out *.hex *.bin *.lst *.dis .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 
