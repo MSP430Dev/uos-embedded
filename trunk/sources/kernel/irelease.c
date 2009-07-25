@@ -25,7 +25,7 @@
  * Disassociate IRQ with the lock, enable interrupts.
  */
 void
-lock_release_irq (lock_t *m)
+mutex_unlock_irq (mutex_t *m)
 {
 	arch_state_t x;
 
@@ -58,7 +58,7 @@ lock_release_irq (lock_t *m)
 
 			/* Unblock all tasks, waiting for irq. */
 			if ((m->irq->handler) (m->irq->arg) == 0)
-				lock_activate (m, 0);
+				mutex_activate (m, 0);
 		}
 		arch_intr_unbind (m->irq->irq);
 		m->irq->lock = 0;

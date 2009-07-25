@@ -81,7 +81,7 @@ nvdata_begin_read (nvdata_t *v, unsigned sign)
 	unsigned nvdata_sign, len;
 	small_int_t reason;
 
-	lock_take (&v->lock);
+	mutex_lock (&v->lock);
 #ifndef NDEBUG
 	v->owner = task_current;
 #endif
@@ -154,7 +154,7 @@ ballout:
 #ifndef NDEBUG
 	v->owner = 0;
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return reason;
 }
 
@@ -205,14 +205,14 @@ ballout:
 #ifndef NDEBUG
 	v->owner = 0;
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return reason;
 }
 
 void
 nvdata_begin_write (nvdata_t *v)
 {
-	lock_take (&v->lock);
+	mutex_lock (&v->lock);
 #ifndef NDEBUG
 	v->owner = task_current;
 #endif
@@ -271,7 +271,7 @@ ballout:
 #ifndef NDEBUG
 	v->owner = 0;
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return reason;
 }
 
@@ -280,7 +280,7 @@ void nvdata_init (nvdata_t *v, unsigned region_begin, unsigned region_end)
 	assert (region_end > region_begin && region_end - region_begin > 255);
 	assert (region_end <= NVDATA_BAD_ADDRESS);
 
-	lock_take (&v->lock);
+	mutex_lock (&v->lock);
 #ifndef NDEBUG
 	v->owner = task_current;
 #endif
@@ -295,5 +295,5 @@ void nvdata_init (nvdata_t *v, unsigned region_begin, unsigned region_end)
 #ifndef NDEBUG
 	v->owner = 0;
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 }

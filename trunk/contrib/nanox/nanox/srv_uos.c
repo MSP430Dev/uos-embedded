@@ -19,9 +19,9 @@ extern keyboard_t *uos_keyboard;
 void
 GsSelect (GR_TIMEOUT timeout)
 {
-	char group [sizeof(lock_group_t) + 4 * sizeof(lock_slot_t)];
-	lock_group_t *g;
-	lock_t *source;
+	char group [sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t)];
+	mutex_group_t *g;
+	mutex_t *source;
 	GR_TIMEOUT waittime = 0;
 again:
 	/* If mouse data present, service it */
@@ -42,19 +42,19 @@ again:
 	 * Create a group of three event sources.
 	 */
 	memset (group, 0, sizeof(group));
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &uos_timer->lock);
-	lock_group_add (g, &uos_mouse->lock);
-	lock_group_add (g, &uos_keyboard->lock);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &uos_timer->lock);
+	mutex_group_add (g, &uos_mouse->lock);
+	mutex_group_add (g, &uos_keyboard->lock);
 	if (curclient->shm_cmds)
-		lock_group_add (g, (lock_t*) curclient->shm_cmds);
+		mutex_group_add (g, (mutex_t*) curclient->shm_cmds);
 
 	/* Sleep waiting for events. */
-	lock_group_listen (g);
+	mutex_group_listen (g);
 	SERVER_UNLOCK();
-	lock_group_wait (g, &source, 0);
+	mutex_group_wait (g, &source, 0);
 	SERVER_LOCK();
-	lock_group_unlisten (g);
+	mutex_group_unlisten (g);
 
 	if (timeout > 0 && source == &uos_timer->lock)
 		waittime += uos_timer->msec_per_tick;
@@ -72,7 +72,7 @@ again:
 	}
 
 	/* Check for input on registered descriptor */
-	if (source == (lock_t*) curclient->shm_cmds) {
+	if (source == (mutex_t*) curclient->shm_cmds) {
 		GR_EVENT_FDINPUT *gp;
 
 		gp = (GR_EVENT_FDINPUT*) GsAllocEvent (curclient);

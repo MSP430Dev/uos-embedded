@@ -100,7 +100,7 @@ void arch_task_switch (task_t *target)
 void __attribute__ ((naked))
 _irq_handler_ (void)
 {
-	lock_irq_t *h;
+	mutex_irq_t *h;
 	int irq;
 
 	for (;;) {
@@ -124,7 +124,7 @@ _irq_handler_ (void)
 		*AT91C_AIC_IDCR = 1 << irq;	/* disable */
 #endif
 /*debug_printf ("<%d> ", irq);*/
-		h = &lock_irq [irq];
+		h = &mutex_irq [irq];
 		if (! h->lock)
 			continue;
 
@@ -132,7 +132,7 @@ _irq_handler_ (void)
 			/* If the lock is free -- call fast handler. */
 			if (h->lock->master) {
 				/* Lock is busy -- remember pending irq.
-				 * Call fast handler later, in lock_release(). */
+				 * Call fast handler later, in mutex_unlock(). */
 				h->pending = 1;
 				continue;
 			}
@@ -140,7 +140,7 @@ _irq_handler_ (void)
 				/* The fast handler returns 1 when it fully
 				 * serviced an interrupt. In this case
 				 * there is no need to wake up the interrupt
-				 * servicing task, stopped on lock_wait.
+				 * servicing task, stopped on mutex_wait.
 				 * Task switching is not performed. */
 #ifdef ARM_S3C4530
 				if (irq == 4 || irq == 6) {
@@ -153,7 +153,7 @@ _irq_handler_ (void)
 		}
 
 		/* Signal the interrupt handler, if any. */
-		lock_activate (h->lock, 0);
+		mutex_activate (h->lock, 0);
 	}
 
 	/* LY: copy few lines of code from task_schedule() here. */

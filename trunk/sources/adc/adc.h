@@ -1,5 +1,5 @@
 typedef struct {
-	lock_t lock;
+	mutex_t lock;
 	small_uint_t channel;
 } adc_t;
 

@@ -182,7 +182,7 @@ void task_delete (task_t *task, void *status);
 #include "kernel/uos.h"
 
 task_t *task2;
-lock_t event;
+mutex_t event;
 char stack1 [400], stack2 [400], stack3 [400];
 
 void main1 (void *data)
@@ -201,7 +201,7 @@ void main2 (void *data)
 {
     /* Задача 2 стартует второй и ждет некоего события. */
     debug_puts ("Task 2: waiting for some event\n");
-    lock_wait (&event);
+    mutex_wait (&event);
 }
 
 void main3 (void *data)

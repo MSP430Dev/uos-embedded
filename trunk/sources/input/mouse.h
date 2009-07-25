@@ -14,7 +14,7 @@ typedef struct _mouse_move_t {
 typedef struct _mouse_t {
 	struct _mouse_interface_t *interface;
 #ifdef __KERNEL_UOS_H_
-	lock_t lock;
+	mutex_t lock;
 #endif
 } mouse_t;
 

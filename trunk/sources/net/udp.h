@@ -13,7 +13,7 @@ typedef struct _udp_socket_queue_t {
 } udp_socket_queue_t;
 
 typedef struct _udp_socket_t {
-	lock_t		lock;
+	mutex_t		lock;
 	struct _ip_t	*ip;
 	struct _udp_socket_t *next;
 

@@ -108,9 +108,9 @@ slip_transmit_start (slip_t *u)
 void
 slip_cts_ready (slip_t *u)
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 	slip_transmit_start (u);
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -119,9 +119,9 @@ slip_cts_ready (slip_t *u)
 void
 slip_set_cts_poller (slip_t *u, bool_t (*func) (slip_t*))
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 	u->cts_query = func;
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -133,13 +133,13 @@ bool_t
 slip_output (slip_t *u, buf_t *p, small_uint_t prio)
 {
 /*	debug_printf ("slip_output: transmit %d bytes\n", p->tot_len);*/
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 
 	if (u->out) {
 		/* Занято, ставим в очередь. */
 		if (buf_queue_is_full (&u->outq)) {
 			++u->netif.out_discards;
-			lock_release (&u->transmitter);
+			mutex_unlock (&u->transmitter);
 /*			debug_printf ("slip_output: overflow\n");*/
 			buf_free (p);
 			return 0;
@@ -153,7 +153,7 @@ slip_output (slip_t *u, buf_t *p, small_uint_t prio)
 		u->out_flag = 1;
 		slip_transmit_start (u);
 	}
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 	return 1;
 }
 
@@ -162,9 +162,9 @@ slip_input (slip_t *u)
 {
 	buf_t *p;
 
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	p = buf_queue_get (&u->inq);
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 	return p;
 }
 
@@ -176,14 +176,14 @@ slip_recv (slip_t *u)
 {
 	buf_t *p;
 
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	for (;;) {
 		p = buf_queue_get (&u->inq);
 		if (p) {
-			lock_release (&u->netif.lock);
+			mutex_unlock (&u->netif.lock);
 			return p;
 		}
-		lock_wait (&u->netif.lock);
+		mutex_wait (&u->netif.lock);
 	}
 }
 
@@ -193,9 +193,9 @@ slip_recv (slip_t *u)
 bool_t
 slip_send (slip_t *u, buf_t *p)
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 	while (u->out && buf_queue_is_full (&u->outq))
-		lock_wait (&u->transmitter);
+		mutex_wait (&u->transmitter);
 
 	if (u->out) {
 		/* Занято, ставим в очередь. */
@@ -208,7 +208,7 @@ slip_send (slip_t *u, buf_t *p)
 		u->out_flag = 1;
 		slip_transmit_start (u);
 	}
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 	return 1;
 }
 
@@ -304,7 +304,7 @@ slip_receiver (void *arg)
 	unsigned short len;
 
 	/* Start receiver. */
-	lock_take_irq (&u->netif.lock, RECEIVE_IRQ (u->port),
+	mutex_lock_irq (&u->netif.lock, RECEIVE_IRQ (u->port),
 		(handler_t) slip_receive_data, u);
 
 	enable_receiver (u->port);
@@ -325,7 +325,7 @@ slip_receiver (void *arg)
 		}
 
 		/* Wait for the receive interrupt. */
-		lock_wait (&u->netif.lock);
+		mutex_wait (&u->netif.lock);
 
 		/* Process all available received data. */
 		if (u->in_ptr && u->in_ptr > u->in->payload) {
@@ -360,7 +360,7 @@ slip_transmitter (void *arg)
 
 #ifdef TRANSMIT_IRQ
 	/* Start transmitter. */
-	lock_take_irq (&u->transmitter, TRANSMIT_IRQ (u->port),
+	mutex_lock_irq (&u->transmitter, TRANSMIT_IRQ (u->port),
 		(handler_t) slip_transmit_start, u);
 
 	enable_transmitter (u->port);
@@ -370,7 +370,7 @@ slip_transmitter (void *arg)
 
 	for (;;) {
 		/* Wait for the transmit interrupt. */
-		lock_wait (&u->transmitter);
+		mutex_wait (&u->transmitter);
 		if (u->out_free) {
 			buf_free (u->out_free);
 			u->out_free = 0;

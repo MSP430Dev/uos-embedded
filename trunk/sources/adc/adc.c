@@ -14,7 +14,7 @@ adc_read (adc_t *v)
 {
 	unsigned val;
 
-	lock_take (&v->lock);
+	mutex_lock (&v->lock);
 
 #if __AVR__
 	/* Start measuring in Single Conversion mode. */
@@ -23,7 +23,7 @@ adc_read (adc_t *v)
 	/* Wait until ADSC becomes zero.
 	 * It could not take us too long. */
 	while (testb (ADSC, ADCSR))
-		lock_wait (&v->lock);
+		mutex_wait (&v->lock);
 
 	val = ADCL;
 	val |= ADCH << 8;
@@ -39,7 +39,7 @@ adc_read (adc_t *v)
 
 	val = AT91C_ADC_CDR0 [v->channel];
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return val;
 }
 
@@ -67,8 +67,8 @@ adc_init (adc_t *v)
 	ADCSR = 0x87;
 
 	/* Get the interrupt. */
-	lock_take_irq (&v->lock, ADC_IRQ, 0, 0);
-	lock_release (&v->lock);
+	mutex_lock_irq (&v->lock, ADC_IRQ, 0, 0);
+	mutex_unlock (&v->lock);
 #endif
 
 #if ARM_AT91SAM

@@ -21,7 +21,7 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t *ip;
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 slip_t *slip;
 route_t route;
 route_t default_route;
@@ -66,17 +66,17 @@ void main_task (void *data)
 	unsigned char addr [4], *output;
 	unsigned short port;
 #if 1
-	lock_group_t *g;
+	mutex_group_t *g;
 
 	debug_printf ("\n\n*** Testing SNMP on UART 1 ***\n\n");
 
 	/*
 	 * Create a group of two locks: timer and slip.
 	 */
-	g = lock_group_init (group, sizeof(group));
+	g = mutex_group_init (group, sizeof(group));
 	slip = mem_alloc (&pool, sizeof (*slip));
-	lock_group_add (g, &slip->netif.lock);
-	lock_group_add (g, &timer.second);
+	mutex_group_add (g, &slip->netif.lock);
+	mutex_group_add (g, &timer.second);
 	ip = mem_alloc (&pool, sizeof (*ip));
 	ip_init (ip, 70, &timer, 0, g);
 

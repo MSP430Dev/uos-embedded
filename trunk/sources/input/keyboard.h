@@ -220,7 +220,7 @@ typedef struct _keyboard_event_t {
 typedef struct _keyboard_t {
 	struct _keyboard_interface_t *interface;
 #ifdef __KERNEL_UOS_H_
-	lock_t lock;
+	mutex_t lock;
 #endif
 } keyboard_t;
 

@@ -11,7 +11,7 @@ small_int_t nvdata_begin_update (nvdata_t *v, unsigned addr /* relative */)
 
 	/* debug_printf ("begin-update: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X, addr=0x%04X\n",
 		v->__addr, v->begin, v->end, addr); */
-	lock_take (&v->lock);
+	mutex_lock (&v->lock);
 #ifndef NDEBUG
 	v->owner = task_current;
 #endif
@@ -49,7 +49,7 @@ ballout:
 #ifndef NDEBUG
 	v->owner = 0;
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return reason;
 }
 
@@ -99,6 +99,6 @@ ballout:
 #ifndef NDEBUG
 	v->owner = 0;
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return reason;
 }

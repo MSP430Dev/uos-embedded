@@ -12,12 +12,12 @@ master_putchar (stream_t *master, short c)
 	pipe_t *u = MASTER_TO_PIPE (master);
 	unsigned short *next;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait for free space in FIFO. */
 	for (;;) {
 		if (u->slave_closed) {
-			lock_release (&u->lock);
+			mutex_unlock (&u->lock);
 			return;
 		}
 		next = u->out_last + 1;
@@ -27,15 +27,15 @@ master_putchar (stream_t *master, short c)
 		if (next != u->out_first)
 			break;
 
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 	}
 
 	/* Put byte into FIFO. */
 	*u->out_last = c;
 	u->out_last = next;
-	lock_signal (&u->lock, 0);
+	mutex_signal (&u->lock, 0);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static void
@@ -44,12 +44,12 @@ slave_putchar (stream_t *slave, short c)
 	pipe_t *u = SLAVE_TO_PIPE (slave);
 	unsigned short *next;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait for free space in FIFO. */
 	for (;;) {
 		if (u->master_closed) {
-			lock_release (&u->lock);
+			mutex_unlock (&u->lock);
 			return;
 		}
 		next = u->in_last + 1;
@@ -59,15 +59,15 @@ slave_putchar (stream_t *slave, short c)
 		if (next != u->in_first)
 			break;
 
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 	}
 
 	/* Put byte into FIFO. */
 	*u->in_last = c;
 	u->in_last = next;
-	lock_signal (&u->lock, 0);
+	mutex_signal (&u->lock, 0);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static unsigned short
@@ -76,15 +76,15 @@ master_getchar (stream_t *master)
 	pipe_t *u = MASTER_TO_PIPE (master);
 	unsigned short c;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait for data in FIFO. */
 	while (u->in_first == u->in_last) {
 		if (u->slave_closed) {
-			lock_release (&u->lock);
+			mutex_unlock (&u->lock);
 			return -1;
 		}
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 	}
 
 	/* Get byte from FIFO. */
@@ -92,9 +92,9 @@ master_getchar (stream_t *master)
 	if (u->in_first >= u->in_fifo + u->fifo_chars)
 		u->in_first = u->in_fifo;
 
-	lock_signal (&u->lock, 0);
+	mutex_signal (&u->lock, 0);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return c;
 }
 
@@ -104,15 +104,15 @@ slave_getchar (stream_t *slave)
 	pipe_t *u = SLAVE_TO_PIPE (slave);
 	unsigned short c;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait for data in FIFO. */
 	while (u->out_first == u->out_last) {
 		if (u->master_closed) {
-			lock_release (&u->lock);
+			mutex_unlock (&u->lock);
 			return -1;
 		}
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 	}
 
 	/* Get byte from FIFO. */
@@ -120,9 +120,9 @@ slave_getchar (stream_t *slave)
 	if (u->out_first >= u->out_fifo + u->fifo_chars)
 		u->out_first = u->out_fifo;
 
-	lock_signal (&u->lock, 0);
+	mutex_signal (&u->lock, 0);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return c;
 }
 
@@ -132,16 +132,16 @@ master_peekchar (stream_t *master)
 	pipe_t *u = MASTER_TO_PIPE (master);
 	unsigned short c;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Is fifo empty? */
 	if (u->in_first == u->in_last) {
-		lock_release (&u->lock);
+		mutex_unlock (&u->lock);
 		return -1;
 	}
 	c = *u->in_first;
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return c;
 }
 
@@ -151,16 +151,16 @@ slave_peekchar (stream_t *slave)
 	pipe_t *u = SLAVE_TO_PIPE (slave);
 	unsigned short c;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Is fifo empty? */
 	if (u->out_first == u->out_last) {
-		lock_release (&u->lock);
+		mutex_unlock (&u->lock);
 		return -1;
 	}
 	c = *u->out_first;
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return c;
 }
 
@@ -169,13 +169,13 @@ master_flush (stream_t *master)
 {
 	pipe_t *u = MASTER_TO_PIPE (master);
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait until output FIFO becomes empty. */
 	while (u->out_first != u->out_last && ! u->slave_closed)
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static void
@@ -183,13 +183,13 @@ slave_flush (stream_t *slave)
 {
 	pipe_t *u = SLAVE_TO_PIPE (slave);
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait until input FIFO becomes empty. */
 	while (u->in_first != u->in_last && ! u->master_closed)
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static bool_t
@@ -198,9 +198,9 @@ master_eof (stream_t *master)
 	pipe_t *u = MASTER_TO_PIPE (master);
 	bool_t ret;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	ret = u->slave_closed;
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return ret;
 }
 
@@ -210,9 +210,9 @@ slave_eof (stream_t *slave)
 	pipe_t *u = SLAVE_TO_PIPE (slave);
 	bool_t ret;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	ret = u->master_closed;
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return ret;
 }
 
@@ -221,13 +221,13 @@ master_close (stream_t *master)
 {
 	pipe_t *u = MASTER_TO_PIPE (master);
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	u->master_closed = 1;
 	u->in_first = u->in_last;
-	lock_signal (&u->lock, 0);
+	mutex_signal (&u->lock, 0);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static void
@@ -235,13 +235,13 @@ slave_close (stream_t *slave)
 {
 	pipe_t *u = SLAVE_TO_PIPE (slave);
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	u->slave_closed = 1;
 	u->out_first = u->out_last;
-	lock_signal (&u->lock, 0);
+	mutex_signal (&u->lock, 0);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static stream_interface_t master_interface = {

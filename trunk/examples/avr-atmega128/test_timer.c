@@ -13,7 +13,7 @@ void hello (void *arg)
 	for (;;) {
 		debug_printf ("Hello from `%S'! msec = %d\n",
 			arg, timer_milliseconds (&timer));
-		lock_wait (&timer.decisec);
+		mutex_wait (&timer.decisec);
 	}
 }
 

@@ -13,7 +13,7 @@
 #define MEM_SIZE	15000
 
 ARRAY (memory, MEM_SIZE);
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 mem_pool_t pool;
 tap_t tap;
 route_t route;
@@ -22,7 +22,7 @@ ip_t ip;
 
 void uos_init (void)
 {
-	lock_group_t *g;
+	mutex_group_t *g;
 	unsigned char my_ip[] = "\310\0\0\2";
 
 	timer_init (&timer, KHZ, 10);
@@ -31,9 +31,9 @@ void uos_init (void)
 	/*
 	 * Create a group of two locks: timer and tap.
 	 */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &tap.netif.lock);
-	lock_group_add (g, &timer.decisec);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &tap.netif.lock);
+	mutex_group_add (g, &timer.decisec);
 	ip_init (&ip, &pool, 70, &timer, 0, g);
 
 	/*

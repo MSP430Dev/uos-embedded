@@ -79,7 +79,7 @@ arp_t *arp;
 route_t route;
 ip_t *ip;
 
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 
 int reset_counter;			/* Device reset counter */
@@ -756,7 +756,7 @@ bool_t uos_valid_memory_address (void *ptr)
 
 void uos_init (void)
 {
-	lock_group_t *g;
+	mutex_group_t *g;
 
 	/* Baud 9600. */
 	uart_init (&uart, 0, PRIO_UART, KHZ, 9600);
@@ -784,9 +784,9 @@ void uos_init (void)
 	/*
 	 * Create a group of two locks: timer and eth.
 	 */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &eth->netif.lock);
-	lock_group_add (g, &timer.decisec);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &eth->netif.lock);
+	mutex_group_add (g, &timer.decisec);
 	ip = mem_alloc (&pool, sizeof (*ip));
 	if (! ip) {
 		debug_printf ("No memory for ip_t\n");

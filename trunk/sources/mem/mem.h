@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 struct _mem_pool_t {
-	lock_t lock;		/* Lock used to avoid corruption problems. */
+	mutex_t lock;		/* Lock used to avoid corruption problems. */
 
 	size_t free_size;	/* The amount of free memory. */
 

@@ -16,7 +16,7 @@
 #define STATIC_STRING(val)	({static char s[] = val; s; })
 
 ARRAY (task, 6000);
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 char memory [MEM_SIZE];
 mem_pool_t pool;
 tap_t tap;
@@ -95,7 +95,7 @@ void main_task (void *data)
 
 void uos_init (void)
 {
-	lock_group_t *g;
+	mutex_group_t *g;
 	unsigned char my_ip[] = "\310\0\0\2";
 	unsigned char gw_ip[] = "\310\0\0\1";
 	unsigned char gw_netmask[] = "\0\0\0\0";
@@ -106,9 +106,9 @@ void uos_init (void)
 	/*
 	 * Create a group of two locks: timer and tap.
 	 */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &tap.netif.lock);
-	lock_group_add (g, &timer.decisec);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &tap.netif.lock);
+	mutex_group_add (g, &timer.decisec);
 	ip_init (&ip, &pool, 70, &timer, 0, g);
 
 	/*

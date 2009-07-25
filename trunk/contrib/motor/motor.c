@@ -7,8 +7,8 @@ signed char motor_get_power (motor_t *p, unsigned char motor);
 
 void motor_init (motor_t *p)
 {
-	lock_init (&p->lock);
-	lock_take (&p->lock);
+	mutex_init (&p->lock);
+	mutex_lock (&p->lock);
 
 	/* Режим широтно-ипульсного модулятора.
 	 * Источник синхросигнала - CK/64, получается 4000000/64/510,
@@ -27,16 +27,16 @@ void motor_init (motor_t *p)
 	setb (6, PORTB);	/* направление "вперед" */
 	outb (inb (DDRB) | 0xf0, DDRB);
 
-	lock_release (&p->lock);
+	mutex_unlock (&p->lock);
 }
 
 signed char motor_get_power (motor_t *p, unsigned char motor)
 {
 	signed char val;
 
-	lock_take (&p->lock);
+	mutex_lock (&p->lock);
 	val = (motor == MOTOR_LEFT) ? p->left_power : p->right_power;
-	lock_release (&p->lock);
+	mutex_unlock (&p->lock);
 	return val;
 }
 
@@ -57,7 +57,7 @@ void motor_set_power (motor_t *p, unsigned char motors, signed char power)
 		level = (-power) << 1 | 1;
 	}
 
-	lock_take (&p->lock);
+	mutex_lock (&p->lock);
 
 	if (motors & MOTOR_LEFT) {
 		outb (level, OCR0);
@@ -75,5 +75,5 @@ void motor_set_power (motor_t *p, unsigned char motors, signed char power)
 			clearb (6, PORTB);	/* направление "назад" */
 		p->right_power = power;
 	}
-	lock_release (&p->lock);
+	mutex_unlock (&p->lock);
 }

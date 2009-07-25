@@ -54,7 +54,7 @@ tcp_connect (ip_t *ip, unsigned char *ipaddr, unsigned short port)
 	tcp_debug (CONST("tcp_connect to port %u\n"), port);
 	if (ipaddr == 0)
 		return 0;
-	lock_take (&ip->lock);
+	mutex_lock (&ip->lock);
 
 	s = tcp_alloc (ip);
 	memcpy (s->remote_ip, ipaddr, 4);
@@ -76,22 +76,22 @@ tcp_connect (ip_t *ip, unsigned char *ipaddr, unsigned short port)
 
 	if (! tcp_enqueue (s, 0, 0, TCP_SYN, (unsigned char*) &optdata, 4)) {
 		mem_free (s);
-		lock_release (&ip->lock);
+		mutex_unlock (&ip->lock);
 		return 0;
 	}
 	tcp_list_add (&ip->tcp_sockets, s);
 	tcp_output (s);
-	lock_release (&ip->lock);
+	mutex_unlock (&ip->lock);
 
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 	for (;;) {
-		lock_wait (&s->lock);
+		mutex_wait (&s->lock);
 		if (s->state == ESTABLISHED) {
-			lock_release (&s->lock);
+			mutex_unlock (&s->lock);
 			return s;
 		}
 		if (s->state == CLOSED) {
-			lock_release (&s->lock);
+			mutex_unlock (&s->lock);
 			mem_free (s);
 			return 0;
 		}
@@ -107,28 +107,28 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 {
 	tcp_debug (CONST("tcp_write(s=%p, arg=%p, len=%u)\n"),
 		(void*) s, arg, len);
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 
 	if (s->state != SYN_SENT && s->state != SYN_RCVD &&
 	    s->state != ESTABLISHED && s->state != CLOSE_WAIT) {
-		lock_release (&s->lock);
+		mutex_unlock (&s->lock);
 		tcp_debug (CONST("tcp_write() called in invalid state\n"));
 		return -1;
 	}
 	if (len == 0) {
-		lock_release (&s->lock);
+		mutex_unlock (&s->lock);
 		return -1;
 	}
 	for (;;) {
 		if (tcp_enqueue (s, (void*) arg, len, 0, 0, 0))
 			break;
-		lock_wait (&s->lock);
+		mutex_wait (&s->lock);
 	}
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 
-	lock_take (&s->ip->lock);
+	mutex_lock (&s->ip->lock);
 	tcp_output (s);
-	lock_release (&s->ip->lock);
+	mutex_unlock (&s->ip->lock);
 	return len;
 }
 
@@ -147,27 +147,27 @@ tcp_read (tcp_socket_t *s, void *arg, unsigned short len)
 	if (len == 0) {
 		return -1;
 	}
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 	while (tcp_queue_is_empty (s)) {
 		if (s->state != SYN_SENT && s->state != SYN_RCVD &&
 		    s->state != ESTABLISHED) {
-			lock_release (&s->lock);
+			mutex_unlock (&s->lock);
 			tcp_debug (CONST("tcp_read() called in invalid state\n"));
 			return -1;
 		}
-		lock_wait (&s->lock);
+		mutex_wait (&s->lock);
 	}
 	p = tcp_queue_get (s);
 
 	tcp_debug (CONST("tcp_read: received %u bytes, wnd %u (%u).\n"),
 	       p->tot_len, s->rcv_wnd, TCP_WND - s->rcv_wnd);
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 
-	lock_take (&s->ip->lock);
+	mutex_lock (&s->ip->lock);
 	if (! (s->flags & TF_ACK_DELAY) && ! (s->flags & TF_ACK_NOW)) {
 		tcp_ack (s);
 	}
-	lock_release (&s->ip->lock);
+	mutex_unlock (&s->ip->lock);
 
 	/* Copy all chunks. */
 	buf = arg;
@@ -207,7 +207,7 @@ tcp_socket_t *tcp_listen (ip_t *ip, unsigned char *ipaddr,
 	s->ip = ip;
 
 	/* Bind the connection to a local portnumber and IP address. */
-	lock_take (&ip->lock);
+	mutex_lock (&ip->lock);
 	if (port == 0) {
 		port = tcp_new_port (ip);
 	}
@@ -219,7 +219,7 @@ tcp_socket_t *tcp_listen (ip_t *ip, unsigned char *ipaddr,
 			if (memcmp (cs->local_ip, IP_ADDR(0), 4) == 0 ||
 			    memcmp (ipaddr, IP_ADDR(0), 4) == 0 ||
 			    memcmp (cs->local_ip, ipaddr, 4) == 0) {
-				lock_release (&ip->lock);
+				mutex_unlock (&ip->lock);
 				mem_free (s);
 				return 0;
 			}
@@ -230,7 +230,7 @@ tcp_socket_t *tcp_listen (ip_t *ip, unsigned char *ipaddr,
 			if (memcmp (cs->local_ip, IP_ADDR(0), 4) == 0 ||
 			    memcmp (ipaddr, IP_ADDR(0), 4) == 0 ||
 			    memcmp (cs->local_ip, ipaddr, 4) == 0) {
-				lock_release (&ip->lock);
+				mutex_unlock (&ip->lock);
 				mem_free (s);
 				return 0;
 			}
@@ -244,7 +244,7 @@ tcp_socket_t *tcp_listen (ip_t *ip, unsigned char *ipaddr,
 	s->state = LISTEN;
 
 	tcp_list_add (&ip->tcp_listen_sockets, s);
-	lock_release (&ip->lock);
+	mutex_unlock (&ip->lock);
 	return s;
 }
 
@@ -257,10 +257,10 @@ tcp_accept (tcp_socket_t *s)
 	tcp_hdr_t *h;
 	unsigned long optdata;
 again:
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 	for (;;) {
 		if (s->state != LISTEN) {
-			lock_release (&s->lock);
+			mutex_unlock (&s->lock);
 			tcp_debug (CONST("tcp_accept: called in invalid state\n"));
 			return 0;
 		}
@@ -268,20 +268,20 @@ again:
 			p = tcp_queue_get (s);
 			break;
 		}
-		lock_wait (&s->lock);
+		mutex_wait (&s->lock);
 	}
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 
 	/* Create a new PCB, and respond with a SYN|ACK.
 	 * If a new PCB could not be created (probably due to lack of memory),
 	 * we don't do anything, but rely on the sender will retransmit
 	 * the SYN at a time when we have more memory available. */
-	lock_take (&s->ip->lock);
+	mutex_lock (&s->ip->lock);
 	ns = tcp_alloc (s->ip);
 	if (ns == 0) {
 		tcp_debug (CONST("tcp_accept: could not allocate PCB\n"));
 		++s->ip->tcp_in_discards;
-		lock_release (&s->ip->lock);
+		mutex_unlock (&s->ip->lock);
 		buf_free (p);
 		goto again;
 	}
@@ -315,7 +315,7 @@ again:
 	/* Send a SYN|ACK together with the MSS option. */
 	tcp_enqueue (ns, 0, 0, TCP_SYN | TCP_ACK, (unsigned char*) &optdata, 4);
 	tcp_output (ns);
-	lock_release (&s->ip->lock);
+	mutex_unlock (&s->ip->lock);
 	return ns;
 }
 
@@ -326,7 +326,7 @@ again:
 int
 tcp_close (tcp_socket_t *s)
 {
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 
 	tcp_debug (CONST("tcp_close: state=%S\n"),
 		tcp_state_name (s->state));
@@ -334,16 +334,16 @@ tcp_close (tcp_socket_t *s)
 	switch (s->state) {
 	default: /* Has already been closed. */
 		tcp_queue_free (s);
-		lock_release (&s->lock);
+		mutex_unlock (&s->lock);
 		return 1;
 	case LISTEN:
 	case SYN_SENT:
 		tcp_queue_free (s);
-		lock_release (&s->lock);
-		lock_take (&s->ip->lock);
+		mutex_unlock (&s->lock);
+		mutex_lock (&s->ip->lock);
 		tcp_socket_remove (s->state == LISTEN ?
 			&s->ip->tcp_listen_sockets : &s->ip->tcp_sockets, s);
-		lock_release (&s->ip->lock);
+		mutex_unlock (&s->ip->lock);
 		return 1;
 	case SYN_RCVD:
 	case ESTABLISHED:
@@ -353,29 +353,29 @@ tcp_close (tcp_socket_t *s)
 	for (;;) {
 		if (tcp_enqueue (s, 0, 0, TCP_FIN, 0, 0))
 			break;
-		lock_wait (&s->lock);
+		mutex_wait (&s->lock);
 	}
 	s->state = (s->state == CLOSE_WAIT) ? LAST_ACK : FIN_WAIT_1;
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 
-	lock_take (&s->ip->lock);
+	mutex_lock (&s->ip->lock);
 	if (s->unsent || (s->flags & TF_ACK_NOW))
 		tcp_output (s);
-	lock_release (&s->ip->lock);
+	mutex_unlock (&s->ip->lock);
 
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 	while (s->state != CLOSED) {
 		if (s->state == TIME_WAIT && ! s->unsent) {
 			tcp_queue_free (s);
-			lock_release (&s->lock);
-			lock_take (&s->ip->lock);
+			mutex_unlock (&s->lock);
+			mutex_lock (&s->ip->lock);
 			tcp_socket_remove (&s->ip->tcp_closing_sockets, s);
-			lock_release (&s->ip->lock);
+			mutex_unlock (&s->ip->lock);
 			return 1;
 		}
-		lock_wait (&s->lock);
+		mutex_wait (&s->lock);
 	}
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 	return 1;
 }
 
@@ -392,16 +392,16 @@ tcp_abort (tcp_socket_t *s)
 	unsigned short remote_port, local_port;
 	unsigned char remote_ip[4], local_ip[4];
 
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 
 	/* Figure out on which TCP PCB list we are, and remove us. If we
 	 * are in an active state, send an RST to the remote end. */
 	if (s->state == TIME_WAIT) {
 		tcp_queue_free (s);
-		lock_release (&s->lock);
-		lock_take (&ip->lock);
+		mutex_unlock (&s->lock);
+		mutex_lock (&ip->lock);
 		tcp_socket_remove (&ip->tcp_closing_sockets, s);
-		lock_release (&ip->lock);
+		mutex_unlock (&ip->lock);
 		return;
 	}
 	seqno = s->snd_nxt;
@@ -411,9 +411,9 @@ tcp_abort (tcp_socket_t *s)
 	local_port = s->local_port;
 	remote_port = s->remote_port;
 	tcp_queue_free (s);
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 
-	lock_take (&ip->lock);
+	mutex_lock (&ip->lock);
 	tcp_socket_remove (&ip->tcp_sockets, s);
 	if (s->unacked != 0) {
 		tcp_segments_free (s->unacked);
@@ -425,7 +425,7 @@ tcp_abort (tcp_socket_t *s)
 	tcp_debug (CONST("tcp_abort: sending RST\n"));
 	tcp_rst (ip, seqno, ackno, local_ip, remote_ip,
 		local_port, remote_port);
-	lock_release (&ip->lock);
+	mutex_unlock (&ip->lock);
 }
 
 /*
@@ -436,8 +436,8 @@ tcp_inactivity (tcp_socket_t *s)
 {
 	unsigned long sec;
 
-	lock_take (&s->ip->lock);
+	mutex_lock (&s->ip->lock);
 	sec = (s->ip->tcp_ticks - s->tmr) >> 1;
-	lock_release (&s->ip->lock);
+	mutex_unlock (&s->ip->lock);
 	return sec;
 }

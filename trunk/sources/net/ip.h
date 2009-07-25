@@ -20,8 +20,8 @@
 #endif
 
 typedef struct _ip_t {
-	lock_t		lock;
-	lock_group_t *	netif_group;	/* list of network drivers */
+	mutex_t		lock;
+	mutex_group_t	*netif_group;	/* list of network drivers */
 	struct _mem_pool_t *pool;	/* pool for memory allocation */
 	struct _timer_t *timer;		/* timer driver */
 	struct _route_t *route;		/* routing table */
@@ -201,7 +201,7 @@ struct _buf_t;
 struct _netif_t;
 
 void ip_init (ip_t *ip, struct _mem_pool_t *pool, int prio,
-	struct _timer_t *timer, struct _arp_t *arp, lock_group_t *g);
+	struct _timer_t *timer, struct _arp_t *arp, mutex_group_t *g);
 void ip_input (ip_t *ip, struct _buf_t *p, struct _netif_t *inp);
 bool_t ip_output (ip_t *ip, struct _buf_t *p, unsigned char *dest,
 	unsigned char *src, small_uint_t proto);

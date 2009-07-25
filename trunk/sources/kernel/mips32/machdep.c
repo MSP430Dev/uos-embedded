@@ -106,7 +106,7 @@ _arch_task_switch_ ()
 void
 _arch_interrupt_ (void)
 {
-	lock_irq_t *h;
+	mutex_irq_t *h;
 	int irq;
 
 	asm volatile (
@@ -127,7 +127,7 @@ _arch_interrupt_ (void)
 #ifdef ELVEES_MC24
 		MC_MASKR &= ~(1 << irq);	/* disable */
 #endif
-		h = &lock_irq [irq];
+		h = &mutex_irq [irq];
 		if (! h->lock)
 			continue;
 
@@ -135,7 +135,7 @@ _arch_interrupt_ (void)
 			/* If the lock is free -- call fast handler. */
 			if (h->lock->master) {
 				/* Lock is busy -- remember pending irq.
-				 * Call fast handler later, in lock_release(). */
+				 * Call fast handler later, in mutex_unlock(). */
 				h->pending = 1;
 				continue;
 			}
@@ -143,14 +143,14 @@ _arch_interrupt_ (void)
 				/* The fast handler returns 1 when it fully
 				 * serviced an interrupt. In this case
 				 * there is no need to wake up the interrupt
-				 * servicing task, stopped on lock_wait.
+				 * servicing task, stopped on mutex_wait.
 				 * Task switching is not performed. */
 				continue;
 			}
 		}
 
 		/* Signal the interrupt handler, if any. */
-		lock_activate (h->lock, 0);
+		mutex_activate (h->lock, 0);
 	}
 
 	/* LY: copy a few lines of code from task_schedule() here. */

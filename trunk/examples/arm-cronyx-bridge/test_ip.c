@@ -24,7 +24,7 @@ mem_pool_t pool;
 timer_t timer;
 ip_t ip;
 ARRAY (stack_wdog, 500);		/* Task: watchdog */
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 arp_t *arp;
 eth_t *eth;
@@ -80,7 +80,7 @@ void main_watchdog (void *data)
 
 void uos_init (void)
 {
-	lock_group_t *g;
+	mutex_group_t *g;
 
 	configure_ram (RAM_START, RAM_END, REFRESH_USEC, IO_START);
 	mem_init (&pool, RAM_START, RAM_END);
@@ -97,9 +97,9 @@ void uos_init (void)
 	/*
 	 * Create a group of two locks: timer and eth.
 	 */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &eth->netif.lock);
-	lock_group_add (g, &timer.decisec);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &eth->netif.lock);
+	mutex_group_add (g, &timer.decisec);
 	ip_init (&ip, &pool, 70, &timer, arp, g);
 
 	/*

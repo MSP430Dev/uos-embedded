@@ -136,7 +136,7 @@ void test_eth ()
 
 		cs8900_poll (&eth);
 
-/*		lock_wait (&eth.netif.lock);*/
+/*		mutex_wait (&eth.netif.lock);*/
 		p = netif_input (&eth.netif);
 		if (p) {
 			buf_print_ethernet (p);

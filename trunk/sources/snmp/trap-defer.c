@@ -49,7 +49,7 @@ typedef struct _trap_flag {
 	unsigned char status;
 } trap_flag_t;
 
-static lock_t lock;
+static mutex_t lock;
 static trap_t *trap_queue;
 static unsigned char *trap_countdown;
 static trap_flag_t *trap_flag;
@@ -362,7 +362,7 @@ static void trap_enqueue_release (trap_t *trap)
 			trap_try ();
 		}
 	}
-	lock_release (&lock);
+	mutex_unlock (&lock);
 }
 
 small_int_t trap_defer_poll (unsigned short since_ms)
@@ -371,7 +371,7 @@ small_int_t trap_defer_poll (unsigned short since_ms)
 
 	result = 0;
 	if (snmp && trap_queue && since_ms) {
-		lock_take (&lock);
+		mutex_lock (&lock);
 		if (since_ms > 255 * 99)
 			/* Чтобы не было переполнения в байте после сложения
 			 * и деления на 100. */
@@ -386,7 +386,7 @@ small_int_t trap_defer_poll (unsigned short since_ms)
 			result = trap_try ();
 		}
 		since_acc_ms = since_ms;
-		lock_release (&lock);
+		mutex_unlock (&lock);
 	}
 
 	return result;
@@ -400,7 +400,7 @@ void trap_defer_cold_start (unsigned short reset_counter)
 		return;
 
 	assert (trap_queue != 0);
-	lock_take (&lock);
+	mutex_lock (&lock);
 	t.type = TRAP_START;
 	t.cold_start.reset_counter = reset_counter;
 	trap_enqueue_release (&t);
@@ -414,7 +414,7 @@ void trap_defer_auth_failure (void)
 		return;
 
 	assert (trap_queue != 0);
-	lock_take (&lock);
+	mutex_lock (&lock);
 	t.type = TRAP_AUTH;
 	t.auth_failure.user_addr = *(unsigned long*) snmp->user_addr;
 	trap_enqueue_release (&t);
@@ -430,7 +430,7 @@ void trap_defer_link (bool_t up, small_uint_t link_index, small_uint_t link_stat
 	assert (trap_queue != 0);
 	assert (link_index < links);
 
-	lock_take (&lock);
+	mutex_lock (&lock);
 	t.type = TRAP_LINK;
 	t.linkport.up = up;
 	t.linkport.index = link_index;
@@ -448,7 +448,7 @@ void trap_defer_port (bool_t up, small_uint_t port_index, small_uint_t port_stat
 	assert (trap_queue != 0);
 	assert (port_index < ports);
 
-	lock_take (&lock);
+	mutex_lock (&lock);
 	t.type = TRAP_PORT;
 	t.linkport.up = up;
 	t.linkport.index = port_index;
@@ -464,7 +464,7 @@ void trap_defer_alarm (bool_t alarm)
 		return;
 
 	assert (trap_queue != 0);
-	lock_take (&lock);
+	mutex_lock (&lock);
 	t.type = TRAP_ALARM;
 	t.alarm.state = alarm;
 	trap_enqueue_release (&t);

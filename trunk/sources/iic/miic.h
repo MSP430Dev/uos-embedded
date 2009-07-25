@@ -11,8 +11,8 @@
 #endif
 
 #define MIIC_T								\
-	lock_t lock;     /* semaphore (to prevent concurent use) */	\
-	lock_t irq_lock; /* irq lock */					\
+	mutex_t lock;     /* semaphore (to prevent concurent use) */	\
+	mutex_t irq_lock; /* irq lock */				\
 	bool_t (*transaction) (struct _miic_t *c, small_uint_t sla,	\
 		void *tb, small_uint_t ts, void *rb, small_uint_t rs);
 /* TODO: add IIC controller statistics */

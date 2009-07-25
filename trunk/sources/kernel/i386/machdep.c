@@ -86,13 +86,13 @@ _arch_task_switch (void)
 void
 i386_intr (trapframe_t *f)
 {
-	lock_irq_t *h = &lock_irq [f->err];
+	mutex_irq_t *h = &mutex_irq [f->err];
 
 	if (h->handler) {
 		/* If the lock is free -- call fast handler. */
 		if (h->lock->master) {
 			/* Remember pending irq.
-			 * Call fast handler later, in lock_release(). */
+			 * Call fast handler later, in mutex_unlock(). */
 			h->pending = 1;
 
 			i386_set_stack_pointer (f);
@@ -102,14 +102,14 @@ i386_intr (trapframe_t *f)
 			/* The fast handler returns 1 when it fully serviced
 			 * an interrupt. In this case there is no need to
 			 * wake up the interrupt handling task, stopped on
-			 * lock_wait. Task switching is not performed. */
+			 * mutex_wait. Task switching is not performed. */
 			i386_set_stack_pointer (f);
 			asm ("jmp restore_and_ret");
 		}
 	}
 
 	/* Signal the interrupt handler, if any. */
-	lock_activate (h->lock, 0);
+	mutex_activate (h->lock, 0);
 
 	/* TODO: task_policy */
 

@@ -35,7 +35,7 @@ void task_print (stream_t *stream, task_t *t)
 		printf (stream, "\n\tLocked by %p%S", t->lock, ptr_valid_or_bad (t->lock));
 
 	if (! list_is_empty (&t->slaves)) {
-		lock_t *m;
+		mutex_t *m;
 		puts (stream, "\n\t\t\t\t\tOwning:");
 		n = 0;
 		list_iterate (m, &t->slaves) {

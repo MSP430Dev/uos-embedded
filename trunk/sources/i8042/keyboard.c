@@ -426,7 +426,7 @@ keyboard_ps2_task (void *arg)
 {
 	keyboard_ps2_t *u = arg;
 
-	lock_take_irq (&u->lock, RECEIVE_IRQ,
+	mutex_lock_irq (&u->lock, RECEIVE_IRQ,
 		(handler_t) keyboard_ps2_interrupt, u);
 
 	i8042_kbd_enable ();
@@ -436,7 +436,7 @@ keyboard_ps2_task (void *arg)
 	}
 
 	for (;;) {
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 		/* Nothing to do. */
 	}
 }
@@ -448,15 +448,15 @@ keyboard_ps2_task (void *arg)
 static int
 keyboard_ps2_get_event (keyboard_ps2_t *u, keyboard_event_t *data)
 {
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	if (u->in_first == u->in_last) {
-		lock_release (&u->lock);
+		mutex_unlock (&u->lock);
 		return 0;
 	} else {
 		*data = *u->in_first++;
 		if (u->in_first >= u->in_buf + KBD_INBUFSZ)
 			u->in_first = u->in_buf;
-		lock_release (&u->lock);
+		mutex_unlock (&u->lock);
 		return 1;
 	}
 }
@@ -467,17 +467,17 @@ keyboard_ps2_get_event (keyboard_ps2_t *u, keyboard_event_t *data)
 static void
 keyboard_ps2_wait_event (keyboard_ps2_t *u, keyboard_event_t *data)
 {
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait until receive data available. */
 	while (u->in_first == u->in_last)
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 
 	*data = *u->in_first++;
 	if (u->in_first >= u->in_buf + KBD_INBUFSZ)
 		u->in_first = u->in_buf;
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static int
@@ -485,9 +485,9 @@ keyboard_ps2_get_modifiers (keyboard_ps2_t *u)
 {
 	int modifiers;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	modifiers = u->modifiers;
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return modifiers;
 }
 
@@ -496,21 +496,21 @@ keyboard_ps2_get_leds (keyboard_ps2_t *u)
 {
 	int leds;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	leds = u->leds;
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return leds;
 }
 
 static void
 keyboard_ps2_set_leds (keyboard_ps2_t *u, int leds)
 {
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	u->leds = leds;
 	set_leds (u->leds);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static int
@@ -518,16 +518,16 @@ keyboard_ps2_get_rate (keyboard_ps2_t *u)
 {
 	int rate;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	rate = u->rate;
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return rate;
 }
 
 static void
 keyboard_ps2_set_rate (keyboard_ps2_t *u, int cps)
 {
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	if      (cps < 3)  u->rate = 2;
 	else if (cps < 4)  u->rate = 3;
@@ -546,7 +546,7 @@ keyboard_ps2_set_rate (keyboard_ps2_t *u, int cps)
 
 	set_rate_delay (u->rate, u->delay);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static int
@@ -554,16 +554,16 @@ keyboard_ps2_get_delay (keyboard_ps2_t *u)
 {
 	int delay;
 
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	delay = u->delay;
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 	return delay;
 }
 
 static void
 keyboard_ps2_set_delay (keyboard_ps2_t *u, int msec)
 {
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	if      (msec > 800) u->delay = 1000;
 	else if (msec > 600) u->delay = 750;
@@ -572,7 +572,7 @@ keyboard_ps2_set_delay (keyboard_ps2_t *u, int msec)
 
 	set_rate_delay (u->rate, u->delay);
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static keyboard_interface_t keyboard_ps2_interface = {

@@ -12,7 +12,7 @@ struct _buf_t;
  * опрос MAC-адреса, установка MAC-адреса.
  */
 typedef struct _netif_t {
-	lock_t lock;
+	mutex_t lock;
 	struct _netif_interface_t *interface;
 
 	const char *name;

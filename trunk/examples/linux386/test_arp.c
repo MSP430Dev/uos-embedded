@@ -25,9 +25,9 @@ void hello (void *data)
 {
 	buf_t *p;
 
-	lock_take (&tap.netif.lock);
+	mutex_lock (&tap.netif.lock);
 	for (;;) {
-		lock_wait (&tap.netif.lock);
+		mutex_wait (&tap.netif.lock);
 		p = netif_input (&tap.netif);
 		if (p) {
 			debug_printf ("received %d bytes\n", p->tot_len);

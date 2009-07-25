@@ -292,9 +292,9 @@ void main(void){
 
 	printf("Init starts ... \n");
 
-    CREATE_PROCESS (&processTable[0],  /* process attribute */
-                    &procMainIdMT,      /* process Id */
-                    &retCode);
+	CREATE_PROCESS (&processTable[0],	/* process attribute */
+                        &procMainIdMT,		/* process Id */
+                        &retCode);
 	CHECK_CODE(": CREATE_PROCESS ", retCode, sal_code);
 	printf("%s\n", sal_code);
 

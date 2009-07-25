@@ -95,7 +95,7 @@ timer_handler (timer_t *t)
 	if (t->milliseconds >= t->last_decisec + 100) {
 		t->last_decisec = t->milliseconds;
 /*debug_putchar (0, '~');*/
-		lock_activate (&t->decisec, 0);
+		mutex_activate (&t->decisec, 0);
 		ret = 0;
 	}
 	if (t->milliseconds >= TIMER_MSEC_PER_DAY) {
@@ -123,9 +123,9 @@ timer_milliseconds (timer_t *t)
 {
 	unsigned long val;
 
-	lock_take (&t->lock);
+	mutex_lock (&t->lock);
 	val = t->milliseconds;
-	lock_release (&t->lock);
+	mutex_unlock (&t->lock);
 	return val;
 }
 
@@ -140,9 +140,9 @@ timer_days (timer_t *t)
 {
 	unsigned short val;
 
-	lock_take (&t->lock);
+	mutex_lock (&t->lock);
 	val = t->days;
-	lock_release (&t->lock);
+	mutex_unlock (&t->lock);
 	return val;
 }
 
@@ -155,10 +155,10 @@ timer_days (timer_t *t)
 void
 timer_snap (timer_t *t, timer_snap_t *v)
 {
-	lock_take (&t->lock);
+	mutex_lock (&t->lock);
 	v->milliseconds = t->milliseconds;
 	v->days = t->days;
-	lock_release (&t->lock);
+	mutex_unlock (&t->lock);
 }
 
 /**\~english
@@ -172,12 +172,12 @@ timer_delay (timer_t *t, unsigned long msec)
 {
 	unsigned long t0;
 
-	lock_take (&t->lock);
+	mutex_lock (&t->lock);
 	t0 = t->milliseconds;
 	while (! interval_greater_or_equal (t->milliseconds - t0, msec)) {
-		lock_wait (&t->lock);
+		mutex_wait (&t->lock);
 	}
-	lock_release (&t->lock);
+	mutex_unlock (&t->lock);
 }
 
 /**\~english
@@ -191,9 +191,9 @@ timer_passed (timer_t *t, unsigned long t0, unsigned int msec)
 {
 	unsigned long now;
 
-	lock_take (&t->lock);
+	mutex_lock (&t->lock);
 	now = t->milliseconds;
-	lock_release (&t->lock);
+	mutex_unlock (&t->lock);
 
 	return interval_greater_or_equal (now - t0, msec);
 }
@@ -211,7 +211,7 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	t->khz = khz;
 
 	/* Attach fast handler to timer interrupt. */
-	lock_attach_irq (&t->lock, TIMER_IRQ, (handler_t) timer_handler, t);
+	mutex_attach_irq (&t->lock, TIMER_IRQ, (handler_t) timer_handler, t);
 
 	/* Initialize the hardware. */
 #if __AVR__

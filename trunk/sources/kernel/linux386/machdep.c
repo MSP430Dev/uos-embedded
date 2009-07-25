@@ -41,16 +41,16 @@ arch_task_switch (task_t *target)
 static void
 interrupt_handler (int irq)
 {
-	lock_irq_t *h;
+	mutex_irq_t *h;
 
 	/*printf ("IRQ %d\r\n", irq);*/
-	h = &lock_irq [irq];
+	h = &mutex_irq [irq];
 
 	if (h->handler) {
 		/* If the lock is free -- call fast handler. */
 		if (h->lock->master) {
 			/* Lock is busy -- remember pending irq.
-			 * Call fast handler later, in lock_release(). */
+			 * Call fast handler later, in mutex_unlock(). */
 			h->pending = 1;
 			return;
 		}
@@ -58,12 +58,12 @@ interrupt_handler (int irq)
 			/* The fast handler returns 1 when it fully
 			 * serviced an interrupt. In this case
 			 * there is no need to wake up the interrupt
-			 * servicing task, stopped on lock_wait.
+			 * servicing task, stopped on mutex_wait.
 			 * Task switching is not performed. */
 			return;
 		}
 	}
-	lock_activate (h->lock, 0);
+	mutex_activate (h->lock, 0);
 	arch_task_switch (task_policy ());
 }
 

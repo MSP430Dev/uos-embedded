@@ -27,9 +27,9 @@ task_wait (task_t *t)
 {
 	void *message = 0;
 
-	lock_take (&t->finish);
+	mutex_lock (&t->finish);
 	while (t->base_prio)
-		message = lock_wait (&t->finish);
-	lock_release (&t->finish);
+		message = mutex_wait (&t->finish);
+	mutex_unlock (&t->finish);
 	return message;
 }

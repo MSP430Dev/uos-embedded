@@ -152,15 +152,15 @@ drop:
 
 		/* Put packet to socket. */
 		buf_add_header (p, -UDP_HLEN);
-		lock_take (&s->lock);
+		mutex_lock (&s->lock);
 		if (udp_queue_is_full (s)) {
-			lock_release (&s->lock);
+			mutex_unlock (&s->lock);
 			/*debug_printf (CONST("udp_input: socket overflow\n"));*/
 			goto drop;
 		}
 		udp_queue_put (s, p, iph->src, src);
-		lock_signal (&s->lock, p);
-		lock_release (&s->lock);
+		mutex_signal (&s->lock, p);
+		mutex_unlock (&s->lock);
 		/* debug_printf (CONST("udp_input: signaling socket on port %d\n"),
 			s->local_port); */
 		return 0;
@@ -292,16 +292,16 @@ udp_send (udp_socket_t *s, buf_t *p)
 void
 udp_socket (udp_socket_t *s, ip_t *ip, unsigned short port)
 {
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 	s->ip = ip;
 	s->local_port = port;
 
 	/* Place the socket on the list. */
-	lock_take (&ip->lock);
+	mutex_lock (&ip->lock);
 	s->next = ip->udp_sockets;
 	ip->udp_sockets = s;
-	lock_release (&ip->lock);
-	lock_release (&s->lock);
+	mutex_unlock (&ip->lock);
+	mutex_unlock (&s->lock);
 }
 
 /*
@@ -312,7 +312,7 @@ udp_socket (udp_socket_t *s, ip_t *ip, unsigned short port)
 void
 udp_connect (udp_socket_t *s, unsigned char *ipaddr, unsigned short port)
 {
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 	s->peer_port = port;
 	if (ipaddr) {
 		memcpy (s->peer_ip, ipaddr, 4);
@@ -321,7 +321,7 @@ udp_connect (udp_socket_t *s, unsigned char *ipaddr, unsigned short port)
 		s->netif = route_lookup (s->ip, ipaddr, &s->gateway,
 			&s->local_ip);
 	}
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 }
 
 /*
@@ -336,11 +336,11 @@ udp_peekfrom (udp_socket_t *s, unsigned char *from_addr,
 {
 	buf_t *p;
 
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 
 	p = udp_queue_get (s, from_addr, from_port);
 
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 	return p;
 }
 
@@ -355,13 +355,13 @@ udp_recvfrom (udp_socket_t *s, unsigned char *from_addr,
 {
 	buf_t *p;
 
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 
 	while (udp_queue_is_empty (s))
-		lock_wait (&s->lock);
+		mutex_wait (&s->lock);
 
 	p = udp_queue_get (s, from_addr, from_port);
 
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 	return p;
 }

@@ -36,7 +36,7 @@ uart_transmit_start (uart_t *u)
 {
 /*debug_printf ("[%08x] ", *AT91C_DBGU_CSR);*/
 	if (u->out_first == u->out_last)
-		lock_signal (&u->transmitter, 0);
+		mutex_signal (&u->transmitter, 0);
 
 	/* Check that transmitter buffer is busy. */
 	if (! test_transmitter_empty (u->port)) {
@@ -74,14 +74,14 @@ uart_transmit_start (uart_t *u)
 static void
 uart_fflush (uart_t *u)
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 
 	/* Check that transmitter is enabled. */
 	if (test_transmitter_enabled (u->port))
 		while (u->out_first != u->out_last)
-			lock_wait (&u->transmitter);
+			mutex_wait (&u->transmitter);
 
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -90,9 +90,9 @@ uart_fflush (uart_t *u)
 void
 uart_cts_ready (uart_t *u)
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 	uart_transmit_start (u);
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -101,9 +101,9 @@ uart_cts_ready (uart_t *u)
 void
 uart_set_cts_poller (uart_t *u, bool_t (*func) (uart_t*))
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 	u->cts_query = func;
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -114,7 +114,7 @@ uart_putchar (uart_t *u, short c)
 {
 	unsigned char *newlast;
 
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 
 	/* Check that transmitter is enabled. */
 	if (test_transmitter_enabled (u->port)) {
@@ -122,7 +122,7 @@ again:		newlast = u->out_last + 1;
 		if (newlast >= u->out_buf + UART_OUTBUFSZ)
 			newlast = u->out_buf;
 		while (u->out_first == newlast)
-			lock_wait (&u->transmitter);
+			mutex_wait (&u->transmitter);
 
 		/* TODO: unicode to utf8 conversion. */
 		*u->out_last = c;
@@ -134,7 +134,7 @@ again:		newlast = u->out_last + 1;
 			goto again;
 		}
 	}
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -145,17 +145,17 @@ uart_getchar (uart_t *u)
 {
 	unsigned char c;
 
-	lock_take (&u->receiver);
+	mutex_lock (&u->receiver);
 
 	/* Wait until receive data available. */
 	while (u->in_first == u->in_last)
-		lock_wait (&u->receiver);
+		mutex_wait (&u->receiver);
 	/* TODO: utf8 to unicode conversion. */
 	c = *u->in_first++;
 	if (u->in_first >= u->in_buf + UART_INBUFSZ)
 		u->in_first = u->in_buf;
 
-	lock_release (&u->receiver);
+	mutex_unlock (&u->receiver);
 	return c;
 }
 
@@ -164,10 +164,10 @@ uart_peekchar (uart_t *u)
 {
 	int c;
 
-	lock_take (&u->receiver);
+	mutex_lock (&u->receiver);
 	/* TODO: utf8 to unicode conversion. */
 	c = (u->in_first == u->in_last) ? -1 : *u->in_first;
-	lock_release (&u->receiver);
+	mutex_unlock (&u->receiver);
 	return c;
 }
 
@@ -184,20 +184,20 @@ uart_receiver (void *arg)
 	 * Enable transmitter.
 	 */
 #ifdef TRANSMIT_IRQ
-	lock_take_irq (&u->transmitter, TRANSMIT_IRQ (u->port),
+	mutex_lock_irq (&u->transmitter, TRANSMIT_IRQ (u->port),
 		(handler_t) uart_transmit_start, u);
 	enable_transmitter (u->port);
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 #endif
 	/*
 	 * Enable receiver.
 	 */
-	lock_take_irq (&u->receiver, RECEIVE_IRQ (u->port), 0, 0);
+	mutex_lock_irq (&u->receiver, RECEIVE_IRQ (u->port), 0, 0);
 	enable_receiver (u->port);
 	enable_receive_interrupt (u->port);
 
 	for (;;) {
-		lock_wait (&u->receiver);
+		mutex_wait (&u->receiver);
 /*debug_printf ("<%08x> ", *AT91C_DBGU_CSR);*/
 
 #ifdef clear_receive_errors
@@ -243,7 +243,7 @@ uart_receiver (void *arg)
 	}
 }
 
-lock_t *
+mutex_t *
 uart_receive_lock (uart_t *u)
 {
 	return &u->receiver;
@@ -254,7 +254,7 @@ static stream_interface_t uart_interface = {
 	.getc = (unsigned short (*) (stream_t*))	uart_getchar,
 	.peekc = (int (*) (stream_t*))			uart_peekchar,
 	.flush = (void (*) (stream_t*))			uart_fflush,
-	.receiver = (lock_t *(*) (stream_t*))		uart_receive_lock,
+	.receiver = (mutex_t *(*) (stream_t*))		uart_receive_lock,
 };
 
 void

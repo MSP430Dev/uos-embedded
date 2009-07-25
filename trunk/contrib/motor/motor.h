@@ -1,5 +1,5 @@
 typedef struct _motor_t {
-	lock_t lock;
+	mutex_t lock;
 	signed char left_power;
 	signed char right_power;
 } motor_t;

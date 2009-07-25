@@ -264,7 +264,7 @@ telnet_close (telnet_t *u)
 	mem_free (u);
 }
 
-static lock_t *
+static mutex_t *
 telnet_receiver (telnet_t *u)
 {
 	return freceiver (&u->ts.stream);
@@ -277,7 +277,7 @@ static stream_interface_t telnet_interface = {
 	.flush = (void (*) (stream_t*))		telnet_flush,
 	.eof = (bool_t (*) (stream_t*))		telnet_eof,
 	.close = (void (*) (stream_t*))		telnet_close,
-	.receiver = (lock_t *(*) (stream_t*))	telnet_receiver,
+	.receiver = (mutex_t *(*) (stream_t*))	telnet_receiver,
 };
 
 /*

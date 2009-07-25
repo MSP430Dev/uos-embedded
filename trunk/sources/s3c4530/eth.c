@@ -53,12 +53,12 @@ phy_read (eth_t *c, unsigned long addr)
 void
 eth_start_negotiation (eth_t *c)
 {
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	ARM_MACON = ARM_MACON_FULLDUP;
 	phy_write (c, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
 		PHY_ADVRT_10_FDX | PHY_ADVRT_100_HDX | PHY_ADVRT_100_FDX);
 	phy_write (c, PHY_CTL, PHY_CTL_ANEG_EN | PHY_CTL_ANEG_RST);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -70,7 +70,7 @@ eth_set_mode (eth_t *c, int speed100, int fdx, int disneg)
 {
 	unsigned short advrt = PHY_ADVRT_CSMA, ctl = 0;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	if (disneg) {
 		/* Hardware mode, no negotiation. */
 		if (speed100)
@@ -93,7 +93,7 @@ eth_set_mode (eth_t *c, int speed100, int fdx, int disneg)
 
 	phy_write (c, PHY_ADVRT, advrt);
 	phy_write (c, PHY_CTL, ctl);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 void
@@ -101,12 +101,12 @@ eth_debug (eth_t *c, struct _stream_t *stream)
 {
 	unsigned short ctl, advrt, sts, stsout;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	ctl = phy_read (c, PHY_CTL);
 	sts = phy_read (c, PHY_STS);
 	advrt = phy_read (c, PHY_ADVRT);
 	stsout = phy_read (c, PHY_STSOUT);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 
 	printf (stream, "CTL=%b\n", ctl, PHY_CTL_BITS);
 	printf (stream, "STS=%b\n", sts, PHY_STS_BITS);
@@ -123,9 +123,9 @@ eth_get_carrier (eth_t *c)
 {
 	int status;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	status = phy_read (c, PHY_STS);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 
 	return (status & PHY_STS_LINK) != 0;
 }
@@ -140,10 +140,10 @@ eth_get_speed (eth_t *c, int *duplex)
 {
 	int status, output;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	status = phy_read (c, PHY_STS);
 	output = phy_read (c, PHY_STSOUT);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 
 	if (! (status & PHY_STS_ANEG_ACK))
 		return 0;
@@ -172,7 +172,7 @@ eth_set_loop (eth_t *c, int on)
 {
 	unsigned long control;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 
 	/* Set loop-back mode. */
 	control = phy_read (c, PHY_CTL);
@@ -183,7 +183,7 @@ eth_set_loop (eth_t *c, int on)
 	}
 	phy_write (c, PHY_CTL, control);
 
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -195,7 +195,7 @@ eth_set_promisc (eth_t *c, int station, int group)
 {
 	unsigned long camcon;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 
 	/* Set promiscuous mode. */
 	camcon = ARM_CAMCON;
@@ -216,7 +216,7 @@ eth_set_promisc (eth_t *c, int station, int group)
 	}
 	ARM_CAMCON = camcon;
 
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 int
@@ -224,15 +224,15 @@ eth_transmit_space (eth_t *c)
 {
 	int space;
 
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 	space = (ETH_NTBUF + c->tn - c->te - 1) % ETH_NTBUF;
 
 	/* Transmitter could hang up -- kick it. */
 	if (space == 0 && ! (c->tdesc[c->tn].data & EOWNER_DMA)) {
 		/*debug_printf ("\n* kick tx\n");*/
-		lock_signal (&c->transmitter, 0);
+		mutex_signal (&c->transmitter, 0);
 	}
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 	return space;
 }
 
@@ -274,10 +274,10 @@ transmit_enqueue (eth_t *c, buf_t *p)
 bool_t
 eth_output (eth_t *c, buf_t *p, small_uint_t prio)
 {
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 
 	if (p->tot_len < 14 || p->tot_len > ETH_MTU) {
-		lock_release (&c->transmitter);
+		mutex_unlock (&c->transmitter);
 		/* invalid packet length */
 		/*debug_printf ("eth_output: invalid packet length %d bytes\n",
 			p->tot_len);*/
@@ -292,7 +292,7 @@ eth_output (eth_t *c, buf_t *p, small_uint_t prio)
 	/* Convert to a single buffer */
 	p = buf_make_continuous (p);
 	if (! p) {
-		lock_release (&c->transmitter);
+		mutex_unlock (&c->transmitter);
 		/*debug_printf ("eth_output: cannot make continuous packet\n");*/
 		++c->netif.out_errors;
 		++c->tx_nomem;
@@ -303,7 +303,7 @@ eth_output (eth_t *c, buf_t *p, small_uint_t prio)
 
 	if ((c->te + 1) % ETH_NTBUF == c->tn) {
 		/* Нет места в очереди устройства. */
-		lock_release (&c->transmitter);
+		mutex_unlock (&c->transmitter);
 		/* no free space */
 		/*debug_printf ("eth_output: no free space, te=%d, tn=%d\n",
 			c->te, c->tn);*/
@@ -326,7 +326,7 @@ eth_output (eth_t *c, buf_t *p, small_uint_t prio)
 		/*debug_printf ("eth_output: start tx\n");*/
 		arm_bus_yield ();
 	}
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 	return 1;
 }
 
@@ -335,23 +335,23 @@ eth_input (eth_t *c)
 {
 	buf_t *p;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	p = buf_queue_get (&c->inq);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 	return p;
 }
 
 static void
 eth_set_address (eth_t *c, unsigned char *addr)
 {
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	memcpy (&c->netif.ethaddr, addr, 6);
 
 	/* Set MAC address. */
 	ARM_CAM(0) = c->netif.ethaddr[0] << 24 | c->netif.ethaddr[1] << 16 |
 		c->netif.ethaddr[2] << 8 | c->netif.ethaddr[3];
 	ARM_CAM(1) = c->netif.ethaddr[4] << 24 | c->netif.ethaddr[5] << 16;
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -549,7 +549,7 @@ eth_handle_transmit (eth_t *c, small_int_t limit)
 
 void eth_kick_tx (eth_t *c, bool_t force)
 {
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 
 	if (c->te != c->tn) {
 		if (force)
@@ -557,13 +557,13 @@ void eth_kick_tx (eth_t *c, bool_t force)
 		eth_handle_transmit (c, 1);
 	}
 
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 }
 
 void eth_poll_rx (eth_t *c)
 {
 	/* Process a receive queue one packet per time. */
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	if (! (c->rdesc[c->rn].data & EOWNER_DMA))
 		eth_receive_done (c);
 
@@ -574,15 +574,15 @@ void eth_poll_rx (eth_t *c)
 		arm_bus_yield ();
 		/*debug_printf ("\n* start rx\n");*/
 	}
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 void eth_poll_tx (eth_t *c)
 {
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 	if (c->te != c->tn)
 		eth_handle_transmit (c, 1);
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 }
 
 /*
@@ -593,10 +593,10 @@ eth_transmitter (void *arg)
 {
 	eth_t *c = arg;
 
-	lock_take_irq (&c->transmitter, ETH_MAC_TRANSMIT_IRQ, 0, 0);
+	mutex_lock_irq (&c->transmitter, ETH_MAC_TRANSMIT_IRQ, 0, 0);
 	for (;;) {
 		/* Wait for the transmit interrupt. */
-		lock_wait (&c->transmitter);
+		mutex_wait (&c->transmitter);
 
 		/* Process all transmit interrupts. */
 		++c->tintr;
@@ -704,12 +704,12 @@ eth_receiver (void *arg)
 	eth_t *c = arg;
 	unsigned long st;
 
-	lock_take_irq (&c->netif.lock, ETH_BDMA_RECEIVE_IRQ, 0, 0);
+	mutex_lock_irq (&c->netif.lock, ETH_BDMA_RECEIVE_IRQ, 0, 0);
 	eth_prepare (c);
 
 	for (;;) {
 		/* Wait for the receive interrupt. */
-		lock_wait (&c->netif.lock);
+		mutex_wait (&c->netif.lock);
 
 		++c->rintr;
 

@@ -17,7 +17,7 @@
 #define NVDATA_HEADER_SIZE	10
 
 typedef struct {
-	lock_t lock;
+	mutex_t lock;
 	unsigned long crc;
 	unsigned __addr, begin, limit, end, sign;
 #ifndef NDEBUG

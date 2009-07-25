@@ -412,16 +412,16 @@ cs8900_input (cs8900_t *u)
 {
 	buf_t *p;
 
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	p = buf_queue_get (&u->inq);
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 	return p;
 }
 
 static void
 cs8900_set_address (cs8900_t *u, unsigned char *addr)
 {
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	memcpy (&u->netif.ethaddr, addr, 6);
 
 	/* Set MAC address. */
@@ -432,7 +432,7 @@ cs8900_set_address (cs8900_t *u, unsigned char *addr)
 	cs_out (PACKETPP, PP_IA + 4);
 	cs_out (PPDATA, u->netif.ethaddr[4] | u->netif.ethaddr[5] << 8);
 
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 }
 
 /*
@@ -521,13 +521,13 @@ cs8900_interrupt (cs8900_t *u)
 void
 cs8900_poll (cs8900_t *u)
 {
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	cs8900_interrupt (u);
 	if (u->inq.count != 0) {
 /*debug_printf ("cs8900_poll: received data\n");*/
-		lock_signal (&u->netif.lock, 0);
+		mutex_signal (&u->netif.lock, 0);
 	}
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 }
 #else
 /*
@@ -540,7 +540,7 @@ cs8900_receiver (void *arg)
 
 	for (;;) {
 		/* Wait for the receive interrupt. */
-		lock_wait (&u->netif.lock);
+		mutex_wait (&u->netif.lock);
 
 		/* Process all pending interrupts. */
 		cs8900_interrupt (u);
@@ -562,14 +562,14 @@ cs8900_output (cs8900_t *u, buf_t *p, small_uint_t prio)
 	unsigned len;
 
 /*debug_printf ("cs8900_output: transmit %d bytes\n", p->tot_len);*/
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 
 	/* Exit if link has failed */
 	cs_out (PACKETPP, PP_LINEST);
 	if (! (cs_in (PPDATA) & LINK_OK) || p->tot_len < 4 || p->tot_len > ETH_MTU) {
 /*debug_printf ("cs8900_output: transmit %d bytes, link failed\n", p->tot_len);*/
 failed: 	++u->netif.out_errors;
-		lock_release (&u->netif.lock);
+		mutex_unlock (&u->netif.lock);
 		buf_free (p);
 		return 0;
 	}
@@ -598,7 +598,7 @@ failed: 	++u->netif.out_errors;
 			goto failed;
 	}
 	if (u->inq.count != 0)
-		lock_signal (&u->netif.lock, 0);
+		mutex_signal (&u->netif.lock, 0);
 #else	/* LY: А так было раньше: */
 	cs_out (PACKETPP, PP_BUSST);
 	tries = 0;
@@ -648,7 +648,7 @@ failed: 	++u->netif.out_errors;
 	++u->netif.out_packets;
 	u->netif.out_bytes += p->tot_len;
 
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 	buf_free (p);
 	return 1;
 }
@@ -723,7 +723,7 @@ cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *a
 	/*
 	 * Initialize hardware.
 	 */
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 
 	/* Set RESET bit. */
 	cs_init ();
@@ -794,7 +794,7 @@ cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *a
 	cs_out (PACKETPP, PP_LINECTL);
 	OUT_LINECTL (SERIAL_RX_ON | SERIAL_TX_ON);
 
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 
 #ifndef POLL_MODE
 	/* Create cs8900 receive task. */

@@ -68,7 +68,7 @@ hdlc_set_baud (hdlc_t *c, unsigned long bps)
 {
 	unsigned long hmode;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 
 	/* Set up baud rate generator. */
 	hdlc_set_brg (c, bps);
@@ -84,7 +84,7 @@ hdlc_set_baud (hdlc_t *c, unsigned long bps)
 	}
 	ARM_HMODE (c->port) = hmode;
 
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -96,7 +96,7 @@ hdlc_set_loop (hdlc_t *c, int on)
 {
 	unsigned long hmode;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 
 	/* Set transmit/receive clock source. */
 	hmode = ARM_HMODE (c->port) & ~(ARM_HMODE_TXCLK | ARM_HMODE_RXCLK);
@@ -128,7 +128,7 @@ hdlc_set_loop (hdlc_t *c, int on)
 	}
 	ARM_HMODE (c->port) = hmode;
 
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -140,7 +140,7 @@ hdlc_set_txcinv (hdlc_t *c, int on)
 {
 	unsigned long hmode;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 
 	hmode = ARM_HMODE (c->port);
 	if (on) {
@@ -150,7 +150,7 @@ hdlc_set_txcinv (hdlc_t *c, int on)
 	}
 	ARM_HMODE (c->port) = hmode;
 
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -160,19 +160,19 @@ int hdlc_transmit_space (hdlc_t *c)
 {
 	int space;
 
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 	space = (HDLC_NTBUF + c->tn - c->te - 1) % HDLC_NTBUF;
 
 	/* Transmitter could hang up -- kick it. */
 	if (space == 0 && ! (c->tdesc[c->tn].data & HOWNER_DMA)) {
 		/*debug_printf ("\n* kick tx\n");*/
-		lock_signal (&c->transmitter, 0);
+		mutex_signal (&c->transmitter, 0);
 	}
 
 	/* Count space of priority queue. */
 	space += c->outq.size - c->outq.count;
 
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 	return space;
 }
 
@@ -216,7 +216,7 @@ hdlc_output (hdlc_t *c, buf_t *p, small_uint_t prio)
 {
 	int status;
 
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 
 	if (p->tot_len <= 0 || p->tot_len > HDLC_MTU) {
 		/* invalid packet length */
@@ -224,7 +224,7 @@ hdlc_output (hdlc_t *c, buf_t *p, small_uint_t prio)
 			p->tot_len);*/
 		++c->netif.out_errors;
 		++c->tx_big;
-		lock_release (&c->transmitter);
+		mutex_unlock (&c->transmitter);
 		buf_free (p);
 		if (c->callback_error)
 			c->callback_error (c, HDLC_TX_BIG);
@@ -234,7 +234,7 @@ hdlc_output (hdlc_t *c, buf_t *p, small_uint_t prio)
 	/* Convert to a single buffer */
 	p = buf_make_continuous (p);
 	if (! p) {
-		lock_release (&c->transmitter);
+		mutex_unlock (&c->transmitter);
 		/*debug_printf ("hdlc_output: cannot make continuous packet\n");*/
 		++c->netif.out_errors;
 		++c->tx_nomem;
@@ -249,7 +249,7 @@ hdlc_output (hdlc_t *c, buf_t *p, small_uint_t prio)
 		status = buf_prio_queue_put (&c->outq, p, prio);
 		if (status != 1)
 			++c->tx_qo;
-		lock_release (&c->transmitter);
+		mutex_unlock (&c->transmitter);
 		if (status == 0) {
 			/* No space in queue. */
 			/*debug_printf ("hdlc_output: no free space, te=%d, tn=%d\n",
@@ -270,7 +270,7 @@ hdlc_output (hdlc_t *c, buf_t *p, small_uint_t prio)
 		/*debug_printf ("hdlc_output: start tx\n");*/
 		arm_bus_yield ();
 	}
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 	return 1;
 }
 
@@ -279,9 +279,9 @@ hdlc_input (hdlc_t *c)
 {
 	buf_t *p;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	p = buf_queue_get (&c->inq);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 	return p;
 }
 
@@ -555,7 +555,7 @@ hdlc_handle_transmit (hdlc_t *c, small_int_t limit)
 
 void hdlc_kick_tx (hdlc_t *c, bool_t force)
 {
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 
 	if (c->te != c->tn) {
 		if (force)
@@ -563,7 +563,7 @@ void hdlc_kick_tx (hdlc_t *c, bool_t force)
 		hdlc_handle_transmit (c, 1);
 	}
 
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 }
 
 static void hdlc_prepare (hdlc_t *c)
@@ -675,12 +675,12 @@ hdlc_receiver (void *arg)
 {
 	hdlc_t *c = arg;
 
-	lock_take_irq (&c->netif.lock, HDLC_RECEIVE_IRQ (c->port), 0, 0);
+	mutex_lock_irq (&c->netif.lock, HDLC_RECEIVE_IRQ (c->port), 0, 0);
 	hdlc_prepare (c);
 
 	for (;;) {
 		/* Wait for the receive interrupt. */
-		lock_wait (&c->netif.lock);
+		mutex_wait (&c->netif.lock);
 
 		/* Process all receive interrupts. */
 		++c->rintr;
@@ -713,10 +713,10 @@ hdlc_transmitter (void *arg)
 {
 	hdlc_t *c = arg;
 
-	lock_take_irq (&c->transmitter, HDLC_TRANSMIT_IRQ (c->port), 0, 0);
+	mutex_lock_irq (&c->transmitter, HDLC_TRANSMIT_IRQ (c->port), 0, 0);
 	for (;;) {
 		/* Wait for the transmit interrupt. */
-		lock_wait (&c->transmitter);
+		mutex_wait (&c->transmitter);
 
 		/* Process all transmit interrupts. */
 		++c->tintr;
@@ -726,16 +726,16 @@ hdlc_transmitter (void *arg)
 
 void hdlc_poll_rx (hdlc_t *c)
 {
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	hdlc_handle_receive (c, 1);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 void hdlc_poll_tx (hdlc_t *c)
 {
-	lock_take (&c->transmitter);
+	mutex_lock (&c->transmitter);
 	hdlc_handle_transmit (c, 1);
-	lock_release (&c->transmitter);
+	mutex_unlock (&c->transmitter);
 }
 
 /*
@@ -744,12 +744,12 @@ void hdlc_poll_tx (hdlc_t *c)
 void
 hdlc_set_dtr (hdlc_t *c, int on)
 {
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	if (on)
 		ARM_HCON (c->port) |= ARM_HCON_TXDTR;
 	else
 		ARM_HCON (c->port) &= ~ARM_HCON_TXDTR;
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -758,12 +758,12 @@ hdlc_set_dtr (hdlc_t *c, int on)
 void
 hdlc_set_rts (hdlc_t *c, int on)
 {
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	if (on)
 		ARM_TCON (c->port) |= ARM_TCON_RTS;
 	else
 		ARM_TCON (c->port) &= ~ARM_TCON_RTS;
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 }
 
 /*
@@ -774,9 +774,9 @@ hdlc_get_cts (hdlc_t *c)
 {
 	unsigned long hstat;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	hstat = ARM_HSTAT (c->port);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 	return (hstat & ARM_HSTAT_TXCTS) != 0;
 }
 
@@ -788,9 +788,9 @@ hdlc_get_dtr (hdlc_t *c)
 {
 	unsigned long hcon;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	hcon = ARM_HCON (c->port);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 	return (hcon & ARM_HCON_TXDTR) != 0;
 }
 
@@ -802,9 +802,9 @@ hdlc_get_rts (hdlc_t *c)
 {
 	unsigned long tcon;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	tcon = ARM_TCON (c->port);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 	return (tcon & ARM_TCON_RTS) != 0;
 }
 
@@ -816,9 +816,9 @@ hdlc_get_dcd (hdlc_t *c)
 {
 	unsigned long hstat;
 
-	lock_take (&c->netif.lock);
+	mutex_lock (&c->netif.lock);
 	hstat = ARM_HSTAT (c->port);
-	lock_release (&c->netif.lock);
+	mutex_unlock (&c->netif.lock);
 	return (hstat & ARM_HSTAT_RXDCD) != 0;
 }
 

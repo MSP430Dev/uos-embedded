@@ -311,14 +311,14 @@ static void
 ip_main (void *arg)
 {
 	ip_t *ip = (ip_t*) arg;
-	lock_t *m;
+	mutex_t *m;
 	netif_t *netif;
 	buf_t *p;
 
-	lock_group_listen (ip->netif_group);
+	mutex_group_listen (ip->netif_group);
 	for (;;) {
-		lock_group_wait (ip->netif_group, &m, 0);
-		lock_take (&ip->lock);
+		mutex_group_wait (ip->netif_group, &m, 0);
+		mutex_lock (&ip->lock);
 		if (ip->timer && m == &ip->timer->decisec) {
 			/* Per 0.1 second timer interrupt. */
 			/* debug_printf ("ip: timer %d\n",
@@ -353,7 +353,7 @@ ip_main (void *arg)
 				ip_input (ip, p, netif);
 			}
 		}
-		lock_release (&ip->lock);
+		mutex_unlock (&ip->lock);
 	}
 }
 
@@ -362,7 +362,7 @@ ip_main (void *arg)
  */
 void
 ip_init (ip_t *ip, mem_pool_t *pool, int prio,
-	timer_t *timer, arp_t *arp, lock_group_t *g)
+	timer_t *timer, arp_t *arp, mutex_group_t *g)
 {
 	ip->pool = pool;
 	ip->timer = timer;

@@ -33,7 +33,7 @@ tcp_slowtmr (ip_t *ip)
 	prev = 0;
 	for (s=ip->tcp_sockets; s; s=s->next) {
 		/* tcp_debug (CONST("tcp_slowtmr: processing active sockets\n")); */
-		lock_take (&s->lock);
+		mutex_lock (&s->lock);
 		assert (s->state != CLOSED);
 		assert (s->state != LISTEN);
 		assert (s->state != TIME_WAIT);
@@ -103,13 +103,13 @@ tcp_slowtmr (ip_t *ip)
 		} else {
 			prev = s;
 		}
-		lock_release (&s->lock);
+		mutex_unlock (&s->lock);
 	}
 
 	/* Steps through all of the TIME-WAIT PCBs. */
 	prev = 0;
 	for (s=ip->tcp_closing_sockets; s; s=s->next) {
-		lock_take (&s->lock);
+		mutex_lock (&s->lock);
 		assert (s->state == TIME_WAIT);
 
 		/* Check if this PCB has stayed long enough in TIME-WAIT */
@@ -128,7 +128,7 @@ tcp_slowtmr (ip_t *ip)
 		} else {
 			prev = s;
 		}
-		lock_release (&s->lock);
+		mutex_unlock (&s->lock);
 	}
 }
 
@@ -245,7 +245,7 @@ void
 tcp_set_socket_state (tcp_socket_t *s, tcp_state_t newstate)
 {
 	s->state = newstate;
-	lock_signal (&s->lock, 0);
+	mutex_signal (&s->lock, 0);
 }
 
 /*

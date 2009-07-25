@@ -51,10 +51,10 @@ tap_output (tap_t *u, buf_t *p, small_uint_t prio)
 	if (write (u->fd, buf, p->tot_len + 16) != p->tot_len + 16)
 		/*ignore*/;
 
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	++u->netif.out_packets;
 	u->netif.out_bytes += p->tot_len;
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 	buf_free (p);
 	return 1;
 }
@@ -64,19 +64,19 @@ tap_input (tap_t *u)
 {
 	buf_t *p;
 
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	p = buf_queue_get (&u->inq);
 	/*if (p) debug_printf ("tap_input returned %d bytes\n", p->tot_len);*/
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 	return p;
 }
 
 static void
 tap_set_address (tap_t *u, unsigned char *addr)
 {
-	lock_take (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
 	memcpy (&u->netif.ethaddr, addr, 6);
-	lock_release (&u->netif.lock);
+	mutex_unlock (&u->netif.lock);
 }
 
 /*
@@ -140,7 +140,7 @@ tap_receiver (void *arg)
 {
 	tap_t *u = arg;
 
-	lock_take_irq (&u->netif.lock, RECEIVE_IRQ, 0, 0);
+	mutex_lock_irq (&u->netif.lock, RECEIVE_IRQ, 0, 0);
 #if LINUX386
 	/* Enable receiver interrupt. */
         fcntl (u->fd, F_SETOWN, u->pid);
@@ -152,7 +152,7 @@ tap_receiver (void *arg)
 		tap_receive_data (u);
 
 		/* Wait for the receive interrupt. */
-		lock_wait (&u->netif.lock);
+		mutex_wait (&u->netif.lock);
 	}
 }
 

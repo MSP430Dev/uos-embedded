@@ -18,7 +18,7 @@ void msec (void *arg)
 /*		printf (&uart, "timer=%d, uart=%d\n",
 			task_stack_avail ((task_t*)timer.stack),
 			task_stack_avail ((task_t*)uart.rstack)); */
-		lock_wait (&timer.decisec);
+		mutex_wait (&timer.decisec);
 	}
 }
 

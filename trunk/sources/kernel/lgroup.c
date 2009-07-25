@@ -20,17 +20,17 @@
 
 /*
  * Initialize the group data structure.
- * Buffer must have at least sizeof(lock_group_t) bytes.
- * It must be zeroed before call to lock_group_init().
+ * Buffer must have at least sizeof(mutex_group_t) bytes.
+ * It must be zeroed before call to mutex_group_init().
  */
-lock_group_t *
-lock_group_init (array_t *buf, unsigned buf_size)
+mutex_group_t *
+mutex_group_init (array_t *buf, unsigned buf_size)
 {
-	lock_group_t *g;
+	mutex_group_t *g;
 
-	assert (buf_size >= sizeof(lock_group_t));
-	g = (lock_group_t*) buf;
-	g->size = 1 + (buf_size - sizeof(lock_group_t)) / sizeof(lock_slot_t);
+	assert (buf_size >= sizeof(mutex_group_t));
+	g = (mutex_group_t*) buf;
+	g->size = 1 + (buf_size - sizeof(mutex_group_t)) / sizeof(mutex_slot_t);
 	return g;
 }
 
@@ -39,12 +39,12 @@ lock_group_init (array_t *buf, unsigned buf_size)
  * Return 1 on success, 0 on failure.
  */
 bool_t
-lock_group_add (lock_group_t *g, lock_t *m)
+mutex_group_add (mutex_group_t *g, mutex_t *m)
 {
-	lock_slot_t *s;
+	mutex_slot_t *s;
 
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 	if (g->num >= g->size)
 		return 0;
 	s = g->slot + g->num;
@@ -59,14 +59,14 @@ lock_group_add (lock_group_t *g, lock_t *m)
 /*
  * Start listening on all locks in the group.
  * Attach slots to the lock->groups linked list of every lock.
- * Use lock_group_unlisten() to stop listening.
- * Beware, multiple calls to lock_group_listen() will crash the system!
+ * Use mutex_group_unlisten() to stop listening.
+ * Beware, multiple calls to mutex_group_listen() will crash the system!
  */
 void
-lock_group_listen (lock_group_t *g)
+mutex_group_listen (mutex_group_t *g)
 {
 	arch_state_t x;
-	lock_slot_t *s;
+	mutex_slot_t *s;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
@@ -81,14 +81,14 @@ lock_group_listen (lock_group_t *g)
 /*
  * Stop listening on the group.
  * Detach slots from the lock->groups linked lists.
- * Use lock_group_listen() to start listening.
- * Beware, multiple calls to lock_group_unlisten() will crash the system!
+ * Use mutex_group_listen() to start listening.
+ * Beware, multiple calls to mutex_group_unlisten() will crash the system!
  */
 void
-lock_group_unlisten (lock_group_t *g)
+mutex_group_unlisten (mutex_group_t *g)
 {
 	arch_state_t x;
-	lock_slot_t *s;
+	mutex_slot_t *s;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
@@ -102,14 +102,14 @@ lock_group_unlisten (lock_group_t *g)
 
 /*
  * Wait for the signal on any lock in the group.
- * The calling task is blocked until the lock_signal().
+ * The calling task is blocked until the mutex_signal().
  * Returns the lock and the signalled message.
  */
 void
-lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr)
+mutex_group_wait (mutex_group_t *g, mutex_t **lock_ptr, void **msg_ptr)
 {
 	arch_state_t x;
-	lock_slot_t *s;
+	mutex_slot_t *s;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));

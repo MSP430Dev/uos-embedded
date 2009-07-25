@@ -23,17 +23,17 @@
  * on the lock are unblocked, possibly causing task switch.
  */
 void
-lock_signal (lock_t *m, void *message)
+mutex_signal (mutex_t *m, void *message)
 {
 	arch_state_t x;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 
 	if (! list_is_empty (&m->waiters) || ! list_is_empty (&m->groups)) {
-		lock_activate (m, message);
+		mutex_activate (m, message);
 		if (task_need_schedule)
 			task_schedule ();
 	}
@@ -46,7 +46,7 @@ lock_signal (lock_t *m, void *message)
  * it is unmasked (permitted to happen).
  */
 void *
-lock_wait (lock_t *m)
+mutex_wait (mutex_t *m)
 {
 	arch_state_t x;
 #if RECURSIVE_LOCKS
@@ -57,7 +57,7 @@ lock_wait (lock_t *m)
 	assert (STACK_GUARD (task_current));
 	assert (task_current->wait == 0);
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 
 	/* On pending irq, we must call fast handler. */
 	if (m->irq) {
@@ -65,7 +65,7 @@ lock_wait (lock_t *m)
 			m->irq->pending = 0;
 			if ((m->irq->handler) (m->irq->arg) == 0) {
 				/* Unblock all tasks, waiting for irq. */
-				lock_activate (m, 0);
+				mutex_activate (m, 0);
 				if (task_need_schedule)
 					task_schedule ();
 				arch_intr_restore (x);

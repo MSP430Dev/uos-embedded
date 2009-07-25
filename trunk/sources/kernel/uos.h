@@ -28,12 +28,12 @@ extern "C" {
 /* System data structures. */
 typedef struct _array_t array_t;
 typedef struct _task_t task_t;
-typedef struct _lock_t lock_t;
-typedef struct _lock_irq_t lock_irq_t;
+typedef struct _mutex_t mutex_t;
+typedef struct _mutex_irq_t mutex_irq_t;
 
 /* Lock group data structures. */
-typedef struct _lock_group_t lock_group_t;
-typedef struct _lock_slot_t lock_slot_t;
+typedef struct _mutex_group_t mutex_group_t;
+typedef struct _mutex_slot_t mutex_slot_t;
 
 /* Task management. */
 task_t *task_create (void (*func)(void*), void *arg, const char *name, int priority,
@@ -54,29 +54,29 @@ void task_print (struct _stream_t *stream, task_t *t);
 void task_print_debug (task_t *t);
 
 /* Lock management. */
-void lock_take (lock_t *lock);
-void lock_release (lock_t *lock);
-bool_t lock_try (lock_t *lock);
-void lock_signal (lock_t *lock, void *message);
-void *lock_wait (lock_t *lock);
+void mutex_lock (mutex_t *lock);
+void mutex_unlock (mutex_t *lock);
+bool_t mutex_trylock (mutex_t *lock);
+void mutex_signal (mutex_t *lock, void *message);
+void *mutex_wait (mutex_t *lock);
 
 /* Fast irq handler. */
 typedef bool_t (*handler_t) (void*);
 
 /* Interrupt management. */
-void lock_take_irq (lock_t*, int irq, handler_t func, void *arg);
-void lock_release_irq (lock_t*);
-void lock_attach_irq (lock_t *m, int irq, handler_t func, void *arg);
+void mutex_lock_irq (mutex_t*, int irq, handler_t func, void *arg);
+void mutex_unlock_irq (mutex_t*);
+void mutex_attach_irq (mutex_t *m, int irq, handler_t func, void *arg);
 
 /* User-supplied startup routine. */
 extern void uos_init (void);
 
 /* Group management. */
-lock_group_t *lock_group_init (array_t *buf, unsigned buf_size);
-bool_t lock_group_add (lock_group_t*, lock_t*);
-void lock_group_listen (lock_group_t*);
-void lock_group_unlisten (lock_group_t*);
-void lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr);
+mutex_group_t *mutex_group_init (array_t *buf, unsigned buf_size);
+bool_t mutex_group_add (mutex_group_t*, mutex_t*);
+void mutex_group_listen (mutex_group_t*);
+void mutex_group_unlisten (mutex_group_t*);
+void mutex_group_wait (mutex_group_t *g, mutex_t **lock_ptr, void **msg_ptr);
 
 /*
  * ----------
@@ -89,13 +89,13 @@ void lock_group_wait (lock_group_t *g, lock_t **lock_ptr, void **msg_ptr);
  * | slaves --> T -> T -> T...
  * ---------- <-/----/----/
  */
-struct _lock_t {
+struct _mutex_t {
 	list_t		item;		/* double linked list pointers */
 	task_t *	master;		/* task, acquired the lock */
 	list_t		waiters;	/* tasks, stopped on `wait' */
 	list_t		slaves;		/* tasks, waiting for lock */
 	list_t		groups;		/* group slots, waiting for signal */
-	lock_irq_t *	irq;		/* irq, associated with the lock */
+	mutex_irq_t *	irq;		/* irq, associated with the lock */
 	int		prio;		/* current lock priority */
 #if RECURSIVE_LOCKS
 	small_int_t	deep;		/* recursive locking deep */
@@ -105,23 +105,23 @@ struct _lock_t {
 /*
  * Slot: a group element.
  */
-struct _lock_slot_t {
+struct _mutex_slot_t {
 	list_t		item;		/* double linked list pointers */
-	lock_group_t *	group;		/* parent group */
-	lock_t *	lock;		/* link to the related lock */
-	void *		message;	/* return value for lock_group_wait() */
+	mutex_group_t *	group;		/* parent group */
+	mutex_t *	lock;		/* link to the related lock */
+	void *		message;	/* return value for mutex_group_wait() */
 	bool_t		active;		/* 1 when lock was signal()led  */
 };
 
 /*
  * Group: an array of slots.
  */
-struct _lock_group_t {
-	lock_t		lock;		/* lock to group_wait() on it */
+struct _mutex_group_t {
+	mutex_t		lock;		/* lock to group_wait() on it */
 	task_t *	waiter;		/* the waiting task pointer */
 	small_uint_t	size;		/* size of slot[] array */
 	small_uint_t	num;		/* number of elements in slot[] */
-	lock_slot_t	slot [1];	/* array of slots is placed here */
+	mutex_slot_t	slot [1];	/* array of slots is placed here */
 };
 
 /*

@@ -18,7 +18,7 @@ typedef struct _stream_interface_t {
 	void (*flush) (stream_t *u);
 	bool_t (*eof) (stream_t *u);
 	void (*close) (stream_t *u);
-	struct _lock_t *(*receiver) (stream_t *u);
+	struct _mutex_t *(*receiver) (stream_t *u);
 } stream_interface_t;
 
 #define to_stream(x)   ((stream_t*)&(x)->interface)

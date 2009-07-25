@@ -25,14 +25,14 @@
  * On interrupt, the signal message is sent to the lock.
  */
 void
-lock_take_irq (lock_t *m, int irq, handler_t func, void *arg)
+mutex_lock_irq (mutex_t *m, int irq, handler_t func, void *arg)
 {
 	arch_state_t x;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 
 	while (m->master && m->master != task_current) {
 		/* Monitor is locked, block the task. */
@@ -78,7 +78,7 @@ lock_take_irq (lock_t *m, int irq, handler_t func, void *arg)
 	++m->deep;
 #endif
 
-	m->irq = &lock_irq [irq];
+	m->irq = &mutex_irq [irq];
 	if (! m->irq->lock)
 		arch_intr_bind (irq);
 	m->irq->lock = m;

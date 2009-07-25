@@ -19,13 +19,13 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t ip;
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 slip_t slip;
 route_t route;
 
 void uos_init (void)
 {
-	lock_group_t *g;
+	mutex_group_t *g;
 	unsigned char my_ip[] = "\310\0\0\2";
 
 	/* Baud 38400. */
@@ -40,9 +40,9 @@ void uos_init (void)
 	/*
 	 * Create a group of two locks: timer and slip.
 	 */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &slip.netif.lock);
-	lock_group_add (g, &timer.decisec);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &slip.netif.lock);
+	mutex_group_add (g, &timer.decisec);
 	ip_init (&ip, &pool, 70, &timer, 0, g);
 
 	/*

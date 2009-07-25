@@ -23,15 +23,15 @@
  * On interrupt, the signal message is sent to the lock.
  */
 void
-lock_attach_irq (lock_t *m, int irq, handler_t func, void *arg)
+mutex_attach_irq (mutex_t *m, int irq, handler_t func, void *arg)
 {
 	arch_state_t x;
 
 	arch_intr_disable (&x);
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 
-	m->irq = &lock_irq [irq];
+	m->irq = &mutex_irq [irq];
 	assert (m->irq->lock == 0);
 	m->irq->lock = m;
 	m->irq->irq = irq;

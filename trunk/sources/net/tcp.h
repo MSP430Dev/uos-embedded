@@ -134,7 +134,7 @@ typedef struct _tcp_segment_t tcp_segment_t;
  * The TCP protocol control block
  */
 struct _tcp_socket_t {
-	lock_t lock;
+	mutex_t lock;
 	struct _ip_t *ip;
 	struct _tcp_socket_t *next;	/* for the linked list */
 

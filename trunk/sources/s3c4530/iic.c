@@ -20,11 +20,11 @@
 #define IIC_IRQ                      20	/* iic IRQ number */
 #define IICPS(mclk,rate) ((((((mclk) + (rate) - 1) / (rate)) + 12) >> 4) - 1)
 
-static small_uint_t inline iic_wait (lock_t* l)
+static small_uint_t inline iic_wait (mutex_t* l)
 {
 	small_uint_t iiccon;
 	while (((iiccon = ARM_IICCON) & ARM_IICCON_BF) == 0)
-		lock_wait (l);
+		mutex_wait (l);
 	return iiccon;
 }
 
@@ -51,8 +51,8 @@ iic_transfer (miic_t *c, small_uint_t sla, void *tb, small_uint_t ts,
 	assert (c && (need_write || need_read));
 
 	sla &= ~1;
-	lock_take (&s->lock);	/* only 1 task may use IIC in a same time */
-	lock_take_irq (&s->irq_lock, IIC_IRQ, 0, 0);
+	mutex_lock (&s->lock);	/* only 1 task may use IIC in a same time */
+	mutex_lock_irq (&s->irq_lock, IIC_IRQ, 0, 0);
 
 	/* Wait iic controller ready (after last operation) */
 	while (ARM_IICCON & ARM_IICCON_BUSY)
@@ -110,14 +110,14 @@ iic_transfer (miic_t *c, small_uint_t sla, void *tb, small_uint_t ts,
 	}
 
  	ARM_IICCON = ARM_IICCON_COND_STOP;
-	lock_release_irq (&s->irq_lock);
-	lock_release (&s->lock);
+	mutex_unlock_irq (&s->irq_lock);
+	mutex_unlock (&s->lock);
 	return 1;
 
 not_acked:
 	iic_reset (s->iicps);
-	lock_release_irq (&s->irq_lock);
-	lock_release (&s->lock);
+	mutex_unlock_irq (&s->irq_lock);
+	mutex_unlock (&s->lock);
 
 	/* debug_printf ("IIC: not acked\n"); */
 	return 0;
@@ -134,13 +134,13 @@ miic_t* s3c4530a_iic_init (void* buf, uint32_t mclk, uint32_t rate)
 
 	memset (buf, 0, sizeof (s3c4530a_iic_t));
 
-	lock_take (&s->lock);
+	mutex_lock (&s->lock);
 
 	s->transaction = iic_transfer;
 	s->iicps = IICPS (mclk, rate);
 	iic_reset (s->iicps);
 
-	lock_release (&s->lock);
+	mutex_unlock (&s->lock);
 
 	return (miic_t*) buf;
 }

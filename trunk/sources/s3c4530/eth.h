@@ -61,7 +61,7 @@ typedef struct _eth_t {
 	struct _mem_pool_t *pool;	/* memory pool for allocating packets */
 	buf_queue_t inq;		/* queue of received packets */
 	struct _buf_t *inqdata[8];	/* queue of received packets */
-	lock_t transmitter;
+	mutex_t transmitter;
 
 #define ETH_NRBUF	64		/* number of receive buffers */
 #define ETH_NTBUF	64		/* number of transmit buffers */

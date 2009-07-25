@@ -25,7 +25,7 @@ mem_pool_t pool;
 ARRAY (stack_console, 500);		/* Task: menu on console */
 ARRAY (stack_test, 500);		/* Task: transmit/receive packets */
 ARRAY (stack_wdog, 500);		/* Task: watchdog */
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 eth_t *eth;
 int packet_size = 1500;
 int kbaud = 2500;
@@ -183,13 +183,13 @@ void send_packets (int num)
 void main_test ()
 {
 	buf_t *p;
-	lock_group_t *g;
+	mutex_group_t *g;
 
 	/* Create a group of two locks: receive and transmit. */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &eth->netif.lock);
-	lock_group_add (g, &eth->transmitter);
-	lock_group_listen (g);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &eth->netif.lock);
+	mutex_group_add (g, &eth->transmitter);
+	mutex_group_listen (g);
 
 	for (;;) {
 		/* Check received data. */
@@ -217,7 +217,7 @@ void main_test ()
 				}
 			}
 		}
-		lock_group_wait (g, 0, 0);
+		mutex_group_wait (g, 0, 0);
 	}
 }
 
@@ -228,7 +228,7 @@ void run_test ()
 	printf (&uart, "\nRunning external loop test.\n");
 	printf (&uart, "(press <Enter> to stop, `C' to clear counters)\n\n");
 	run_test_flag = 1;
-	lock_signal (&eth->transmitter, 0);
+	mutex_signal (&eth->transmitter, 0);
 	for (;;) {
 		/* Print results. */
 		printf (&uart, "- out %d - in %d - errors un=%d ov=%d fr=%d crc=%d lost=%d -\r",
@@ -278,7 +278,7 @@ void run_test ()
 		}
 		if (tx_limit <= tx_count + 500)
 			tx_limit = tx_count + 2000;
-		lock_signal (&eth->transmitter, 0);
+		mutex_signal (&eth->transmitter, 0);
 	}
 	run_test_flag = 0;
 	puts (&uart, "\nDone.\n");

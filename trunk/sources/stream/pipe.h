@@ -5,7 +5,7 @@ typedef struct _pipe_t {
 	stream_t slave;
 	stream_t master;
 
-	lock_t lock;
+	mutex_t lock;
 
 	unsigned char master_closed;
 	unsigned char slave_closed;

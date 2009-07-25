@@ -7,7 +7,7 @@
 #include <timer/timer.h>
 #include <nvram/nvram.h>
 
-static lock_t lock;
+static mutex_t lock;
 
 #define CMD_WREN	0x06	/* enable write operations */
 #define CMD_WRDI	0x04	/* disable write operations */
@@ -136,7 +136,7 @@ write_status (small_uint_t val, timer_t *timer)
 void
 nvram_write_byte (unsigned addr, unsigned char val)
 {
-	lock_take (&lock);
+	mutex_lock (&lock);
 
 	chip_select (1);
 	send_byte (CMD_WREN);
@@ -153,7 +153,7 @@ nvram_write_byte (unsigned addr, unsigned char val)
 	while (read_status() & STATUS_NOTREADY)
 		continue;
 
-	lock_release (&lock);
+	mutex_unlock (&lock);
 }
 
 /*
@@ -164,7 +164,7 @@ nvram_read_byte (unsigned addr)
 {
 	unsigned val;
 
-	lock_take (&lock);
+	mutex_lock (&lock);
 
 	chip_select (1);
 	send_byte (CMD_READ);
@@ -173,36 +173,36 @@ nvram_read_byte (unsigned addr)
 	val = get_byte (1);
 	chip_select (0);
 
-	lock_release (&lock);
+	mutex_unlock (&lock);
 	return val;
 }
 
 void
 nvram_unprotect (timer_t *timer)
 {
-	lock_take (&lock);
+	mutex_lock (&lock);
 
 	/* Clear WPEN, BP0, BP1. */
 	write_status (0, timer);
 
-	lock_release (&lock);
+	mutex_unlock (&lock);
 }
 
 void
 nvram_protect (timer_t *timer)
 {
-	lock_take (&lock);
+	mutex_lock (&lock);
 
 	/* Set BP0, BP1. */
 	write_status (STATUS_BP0 | STATUS_BP1, timer);
 
-	lock_release (&lock);
+	mutex_unlock (&lock);
 }
 
 void
 nvram_init ()
 {
-	lock_take (&lock);
+	mutex_lock (&lock);
 
 	/* Set pins to initial state. */
 	gpio_set (PIN_NCS, 1);
@@ -216,5 +216,5 @@ nvram_init ()
 
 	/* Dummy transaction just to activate device. */
 	read_status ();
-	lock_release (&lock);
+	mutex_unlock (&lock);
 }

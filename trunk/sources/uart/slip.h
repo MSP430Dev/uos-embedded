@@ -24,7 +24,7 @@
 
 typedef struct _slip_t {
 	netif_t netif;			/* common network interface part */
-	lock_t transmitter;
+	mutex_t transmitter;
 	small_uint_t port;
 	unsigned int khz;
 	struct _mem_pool_t *pool;	/* memory pool for allocating packets */

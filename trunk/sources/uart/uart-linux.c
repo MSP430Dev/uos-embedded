@@ -36,7 +36,7 @@ static int
 uart_transmit_start (uart_t *u)
 {
 	if (u->out_first == u->out_last)
-		lock_signal (&u->transmitter, 0);
+		mutex_signal (&u->transmitter, 0);
 #if __AVR__
 	/* Check that transmitter buffer is busy. */
 	if (! testb (UDRE, USR))
@@ -94,7 +94,7 @@ uart_transmit_start (uart_t *u)
 void
 uart_transmit_wait (uart_t *u)
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 #if __AVR__
 	/* Check that transmitter is enabled. */
 	if (testb (TXEN, UCR))
@@ -104,8 +104,8 @@ uart_transmit_wait (uart_t *u)
 	if (ARM_UCON0 & ARM_UCON_TMODE_MASK)
 #endif
 		while (u->out_first != u->out_last)
-			lock_wait (&u->transmitter);
-	lock_release (&u->transmitter);
+			mutex_wait (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -114,9 +114,9 @@ uart_transmit_wait (uart_t *u)
 void
 uart_cts_ready (uart_t *u)
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 	uart_transmit_start (u);
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -125,9 +125,9 @@ uart_cts_ready (uart_t *u)
 void
 uart_set_cts_poller (uart_t *u, unsigned char (*func) (uart_t*))
 {
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 	u->cts_query = func;
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -138,7 +138,7 @@ uart_putchar (uart_t *u, char c)
 {
 	unsigned char *newlast;
 
-	lock_take (&u->transmitter);
+	mutex_lock (&u->transmitter);
 #if __AVR__
 	/* Check that transmitter is enabled. */
 	if (testb (TXEN, UCR))
@@ -152,7 +152,7 @@ again:		newlast = u->out_last + 1;
 		if (newlast >= u->out_buf + UART_OUTBUFSZ)
 			newlast = u->out_buf;
 		while (u->out_first == newlast)
-			lock_wait (&u->transmitter);
+			mutex_wait (&u->transmitter);
 
 		*u->out_last = c;
 		u->out_last = newlast;
@@ -163,7 +163,7 @@ again:		newlast = u->out_last + 1;
 			goto again;
 		}
 	}
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 }
 
 /*
@@ -174,16 +174,16 @@ uart_getchar (uart_t *u)
 {
 	unsigned char c;
 
-	lock_take (&u->receiver);
+	mutex_lock (&u->receiver);
 
 	/* Wait until receive data available. */
 	while (u->in_first == u->in_last)
-		lock_wait (&u->receiver);
+		mutex_wait (&u->receiver);
 	c = *u->in_first++;
 	if (u->in_first >= u->in_buf + UART_INBUFSZ)
 		u->in_first = u->in_buf;
 
-	lock_release (&u->receiver);
+	mutex_unlock (&u->receiver);
 	return c;
 }
 
@@ -192,9 +192,9 @@ uart_peekchar (uart_t *u)
 {
 	int c;
 
-	lock_take (&u->receiver);
+	mutex_lock (&u->receiver);
 	c = (u->in_first == u->in_last) ? -1 : *u->in_first;
-	lock_release (&u->receiver);
+	mutex_unlock (&u->receiver);
 	return c;
 }
 
@@ -210,7 +210,7 @@ uart_receiver (void *arg)
 	/*
 	 * Enable transmitter.
 	 */
-	lock_take_irq (&u->transmitter, TRANSMIT_IRQ,
+	mutex_lock_irq (&u->transmitter, TRANSMIT_IRQ,
 		(handler_t) uart_transmit_start, u);
 #if __AVR__
 	setb (TXEN, UCR);
@@ -218,12 +218,12 @@ uart_receiver (void *arg)
 #if ARM_SAMSUNG
 	ARM_UCON0 = (ARM_UCON0 & ~ARM_UCON_TMODE_MASK) | ARM_UCON_TMODE_IRQ;
 #endif
-	lock_release (&u->transmitter);
+	mutex_unlock (&u->transmitter);
 
 	/*
 	 * Enable receiver.
 	 */
-	lock_take_irq (&u->receiver, RECEIVE_IRQ, 0, 0);
+	mutex_lock_irq (&u->receiver, RECEIVE_IRQ, 0, 0);
 #if __AVR__
 	/* Start receiver. */
 	setb (RXEN, UCR);
@@ -245,7 +245,7 @@ uart_receiver (void *arg)
 	fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) | O_ASYNC);
 #endif
 	for (;;) {
-		lock_wait (&u->receiver);
+		mutex_wait (&u->receiver);
 #if __AVR__
 		/* Check that receive data is available. */
 		if (! testb (RXC, USR))

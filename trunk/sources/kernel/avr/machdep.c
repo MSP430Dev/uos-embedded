@@ -198,7 +198,7 @@ arch_task_switch (task_t *target)
 void __attribute__ ((naked))
 handle_interrupt (void)
 {
-	register lock_irq_t *h;
+	register mutex_irq_t *h;
 
 	SAVE_REGS();
 
@@ -209,7 +209,7 @@ handle_interrupt (void)
 		/* If the lock is free -- call fast handler. */
 		if (h->lock->master) {
 			/* Remember pending irq.
-			 * Call fast handler later, in lock_release(). */
+			 * Call fast handler later, in mutex_unlock(). */
 			h->pending = 1;
 			asm volatile ("rjmp restore_and_ret");
 		}
@@ -217,13 +217,13 @@ handle_interrupt (void)
 			/* The fast handler returns 1 when it fully serviced
 			 * an interrupt. In this case there is no need to
 			 * wake up the interrupt handling task, stopped on
-			 * lock_wait. Task switching is not performed. */
+			 * mutex_wait. Task switching is not performed. */
 			asm volatile ("rjmp restore_and_ret");
 		}
 	}
 
 	/* Signal the interrupt handler, if any. */
-	lock_activate (h->lock, 0);
+	mutex_activate (h->lock, 0);
 
 	/* LY: copy few lines of code from task_schedule() here. */
 	if (task_need_schedule)	{
@@ -256,7 +256,7 @@ _intr##n (void) \
 	"push	r30\n");\
 	mask;				/* disable the irq, avoiding loops */\
 	asm volatile ("rjmp handle_interrupt"\
-		: : "z" (&lock_irq[n]));\
+		: : "z" (&mutex_irq[n]));\
 }
 
 #ifdef __AVR_ATmega103__

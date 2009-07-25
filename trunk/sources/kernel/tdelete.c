@@ -37,21 +37,21 @@ task_delete (task_t *t, void *message)
 		/* Recalculate the value of lock priority.
 		 * It must be the maximum of all slave task priorities. */
 		if (t->lock->prio <= t->prio)
-			lock_recalculate_prio (t->lock);
+			mutex_recalculate_prio (t->lock);
 
 		t->lock = 0;
 	}
 
 	t->wait = 0;
 	while (! list_is_empty (&t->slaves)) {
-		lock_t *m = (lock_t*) list_first (&t->slaves);
+		mutex_t *m = (mutex_t*) list_first (&t->slaves);
 		assert (t == m->master);
-		lock_release (m);
+		mutex_unlock (m);
 	}
 
 	/* When task is destroyed, base_prio becomes 0. */
 	t->base_prio = 0;
-	lock_signal (&t->finish, message);
+	mutex_signal (&t->finish, message);
 
 	if (task_need_schedule)
 		task_schedule ();

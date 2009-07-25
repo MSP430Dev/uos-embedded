@@ -25,8 +25,8 @@ typedef struct _timer_snap_t {
 } timer_snap_t;
 
 struct _timer_t {
-	lock_t lock;
-	lock_t decisec;			/* every 0.1 second is signalled here */
+	mutex_t lock;
+	mutex_t decisec;		/* every 0.1 second is signalled here */
 	unsigned long khz;		/* reference clock */
 	small_uint_t msec_per_tick;
 	unsigned long milliseconds;	/* real time counter */

@@ -13,9 +13,9 @@
 timer_t timer;				/* Timer driver */
 lcd_t line1, line2;
 ARRAY (task [NPHIL], 200);		/* Task space */
-lock_t fork [NPHIL];			/* Forks */
-lock_t table;				/* Broadcast communication */
-lock_t screen;				/* Access to the screen */
+mutex_t fork [NPHIL];			/* Forks */
+mutex_t table;				/* Broadcast communication */
+mutex_t screen;				/* Access to the screen */
 int sound_disabled;
 int button_pressed;
 
@@ -28,7 +28,7 @@ void display (int i, state_t state)
 	static int initialized = 0;
 	lcd_t *line;
 
-	lock_take (&screen);
+	mutex_lock (&screen);
 	if (! initialized) {
 		lcd_clear_all (&line1, &line2);			/* Clear screen. */
 		initialized = 1;
@@ -46,7 +46,7 @@ void display (int i, state_t state)
 		printf (line, ".%d.", i+1);
 		break;
 	}
-	lock_release (&screen);
+	mutex_unlock (&screen);
 }
 
 void think (int i)
@@ -61,23 +61,23 @@ void eat (int i)
 	timer_delay (&timer, 1000 + rand15() % 2000);
 }
 
-void get_forks (int i, lock_t *left_fork, lock_t *right_fork)
+void get_forks (int i, mutex_t *left_fork, mutex_t *right_fork)
 {
 	for (;;) {
-		lock_take (left_fork);
-		if (lock_try (right_fork))
+		mutex_lock (left_fork);
+		if (mutex_trylock (right_fork))
 			return;
-		lock_release (left_fork);
+		mutex_unlock (left_fork);
 		display (i, WAITING);
-		lock_wait (&table);
+		mutex_wait (&table);
 	}
 }
 
-void put_forks (lock_t *left_fork, lock_t *right_fork)
+void put_forks (mutex_t *left_fork, mutex_t *right_fork)
 {
-	lock_release (left_fork);
-	lock_release (right_fork);
-	lock_signal (&table, 0);
+	mutex_unlock (left_fork);
+	mutex_unlock (right_fork);
+	mutex_signal (&table, 0);
 
 	/* Click when forks released. */
 	if (! sound_disabled) {

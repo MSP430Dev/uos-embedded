@@ -11,7 +11,7 @@ small_int_t nvdata_begin_load (nvdata_t *v, unsigned addr /* relative */)
 
 	/* debug_printf ("begin-load: v->__addr=0x%04X, v->begin=0x%04X, v->end=0x%04X, addr=0x%04X\n",
 		v->__addr, v->begin, v->end, addr); */
-	lock_take (&v->lock);
+	mutex_lock (&v->lock);
 #ifndef NDEBUG
 	v->owner = task_current;
 #endif
@@ -45,7 +45,7 @@ ballout:
 #ifndef NDEBUG
 	v->owner = 0;
 #endif
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return reason;
 }
 
@@ -83,6 +83,6 @@ ballout:
 	v->owner = 0;
 #endif
 	v->__addr = NVDATA_BAD_ADDRESS;
-	lock_release (&v->lock);
+	mutex_unlock (&v->lock);
 	return reason;
 }

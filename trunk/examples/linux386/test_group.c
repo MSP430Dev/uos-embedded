@@ -9,11 +9,11 @@
 #include <time.h>
 
 timer_t timer;
-lock_t A, B, C;
+mutex_t A, B, C;
 ARRAY (waiter, 6000);
 ARRAY (sender1, 6000);
 ARRAY (sender3, 6000);
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 
 /*
  * Listener task. Get a lock group as an argument.
@@ -21,12 +21,12 @@ ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
  */
 void main_waiter (void *arg)
 {
-	lock_group_t *g = arg;
-	lock_t *m;
+	mutex_group_t *g = arg;
+	mutex_t *m;
 	void *msg;
 
 	for (;;) {
-		lock_group_wait (g, &m, &msg);
+		mutex_group_wait (g, &m, &msg);
 		debug_printf ("Time %d, message %s\n",
 			timer_milliseconds (&timer), msg ? msg : "Timer");
 	}
@@ -48,15 +48,15 @@ void main_sender (void *arg)
 		switch (rand15() % 3) {
 		case 0:
 			/*debug_printf ("signal %s\n", msgA);*/
-			lock_signal (&A, msgA);
+			mutex_signal (&A, msgA);
 			break;
 		case 1:
 			/*debug_printf ("signal %s\n", msgB);*/
-			lock_signal (&B, msgB);
+			mutex_signal (&B, msgB);
 			break;
 		case 2:
 			/*debug_printf ("signal %s\n", msgC);*/
-			lock_signal (&C, msgC);
+			mutex_signal (&C, msgC);
 			break;
 		}
 		timer_delay (&timer, rand15() % 10 * 100);
@@ -65,7 +65,7 @@ void main_sender (void *arg)
 
 void uos_init (void)
 {
-	lock_group_t *g;
+	mutex_group_t *g;
 
 	srand15 (time(0));
 	timer_init (&timer, KHZ, 10);
@@ -73,12 +73,12 @@ void uos_init (void)
 	/*
 	 * Create a group of three locks A, B and C.
 	 */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &A);
-	lock_group_add (g, &B);
-	lock_group_add (g, &C);
-	lock_group_add (g, &timer.decisec);
-	lock_group_listen (g);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &A);
+	mutex_group_add (g, &B);
+	mutex_group_add (g, &C);
+	mutex_group_add (g, &timer.decisec);
+	mutex_group_listen (g);
 
 	/*
 	 * Create three tasks: one listener and two senders.

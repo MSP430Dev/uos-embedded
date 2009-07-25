@@ -25,14 +25,14 @@
  * after acquiring the lock the IRQ will be disabled.
  */
 bool_t
-lock_try (lock_t *m)
+mutex_trylock (mutex_t *m)
 {
 	arch_state_t x;
 
 	arch_intr_disable (&x);
 	assert (STACK_GUARD (task_current));
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 
  	if (m->master && m->master != task_current) {
  		/* Monitor is locked. */

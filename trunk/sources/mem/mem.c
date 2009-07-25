@@ -100,7 +100,7 @@ void *mem_alloc_dirty (mem_pool_t *m, size_t required)
 		required = SIZEOF_POINTER;
 	required = MEM_ALIGN (required + sizeof(mheader_t));
 
-	lock_take (&m->lock);
+	mutex_lock (&m->lock);
 
 	/* Scan the list of all available memory holes and find the first
 	 * one that meets our requirement. */
@@ -128,7 +128,7 @@ void *mem_alloc_dirty (mem_pool_t *m, size_t required)
 
         /* Did we find any space available? */
         if (! h) {
-		lock_release (&m->lock);
+		mutex_unlock (&m->lock);
 		/*debug_printf ("mem_alloc failed, size=%d bytes\n", required);*/
 		return 0;
 	}
@@ -153,7 +153,7 @@ void *mem_alloc_dirty (mem_pool_t *m, size_t required)
 	h->magic = MEMORY_BLOCK_MAGIC;
 #endif
 	m->free_size -= h->size;
-	lock_release (&m->lock);
+	mutex_unlock (&m->lock);
 	/*debug_printf ("mem %d bytes returned 0x%x\n", h->size, h+1);*/
 	return h+1;
 }
@@ -167,7 +167,7 @@ static void mem_make_hole (mheader_t *newh)
 	mem_pool_t *m;
 
 	m = newh->pool;
-	lock_take (&m->lock);
+	mutex_lock (&m->lock);
 
 	m->free_size += newh->size;
 #if MEM_DEBUG
@@ -209,7 +209,7 @@ static void mem_make_hole (mheader_t *newh)
         	hprev = &NEXT(h);
         	h = NEXT(h);
         }
-	lock_release (&m->lock);
+	mutex_unlock (&m->lock);
 }
 
 /**
@@ -320,9 +320,9 @@ size_t mem_available (mem_pool_t *m)
 {
 	size_t ret;
 
-	lock_take (&m->lock);
+	mutex_lock (&m->lock);
 	ret = m->free_size;
-	lock_release (&m->lock);
+	mutex_unlock (&m->lock);
 	return ret;
 }
 
@@ -374,11 +374,11 @@ void mem_print_free_list (mem_pool_t *m)
 	mheader_t *h;
 
 	debug_printf ("free list:");
-	lock_take (&m->lock);
+	mutex_lock (&m->lock);
 	for (h=m->free_list; h; h=NEXT(h)) {
 		debug_printf (" %p-%p", h, (char*)h + h->size - 1);
         }
-	lock_release (&m->lock);
+	mutex_unlock (&m->lock);
 	debug_printf ("\n");
 }
 #endif
@@ -401,9 +401,9 @@ void mem_init (mem_pool_t *m, size_t start, size_t stop)
 #if MEM_DEBUG
 	h->magic = MEMORY_HOLE_MAGIC;
 #endif
-	lock_take (&m->lock);
+	mutex_lock (&m->lock);
 	NEXT(h) = m->free_list;
 	m->free_list = h;
 	m->free_size += h->size;
-	lock_release (&m->lock);
+	mutex_unlock (&m->lock);
 }

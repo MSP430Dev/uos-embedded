@@ -22,7 +22,7 @@
 mem_pool_t pool;
 timer_t timer;
 ip_t *ip;
-ARRAY (group, sizeof(lock_group_t) + 4 * sizeof(lock_slot_t));
+ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 char arp_data [sizeof(arp_t) + 10 * sizeof(arp_entry_t)];
 arp_t *arp;
 cs8900_t eth;
@@ -70,7 +70,7 @@ void main_task (void *data)
 	unsigned char addr [4], *output;
 	unsigned short port;
 #if 1
-	lock_group_t *g;
+	mutex_group_t *g;
 
 	debug_printf ("\n\n*** Testing SNMP on UART 1 ***\n\n");
 
@@ -79,9 +79,9 @@ void main_task (void *data)
 	/*
 	 * Create a group of two locks: timer and eth.
 	 */
-	g = lock_group_init (group, sizeof(group));
-	lock_group_add (g, &eth.netif.lock);
-	lock_group_add (g, &timer.decisec);
+	g = mutex_group_init (group, sizeof(group));
+	mutex_group_add (g, &eth.netif.lock);
+	mutex_group_add (g, &timer.decisec);
 	ip = mem_alloc (&pool, sizeof (*ip));
 	ip_init (ip, &pool, 70, &timer, arp, g);
 	arp->ip = ip;

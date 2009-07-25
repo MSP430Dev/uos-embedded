@@ -18,7 +18,7 @@
 #include <kernel/uos.h>
 #include <kernel/internal.h>
 
-void lock_init (lock_t *lock)
+void mutex_init (mutex_t *lock)
 {
 	list_init (&lock->item);
 	list_init (&lock->waiters);
@@ -39,7 +39,7 @@ void lock_init (lock_t *lock)
  * after acquiring the lock the IRQ will be disabled.
  */
 void
-lock_take (lock_t *m)
+mutex_lock (mutex_t *m)
 {
 	arch_state_t x;
 
@@ -47,7 +47,7 @@ lock_take (lock_t *m)
 	assert (STACK_GUARD (task_current));
 	assert (task_current != m->master);
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 
 	while (m->master && m->master != task_current) {
 		/* Monitor is locked, block the task. */
@@ -105,7 +105,7 @@ lock_take (lock_t *m)
 void
 task_recalculate_prio (task_t *t)
 {
-	lock_t *m;
+	mutex_t *m;
 	small_int_t old_prio;
 
 	old_prio = t->prio;
@@ -119,11 +119,11 @@ task_recalculate_prio (task_t *t)
 			if (t->prio > old_prio) {
 				/* Priority increased. */
 				if (t->lock->prio < t->prio)
-					lock_recalculate_prio (t->lock);
+					mutex_recalculate_prio (t->lock);
 			} else {
 				/* Priority decreased. */
 				if (t->lock->prio <= old_prio)
-					lock_recalculate_prio (t->lock);
+					mutex_recalculate_prio (t->lock);
 			}
 		} else {
 			if (t->prio > old_prio) {
@@ -144,7 +144,7 @@ task_recalculate_prio (task_t *t)
  * It must be the maximum of all slave task priorities.
  */
 void
-lock_recalculate_prio (lock_t *m)
+mutex_recalculate_prio (mutex_t *m)
 {
 	task_t *t;
 	small_int_t old_prio;
@@ -176,7 +176,7 @@ lock_recalculate_prio (lock_t *m)
  * the IRQ will be enabled.
  */
 void
-lock_release (lock_t *m)
+mutex_unlock (mutex_t *m)
 {
 	arch_state_t x;
 
@@ -207,7 +207,7 @@ lock_release (lock_t *m)
 
 		/* Unblock all tasks, waiting for irq. */
 		if ((m->irq->handler) (m->irq->arg) == 0)
-			lock_activate (m, 0);
+			mutex_activate (m, 0);
 	}
 
 	if (! list_is_empty (&m->slaves)) {

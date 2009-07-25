@@ -52,23 +52,23 @@
  */
 struct _task_t {
 	list_t		item;		/* double linked list pointers */
-	lock_t *	lock;		/* lock, blocking the task */
-	lock_t *	wait;		/* lock, the task is waiting for */
+	mutex_t *	lock;		/* lock, blocking the task */
+	mutex_t *	wait;		/* lock, the task is waiting for */
 	list_t		slaves;		/* locks, acquired by task */
-	void *		message;	/* return value for lock_wait() */
+	void *		message;	/* return value for mutex_wait() */
 	void *		privatep;	/* private task data pointer */
 	const char *	name;		/* printable task name */
 	small_int_t	base_prio;	/* initial task priority */
 	small_int_t	prio;		/* current task priority */
 	arch_stack_t	stack_context;	/* saved sp when not running */
-	lock_t		finish;		/* lock to wait on for task finished */
+	mutex_t		finish;		/* lock to wait on for task finished */
 	unsigned long	ticks;		/* a number of switches to the task */
 	unsigned char	stack [1]	/* stack area is placed here */
 		__attribute__((aligned(sizeof(void*))));
 };
 
-struct _lock_irq_t {
-	lock_t *	lock;		/* lock, associated with this irq */
+struct _mutex_irq_t {
+	mutex_t *	lock;		/* lock, associated with this irq */
 	handler_t	handler;	/* fast interrupt handler */
 	void *		arg;		/* argument for fast handler */
 	small_int_t	irq;		/* irq number */
@@ -76,7 +76,7 @@ struct _lock_irq_t {
 };
 
 /* The table of interrupt handlers. */
-extern lock_irq_t lock_irq [];
+extern mutex_irq_t mutex_irq [];
 
 /* Current running task. */
 extern task_t *task_current;
@@ -94,16 +94,16 @@ extern list_t task_active;
 void task_schedule (void);
 
 /* Initialize a data structure of the lock. */
-void lock_init (lock_t *);
+void mutex_init (mutex_t *);
 
 /* Activate all waiters of the lock. */
-void lock_activate (lock_t *m, void *message);
+void mutex_activate (mutex_t *m, void *message);
 
 /* Recalculate task priority, based on priorities of acquired locks. */
 void task_recalculate_prio (task_t *t);
 
 /* Recalculate lock priority, based on priorities of waiting tasks. */
-void lock_recalculate_prio (lock_t *m);
+void mutex_recalculate_prio (mutex_t *m);
 
 /* Utility functions. */
 inline static bool_t task_is_waiting (task_t *task) {

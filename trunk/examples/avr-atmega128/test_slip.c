@@ -22,9 +22,9 @@ void hello (void *data)
 	buf_t *p;
 
 	debug_printf ("\n*** Testing SLIP on UART 1 ***\n");
-	lock_take (&slip.netif.lock);
+	mutex_lock (&slip.netif.lock);
 	for (;;) {
-		lock_wait (&slip.netif.lock);
+		mutex_wait (&slip.netif.lock);
 		p = netif_input (&slip.netif);
 		if (p) {
 			buf_print_ip (p);

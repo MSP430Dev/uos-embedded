@@ -76,15 +76,15 @@ detect_wheel ()
 static int
 mouse_ps2_get_move (mouse_ps2_t *u, mouse_move_t *data)
 {
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 	if (u->in_first == u->in_last) {
-		lock_release (&u->lock);
+		mutex_unlock (&u->lock);
 		return 0;
 	} else {
 		*data = *u->in_first++;
 		if (u->in_first >= u->in_buf + MOUSE_INBUFSZ)
 			u->in_first = u->in_buf;
-		lock_release (&u->lock);
+		mutex_unlock (&u->lock);
 		return 1;
 	}
 }
@@ -95,17 +95,17 @@ mouse_ps2_get_move (mouse_ps2_t *u, mouse_move_t *data)
 static void
 mouse_ps2_wait_move (mouse_ps2_t *u, mouse_move_t *data)
 {
-	lock_take (&u->lock);
+	mutex_lock (&u->lock);
 
 	/* Wait until receive data available. */
 	while (u->in_first == u->in_last)
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 
 	*data = *u->in_first++;
 	if (u->in_first >= u->in_buf + MOUSE_INBUFSZ)
 		u->in_first = u->in_buf;
 
-	lock_release (&u->lock);
+	mutex_unlock (&u->lock);
 }
 
 static void
@@ -240,7 +240,7 @@ mouse_ps2_task (void *arg)
 {
 	mouse_ps2_t *u = arg;
 
-	lock_take_irq (&u->lock, RECEIVE_IRQ,
+	mutex_lock_irq (&u->lock, RECEIVE_IRQ,
 		(handler_t) mouse_ps2_interrupt, u);
 
 	if (i8042_aux_probe ()) {
@@ -250,7 +250,7 @@ mouse_ps2_task (void *arg)
 	}
 
 	for (;;) {
-		lock_wait (&u->lock);
+		mutex_wait (&u->lock);
 		/* Nothing to do. */
 	}
 }

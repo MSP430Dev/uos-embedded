@@ -12,9 +12,9 @@
 uart_t uart;				/* Console driver */
 timer_t timer;				/* Timer driver */
 ARRAY (task [N], 0x400);		/* Task space */
-lock_t fork [N];			/* Forks */
-lock_t table;				/* Broadcast communication */
-lock_t screen;				/* Access to the screen */
+mutex_t fork [N];			/* Forks */
+mutex_t table;				/* Broadcast communication */
+mutex_t screen;				/* Access to the screen */
 
 typedef enum {
 	THINKING, EATING, WAITING,
@@ -26,7 +26,7 @@ void display (int i, state_t state)
 	static const int ypos [] = {  3, 10, 20, 20, 10 };
 	static int initialized = 0;
 
-	lock_take (&screen);
+	mutex_lock (&screen);
 	if (! initialized) {
 		puts (&uart, "\033[2J");			/* Clear screen. */
 		initialized = 1;
@@ -43,7 +43,7 @@ void display (int i, state_t state)
 		printf (&uart, "\033[1;31m%d: waiting ", i+1);	/* Light red */
 		break;
 	}
-	lock_release (&screen);
+	mutex_unlock (&screen);
 }
 
 void think (int i)
@@ -58,23 +58,23 @@ void eat (int i)
 	timer_delay (&timer, rand15() % 2000);
 }
 
-void get_forks (int i, lock_t *left_fork, lock_t *right_fork)
+void get_forks (int i, mutex_t *left_fork, mutex_t *right_fork)
 {
 	for (;;) {
-		lock_take (left_fork);
-		if (lock_try (right_fork))
+		mutex_lock (left_fork);
+		if (mutex_trylock (right_fork))
 			return;
-		lock_release (left_fork);
+		mutex_unlock (left_fork);
 		display (i, WAITING);
-		lock_wait (&table);
+		mutex_wait (&table);
 	}
 }
 
-void put_forks (lock_t *left_fork, lock_t *right_fork)
+void put_forks (mutex_t *left_fork, mutex_t *right_fork)
 {
-	lock_release (left_fork);
-	lock_release (right_fork);
-	lock_signal (&table, 0);
+	mutex_unlock (left_fork);
+	mutex_unlock (right_fork);
+	mutex_signal (&table, 0);
 }
 
 void philosopher (void *data)

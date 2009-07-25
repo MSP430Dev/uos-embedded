@@ -21,7 +21,7 @@
 list_t task_active;			/* list of tasks ready to run */
 task_t *task_current;			/* current running task */
 task_t *task_idle;			/* background system task */
-lock_irq_t lock_irq [ARCH_INTERRUPTS];	/* interrupt handlers */
+mutex_irq_t mutex_irq [ARCH_INTERRUPTS]; /* interrupt handlers */
 
 static ARRAY (task_idle_data, sizeof(task_t) + sizeof(long));
 bool_t task_need_schedule;
@@ -45,14 +45,14 @@ void task_schedule ()
  * Activate all waiters of the lock.
  */
 void
-lock_activate (lock_t *m, void *message)
+mutex_activate (mutex_t *m, void *message)
 {
 	task_t *t;
-	lock_slot_t *s;
+	mutex_slot_t *s;
 
 	assert (m != 0);
 	if (! m->item.next)
-		lock_init (m);
+		mutex_init (m);
 
 	while (! list_is_empty (&m->waiters)) {
 		t = (task_t*) list_first (&m->waiters);

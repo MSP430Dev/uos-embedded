@@ -74,16 +74,16 @@ typedef pthread_mutex_t	MWMUTEX;
 #include <kernel/uos.h>
 
 #define THREADSAFE		1
-#define LOCK_DECLARE(name)	lock_t name
-#define LOCK_EXTERN(name)	extern lock_t name
+#define LOCK_DECLARE(name)	mutex_t name
+#define LOCK_EXTERN(name)	extern mutex_t name
 #define LOCK_INIT(m)
 #define LOCK_FREE(m)
 #define LOCK(m)			{ extern task_t *task_current; \
 				  assert ((m)->master != task_current); \
-				  lock_take (m); }
+				  mutex_lock (m); }
 #define UNLOCK(m)		{ extern task_t *task_current; \
 				  assert ((m)->master == task_current); \
-				  lock_release (m); }
+				  mutex_unlock (m); }
 #endif
 
 /* no locking support - dummy macros*/

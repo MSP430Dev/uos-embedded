@@ -14,7 +14,7 @@
 #	define NVRAM_IRQ		20	/* EEPROM write complete */
 #endif
 
-static lock_t lock;
+static mutex_t lock;
 
 /*
  * Write a byte to NVRAM.
@@ -23,11 +23,11 @@ void
 nvram_write_byte (unsigned addr, unsigned char c)
 {
 /*	assert (__arch_intr_is_enabled_now ());*/
-	lock_take (&lock);
+	mutex_lock (&lock);
 
 	/* Wait until EEWE becomes zero. */
 	while (testb (EEWE, EECR))
-		lock_wait (&lock);
+		mutex_wait (&lock);
 
 	EEAR = addr;
 	EEDR = c;
@@ -40,7 +40,7 @@ nvram_write_byte (unsigned addr, unsigned char c)
 	 : /* no outputs */
 	 : "I" (_SFR_IO_ADDR (EECR)), "I" (EEMWE), "I" (EEWE));
 
-	lock_release (&lock);
+	mutex_unlock (&lock);
 }
 
 /*
@@ -51,17 +51,17 @@ nvram_read_byte (unsigned addr)
 {
 	unsigned char c;
 
-	lock_take (&lock);
+	mutex_lock (&lock);
 
 	/* Wait until EEWE becomes zero. */
 	while (testb (EEWE, EECR))
-		lock_wait (&lock);
+		mutex_wait (&lock);
 
 	EEAR = addr;
 	setb (EERE, EECR);
 	c = EEDR;
 
-	lock_release (&lock);
+	mutex_unlock (&lock);
 	return c;
 }
 
@@ -69,6 +69,6 @@ void
 nvram_init ()
 {
 	/* Associate the interrupt. */
-	lock_take_irq (&lock, NVRAM_IRQ, 0, 0);
-	lock_release (&lock);
+	mutex_lock_irq (&lock, NVRAM_IRQ, 0, 0);
+	mutex_unlock (&lock);
 }
