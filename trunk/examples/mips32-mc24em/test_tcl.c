@@ -18,7 +18,8 @@
 
 uart_t uart;				/* Console driver */
 timer_t timer;				/* Timer driver */
-mem_pool_t pool;			/* Memory allocation pool */
+mem_pool_t pool;			/* Static memory pool */
+mem_pool_t sdram;			/* Dynamic memory pool */
 ARRAY (stack_console, 2000);		/* Task: console menu */
 
 /*
@@ -126,7 +127,8 @@ mem_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 	stream_t *stream = arg;
 
 	putchar (stream, '\n');
-	printf (stream, "Free memory: %ld bytes\n", mem_available (&pool));
+	printf (stream, "Free static memory: %ld bytes\n", mem_available (&pool));
+	printf (stream, "Free dynamic memory: %ld bytes\n", mem_available (&sdram));
 
 	putchar (stream, '\n');
 	task_print (stream, 0);
@@ -301,7 +303,7 @@ void uos_init (void)
 		MC_SDRCON_PS_512;		/* Page size 512 */
         udelay (2);
 
-/*	mem_init (&pool, 0xA0000000, 0xA0000000 + 128*1024*1024);*/
+	mem_init (&sdram, 0xA0000000, 0xA0000000 + 128*1024*1024);
 	mem_init (&pool, (unsigned) &_end, 0xBFC00000 + BOOT_SRAM_SIZE);
 
 	task_create (main_console, 0, "console", PRIO_CONSOLE,
