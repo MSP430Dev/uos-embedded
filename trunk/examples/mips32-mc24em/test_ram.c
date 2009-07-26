@@ -311,11 +311,19 @@ void uos_init (void)
 	debug_printf ("\nTesting memory on MC-24EM board\n");
 
 	/* Configure 1 Mbyte of external SRAM memory at CS3. */
-/*	MC_CSCON3 = 0x00010000;*/
+	MC_CSCON3 = MC_CSCON_WS (8);		/* Wait states  */
 
-	/* Configure 128 Mbytes of external SDRAM memory at CS0. */
-	MC_CSCON0 = 0x00B000FC;
-	MC_SDRCON = 0x80072710;
+	/* Configure 128 Mbytes of external 64-bit SDRAM memory at CS0. */
+	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
+		MC_CSCON_T |			/* Sync memory */
+		MC_CSCON_W64 |			/* 64-bit data width */
+		MC_CSCON_CSBA (0x00000000) |	/* Base address */
+		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
+	MC_SDRCON = MC_SDRCON_INIT |		/* Initialize SDRAM */
+		MC_SDRCON_BL_PAGE |		/* Bursh full page */
+		MC_SDRCON_RFR (64000000/8192, KHZ) |	/* Refresh period */
+		MC_SDRCON_PS_512;		/* Page size 512 */
+        udelay (2);
 
 	task_create (main_console, 0, "console", 1,
 		stack_console, sizeof (stack_console));

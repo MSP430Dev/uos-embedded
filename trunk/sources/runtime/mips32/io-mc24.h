@@ -230,6 +230,41 @@
 #define MC_MASKR_PI		0x40000000	/* DSP software interrupt */
 #define MC_MASKR_SBS		0x80000000	/* DSP status */
 
+/*
+ * Регистры порта внешней памяти CSCONi
+ */
+#define MC_CSCON_CSMASK(addr)	(addr >> 24 & 0xff)
+						/* Address mask bits 31:24 */
+#define MC_CSCON_CSBA(addr)	(addr >> 16 & 0xff00)
+						/* Base address bits 31:24 */
+#define MC_CSCON_WS(n)		(n << 16)	/* Wait states for async memory */
+#define MC_CSCON_E		(1 << 20)	/* Enable for nCS0, nCS1, nCS2 */
+#define MC_CSCON_T		(1 << 21)	/* Sync memory flag (only nCS0, nCS1) */
+#define MC_CSCON_AE		(1 << 22)	/* Wait for nACK */
+#define MC_CSCON_W64		(1 << 23)	/* 64-bit data width */
+#define MC_CSCON3_BYTE		(1 << 23)	/* 8-bit data width for nCS3 */
+#define MC_CSCON3_OVER		(1 << 24)	/* Status: no nACK for 256 CLK periods */
+
+/*
+ * Регистр конфигурации синхронной динамической памяти SDRCON
+ */
+#define MC_SDRCON_PS_512	(0 << 0)	/* Page size 512 */
+#define MC_SDRCON_PS_1024	(1 << 0)	/* Page size 1024 */
+#define MC_SDRCON_PS_2048	(2 << 0)	/* Page size 2048 */
+#define MC_SDRCON_PS_4096	(3 << 0)	/* Page size 4096 */
+#define MC_SDRCON_RFR(nsec,khz)	(((nsec*khz+999999)/1000000) << 4)
+						/* Refresh period */
+#define MC_SDRCON_BL_1		(0 << 16)	/* Bursh length 1 */
+#define MC_SDRCON_BL_2		(1 << 16)	/* Bursh length 2 */
+#define MC_SDRCON_BL_4		(2 << 16)	/* Bursh length 4 */
+#define MC_SDRCON_BL_8		(3 << 16)	/* Bursh length 8 */
+#define MC_SDRCON_BL_PAGE	(7 << 16)	/* Bursh full page */
+
+#define MC_SDRCON_WBM		(1 << 19)	/* Write burst mode - single write */
+#define MC_SDRCON_CL		(1 << 20)	/* CAS latency: 0 - 2, 1 - 3 cycles */
+#define MC_SDRCON_INIT		(1 << 31)	/* Initialize SDRAM, 2 usec */
+
+
 /*--------------------------------------
  * Интервальный таймер, регистр управления ITCSR
  */

@@ -4,11 +4,12 @@ include target.cfg
 
 TESTS		= test_debug.bin test_task.bin test_timer.bin test_uart.bin \
 		  test_ram.bin test_tcl.bin philosophers.bin
+OUTS		= $(TESTS:%.srec=%.out)
 
-all:		$(TESTS:.bin=.out) $(TESTS)
+all:		$(OUTS) $(TESTS)
 		$(SIZE) *.out
 
-$(TESTS):	startup.o libuos.a
+$(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
 		rm -rf *~ *.[oasi] *.out *.hex *.bin *.lst *.dis .deps $(MODULES)

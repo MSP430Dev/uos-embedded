@@ -284,14 +284,24 @@ void uos_init (void)
 	/* Baud 115200. */
 	uart_init (&uart, 0, PRIO_UART, KHZ, 115200);
 	timer_init (&timer, KHZ, 50);
-#if 0
-	/* Configure 128 Mbytes of external SDRAM memory at CS0. */
-	MC_CSCON0 = 0x00B000FC;
-	MC_SDRCON = 0x80072710;
-	mem_init (&pool, 0xA0000000, 0xA0000000 + 128*1024*1024);
-#endif
+
 	/* Configure 1 Mbyte of external SRAM memory at CS3. */
-/*	MC_CSCON3 = 0x00010000;*/
+	MC_CSCON3 = MC_CSCON_WS (8);		/* Wait states  */
+
+	/* Configure 128 Mbytes of external 64-bit SDRAM memory at CS0.
+	 * Refresh rate is 8192 cycles per 64 msec. */
+	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
+		MC_CSCON_T |			/* Sync memory */
+		MC_CSCON_W64 |			/* 64-bit data width */
+		MC_CSCON_CSBA (0x00000000) |	/* Base address */
+		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
+	MC_SDRCON = MC_SDRCON_INIT |		/* Initialize SDRAM */
+		MC_SDRCON_BL_PAGE |		/* Bursh full page */
+		MC_SDRCON_RFR (64000000/8192, KHZ) |	/* Refresh period */
+		MC_SDRCON_PS_512;		/* Page size 512 */
+        udelay (2);
+
+/*	mem_init (&pool, 0xA0000000, 0xA0000000 + 128*1024*1024);*/
 	mem_init (&pool, (unsigned) &_end, 0xBFC00000 + BOOT_SRAM_SIZE);
 
 	task_create (main_console, 0, "console", PRIO_CONSOLE,
