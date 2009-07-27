@@ -87,10 +87,10 @@
 Testing memory on MC-24EM board
 
   1. Test SRAM address signals
-  2. Test SRAM address 0xBFCAAAAA
-  3. Test all SRAM (1 Mbytes)
+  2. Test SRAM address BFCAAAAA
+  3. Test all SRAM (1024 kbytes)
   4. Test SDRAM address signals
-  5. Test SDRAM address 0xA00AAAAA
+  5. Test SDRAM address A00AAAAA
   6. Test all SDRAM (128 Mbytes)
 
 Command: _
@@ -101,28 +101,27 @@ Command: _
 {{{
 Embedded TCL
 ~~~~~~~~~~~~
-Free memory: 3768724 bytes
+Free static memory: 956812 bytes
+Free dynamic memory: 134217728 bytes
 
 Enter "help" for a list of commands
 
 % _
 }}}
 В качестве примера реализованы три дополнительные команды:
-|| loop var first limit {incr} command	|| Цикл от var:=first до limit с шаком incr ||
-|| echo {arg...}			|| Выдача аргументов через пробел ||
-|| mem					|| Выдача количества свободной памяти и списка задач ||
+|| loop var first limit {incr} command  || Цикл от var:=first до limit с шаком incr ||
+|| echo {arg...}                        || Выдача аргументов через пробел ||
+|| mem                                  || Выдача количества свободной памяти и списка задач ||
 
 Пример списка задач:
 {{{
 % mem
 
-Free memory: 3765324 bytes
-
-Task	  Address	 Prio	    Stack	Space    Msg	Ticks
-idle	   ff01fc	 0	   ff0f5c	1	(nil)	8953
-console	  2045c74	>20	  2045f08	508	(nil)	28
-uartr	   ff0604	 90	   ff078c	292	(nil)	10
-	Waiting for 0xff0590
+Task     Address          Prio   Stack          Space    Msg    Ticks
+idle     b80001dc         0      b8007f10       1       (nil)   20
+console  b800032c        *20     b8000770       748     (nil)   365
+uartr    b8000ba4         90     b8000eb8       676     (nil)   402
+        Waiting for 0xb8000b30
 
 % _
 }}}

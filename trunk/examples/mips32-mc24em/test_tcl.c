@@ -127,10 +127,6 @@ mem_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 	stream_t *stream = arg;
 
 	putchar (stream, '\n');
-	printf (stream, "Free static memory: %ld bytes\n", mem_available (&pool));
-	printf (stream, "Free dynamic memory: %ld bytes\n", mem_available (&sdram));
-
-	putchar (stream, '\n');
 	task_print (stream, 0);
 	task_print (stream, (task_t*) stack_console);
 	task_print (stream, (task_t*) uart.rstack);
@@ -197,7 +193,8 @@ void tcl_main (void *arg)
 
 	puts (stream, "\n\nEmbedded TCL\n");
 	puts (stream, "~~~~~~~~~~~~\n");
-	printf (stream, "Free memory: %ld bytes\n", mem_available (&pool));
+	printf (stream, "Free static memory: %ld bytes\n", mem_available (&pool));
+	printf (stream, "Free dynamic memory: %ld bytes\n", mem_available (&sdram));
 	puts (stream, "\nEnter \"help\" for a list of commands\n\n");
 
 	interp = Tcl_CreateInterp (&pool);
@@ -270,7 +267,7 @@ bool_t uos_valid_memory_address (void *ptr)
 		return 1;
 
 	/* Boot SRAM. */
-	if (address >= 0xbfc00000 && address < 0xbfc00000+BOOT_SRAM_SIZE)
+	if (address >= 0xbfc00000 && address < 0xbfc00000 + 1024*1024)
 		return 1;
 
 	/* SDRAM. */
@@ -281,7 +278,7 @@ bool_t uos_valid_memory_address (void *ptr)
 
 void uos_init (void)
 {
-	extern unsigned _end;
+	extern void _etext();
 
 	/* Baud 115200. */
 	uart_init (&uart, 0, PRIO_UART, KHZ, 115200);
@@ -304,7 +301,7 @@ void uos_init (void)
         udelay (2);
 
 	mem_init (&sdram, 0xA0000000, 0xA0000000 + 128*1024*1024);
-	mem_init (&pool, (unsigned) &_end, 0xBFC00000 + BOOT_SRAM_SIZE);
+	mem_init (&pool, (unsigned) &_etext, 0xBFC00000 + 1024*1024);
 
 	task_create (main_console, 0, "console", PRIO_CONSOLE,
 		stack_console, sizeof(stack_console));

@@ -27,7 +27,7 @@ void task_print (stream_t *stream, task_t *t)
 		return;
 	}
 	printf (stream, "%S\t%9p\t%c%d\t%9p\t%n\t%p\t%lu",
-		task_name (t), t, t == task_current ? '>' : ' ', t->prio,
+		task_name (t), t, t == task_current ? '*' : ' ', t->prio,
 		t->stack_context, task_stack_avail (t), t->message, t->ticks);
 	if (t->wait)
 		printf (stream, "\n\tWaiting for %p%S", t->wait, ptr_valid_or_bad (t->wait));
