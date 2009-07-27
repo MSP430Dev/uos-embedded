@@ -85,13 +85,19 @@
  * Тест всей внешней памяти. Запись данных AAAA и 5555, с проверкой.
 {{{
 Testing memory on MC-24EM board
+Generator 8.0 MHz, CPU clock 80.0 MHz
+  CSR    = 000100A1
+  CSCON0 = 00B000F8
+  CSCON3 = 00080000
+  SDRCON = 00072710
 
   1. Test SRAM address signals
-  2. Test SRAM address BFCAAAAA
+  2. Test SRAM address BFCAAAA8
   3. Test all SRAM (1024 kbytes)
   4. Test SDRAM address signals
-  5. Test SDRAM address A00AAAAA
-  6. Test all SDRAM (128 Mbytes)
+  5. Test SDRAM address A2AAAAA8
+  6. Test SDRAM address A5555554
+  7. Test all SDRAM (128 Mbytes)
 
 Command: _
 }}}

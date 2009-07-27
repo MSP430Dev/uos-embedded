@@ -307,6 +307,8 @@ void main_console (void *data)
 void uos_init (void)
 {
 	debug_printf ("\nTesting memory on MC-24EM board\n");
+	debug_printf ("Generator %d.%d MHz, CPU clock %d.%d MHz\n",
+		ELVEES_CLKIN/1000, ELVEES_CLKIN/100%10, KHZ/1000, KHZ/100%10);
 
 	/* Configure 1 Mbyte of external SRAM memory at CS3. */
 	MC_CSCON3 = MC_CSCON_WS (8);		/* Wait states  */
@@ -322,10 +324,10 @@ void uos_init (void)
 		MC_SDRCON_RFR (64000000/8192, KHZ) |	/* Refresh period */
 		MC_SDRCON_PS_512;		/* Page size 512 */
         udelay (2);
-	debug_printf ("CSR    = %08X\n", MC_CSR);
-	debug_printf ("CSCON0 = %08X\n", MC_CSCON0);
-	debug_printf ("CSCON3 = %08X\n", MC_CSCON3);
-	debug_printf ("SDRCON = %08X\n", MC_SDRCON);
+	debug_printf ("  CSR    = %08X\n", MC_CSR);
+	debug_printf ("  CSCON0 = %08X\n", MC_CSCON0);
+	debug_printf ("  CSCON3 = %08X\n", MC_CSCON3);
+	debug_printf ("  SDRCON = %08X\n", MC_SDRCON);
 
 	task_create (main_console, 0, "console", 1,
 		stack_console, sizeof (stack_console));
