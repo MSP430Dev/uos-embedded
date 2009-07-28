@@ -4,17 +4,16 @@
 Описана установка кросс-системы программирования для микроконтроллеров
 с архитектурой [http://www.mips.com/products/processors/architectures/mips32/ MIPS32],
 little endian. Устанавливается поддержка языков Си и Си++.
-Используется компилятор версии [http://gcc.gnu.org/gcc-4.3.2/ GCC 4.3.2].
+Используется компилятор версии [http://gcc.gnu.org/gcc-4.4.1/ GCC 4.4.1].
 
 Архитектура MIPS может быть реализована как с сериализацией big endian, так и little endian.
 Изначально MIPS предполагала big endian, поэтому для little endian используется
 термин MIPSel.
 
 Готовый бинарный пакет можно скачать здесь:
- * [http://uos-embedded.googlecode.com/files/gcc432-mipsel.tgz gcc432-mipsel.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc441-mipsel-linux.tgz gcc441-mipsel-linux.tgz] -- для Linux
 
 == Установка под Linux или FreeBSD или Mac OS X ==
-
 Мы будем собирать все из исходных текстов. Для этого в Вашей системе должен
 быть установлен компилятор GCC. Также необходимо наличие пакета texinfo
 и библиотек GMP и MPFR. В Ubuntu Linux эти компоненты можно установить
@@ -22,9 +21,13 @@ little endian. Устанавливается поддержка языков С
 {{{
   sudo apt-get install texinfo libgmp3-dev libmpfr-dev
 }}}
+Для других систем надо скачать и установить эти библиотеки из текстов:
+  * [http://ftp.gnu.org/gnu/texinfo/texinfo-4.13.tar.gz  texinfo-4.13.tar.gz] (2.6 Мбайт)
+  * [ftp://ftp.gnu.org/gnu/gmp/gmp-4.3.1.tar.bz2         gmp-4.3.1.tar.bz2  ] (1.8 Мбайт)
+  * [http://www.mpfr.org/mpfr-current/mpfr-2.4.1.tar.bz2 mpfr-2.4.1.tar.bz2 ] (1.1 Мбайт)
 
 Устанавливать готовую систему программирования будем в каталог
-/usr/local/mipsel432 по номеру версии GCC 4.3.2. Это упростит в будущем
+/usr/local/mipsel441 по номеру версии GCC 4.4.1. Это упростит в будущем
 переход на новые версии компилятора.
 
 Для простоты предположим, что сборка производится в каталоге /src.
@@ -32,14 +35,14 @@ little endian. Устанавливается поддержка языков С
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://gcc.gnu.org/pub/binutils/snapshots/binutils-2.19.50.tar.bz2 binutils-2.19.50.tar.bz2] (17 Мбайт)
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.2/gcc-4.3.2.tar.bz2 gcc-4.3.2.tar.bz2] (56 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/binutils/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.1/gcc-4.4.1.tar.bz2  gcc-4.4.1.tar.bz2      ] (60 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils-2.19.50.tar.bz2
-  tar xvjf gcc-4.3.2.tar.bz2
+  tar xvjf binutils-2.19.1.tar.bz2
+  tar xvjf gcc-4.4.1.tar.bz2
 }}}
 
 === Сборка binutils ===
@@ -47,17 +50,26 @@ little endian. Устанавливается поддержка языков С
 архиватор AR, а также набор утилит для работы с объектными файлами
 (SIZE, NM, RANLIB, STRIP, и прочие).
 
+Для успешной сборки binutils 2.19.1 следует использовать правку, исправляющую
+ошибки в файле gas/config/tc-mips.c:
+[http://uos-embedded.googlecode.com/files/binutils-2.19.1-mips.pch binutils-2.19.1-mips.pch].
+Чтобы применить правку, выполните команды:
+{{{
+  cd /src/binutils-2.19.1
+  patch -p1 < binutils-2.19.1-mips.pch
+}}}
+
 Сборка производится в отдельном каталоге binutils-mipsel. Выполните команды:
 {{{
   mkdir /src/binutils-mipsel
   cd /src/binutils-mipsel
-  /src/binutils-2.19.50/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel432 --disable-nls
+  /src/binutils-2.19.1/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel441 --disable-nls
   make
 }}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
 {{{
-  mkdir /usr/local/mipsel432
+  mkdir /usr/local/mipsel441
 }}}
 
 Установите binutils:
@@ -70,7 +82,7 @@ little endian. Устанавливается поддержка языков С
 Для кросс-компилятора не нужны библиотеки libstdc++ и libmudflap.
 Чтобы они не вызывали ошибок при сборке, удалите их:
 {{{
-  cd /src/gcc-4.3.2
+  cd /src/gcc-4.4.1
   rm -rf libstdc++-v3
   rm -rf libmudflap
 }}}
@@ -80,7 +92,7 @@ little endian. Устанавливается поддержка языков С
 {{{
   mkdir /src/gcc-mipsel
   cd /src/gcc-mipsel
-  /src/gcc-4.3.2/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel432 \
+  /src/gcc-4.4.1/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel441 \
     --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}
@@ -92,7 +104,6 @@ little endian. Устанавливается поддержка языков С
 }}}
 
 == Установка под Windows ==
-
 Установите CygWin. Для этого на сайте [http://cygwin.com] щёлкните
 "Install Cygwin now". Это приведет к загрузке небольшого файла setup.exe,
 который надо будет после загрузки запустить и выбрать набор пакетов
