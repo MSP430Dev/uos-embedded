@@ -12,6 +12,7 @@ little endian. Устанавливается поддержка языков С
 
 Готовый бинарный пакет можно скачать здесь:
  * [http://uos-embedded.googlecode.com/files/gcc441-mipsel-linux.tgz gcc441-mipsel-linux.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc441-mipsel-macosx.tgz gcc441-mipsel-macosx.tgz] -- для Mac OS X
 
 == Установка под Linux или FreeBSD или Mac OS X ==
 Мы будем собирать все из исходных текстов. Для этого в Вашей системе должен
