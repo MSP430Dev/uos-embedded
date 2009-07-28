@@ -55,7 +55,10 @@
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em examples/mips32-mc24em]
-находятся примеры сборки uOS для MC-24EM.
+находятся примеры сборки uOS для MC-24EM. Их можно скомпилировать командой "make". Загрузить готовые бинарные файлы в плату можно утилитой [http://code.google.com/p/mcprog/ mcprog], например:
+{{{
+mcprog -w test_tcl.bin
+}}} 
 
 = Тесты =
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_debug.c test_debug.c]
