@@ -280,10 +280,6 @@ void uos_init (void)
 {
 	extern void _etext();
 
-	/* Baud 115200. */
-	uart_init (&uart, 0, PRIO_UART, KHZ, 115200);
-	timer_init (&timer, KHZ, 50);
-
 	/* Configure 1 Mbyte of external SRAM memory at CS3. */
 	MC_CSCON3 = MC_CSCON_WS (8);		/* Wait states  */
 
@@ -302,6 +298,10 @@ void uos_init (void)
 
 	mem_init (&sdram, 0xA0000000, 0xA0000000 + 128*1024*1024);
 	mem_init (&pool, (unsigned) &_etext, 0xBFC00000 + 1024*1024);
+
+	/* Baud 115200. */
+	uart_init (&uart, 0, PRIO_UART, KHZ, 115200);
+	timer_init (&timer, KHZ, 50);
 
 	task_create (main_console, 0, "console", PRIO_CONSOLE,
 		stack_console, sizeof(stack_console));

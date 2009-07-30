@@ -61,6 +61,15 @@ void __attribute ((noreturn))_init_ (void)
 	MC_LDIR(2) = 0;
 	MC_LDIR(3) = 0;
 
+	/* Disable all external memory except nCS3.
+	 * Set to default values. */
+	MC_CSCON0 = MC_CSCON_WS (15);
+	MC_CSCON1 = MC_CSCON_WS (15);
+	MC_CSCON2 = MC_CSCON_WS (15);
+	MC_CSCON3 = MC_CSCON_WS (15);
+	MC_CSCON4 = MC_CSCON_WS (15);
+	MC_SDRCON = 0;
+
 	/*
 	 * Setup UART registers.
 	 * Compute the divisor for 115.2 kbaud.

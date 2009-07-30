@@ -28,13 +28,13 @@ unsigned word_check (unsigned addr, unsigned val)
 
 void word_test (unsigned addr)
 {
-	unsigned char i, n;
+	unsigned i, n;
 
 	debug_printf ("\nTesting address %08X... ", addr);
 	for (i=0; ; ++i) {
-		for (n=1; n; ++n) {
-			word_check (addr, 0xAAAAAAAA);
-			word_check (addr, 0x55555555);
+		for (n=1; n; n<<=1) {
+			word_check (addr, n);
+			word_check (addr, ~n);
 		}
 		debug_putchar (0, "|/-\\" [i&3]);
 		debug_putchar (0, '\b');
@@ -248,15 +248,16 @@ void sdram_test_address_bus ()
 
 void menu ()
 {
-	char cmd;
+	int cmd;
 
 	debug_printf ("\n  1. Test SRAM address signals");
-	debug_printf ("\n  2. Test SRAM address %08X", SRAM_START + 0x000aaaa8);
-	debug_printf ("\n  3. Test all SRAM (%d kbytes)", SRAM_SIZE/1024);
-	debug_printf ("\n  4. Test SDRAM address signals");
-	debug_printf ("\n  5. Test SDRAM address %08X", SDRAM_START + 0x02aaaaa8);
-	debug_printf ("\n  6. Test SDRAM address %08X", SDRAM_START + 0x05555554);
-	debug_printf ("\n  7. Test all SDRAM (%d Mbytes)", SDRAM_SIZE/1024/1024);
+	debug_printf ("\n  2. Test SRAM address %08X", SRAM_START + 0x00055554);
+	debug_printf ("\n  3. Test SRAM address %08X", SRAM_START + 0x000aaaa8);
+	debug_printf ("\n  4. Test all SRAM (%d kbytes)", SRAM_SIZE/1024);
+	debug_printf ("\n  5. Test SDRAM address signals");
+	debug_printf ("\n  6. Test SDRAM address %08X", SDRAM_START + 0x02aaaaa8);
+	debug_printf ("\n  7. Test SDRAM address %08X", SDRAM_START + 0x05555554);
+	debug_printf ("\n  8. Test all SDRAM (%d Mbytes)", SDRAM_SIZE/1024/1024);
 	debug_puts ("\n\n");
 	for (;;) {
 		/* Ввод команды. */
@@ -272,26 +273,30 @@ void menu ()
 			break;
 		}
 		if (cmd == '2') {
-			word_test (SRAM_START + 0x000aaaa8);
+			word_test (SRAM_START + 0x00055554);
 			break;
 		}
 		if (cmd == '3') {
-			sram_test ();
+			word_test (SRAM_START + 0x000aaaa8);
 			break;
 		}
 		if (cmd == '4') {
-			sdram_test_address_bus ();
+			sram_test ();
 			break;
 		}
 		if (cmd == '5') {
-			word_test (SDRAM_START + 0x02aaaaa8);
+			sdram_test_address_bus ();
 			break;
 		}
 		if (cmd == '6') {
-			word_test (SDRAM_START + 0x05555554);
+			word_test (SDRAM_START + 0x02aaaaa8);
 			break;
 		}
 		if (cmd == '7') {
+			word_test (SDRAM_START + 0x05555554);
+			break;
+		}
+		if (cmd == '8') {
 			sdram_test ();
 			break;
 		}
@@ -310,10 +315,10 @@ void uos_init (void)
 	debug_printf ("Generator %d.%d MHz, CPU clock %d.%d MHz\n",
 		ELVEES_CLKIN/1000, ELVEES_CLKIN/100%10, KHZ/1000, KHZ/100%10);
 
-	/* Configure 1 Mbyte of external SRAM memory at CS3. */
+	/* Configure 1 Mbyte of external SRAM memory at nCS3. */
 	MC_CSCON3 = MC_CSCON_WS (8);		/* Wait states  */
 
-	/* Configure 128 Mbytes of external 64-bit SDRAM memory at CS0. */
+	/* Configure 128 Mbytes of external 64-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
 		MC_CSCON_T |			/* Sync memory */
 		MC_CSCON_W64 |			/* 64-bit data width */
@@ -323,7 +328,8 @@ void uos_init (void)
 		MC_SDRCON_BL_PAGE |		/* Bursh full page */
 		MC_SDRCON_RFR (64000000/8192, KHZ) |	/* Refresh period */
 		MC_SDRCON_PS_512;		/* Page size 512 */
-        udelay (2);
+	udelay (2);
+
 	debug_printf ("  CSR    = %08X\n", MC_CSR);
 	debug_printf ("  CSCON0 = %08X\n", MC_CSCON0);
 	debug_printf ("  CSCON3 = %08X\n", MC_CSCON3);
