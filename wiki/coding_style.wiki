@@ -23,13 +23,13 @@
 
 Правильно:
 {{{
-void function (string my_string)
+void function (char *my_string)
 }}}
 Неправильно:
 {{{
-void function (string myArgument)
+void function (char *myArgument)
 
-void function (string lpstrArgument)
+void function (char *lpstrArgument)
 }}}
 
 === Переменные ===
@@ -50,8 +50,7 @@ void function (string lpstrArgument)
 В именах методов Си++ первая буква слова должны быть заглавная, остальные - строчные (стиль Ada). Слова разделяются подчеркиванием, например "Create_Top_Window".
 
 === Типы, классы и интерфейсы ===
-Имена типов, классов и интерфейсов создаются аналогично функциям,
-но с добавлением суффикса "_t":
+Имена типов, классов и интерфейсов создаются аналогично функциям, но с добавлением суффикса "_t":
 {{{
 typedef unsigned long address_t;
 }}}
