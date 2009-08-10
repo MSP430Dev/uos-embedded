@@ -30,6 +30,3 @@ void cs8900_init (cs8900_t *u, const char *name, int prio, struct _mem_pool_t *p
 	arp_t *arp);
 void cs8900_poll (cs8900_t *u);
 bool_t cs8900_probe (void);
-
-void cs8900_test_bus (void);
-void cs8900_full_test_bus (void);
