@@ -17,56 +17,50 @@
 #include <enc28j60/eth.h>
 #include <enc28j60/regs.h>
 
-ENIND	P2.1
-ENCLK	P2.4
-INT	P2.6
-RES	P2.7
-NCS	P3.6
-SDO	P3.7
-SDI	P5.4
-SCK	P5.5
+#define P2_ENIND	BIT1
+#define P2_ENCLK	BIT4
+#define P2_INT		BIT6
+#define P2_RES		BIT7
 
-/* ENC28J60 SPI port: P5 */
-#define ENC_MOSI	1
-#define ENC_MISO	2
-#define ENC_SCK		3
+#define P3_NCS		BIT6 	/* UCB1STE */
+#define P3_SDO		BIT7	/* UCB1SIMO */
 
-/* ENC28J60 control port: P4 */
-#define ENC_CS		6
+#define P5_SDI		BIT4	/* UCB1SOMI */
+#define P5_SCK		BIT5	/* UCB1CLK */
 
-static void inline
-chip_select (int on)
-{
-	if (on)
-		P4OUT &= ~(1 << ENC_CS);	/* assert CS */
-	else
-		P4OUT |= 1 << ENC_CS;		/* release CS */
-}
-
+/*
+ * Configure I/O pins.
+ */
 static void inline
 chip_init (void)
 {
-	/* Configure I/O pins. */
-	P4DIR |= (1 << ENC_CS);		/* Set P4.6 as CS (output pin) */
-	P4OUT |= (1 << ENC_CS);
+	P3DIR |= P3_SDO | P3_NCS;	/* Set nCS and MOSI as outputs */
+	P3SEL |= P3_SDO;		/* Special functions for SPI pins */
+	P3OUT |= P3_NCS;
 
-	P5DIR |= (1 << ENC_SCK) +
-		(1 << ENC_MOSI);	/* Set SCK and MOSI as outputs */
-	P5DIR &= ~(1 << ENC_MISO);	/* Set MISO as input */
-	P5SEL |= (1 << ENC_SCK) +
-		(1 << ENC_MOSI) +
-		(1 << ENC_MISO);	/* Special functions for SPI pins */
+	P5DIR |= P5_SCK;		/* Set SCK as output */
+	P5DIR &= ~P5_SDI;		/* Set MISO as input */
+	P5SEL |= P5_SCK | P5_SDI;	/* Special functions for SPI pins */
 	P5OUT = 0x00;
 
 	/* Set SPI registers (see slau049f.pdf for reference). */
 	U1CTL   = SWRST;		/* Put USART1 in reset mode */
 	ME2    |= USPIE1;		/* Enable USART1 SPI mode */
-	U1TCTL |= SSEL0 + STC;		/* Transmit control, (ACLK, 3-pin mode) */
+	U1TCTL |= SSEL0 | STC;		/* Transmit control, (ACLK, 3-pin mode) */
 	U1BR0   = 0x02;			/* Baud rate 0 (UCLK/2) (maximum rate) */
 	U1BR1   = 0x00;			/* Baud rate 1 (upper 16 bit of baud rate divisor) */
 	U1MCTL  = 0x00;			/* Modulation control (no modulation in SPI!) */
-	U1CTL  |= CHAR + SYNC + MM;	/* USART control (8-bit SPI Master **SWRST**) */
+	U1CTL  |= CHAR | SYNC | MM;	/* USART control (8-bit SPI Master **SWRST**) */
 	U1CTL  &= ~SWRST;		/* Deactivate reset state */
+}
+
+static void inline
+chip_select (int on)
+{
+	if (on)
+		P3OUT &= ~P3_NCS;	/* assert CS */
+	else
+		P3OUT |= P3_NCS;	/* release CS */
 }
 
 static unsigned
