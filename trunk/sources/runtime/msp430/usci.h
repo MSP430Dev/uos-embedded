@@ -32,7 +32,7 @@ __MSP430_HAS_USCI1__ - if device has USCI1
 #define USISWRST            (0x01)      /* USI  Software Reset */
 
 #define USICKPH             (0x80)      /* USI  Sync. Mode: Clock Phase */
-#define USII2C              (0x40)      /* USI  I2C Mode */ 
+#define USII2C              (0x40)      /* USI  I2C Mode */
 #define USISTTIE            (0x20)      /* USI  START Condition interrupt enable */
 #define USIIE               (0x10)      /* USI  Counter Interrupt enable */
 #define USIAL               (0x08)      /* USI  Arbitration Lost */
@@ -41,7 +41,7 @@ __MSP430_HAS_USCI1__ - if device has USCI1
 #define USIIFG              (0x01)      /* USI  Counter Interrupt Flag */
 
 #define USIDIV2             (0x80)      /* USI  Clock Divider 2 */
-#define USIDIV1             (0x40)      /* USI  Clock Divider 1 */ 
+#define USIDIV1             (0x40)      /* USI  Clock Divider 1 */
 #define USIDIV0             (0x20)      /* USI  Clock Divider 0 */
 #define USISSEL2            (0x10)      /* USI  Clock Source Select 2 */
 #define USISSEL1            (0x08)      /* USI  Clock Source Select 1 */
@@ -68,7 +68,7 @@ __MSP430_HAS_USCI1__ - if device has USCI1
 #define USISSEL_7           (0x1C)      /* USI  Clock Source: 7 */
 
 #define USISCLREL           (0x80)      /* USI  SCL Released */
-#define USI16B              (0x40)      /* USI  16 Bit Shift Register Enable */ 
+#define USI16B              (0x40)      /* USI  16 Bit Shift Register Enable */
 #define USIFGDC             (0x20)      /* USI  Interrupt Flag don't clear */
 #define USICNT4             (0x10)      /* USI  Bit Count 4 */
 #define USICNT3             (0x08)      /* USI  Bit Count 3 */
@@ -246,6 +246,17 @@ __MSP430_HAS_USCI1__ - if device has USCI1
 #define UCSSEL_ACLK         UCSSEL_1
 #define UCSSEL_SMCLK        UCSSEL_2
 
+#if defined(__MSP430_2232__) || defined(__MSP430_2252__) || defined(__MSP430_2272__) || \
+    defined(__MSP430_2234__) || defined(__MSP430_2254__) || defined(__MSP430_2274__) || \
+    defined(__MSP430_233__) || defined(__MSP430_235__) || \
+    defined(__MSP430_2330__) || defined(__MSP430_2350__) || defined(__MSP430_2370__) || \
+    defined(__MSP430_247__) || defined(__MSP430_248__) || defined(__MSP430_249__) || defined(__MSP430_2410__) || \
+    defined(__MSP430_2471__) || defined(__MSP430_2481__) || defined(__MSP430_2491__) || \
+    defined(__MSP430_2416__) || defined(__MSP430_2417__) || defined(__MSP430_2418__) || defined(__MSP430_2419__) || \
+    defined(__MSP430_2616__) || defined(__MSP430_2617__) || defined(__MSP430_2618__) || defined(__MSP430_2619__) || \
+    defined(__MSP430_4783__) || defined(__MSP430_4784__) || defined(__MSP430_4793__) || defined(__MSP430_4794__) || \
+    defined(__MSP430_47166__) || defined(__MSP430_47176__) || defined(__MSP430_47186__) || defined(__MSP430_47196__) || \
+    defined(__MSP430_47167__) || defined(__MSP430_47177__) || defined(__MSP430_47187__) || defined(__MSP430_47197__)
 /* -------- USCI0 */
 
 #define UCA0CTL0_           0x0060      /* USCI A0 Control Register 0 */
@@ -355,5 +366,7 @@ sfrb(UC1IFG, UC1IFG_);
 #define UCB1RXIFG           (1<<2)
 #define UCB1TXIFG           (1<<3)
 #endif /* __MSP430_HAS_USCI1__ */
+
+#endif /* __MSP430_2232__ ... __MSP430_47197__ */
 
 #endif

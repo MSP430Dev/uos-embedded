@@ -67,8 +67,11 @@
 #define LPM4_EXIT _BIC_SR_IRQ(LPM4_bits) /* Exit Low Power Mode 4 */
 #endif /* End #defines for C */
 
+#ifndef WDTCTL_
+
 #define WDTCTL_             0x0120  /* Watchdog Timer Control */
 sfrw (WDTCTL,WDTCTL_);
+
 /* The bit names have been prefixed with "WDT" */
 #define WDTIS0              0x0001
 #define WDTIS1              0x0002
@@ -115,40 +118,6 @@ sfrw (WDTCTL,WDTCTL_);
 #define WDTIS_2              0x0002
 #define WDTIS_3              0x0003
 
-
-/* Backwards compatibility to older versions of the header files.
-   Please consider using the new names.
- */
-#ifdef __MSP430_HAS_PORT1__
-    #define __msp430_have_port1
-#endif
-
-#ifdef __MSP430_HAS_PORT2__
-    #define __msp430_have_port2
-#endif
-
-#ifdef __MSP430_HAS_PORT3__
-    #define __msp430_have_port3
-#endif
-
-#ifdef __MSP430_HAS_PORT4__
-    #define __msp430_have_port4
-#endif
-
-#ifdef __MSP430_HAS_PORT5__
-    #define __msp430_have_port5
-#endif
-
-#ifdef __MSP430_HAS_PORT6__
-    #define __msp430_have_port6
-#endif
-
-#ifdef __MSP430_HAS_UART1__
-    #define __msp430_have_usart1
-#endif
-
-#ifdef __MSP430_HAS_TB7__
-    #define __msp430_have_timerb7
-#endif
+#endif /* WDTCTL_ */
 
 #endif

@@ -87,6 +87,7 @@ sfrw(WDTCTL, WDTCTL_);
 #define WDT_ARST_16         (WDTPW|WDTCNTCL|WDTSSEL_1|WDTIS_6)                  /* 16ms    */
 #define WDT_ARST_1_9        (WDTPW|WDTCNTCL|WDTSSEL_1|WDTIS_7)                  /* 1.9ms   */
 
+#if 0
 #ifndef __ASSEMBLER__
 /* Structured declaration */
 
@@ -106,5 +107,6 @@ struct
 } const WDTCTL_bits asm(__xstr(__MSP430_WDT_A_BASE__ + 0x0C));  /* Watchdog timer control register */
 
 #endif  /* __ASSEMBLER__ */
+#endif
 
 #endif /* __MSP430_HEADERS_SYS_H */

@@ -17,9 +17,14 @@ _init_ (void)
 	msp430_set_stack_pointer (&__stack);
 
 	/*
+	 * Stop watchdog timer.
+	 */
+	WDTCTL = WDTPW | WDTHOLD;
+
+	/*
 	 * Enable the crystal on XT1 and use it as MCLK.
 	 */
-	WDTCTL = WDTPW | WDTHOLD;		/* stop watchdog timer */
+#ifdef BCSCTL1_
 	BCSCTL1 |= XTS;				/* XT1 as high-frequency */
 	_BIC_SR (OSCOFF);			/* turn on XT1 oscillator */
 	do {					/* wait in loop until crystal is stable */
@@ -37,6 +42,7 @@ _init_ (void)
 		continue;			/* amplitude is OK) */
 	IFG1 &= ~OFIFG;				/* clear osc. fault int. flag */
 	BCSCTL2 = SELM0 | SELM1;		/* set XT1 as MCLK */
+#endif /* BCSCTL1_ */
 
 	/*
 	 * Enable USART0 module.
@@ -59,6 +65,19 @@ _init_ (void)
 	UMCTL0 = 0;
 #  endif
 	URCTL0 = 0;				/* init receiver control register */
+#endif
+
+#ifdef MSP430_DEBUG_USCIA3
+	/* Use USCI_A3 for debug output. */
+	P10SEL = BIT4 | BIT5;			/* P10.4, P10.5 = USCI_A3 TXD/RXD */
+	UCA3CTL1 = UCSWRST;			/* Reset */
+	UCA3CTL0 = 0;				/* Async 8N1 */
+	UCA3CTL1 |= UCSSEL_ACLK;		/* Clock source ACLK */
+	UCA3BR0 = KHZ * 500L / 115200;
+	UCA3BR1 = (int) (KHZ * 500L / 115200) >> 8;
+	UCA3MCTL = 0;
+	UCA3CTL1 &= ~UCSWRST;			/* Clear reset */
+	/* UCA3IE |= UCRXIE; */			/* Enable USCI_A0 RX interrupt */
 #endif
 
 #ifndef EMULATOR /* not needed on emulator */

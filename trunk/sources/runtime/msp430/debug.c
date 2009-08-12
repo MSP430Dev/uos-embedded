@@ -1,5 +1,22 @@
 #include <runtime/lib.h>
 
+#ifdef MSP430_DEBUG_USCIA3
+    /* Use USCI_A3 for debug output. */
+#   define TX_BUSY	(! (UCA3IFG & UCTXIFG))
+#   define TX_DATA	UCA3TXBUF
+#   define RX_CLRERR	{ UCA3STAT &= ~(UCFE + UCPE + UCBRK); }
+#   define RX_AVAIL	(UCA3IFG & UCRXIFG)
+#   define RX_DATA	UCA3RXBUF
+
+#else
+    /* Use USART0 for debug output. */
+#   define TX_BUSY	(! (UTCTL0 & TXEPT) && ! (U0IFG & UTXIFG0))
+#   define TX_DATA	TXBUF0
+#   define RX_CLRERR	{ URCTL0 &= ~(FE + PE + BRK); }
+#   define RX_AVAIL	(U0IFG & URXIFG0)
+#   define RX_DATA	RXBUF0
+#endif
+
 static int debug_char = -1;
 
 /*
@@ -13,15 +30,15 @@ debug_putchar (void *arg, short c)
 	msp430_intr_disable (&x);
 
 	/* Wait for transmitter holding register empty. */
-	while (! (UTCTL0 & TXEPT) && ! (U0IFG & UTXIFG0))
+	while (TX_BUSY)
 		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	TXBUF0 = c;
+	TX_DATA = c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (UTCTL0 & TXEPT) && ! (U0IFG & UTXIFG0))
+	while (TX_BUSY)
 		continue;
 
 /*	watchdog_alive ();*/
@@ -50,18 +67,17 @@ debug_getchar (void)
 	msp430_intr_disable (&x);
 	for (;;) {
 		/* Check for errors. */
-		if (URCTL0 & RXERR)
-			URCTL0 &= ~(FE + PE + OE + BRK + RXERR);
+		RX_CLRERR;
 
 		/* Wait until receive data available. */
-		if (! (U0IFG & URXIFG0)) {
+		if (! RX_AVAIL) {
 /*			watchdog_alive ();*/
 			msp430_intr_restore (x);
 			msp430_intr_disable (&x);
 			continue;
 		}
 		/* TODO: utf8 to unicode conversion. */
-		c = RXBUF0;
+		c = RX_DATA;
 		break;
 	}
 	msp430_intr_restore (x);
@@ -83,16 +99,15 @@ debug_peekchar (void)
 	msp430_intr_disable (&x);
 
 	/* Check for errors. */
-	if (URCTL0 & RXERR)
-		URCTL0 &= ~(FE + PE + OE + BRK + RXERR);
+	RX_CLRERR;
 
 	/* Wait until receive data available. */
-	if (! (U0IFG & URXIFG0)) {
+	if (! RX_AVAIL) {
 		msp430_intr_restore (x);
 		return -1;
 	}
 	/* TODO: utf8 to unicode conversion. */
-	c = RXBUF0;
+	c = RX_DATA;
 	msp430_intr_restore (x);
 	debug_char = c;
 	return c;
