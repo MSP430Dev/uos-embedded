@@ -26,23 +26,34 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.16.1.tar.bz2 binutils-2.16.1.tar.bz2] (14 Мбайт)
+  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.18.tar.bz2 binutils-2.18.tar.bz2] (15 Мбайт)
   * [http://ftp.gnu.org/pub/gnu/gcc/gcc-3.2.3.tar.gz gcc-3.2.3.tar.gz] (26 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils-2.16.1.tar.bz2
+  tar xvjf binutils-2.18.tar.bz2
   tar xvzf gcc-3.2.3.tar.gz
 }}}
 
-Скачайте правки для MSP430 и перепишите нужные файлы в каталог GCC:
+Скачайте правки для MSP430:
 {{{
   mkdir /src/gcc-msp-patches
   cd /src/gcc-msp-patches
   cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
-  cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc checkout -P gcc
-  cp -a gcc/gcc-3.3/* ../gcc-3.2.3
+  cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc checkout -P gcc packaging/patches
+}}}
+
+Примените правки для binutils-2.18 и gcc-3.2.3:
+{{{
+  cd /src/binutils-2.18
+  patch -p1 < ../gcc-msp-patches/packaging/patches/binutils-2.18-14x1-20x1-20x2-20x3-22x4-42x-42x0-461x.patch
+  patch -p1 < ../gcc-msp-patches/packaging/patches/binutils-2.18-msp430x24x-msp430x26x.patch
+  patch -p1 < ../gcc-msp-patches/packaging/patches/binutils-ld_scripts.patch
+  patch -p1 < ../gcc-msp-patches/packaging/patches/binutils-2.18-430X.patch
+  cd /src/gcc-3.2.3
+  cp -a ../gcc-msp-patches/gcc/gcc-3.3/* .
+  patch -p1 < ../gcc-msp-patches/packaging/patches/gcc-3.2.3-__FUNCTION__.patch
 }}}
 
 === Сборка binutils ===
@@ -54,7 +65,7 @@
 {{{
   mkdir /src/binutils-msp
   cd /src/binutils-msp
-  /src/binutils-2.16.1/configure --target=msp430 --prefix=/usr/local/msp323 --disable-nls
+  /src/binutils-2.18/configure --target=msp430 --prefix=/usr/local/msp323 --disable-nls
   make
 }}}
 
