@@ -41,7 +41,7 @@
   mkdir /src/gcc-msp-patches
   cd /src/gcc-msp-patches
   cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
-  cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc checkout -P gcc packaging/patches
+  cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc checkout -P gcc/gcc-3.3 packaging/patches
 }}}
 
 Примените правки для binutils-2.19.1 и gcc-3.2.3:
