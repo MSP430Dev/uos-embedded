@@ -32,13 +32,13 @@
 
 Скачайте тексты в каталог /src:
   * [ftp://sourceware.org/pub/binutils/releases/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.1/gcc-4.4.1.tar.bz2 gcc-4.4.1.tar.bz2] (56 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.1/gcc-core-4.4.1.tar.bz2 gcc-core-4.4.1.tar.bz2] (25 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
   tar xvjf binutils-2.19.1.tar.bz2
-  tar xvjf gcc-4.4.1.tar.bz2
+  tar xvjf gcc-core-4.4.1.tar.bz2
 }}}
 
 === Правка для GCC ===
