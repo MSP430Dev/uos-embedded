@@ -114,6 +114,10 @@
 Установите CygWin. Для этого на сайте [http://cygwin.com] щёлкните
 "Install Cygwin now". Это приведет к загрузке небольшого файла setup.exe,
 который надо будет после загрузки запустить и выбрать набор пакетов
-для установки. Достаточно выбрать пакеты bash, gcc, gmake.
+для установки. Достаточно выбрать пакеты bash, gcc, gmake, diffutils, libmpfr.
+
+Дополнительно требуется скачать и установить следующие библиотеки:
+  * [http://icps.u-strasbg.fr/PolyLib/polylib_src/polylib-5.22.3.tar.gz polylib-5.22.3.tar.gz]
+  * [http://www.bastoul.net/cloog/pages/download/cloog-0.14.1.tar.gz]
 
 После установки Cygwin сборка GCC производится так же, как и в Linux.
