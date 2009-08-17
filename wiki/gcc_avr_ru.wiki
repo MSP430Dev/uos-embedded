@@ -38,7 +38,7 @@
 {{{
   cd /src
   tar xvjf binutils-2.19.1.tar.bz2
-  tar xvjf gcc-core-4.4.1.tar.bz2
+  tar xvjf gcc-4.4.1.tar.bz2
 }}}
 
 === Правка для GCC ===
