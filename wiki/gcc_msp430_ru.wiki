@@ -62,7 +62,7 @@
 {{{
   mkdir /src/binutils-msp
   cd /src/binutils-msp
-  /src/binutils-2.19.1/configure --target=msp430 --prefix=/usr/local/msp323 --disable-nls
+  ../binutils-2.19.1/configure --target=msp430 --prefix=/usr/local/msp323 --disable-nls
   make
 }}}
 
@@ -96,8 +96,7 @@
 {{{
   mkdir /src/gcc-msp
   cd /src/gcc-msp
-  /src/gcc-3.2.3/configure --target=msp430 --prefix=/usr/local/msp323 \
-    --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
+  ../gcc-3.2.3/configure --target=msp430 --prefix=/usr/local/msp323 --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}
 
