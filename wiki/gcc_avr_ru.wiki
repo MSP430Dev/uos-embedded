@@ -8,6 +8,7 @@
 
 Готовый бинарный пакет можно скачать здесь:
  * [http://uos-embedded.googlecode.com/files/gcc433-avr.tgz gcc433-avr.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc410-avr.zip gcc410-avr.zip] -- для Windows
 
 == Установка под Linux или FreeBSD или Mac OS X ==
 
