@@ -26,14 +26,14 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (16 Мбайт)
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-3.2.3.tar.gz gcc-3.2.3.tar.gz] (26 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/binutils/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-3.2.3/gcc-3.2.3.tar.bz2 gcc-3.2.3.tar.bz2] (20 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
   tar xvjf binutils-2.19.1.tar.bz2
-  tar xvzf gcc-3.2.3.tar.gz
+  tar xvjf gcc-3.2.3.tar.bz2
 }}}
 
 Скачайте правки для MSP430:
