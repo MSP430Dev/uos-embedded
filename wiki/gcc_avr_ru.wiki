@@ -112,10 +112,6 @@
 == Установка под Windows ==
 
 Установите CygWin. Для этого с сайта [http://cygwin.com] загрузите файл setup-1.7.exe,
-запустите его и выберите набор пакетов для установки. Достаточно выбрать пакеты bash, gcc, gmake, diffutils, libmpfr, libppl-devel, libcloog-devel.
-
-Дополнительно требуется скачать и установить следующие библиотеки:
-  * [ftp://gcc.gnu.org/pub/gcc/infrastructure/ppl-0.10.2.tar.gz]
-  * [ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-ppl-0.15.7.tar.gz]
+запустите его и выберите набор пакетов для установки. Достаточно выбрать пакеты bash, gcc, gmake, diffutils, libmpfr.
 
 После установки Cygwin сборка GCC производится так же, как и в Linux.
