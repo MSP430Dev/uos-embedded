@@ -4,7 +4,7 @@
 Описана установка кросс-системы программирования для микроконтроллеров
 семейства [http://atmel.com/products/avr/ Atmel AVR].
 Устанавливается поддержка языков Си и Си++.
-Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.3.3].
+Используется компилятор версии [http://gcc.gnu.org/gcc-4.4/ GCC 4.4.1].
 
 Готовый бинарный пакет можно скачать здесь:
  * [http://uos-embedded.googlecode.com/files/gcc433-avr.tgz gcc433-avr.tgz] -- для Linux
@@ -23,7 +23,7 @@
 }}}
 
 Устанавливать готовую систему программирования будем в каталог
-/usr/local/avr433 по номеру версии GCC 4.3.3. Это упростит в будущем
+/usr/local/avr441 по номеру версии GCC 4.4.1. Это упростит в будущем
 переход на новые версии компилятора.
 
 Для простоты предположим, что сборка производится в каталоге /src.
@@ -32,13 +32,13 @@
 
 Скачайте тексты в каталог /src:
   * [ftp://sourceware.org/pub/binutils/releases/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.3/gcc-4.3.3.tar.bz2 gcc-4.3.3.tar.bz2] (56 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.1/gcc-4.4.1.tar.bz2 gcc-4.4.1.tar.bz2] (56 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
   tar xvjf binutils-2.19.1.tar.bz2
-  tar xvjf gcc-4.3.3.tar.bz2
+  tar xvjf gcc-4.4.1.tar.bz2
 }}}
 
 === Правка для GCC ===
@@ -48,7 +48,7 @@
 [http://uos-embedded.googlecode.com/files/gcc43-avr-rodata.pch gcc43-avr-rodata.pch].
 Чтобы применить правку, выполните команды:
 {{{
-  cd /src/gcc-4.3.3/gcc/config/avr
+  cd /src/gcc-4.4.1/gcc/config/avr
   patch < gcc43-avr-rodata.pch
 }}}
 
@@ -78,13 +78,13 @@
 {{{
   mkdir /src/binutils-avr
   cd /src/binutils-avr
-  ../binutils-2.19.1/configure --target=avr --prefix=/usr/local/avr433 --disable-nls
+  ../binutils-2.19.1/configure --target=avr --prefix=/usr/local/avr441 --disable-nls
   make
 }}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
 {{{
-  mkdir /usr/local/avr433
+  mkdir /usr/local/avr441
 }}}
 
 Установите binutils:
@@ -99,7 +99,7 @@
 {{{
   mkdir /src/gcc-avr
   cd /src/gcc-avr
-  ../gcc-4.3.3/configure --target=avr --prefix=/usr/local/avr433 --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
+  ../gcc-4.4.1/configure --target=avr --prefix=/usr/local/avr441 --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}
 
