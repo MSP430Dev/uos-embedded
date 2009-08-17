@@ -28,6 +28,7 @@
 Скачайте тексты в каталог /src:
   * [http://ftp.gnu.org/pub/gnu/binutils/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
   * [http://ftp.gnu.org/pub/gnu/gcc/gcc-3.2.3/gcc-3.2.3.tar.bz2 gcc-3.2.3.tar.bz2] (20 Мбайт)
+  * [http://uos-embedded.googlecode.com/files/gcc-3.2.3-macosx.pch gcc-3.2.3-macosx.pch] - правки для сборки на Intel Mac OS X
 
 Распакуйте их:
 {{{
@@ -42,6 +43,7 @@
   cd /src/gcc-msp-patches
   cvs -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc login
   cvs -z3 -d:pserver:anonymous@mspgcc.cvs.sourceforge.net:/cvsroot/mspgcc checkout -P gcc/gcc-3.3 packaging/patches
+  wget http://uos-embedded.googlecode.com/files/gcc-3.2.3-macosx.pch
 }}}
 
 Примените правки для binutils-2.19.1 и gcc-3.2.3:
@@ -51,6 +53,7 @@
   cd /src/gcc-3.2.3
   cp -a ../gcc-msp-patches/gcc/gcc-3.3/* .
   patch -p1 < ../gcc-msp-patches/packaging/patches/gcc-3.2.3-__FUNCTION__.patch
+  patch -p1 < ../gcc-3.2.3-macosx.pch
 }}}
 
 === Сборка binutils ===
