@@ -1,19 +1,12 @@
 #summary Links
 
 = Другие встраиваемые операционные системы =
-
-[http://microcross.com/html/uc_os-ii.html uC/OS-II]
-- embedded operating system
-
-[http://freertos.org/ FreeRTOS]
-- embedded operating system
-
-[http://marte.unican.es/ MaRTE OS]
-- встраиваемая операционная система, написанная на Аде
-
-[http://scmrtos.sourceforge.net/ scmRTOS]
-- embedded operating system
-
+ * [http://microcross.com/html/uc_os-ii.html uC/OS-II]
+ * [http://freertos.org/ FreeRTOS]
+ * [http://marte.unican.es/ MaRTE OS] (на языке Ада)
+ * [http://scmrtos.sourceforge.net/ scmRTOS]
+ * [http://ecos.sourceware.org/ eCos]
+ * [http://www.rtems.com/ RTEMS]
 
 = Ссылки =
 
