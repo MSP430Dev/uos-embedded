@@ -23,7 +23,7 @@
 
 На плату также можно установить GSM/GPS-модем SIM508 и видеовход ADV7108.
 Плата поставляется с установленной операционной системой Linux.
-Протокол загрузки можно [board_sam9_boot_linux посмотреть здесь].
+Протокол загрузки можно [board_sam9_boot_linux_ru посмотреть здесь].
 
 Документация:
   * Плата SK-AT91SAM9XE512-S3E, [http://uos-embedded.googlecode.com/svn/trunk/examples/arm-sam9-s3e/sk-at91sam9xe512-s3e.pdf схема электрическая принципиальная].
@@ -43,11 +43,11 @@
   * [http://atmel.com/dyn/resources/prod_documents/AT91Bootstrap1.11.zip AT91 Bootstrap], [http://atmel.com/dyn/resources/prod_documents/doc6277.pdf Application Note].
   * [http://atmel.com/dyn/resources/prod_documents/Install%20AT91-ISP%20v1.12.exe AT91-ISP.exe], [http://atmel.com/dyn/resources/prod_documents/doc6224.pdf AT91 In-System Programmer (ISP)].
 
-Раскладка сигналов процессора и ПЛИС [board_sam9_signals описана на отдельной странице].
+Раскладка сигналов процессора и ПЛИС [board_sam9_signals_ru описана на отдельной странице].
 
-Расположение элементов на плате [board_sam9_connectors приведено здесь].
+Расположение элементов на плате [board_sam9_connectors_ru приведено здесь].
 
-Пример компиляции и загрузки ПЛИС Xilinx [board_sam9_xilinx приведён отдельно].
+Пример компиляции и загрузки ПЛИС Xilinx [board_sam9_xilinx_ru приведён отдельно].
 
 = Начальная загрузка =
 После сброса процессор стартует с адреса 0. На этот адрес может быть назначена одна

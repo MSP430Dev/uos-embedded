@@ -2,11 +2,11 @@
 
 = Практический подход =
 
-  * [project_install_sources Установка текстов uOS]
-  * [project_create Создание проекта]
-  * [project_remote_debug Удаленная отладка с GDB]
-  * [project_using_asserts Применение assert]
-  * [project_memory_optimization Оптимизация памяти]
-  * [project_real_example Пример реального проекта]
-  * [arch_avr_notes Особенности архитектуры AVR]
-  * [arch_arm_notes Особенности архитектуры ARM]
+  * [project_install_sources_ru Установка текстов uOS]
+  * [project_create_ru Создание проекта]
+  * [project_remote_debug_ru Удаленная отладка с GDB]
+  * [project_using_asserts_ru Применение assert]
+  * [project_memory_optimization_ru Оптимизация памяти]
+  * [project_real_example_ru Пример реального проекта]
+  * [arch_avr_notes_ru Особенности архитектуры AVR]
+  * [arch_arm_notes_ru Особенности архитектуры ARM]

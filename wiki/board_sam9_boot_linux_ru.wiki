@@ -1,6 +1,6 @@
 #summary Booting Linux on Starterkit SAM9-S3E.
 
-Протокол загрузки Linux на плате [board_starterkit_sam9_s3e Starterkit SAM9-S3E]:
+Протокол загрузки Linux на плате [board_starterkit_sam9_s3e_ru Starterkit SAM9-S3E]:
 {{{
 RomBOOT
 >Start AT91Bootstrap...
