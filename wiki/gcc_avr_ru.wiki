@@ -112,6 +112,6 @@
 == Установка под Windows ==
 
 Установите CygWin. Для этого с сайта [http://cygwin.com] загрузите файл setup.exe,
-запустите его и выберите набор пакетов для установки. Достаточно выбрать пакеты bash, gcc, gmake, diffutils, libmpfr.
+запустите его и выберите набор пакетов для установки. Достаточно выбрать пакеты bash, gcc, make, diffutils, libmpfr-devel, libiconv-devel.
 
 После установки Cygwin сборка GCC производится так же, как и в Linux.
