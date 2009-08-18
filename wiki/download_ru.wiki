@@ -1,10 +1,11 @@
 #summary Downloads
 
 = Файлы проекта uOS =
-== Исходные тексты операционной системы ==
+
+=== Исходные тексты операционной системы ===
  * [http://uos-embedded.googlecode.com/files/uos-2009-08.tgz uos-2009-08.tgz] - версия 2009-08.
 
-== Компиляторы ==
+=== Компиляторы ===
 Распаковывать в каталоге /usr/local. Для Cygwin это обычно `C:\Cygwin\usr\local`.
  * [http://uos-embedded.googlecode.com/files/gcc433-avr.tgz           gcc433-avr.tgz          ] - GCC 4.3.3 для Atmel AVR (Linux)
  * [http://uos-embedded.googlecode.com/files/gcc441-avr-cygwin.zip    gcc441-avr-cygwin.zip   ] - GCC 4.4.1 для Atmel AVR (Windows + Cygwin)
@@ -17,12 +18,12 @@
  * [http://uos-embedded.googlecode.com/files/gcc430-intel.tgz         gcc430-intel.tgz        ] - GCC 4.3.0 для Intel 386/Pentium (Linux)
  * [http://uos-embedded.googlecode.com/files/gcc410-intel.zip         gcc410-intel.zip        ] - GCC 4.1.0 для Intel 386/Pentium (Windows + Cygwin)
 
-== Отладчики и программаторы ==
+=== Отладчики и программаторы ===
  * [http://uos-embedded.googlecode.com/files/gdb511-msp.tgz	       gdb511-msp.tgz           ] - отладчик GDB 5.1.1 для TI MSP430 (Linux)
  * [http://uos-embedded.googlecode.com/files/msp430-gdbproxy.zip       msp430-gdbproxy.zip      ] - утилита gdb-proxy  для MSP430 (Windows и Linux)
  * [http://uos-embedded.googlecode.com/files/SAMBA-Starterkit-9260.zip SAMBA-Starterkit-9260.zip] - дополнение к программатору SAM-BA для платы Starterkit SAM9260
 
-== Правки ==
+=== Правки ===
  * Правка, добавляющая возможность располагать текстовые константы в flash-памяти AVR: [http://uos-embedded.googlecode.com/files/gcc41-avr-rodata.pch для GCC 4.1.x], [http://uos-embedded.googlecode.com/files/gcc42-avr-rodata.pch для GCC 4.2.x], [http://uos-embedded.googlecode.com/files/gcc43-avr-rodata.pch для GCC 4.3.x].
  * [http://uos-embedded.googlecode.com/files/gcc-3.2.3-macosx.pch     gcc-3.2.3-macosx.pch    ] - правки для сборки GCC 3.2.3 на Intel Mac OS X
  * [http://uos-embedded.googlecode.com/files/binutils-2.19.1-mips.pch binutils-2.19.1-mips.pch] - правка для binutils 2.19.1, исправляющая ошибки в gas/config/tc-mips.c
