@@ -8,27 +8,12 @@
  * [http://ecos.sourceware.org/ eCos]
  * [http://www.rtems.com/ RTEMS]
 
-= Ссылки =
-
-[http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html GCC inline assembly how-to]
-- как делать ассемблерные вставки в GCC
-
-[http://www.microwindows.org microwindows.org]
-- Nano-X Window System
-
-[http://www.gnu.org/software/grub GRUB]
-- GRand Unified Bootloader
-
-[http://www.geocities.com/lode_leroy/grubinstall/ GRUB installer for windows]
-- утилита для установки загрузчика GRUB из Windows
-
-[ftp://ftp.freebsd.org/pub/FreeBSD/tools/fdimage.exe fdimage.exe]
-- утилита записи образа дискеты
-
-[http://e2fsprogs.sourceforge.net/ext2intro.html Design and Implementation of the Second Extended Filesystem]
-- хорошее описание файловой системы EXT2
-
-[http://libusb.sourceforge.net/ libusb]
-- библиотека для доступа к USB-устройствам
-
-[http://www.embedded.com/201200638;jsessionid=HFEH2LTUK30W4QSNDLRSKH0CJUNN2JVN?printable=true The basics of programming embedded processors: Part 1]
+= Полезные статьи =
+ * [http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html GCC inline assembly how-to] - как делать ассемблерные вставки в GCC
+ * [http://www.microwindows.org microwindows.org] - Nano-X Window System
+ * [http://www.gnu.org/software/grub GRUB] - GRand Unified Bootloader
+ * [http://www.geocities.com/lode_leroy/grubinstall/ GRUB installer for windows] - утилита для установки загрузчика GRUB из Windows
+ * [ftp://ftp.freebsd.org/pub/FreeBSD/tools/fdimage.exe fdimage.exe] - утилита записи образа дискеты
+ * [http://e2fsprogs.sourceforge.net/ext2intro.html Design and Implementation of the Second Extended Filesystem] - хорошее описание файловой системы EXT2
+ * [http://libusb.sourceforge.net/ libusb] - библиотека для доступа к USB-устройствам
+ * [http://www.embedded.com/201200638;jsessionid=HFEH2LTUK30W4QSNDLRSKH0CJUNN2JVN?printable=true The basics of programming embedded processors: Part 1]
