@@ -1,5 +1,7 @@
-[about]
+In English:
+ * [about About]
 
-[about_ru]
-[download_ru]
-[links_ru]
+На русском:
+ * [about_ru    О проекте]
+ * [download_ru Файлы]
+ * [links_ru    Ссылки]
