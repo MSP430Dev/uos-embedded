@@ -3,6 +3,10 @@ uOS is a portable well-scalable operating system for embedded real-time
 systems. uOS is free software ([license GPL with extension]) and intended
 for commercial applications.
 
+Project files could be downloaded [download_ru from here] (page in Russian, sorry).
+
+Documentation is located [docs_ru here] (in Russian, not finished yet).
+
 == Key features of uOS ==
   * Excellent hardware scalability: from 8-bit microcontrollers with 16 kilobytes ROM and 2 kilobytes RAM to weighty 32-bit microprocessors.
   * Low footprint and performance overhead: core runtime module requires only 2 kilobytes ROM and 200 bytes RAM.

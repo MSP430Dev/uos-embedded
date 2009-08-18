@@ -1,0 +1,18 @@
+#summary Documentation
+
+= Описание операционной системы uOS =
+_(в процессе разработки)_
+ * [kernel_ru Ядро системы]
+ * [modules_ru Базовые модули]
+ * Системная библиотека
+ * Дополнительные модули
+ * [project_ru Установка uOS и создание проекта]
+ * [porting_ru Перенос на другие архитектуры]
+ * [eclipse_ru Среда разработки Eclipse]
+
+= Дополнительные материалы =
+ * [coding_style_ru Стиль кодирования] для проекта uOS.
+ * Установка GCC для архитектур [gcc_avr_ru Atmel AVR], [gcc_arm_ru ARM], [gcc_mipsel_ru MIPS32], [gcc_msp430_ru MSP430], [gcc_intel_ru Intel 386/Pentium].
+ * [future_plans_ru Мысли] по поводу следующей версии.
+ * [screenshots Пример графической системы] на процессоре i386 с оконным интерфейсом Nano-X.
+ * [http://uos-embedded.googlecode.com/files/nanox-refman-2004-07-24.pdf nanox-refman-2004-07-24.pdf] - документация для Nano-X версии 0.91.
