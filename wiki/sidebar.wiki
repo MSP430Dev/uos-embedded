@@ -1,8 +1,8 @@
 In English:
- * [about       About]
- * [screenshots Screenshots]
+  * [about       About]
+  * [screenshots Screenshots]
 
 На русском:
- * [about_ru    О проекте]
- * [download_ru Файлы]
- * [links_ru    Ссылки]
+  * [about_ru    О проекте]
+  * [download_ru Файлы]
+  * [links_ru    Ссылки]
