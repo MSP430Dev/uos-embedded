@@ -1,8 +1,7 @@
 #summary Downloads
 
 = Исходные тексты uOS =
- * [http://uos-embedded.googlecode.com/files/uos-2009-08.tgz uos-2009-08.tgz]
-- версия 2009-08.
+ * [http://uos-embedded.googlecode.com/files/uos-2009-08.tgz uos-2009-08.tgz] - версия 2009-08.
 
 = Компиляторы =
 Распаковывать в каталоге /usr/local. Для Cygwin это обычно `C:\Cygwin\usr\local`.
