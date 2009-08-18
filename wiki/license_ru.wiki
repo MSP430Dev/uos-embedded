@@ -1,6 +1,7 @@
 #summary uOS licence: GPL with an extension
 
 = Условия распространения uOS =
+
 Операционная система uOS является свободным программным обеспечением.
 Она распространяется на условиях
 [http://www.infolex.narod.ru/gpl_gnu/gplrus.html лицензии GPL],

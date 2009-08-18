@@ -1,5 +1,0 @@
-#summary Runtime library
-
-= Системная библиотека =
-
-_(TODO)_
