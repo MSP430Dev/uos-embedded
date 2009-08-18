@@ -1,6 +1,7 @@
 #summary Links
 
 = Другие встраиваемые операционные системы =
+
 [http://microcross.com/html/uc_os-ii.html uC/OS-II]
 - embedded operating system
 
@@ -13,19 +14,28 @@
 [http://scmrtos.sourceforge.net/ scmRTOS]
 - embedded operating system
 
+
 = Ссылки =
-[http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html GCC inline assembly how-to] - как делать ассемблерные вставки в GCC
 
-[http://www.microwindows.org microwindows.org] - Nano-X Window System
+[http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html GCC inline assembly how-to]
+- как делать ассемблерные вставки в GCC
 
-[http://www.gnu.org/software/grub GRUB] - GRand Unified Bootloader
+[http://www.microwindows.org microwindows.org]
+- Nano-X Window System
 
-[http://www.geocities.com/lode_leroy/grubinstall/ GRUB installer for windows] - утилита для установки загрузчика GRUB из Windows
+[http://www.gnu.org/software/grub GRUB]
+- GRand Unified Bootloader
 
-[ftp://ftp.freebsd.org/pub/FreeBSD/tools/fdimage.exe fdimage.exe] - утилита записи образа дискеты
+[http://www.geocities.com/lode_leroy/grubinstall/ GRUB installer for windows]
+- утилита для установки загрузчика GRUB из Windows
 
-[http://e2fsprogs.sourceforge.net/ext2intro.html Design and Implementation of the Second Extended Filesystem] - хорошее описание файловой системы EXT2
+[ftp://ftp.freebsd.org/pub/FreeBSD/tools/fdimage.exe fdimage.exe]
+- утилита записи образа дискеты
 
-[http://libusb.sourceforge.net/ libusb] - библиотека для доступа к USB-устройствам
+[http://e2fsprogs.sourceforge.net/ext2intro.html Design and Implementation of the Second Extended Filesystem]
+- хорошее описание файловой системы EXT2
+
+[http://libusb.sourceforge.net/ libusb]
+- библиотека для доступа к USB-устройствам
 
 [http://www.embedded.com/201200638;jsessionid=HFEH2LTUK30W4QSNDLRSKH0CJUNN2JVN?printable=true The basics of programming embedded processors: Part 1]

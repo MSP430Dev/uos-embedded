@@ -1,28 +1,28 @@
 = uOS Operating System for Embedded Applications =
-uOS is a portable well-scalable operating system for embedded real-time systems. uOS is free software (GPL with extension) and intended for commercial applications.
+uOS is a portable well-scalable operating system for embedded real-time
+systems. uOS is free software ([license GPL with extension]) and intended
+for commercial applications.
 
 == Key features of uOS ==
   * Excellent hardware scalability: from 8-bit microcontrollers with 16 kilobytes ROM and 2 kilobytes RAM to weighty 32-bit microprocessors.
-  * Low size and performance overhead: core OS requires 2 kilobytes ROM and 200 bytes RAM.
+  * Low footprint and performance overhead: core runtime module requires only 2 kilobytes ROM and 200 bytes RAM.
   * Modular approach: set of involved modules (drivers, memory manager, network stacks) can be extended according to the specific field of application.
   * Nice portability. One of the latest job performed - porting to MIPS32 platform - took 1 man/month.
-  * Infinite number of tasks, priorities and resources.
-
-During development main emphasis was done on inner simplicity and effectiveness. The microkernel consist of approximately 1500 lines of code. Core algorithms are easy to read and support.
 
 == Supported architectures ==
-  * ARM: Samsung S3C4530A, ARM and Thumb modes.
+  * Atmel AVR.
+  * ARM: Samsung S3C4530A, Atmel AT91SAM7 and AT91SAM9. ARM and Thumb modes.
   * MIPS32: Elvees MC-24.
-  * Atmel AVR: ATmega128, ATmega2561, ATmega103, ATmega161.
   * Intel i386: PC-compatible computers with PCI bus and VESA video. Grub 0.97 is used.
-  * over Linux Kernel API (i386 x 32), with TCP/IP support. Useful for debugging of platform-independent part of system being developed: data processing algorithms, memory management, networking protocols.
+  * Linux386: virtual machine, with TCP/IP support. Useful for debugging of platform-independent part of system being developed: data processing algorithms, memory management, networking protocols.
 
 == uOS charaсteristics ==
   * Preemptive multitasking
   * Practically no limitation for number of tasks and priorities
-  * Unified synchronization object "resource", analogue of mutex and mailbox, for tasks and interrupts
-  * Priority inheritance
+  * Unified synchronization object "mutex", extended with message passing functionality
+  * Hardware interrupts implemented as messages
   * Opportunity of using "fast" interrupt handling, without involving synchronization objects
+  * Priority inheritance
   * Simplicity and extendability due to modular architecture
   * Stack overflow detection
   * Ready to use TCP/IP stack including Telnet and NNTP

@@ -2,11 +2,7 @@
 
 = Eclipse =
 
-Предполагается разработать для [http://www.eclipse.org/ Eclipse] пакет поддержки разработки и отладки встраиваемых uOS-систем. 
-
-Существует похожий открытый проект [http://sourceforge.net/projects/avr-eclipse AVR-Eclipse], опыт (и коды) которого можно взять за основу.
-
-Эклипс представляет собой "конструктор", состоящий из отдельных пакетов, интегрируемых в общую систему, в соответствии с потребностями разработчика. Для uOS требуются следущие пакеты:
+[http://www.eclipse.org/ Eclipse] представляет собой "конструктор", состоящий из отдельных пакетов, интегрируемых в общую систему, в соответствии с потребностями разработчика. Для uOS требуются следущие пакеты:
  * [http://www.eclipse.org/platform/ Платформа Эклипс] как текстовый редактор и управление проектами.
  * [http://www.eclipse.org/cdt/ CDT] - C/C++ Development Tools - средства разработки для языков Си и Си++.
  * [http://www.eclipse.org/dsdp/tm/ TM] - Target Management - управление целевой платформой. Он же RSE - Remote System Explorer. [http://wiki.eclipse.org/TM_and_RSE_FAQ TM и RSE в вопросах и ответах].
@@ -14,10 +10,11 @@
 
 = Ссылки =
 
-  * [http://www.eclipse.org/home/categories/embedded_device.php Страница о разработке встроенных систем] на сайте eclipse.org.
-  * [http://wiki.eclipse.org/Main_Page Eclipse Wiki].
-  * Статья Брайана Хэдли [http://opensource.sys-con.com/node/400929 "A Low-Cost Cross-Development Environment Using the Eclipse Framework"]. Она же в [http://www.macraigor.com/downloads/Macraigor_with_Eclipse.pdf формате PDF]. Она же [http://www.eetasia.com/ARTICLES/2007JUN/PDF/EEOL_2007JUN01_EMS_INTD_TA.pdf в журнале EE Times-Asia].
+ * [http://www.eclipse.org/home/categories/embedded_device.php Страница о разработке встроенных систем] на сайте eclipse.org.
+ * [http://wiki.eclipse.org/Main_Page Eclipse Wiki].
+ * Статья Брайана Хэдли [http://opensource.sys-con.com/node/400929 "A Low-Cost Cross-Development Environment Using the Eclipse Framework"]. Она же в [http://www.macraigor.com/downloads/Macraigor_with_Eclipse.pdf формате PDF]. Она же [http://www.eetasia.com/ARTICLES/2007JUN/PDF/EEOL_2007JUN01_EMS_INTD_TA.pdf в журнале EE Times-Asia].
  * [http://msp430.techcontent.net/wiki/index.php/IDEs/EclipseTutor Пример установки Эклипс c MSPGCC].
+ * Открытый проект [http://sourceforge.net/projects/avr-eclipse AVR-Eclipse].
  * Статья на русском: [http://netsago.org/ru/docs/1/13/ Разработка на C/C++ в Eclipse IDE].
  * Статья на русском: [http://www.ibm.com/developerworks/ru/library/os-ecl-vscdt/index.html Перенос разработок Visual Studio C и C++ в Eclipse CDT].
  * Статья на русском: [http://www.ibm.com/developerworks/ru/library/os-eclipse-snippet/index.html Создаем расширение для Eclipse: шаг за шагом].

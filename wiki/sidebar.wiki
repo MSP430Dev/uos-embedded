@@ -1,0 +1,5 @@
+[about]
+
+[about_ru]
+[download_ru]
+[links_ru]

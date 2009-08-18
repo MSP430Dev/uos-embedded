@@ -1,0 +1,34 @@
+#summary uOS licence: GPL with an extension
+
+= uOS License =
+
+uOS is free software; you can redistribute it and/or modify it under terms of the
+[http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU General Public License]
+as published by the Free Software Foundation; either version 2, or (at your option) any
+later version.  uOS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+As a special exception, including uOS header files in a file,
+instantiating uOS generics or templates, or linking other files
+with uOS objects to produce an executable application, does not
+by itself cause the resulting executable application to be covered
+by the GNU General Public License. This exception does not
+however invalidate any other reasons why the executable file might be
+covered by the GNU Public License.
+
+The license does not require users to release the source code of any
+applications that are developed with uOS. However, if anybody makes
+any changes to code covered by the uOS license, or writes new files
+derived in any way from uOS code, then we believe that the entire user
+community should have the opportunity to benefit from this. The license
+stipulates that these changes must be made available in source code form
+to all recipients of binaries based on the modified code.
+
+Although it is not strictly necessary to contribute the modified code
+back to the uOS open source project, we are always pleased to receive
+code contributions and hope that developers will also be keen to give
+back in return for what they received from the uOS project completely
+free of charge. The uOS maintainers are responsible for deciding whether
+such contributions should be applied to the public repository.
