@@ -1,5 +1,6 @@
 In English:
- * [about About]
+ * [about       About]
+ * [screenshots Screenshots]
 
 На русском:
  * [about_ru    О проекте]

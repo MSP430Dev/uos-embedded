@@ -1,0 +1,7 @@
+#summary Screenshots of uOS and Nano-X
+
+= uOS & Nano-X =
+uOS on Pentium with Nano-X window interface.
+A set of Nano-X examples is running.
+
+[http://uos-embedded.googlecode.com/svn/wiki/images/nanomix.gif]
