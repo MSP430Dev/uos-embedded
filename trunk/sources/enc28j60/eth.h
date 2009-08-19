@@ -18,10 +18,8 @@ typedef struct _enc28j60_t {
 	unsigned bank;			/* current bank of chip registers */
 	unsigned next_packet_ptr;	/* next receive packet address */
 
-	unsigned char stack [ENC28J60_STACKSZ];	/* task receive stack */
+	ARRAY (stack, ENC28J60_STACKSZ); /* stack for interrupt task */
 } enc28j60_t;
 
-void enc28j60_init (enc28j60_t *u, const char *name, int prio, struct _mem_pool_t *pool,
-	arp_t *arp, const char *macaddr);
-void enc28j60_poll (enc28j60_t *u);
-bool_t enc28j60_probe (void);
+void enc28j60_init (enc28j60_t *u, const char *name, int prio,
+	struct _mem_pool_t *pool, arp_t *arp);
