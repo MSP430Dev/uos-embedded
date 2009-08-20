@@ -5,7 +5,7 @@
  * Copyright (C) 2009 ELVEES
  *
  * Created: 05.08.2009
- * Last modify: 19.08.2009
+ * Last modify: 20.08.2009
  */
 
 #include <runtime/lib.h>
@@ -77,29 +77,25 @@ typedef struct {
 	uint32_t clk; 		/* Transfer speed (CLK/4  CLK/8) */
 	uint32_t size; 		/* Transfer size (4 or 8) */
 	uint32_t verify;
+	uint32_t recv;
+	uint32_t send;
 } lport_config_t;
 
 void menu (void);
 void main_console (void *data);
 
 /* Menu for start test LP0,LP1 with DMA */
-void menu_dma01 (void);
-/* Menu for start test LP2,LP3 with DMA */
-void menu_dma23 (void);
+void menu_dma (void);
 
 /* Start one of LPORT's tests for the pair of memory without DMA */
-uint32_t check_lport01_ram (char from, char to, uint32_t check);
-uint32_t check_lport23_ram (char from, char to, uint32_t check);
+uint32_t check_lport_ram (char from, char to, uint32_t check);
 /* Start one of LPORT's tests for the pair of memory with DMA */
-uint32_t check_lport01_dma (char from, char to, uint32_t check);
-uint32_t check_lport23_dma (char from, char to, uint32_t check);
+uint32_t check_lport_dma (char from, char to, uint32_t check);
 
 /* LPORT's tests for the pair of memory without DMA */
-void test_lport01_ram (void);
-void test_lport23_ram (void);
+void test_lport_ram (void);
 /* LPORT's tests for the pair of memory with DMA */
-void test_lport01_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t test_num);
-void test_lport23_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t test_num);
+void test_lport_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t test_num);
 
 /* Test all */
 void test_complex (void);
@@ -202,7 +198,7 @@ setup_dma_chain (dma_chain_t *chain, void *addr, uint32_t word_count, dma_chain_
  * Установка цепочки DMA и запуск DMA
  */
 void 
-test_lport01_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t test_num)
+test_lport_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t test_num)
 {
 	uint32_t *target_memory = 0;
 	uint32_t *source_memory = 0;
@@ -231,94 +227,18 @@ test_lport01_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t t
 
 	udelay (6);
 
-	MC_CP_LPCH(1) = (((uint32_t)&lport1_chain) & (0x1FFFFFFC)) | 0x80000000;
-	MC_CP_LPCH(0) = (((uint32_t)&lport0_chain) & (0x1FFFFFFC)) | 0x80000000;
+	MC_CP_LPCH(lport_config.send) = (((uint32_t)&lport1_chain) & (0x1FFFFFFC)) | 0x80000000;
+	MC_CP_LPCH(lport_config.recv) = (((uint32_t)&lport0_chain) & (0x1FFFFFFC)) | 0x80000000;
 
-	if (lport_config.dir == 0) {
-		MC_LCSR (1) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) | 
-			(lport_config.size << MC_LCSR_LDW) | 
-			(1 << MC_LCSR_LEN);
+	MC_LCSR (lport_config.recv) = (0 << MC_LCSR_LTRAN) |
+		(lport_config.clk << MC_LCSR_LCLK_RATE) | 
+		(lport_config.size << MC_LCSR_LDW) | 
+		(1 << MC_LCSR_LEN);
 
-		MC_LCSR (0) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-	else {
-		MC_LCSR (0) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (1) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-}
-
-/**\~english
- * Setup DMA chain and run DMA
- *
- * \~russian
- * Установка цепочки DMA и запуск DMA
- */
-void
-test_lport23_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t test_num)
-{
-	uint32_t *target_memory = 0;
-	uint32_t *source_memory = 0;
-
-	if (from == CRAM)
-		source_memory = in_array_cram;
-	if (from == SRAM)
-		source_memory = in_array_sram;
-	if (from == SDRAM)
-		source_memory = in_array_sdram;
-
-	if (to == CRAM)
-		target_memory = out_array_cram;
-	if (to == SRAM)
-		target_memory = out_array_sram;
-	if (to == SDRAM)
-		target_memory = out_array_sdram;
-
-	prepare_test_array (source_memory, block_size, test_num);
-
-	setup_dma_chain (&lport2_chain, source_memory, block_size, 0);
-	setup_dma_chain (&lport3_chain, target_memory, block_size, 0);
-
-	(*dst) = target_memory;
-	(*src) = source_memory;
-
-	udelay (6);
-
-	MC_CP_LPCH(3) = (((uint32_t)&lport3_chain) & (0x1FFFFFFC)) | 0x80000000;
-	MC_CP_LPCH(2) = (((uint32_t)&lport2_chain) & (0x1FFFFFFC)) | 0x80000000;
-
-	if (lport_config.dir == 0) {
-		MC_LCSR (3) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) | 
-			(lport_config.size << MC_LCSR_LDW) | 
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (2) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-	else {
-		MC_LCSR (2) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (3) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
+	MC_LCSR (lport_config.send) = (1 << MC_LCSR_LTRAN) |
+		(lport_config.clk << MC_LCSR_LCLK_RATE) |
+		(lport_config.size << MC_LCSR_LDW) |
+		(1 << MC_LCSR_LEN);
 }
 
 /**\~english
@@ -328,7 +248,7 @@ test_lport23_dma (uint32_t **src, uint32_t **dst, char from, char to, uint32_t t
  * Выбор пары памятей и запуск теста с использованием DMA через LP0-LP1
  */
 void
-menu_dma01 (void)
+menu_dma (void)
 {
 	uint32_t check;
 	char from;
@@ -364,7 +284,7 @@ try_again:
 
 	for (;;) {
 		for (check=0; check<TEST_COUNT; check++) {
-			error_count = check_lport01_dma (from, to, check);
+			error_count = check_lport_dma (from, to, check);
 	
 			if (lport_config.verify == 1)
 				debug_printf ("Error count: %u\n", error_count);
@@ -395,87 +315,13 @@ try_again:
 }
 
 /**\~english
- * Select pair of memories and start test with DMA throught LP2-LP3
- *
- * \~russian
- * Выбор пары памятей и запуск теста с использованием DMA через LP2-LP3
- */
-void
-menu_dma23 (void)
-{
-	uint32_t check;
-	char from;
-	char to;
-	char cmd;
-	uint32_t error_count;
-	uint32_t cycle_count = 0;
-
-	debug_puts ("Select memories:\n\n");
-try_again:
-	debug_puts ("From: \n");
-	debug_puts ("1. CRAM\n");
-	debug_puts ("2. SRAM\n");
-	debug_puts ("3. SDRAM\n");
-
-	debug_puts ("Command: ");
-	from = debug_getchar ();
-	debug_printf ("%c\n", from);
-
-	debug_puts ("\n\n To :\n");
-	debug_puts ("1. CRAM\n");
-	debug_puts ("2. SRAM\n");
-	debug_puts ("3. SDRAM\n");
-
-	debug_puts ("Command: ");
-	to = debug_getchar ();
-	debug_printf ("%c\n", to);
-
-	if ((from > SDRAM) || (from < CRAM) || (to > SDRAM) || (to < CRAM)) {
-		debug_puts ("Wrong input! Try again!\n\n");
-		goto try_again;
-	}
-	
-	for (;;) {
-		for (check=0; check<TEST_COUNT; check++) {
-			error_count = check_lport23_dma (from, to, check);
-			
-			if (lport_config.verify == 1)
-				debug_printf ("Error count: %u\n", error_count);
-			else {
-				if ((cycle_count%CYCLE_RATE)==0)
-					debug_printf ("Cycle count: %u Error count: %u\r", cycle_count, error_count);
-				++cycle_count;
-			}
-
-			if (lport_config.verify == 1) {
-				debug_puts ("Press any key to continue or 'q' to exit...\n");
-				cmd = debug_getchar();
-				if (cmd == 'q' || cmd == 'Q')
-					return;
-			}
-		}
-
-		cmd = debug_peekchar ();
-
-		if (lport_config.verify == 1) 
-			return;
-
-		if (cmd != -1) {
-			debug_getchar ();
-			return;
-		}
-		
-	}
-}
-
-/**\~english
  * Start test without DMA throught LP0-LP1
  *
  * \~russian
  * Запуск теста без использования DMA через LP0-LP1
  */
 uint32_t 
-check_lport01_ram (char from, char to, uint32_t check)
+check_lport_ram (char from, char to, uint32_t check)
 {
 	uint32_t *start_mem_read = 0;
 	uint32_t *start_mem_write = 0;
@@ -504,69 +350,13 @@ check_lport01_ram (char from, char to, uint32_t check)
 		
 		send = *(volatile uint32_t*) (start_mem_read + idx);
 
-		MC_LTX (0) = send;
+		MC_LTX (lport_config.send) = send;
 
 		if (lport_config.verify == 1)
 	                debug_printf ("Send 0x%08X\t", send);
 
-	        while (!((MC_LCSR (1)) & 0x10));
-        	recv = MC_LRX (1);
-
-		*(volatile uint32_t*) (start_mem_write + idx) = recv;
-
-		if (recv != send) {
-			error_counter++;
-		}
-		if (lport_config.verify == 1)
-	                debug_printf ("Receive 0x%08X\n", recv);
-        }
-
-	return error_counter;
-}
-
-/**\~english
- * Start test without DMA throught LP2-LP3
- *
- * \~russian
- * Запуск теста без использования DMA через LP2-LP3
- */
-uint32_t 
-check_lport23_ram (char from, char to, uint32_t check)
-{
-	uint32_t *start_mem_read = 0;
-	uint32_t *start_mem_write = 0;
-	uint32_t idx;
-	uint32_t recv,send;
-	uint32_t error_counter;
-	
-	if (from == CRAM)
-		start_mem_read = in_array_cram;
-	if (from == SRAM)
-		start_mem_read = in_array_sram;
-	if (from == SDRAM)
-                start_mem_read = in_array_sdram;
-
-	if (to == CRAM)
-                start_mem_write = out_array_cram;
-        if (to == SRAM)
-                start_mem_write = out_array_sram;
-        if (to == SDRAM)
-                start_mem_write = out_array_sdram;
-
-	prepare_test_array (start_mem_read, block_size, check);
-
-	error_counter = 0;
-        for (idx=0; idx<block_size; idx++) {
-		
-		send = *(volatile uint32_t*) (start_mem_read + idx);
-
-		MC_LTX (2) = send;
-
-		if (lport_config.verify == 1)
-	                debug_printf ("Send 0x%08X\t", send);
-
-	        while (!((MC_LCSR (3)) & 0x10));
-        	recv = MC_LRX (3);
+	        while (!((MC_LCSR (lport_config.recv)) & 0x10));
+        	recv = MC_LRX (lport_config.recv);
 
 		*(volatile uint32_t*) (start_mem_write + idx) = recv;
 
@@ -587,7 +377,7 @@ check_lport23_ram (char from, char to, uint32_t check)
  * Подготовка входных данных для теста и проверка результата
  */
 uint32_t 
-check_lport01_dma (char from, char to, uint32_t check)
+check_lport_dma (char from, char to, uint32_t check)
 {
         uint32_t idx;
         uint32_t error_counter = 0;
@@ -596,38 +386,7 @@ check_lport01_dma (char from, char to, uint32_t check)
 
 	test_lport01_dma (&in, &out, from, to, check);
 
-	while( !(MC_CSR_LPCH(1) & 0x8000) );
-
-	if (lport_config.verify == 1)
-		for (idx = 0; idx < block_size; idx++) {
-			debug_printf ("Send 0x%08X Receive 0x%08X\n", in[idx], out[idx]);
-		}
-
-	for (idx = 0; idx < block_size; idx++) {
-		if (in[idx] != out[idx])
-			error_counter++;
-	}
-
-	return error_counter;
-}
-
-/**\~english
- * Prepare input data for test and check result
- *
- * \~russian
- * Подготовка входных данных для теста и проверка результата
- */
-uint32_t 
-check_lport23_dma (char from, char to, uint32_t check)
-{
-        uint32_t idx;
-        uint32_t error_counter = 0;
-	uint32_t *in = 0;
-	uint32_t *out = 0;
-
-	test_lport23_dma (&in, &out, from, to, check);
-
-	while( !(MC_CSR_LPCH(3) & 0x8000) );
+	while( !(MC_CSR_LPCH(lport_config.recv) & 0x8000) );
 
 	if (lport_config.verify == 1)
 		for (idx = 0; idx < block_size; idx++) {
@@ -649,7 +408,7 @@ check_lport23_dma (char from, char to, uint32_t check)
  * Выбираем пару памятей и запуск теста без DMA через LP0-LP1
  */
 void 
-test_lport01_ram (void)
+test_lport_ram (void)
 {
 	char from, to;
 	uint32_t idx;
@@ -657,28 +416,15 @@ test_lport01_ram (void)
 	uint32_t error_count;
 	uint32_t cycle_count = 0;	
 
-	if (lport_config.dir == 0) {
-		MC_LCSR (1) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) | 
-			(lport_config.size << MC_LCSR_LDW) | 
-			(1 << MC_LCSR_LEN);
+	MC_LCSR (lport_config.recv) = (0 << MC_LCSR_LTRAN) |
+		(lport_config.clk << MC_LCSR_LCLK_RATE) | 
+		(lport_config.size << MC_LCSR_LDW) | 
+		(1 << MC_LCSR_LEN);
 
-		MC_LCSR (0) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-	else {
-		MC_LCSR (0) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (1) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
+	MC_LCSR (lport_config.send) = (1 << MC_LCSR_LTRAN) |
+		(lport_config.clk << MC_LCSR_LCLK_RATE) |
+		(lport_config.size << MC_LCSR_LDW) |
+		(1 << MC_LCSR_LEN);
 
 	debug_puts ("\n\nTesting LPort0 <=> LPort1\n");
 try_again:
@@ -707,7 +453,7 @@ try_again:
 
 	for (;;) {
 		for (idx=0; idx<TEST_COUNT; idx++) {
-			error_count = check_lport01_ram (from, to, idx);
+			error_count = check_lport_ram (from, to, idx);
 
 			if (lport_config.verify == 1)
 				debug_printf ("Error count: %u\n", error_count);
@@ -725,100 +471,6 @@ try_again:
 			}
 		}
 		
-		cmd = debug_peekchar ();
-
-		if (lport_config.verify == 1) 
-			return;
-
-		if (cmd != -1) {
-			debug_getchar ();
-			return;
-		}
-	}
-}
-
-/**\~english
- * Select pair of memories and start test without DMA throught LP2-LP3
- *
- * \~russian
- * Выбираем пару памятей и запуск теста без DMA через LP2-LP3
- */
-void 
-test_lport23_ram (void)
-{
-	char from, to;
-	uint32_t idx;
-	uint32_t cmd;
-	uint32_t error_count;
-	uint32_t cycle_count = 0;
-
-	if (lport_config.dir == 0) {
-		MC_LCSR (3) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) | 
-			(lport_config.size << MC_LCSR_LDW) | 
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (2) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-	else {
-		MC_LCSR (2) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (3) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-
-	debug_puts ("\n\nTesting LPort2 <=> LPort3\n");
-try_again:
-	debug_puts ("From: \n");
-	debug_puts ("1. CRAM\n");
-	debug_puts ("2. SRAM\n");
-	debug_puts ("3. SDRAM\n");
-
-	debug_puts ("Command: ");
-	from = debug_getchar ();
-	debug_printf ("%c\n", from);
-
-	debug_puts ("\n\n To :\n");
-	debug_puts ("1. CRAM\n");
-	debug_puts ("2. SRAM\n");
-	debug_puts ("3. SDRAM\n");
-
-	debug_puts ("Command: ");
-	to = debug_getchar ();
-	debug_printf ("%c\n", to);
-
-	if ((from > SDRAM) || (from < CRAM) || (to > SDRAM) || (to < CRAM)) {
-		debug_puts ("Wrong input! Try again!\n\n");
-		goto try_again;
-	}
-
-	for (;;) {
-		for (idx=0; idx<TEST_COUNT; idx++) {
-			error_count = check_lport23_ram (from, to, idx);
-
-			if (lport_config.verify == 1)
-				debug_printf ("Error count: %u\n", error_count);
-			else {
-				if ((cycle_count%CYCLE_RATE)==0)
-					debug_printf ("Cycle count: %u Error count: %u\r", cycle_count, error_count);
-				++cycle_count;
-			}
-
-			if (lport_config.verify == 1) {
-				debug_puts ("Press any key to continue or 'q' to exit...\n");
-				cmd = debug_getchar();
-				if (cmd == 'q' || cmd == 'Q')
-					return;
-			}
-		}
 		cmd = debug_peekchar ();
 
 		if (lport_config.verify == 1) 
@@ -848,51 +500,15 @@ test_complex (void)
 	uint32_t error_count_total = 0;
 	uint32_t cycle_count = 0;
 
-	if (lport_config.dir == 0) {
-		MC_LCSR (1) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) | 
-			(lport_config.size << MC_LCSR_LDW) | 
-			(1 << MC_LCSR_LEN);
+	MC_LCSR (lport_config.recv) = (0 << MC_LCSR_LTRAN) |
+		(lport_config.clk << MC_LCSR_LCLK_RATE) | 
+		(lport_config.size << MC_LCSR_LDW) | 
+		(1 << MC_LCSR_LEN);
 
-		MC_LCSR (0) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-	else {
-		MC_LCSR (0) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (1) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-
-	if (lport_config.dir == 0) {
-		MC_LCSR (3) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) | 
-			(lport_config.size << MC_LCSR_LDW) | 
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (2) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
-	else {
-		MC_LCSR (2) = (lport_config.dir << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-
-		MC_LCSR (3) = ((!lport_config.dir) << MC_LCSR_LTRAN) |
-			(lport_config.clk << MC_LCSR_LCLK_RATE) |
-			(lport_config.size << MC_LCSR_LDW) |
-			(1 << MC_LCSR_LEN);
-	}
+	MC_LCSR (lport_config.send) = (1 << MC_LCSR_LTRAN) |
+		(lport_config.clk << MC_LCSR_LCLK_RATE) |
+		(lport_config.size << MC_LCSR_LDW) |
+		(1 << MC_LCSR_LEN);
 
 	for (;;) {
 		for (idx=0; idx<TEST_COUNT; idx++) {
@@ -922,10 +538,7 @@ test_complex (void)
 								debug_puts ("LP2<=>LP3\n");
 						}
 
-						if (lport_config.pair == 0)
-							error_count += check_lport01_ram (mem_y, mem_x, idx);
-						else
-							error_count += check_lport23_ram (mem_y, mem_x, idx);
+						error_count += check_lport_ram (mem_y, mem_x, idx);
 
 						if (lport_config.verify == 1) {
 							debug_puts ("Press any key to continue or 'q' to exit...\n");
@@ -962,10 +575,7 @@ test_complex (void)
 								debug_puts ("LP2<=>LP3\n");
 						}
 
-						if (lport_config.pair == 0)
-							error_count += check_lport01_dma (mem_y, mem_x, idx);
-						else
-							error_count += check_lport23_dma (mem_y, mem_x, idx);
+						error_count += check_lport_dma (mem_y, mem_x, idx);
 
 						if (lport_config.verify == 1) {
 							debug_puts ("Press any key to continue or 'q' to exit...\n");
@@ -1076,11 +686,30 @@ menu(void)
 		cmd = debug_getchar ();
 		debug_printf ("%c\n", cmd);
 
-		if (cmd == '1')
+		if (cmd == '1') {
 			lport_config.pair = 0;
 
-		if (cmd == '2')
+			if (lport_config.dir == 0) {
+				lport_config.send = 0;
+				lport_config.recv = 1;
+			}
+			else {
+				lport_config.send = 1;
+				lport_config.recv = 0;
+			}
+		}
+
+		if (cmd == '2') {
 			lport_config.pair = 1;
+			if (lport_config.dir == 0) {
+				lport_config.send = 2;
+				lport_config.recv = 3;
+			}
+			else {
+				lport_config.send = 3;
+				lport_config.recv = 2;
+			}
+		}
 
 		cmd = 0;
 	}
@@ -1129,8 +758,29 @@ config:
 		cmd = debug_getchar ();
 		debug_printf ("%c\n", cmd);
 
-		if (cmd == '1')
+		if (cmd == '1') {
 			lport_config.dir = !lport_config.dir;
+			if (lport_config.pair == 0) {
+				if (lport_config.dir == 0) {
+					lport_config.send = 0;
+					lport_config.recv = 1;
+				}
+				else {
+					lport_config.send = 1;
+					lport_config.recv = 0;
+				}
+			}
+			else {
+				if (lport_config.dir == 0) {
+					lport_config.send = 2;
+					lport_config.recv = 3;
+				}
+				else {
+					lport_config.send = 3;
+					lport_config.recv = 2;
+				}
+			}
+		}
 
 		if (cmd == '2')
 			lport_config.dma = !lport_config.dma;
@@ -1227,21 +877,11 @@ config_finish:
 	}
 
 	if (cmd == '3') {
-		if (lport_config.pair == 0) {
-			if (lport_config.dma == 0) {
-				test_lport01_ram ();
-			}
-			else {
-				menu_dma01 ();
-			}
+		if (lport_config.dma == 0) {
+			test_lport_ram ();
 		}
 		else {
-			if (lport_config.dma == 0) {
-				test_lport23_ram ();
-			}
-			else {
-				menu_dma23 ();
-			}
+			menu_dma ();
 		}
 	}
 
@@ -1259,6 +899,8 @@ main_console (void *data)
 	lport_config.clk = 0;
 	lport_config.size = 0;
 	lport_config.verify = 0;
+	lport_config.send = 0;
+	lport_config.recv = 1;
 
 	for (;;)
 		menu ();
