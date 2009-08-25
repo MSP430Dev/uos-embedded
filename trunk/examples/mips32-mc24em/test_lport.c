@@ -384,7 +384,7 @@ check_lport_dma (char from, char to, uint32_t check)
 	uint32_t *in = 0;
 	uint32_t *out = 0;
 
-	test_lport01_dma (&in, &out, from, to, check);
+	test_lport_dma (&in, &out, from, to, check);
 
 	while( !(MC_CSR_LPCH(lport_config.recv) & 0x8000) );
 
