@@ -158,6 +158,9 @@ chip_write (enc28j60_t *u, unsigned address, unsigned data)
 	chip_write_op (ENC28J60_WRITE_CTRL_REG, address, data);
 }
 
+/*
+ * PHY register write
+ */
 static void
 chip_phy_write (enc28j60_t *u, unsigned address, unsigned data)
 {
@@ -169,6 +172,28 @@ chip_phy_write (enc28j60_t *u, unsigned address, unsigned data)
 	while (chip_read (u, MISTAT) & MISTAT_BUSY)
 		continue;
 }
+
+/*
+ * PHY register read
+ */
+static unsigned
+chip_phy_read (enc28j60_t *u, unsigned address)
+{
+	unsigned data;
+
+	chip_write (u, MIREGADR, address);
+	chip_write (u, MICMD, MICMD_MIIRD);
+
+	/* wait until the PHY read completes */
+	while (chip_read (u, MISTAT) & MISTAT_BUSY)
+		continue;
+
+	chip_write (u, MICMD, 0);
+	data = chip_read (priv, MIRDL);
+	data |= chip_read (priv, MIRDH) << 8;
+	return data;
+}
+
 
 static void
 chip_packet_send (enc28j60_t *u, unsigned len, unsigned char *packet)
@@ -502,8 +527,8 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_init_spi ();
 	u->bank = 0;
 
-	/* Set clock to 8.333MHz */
-	chip_write (u, ECOCON, 0x03);
+	/* Disable CLKOUT. */
+	chip_write (u, ECOCON, 0);
 
 	/* Perform system reset */
 	chip_write_op (ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
@@ -513,37 +538,40 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	while (! (chip_read (u, ESTAT) & ESTAT_CLKRDY))
 		continue;
 
-	/* Set LED configuration */
-/*	chip_phy_write (u, PHLCON, 0x3ba6);*/
+	/* Set LED configuration.
+	 * LEDA is yellow: duplex status and collision activity.
+	 * LEDB is green: link status and transmit/receive activity. */
+	chip_phy_write (u, PHLCON, 0x3ed6);
 
-	/* do bank 0 stuff
-	 * initialize receive buffer
-	 * 16-bit transfers, must write low byte first
-	 * set receive buffer start address */
+	/* Do bank 0 stuff.
+	 * 16-bit transfers, must write low byte first.
+	 * Set transmit buffer start.
+	 * ETXST defaults to 0x0000 (beginnging of RAM). */
+	chip_write (u, ETXSTL, TXSTART_INIT & 0xFF);
+	chip_write (u, ETXSTH, TXSTART_INIT >> 8);
+
+	/* Initialize receive buffer. */
 	u->next_packet_ptr = RXSTART_INIT;
 	chip_write (u, ERXSTL, RXSTART_INIT & 0xFF);
 	chip_write (u, ERXSTH, RXSTART_INIT >> 8);
 
-	/* set receive pointer address */
+	/* Set receive pointer. */
 	chip_write (u, ERXRDPTL, RXSTART_INIT & 0xFF);
 	chip_write (u, ERXRDPTH, RXSTART_INIT >> 8);
 
-	/* set receive buffer end
-	 * ERXND defaults to 0x1FFF (end of ram) */
+	/* Set receive buffer end.
+	 * ERXND defaults to 0x1FFF (end of RAM). */
 	chip_write (u, ERXNDL, RXSTOP_INIT & 0xFF);
 	chip_write (u, ERXNDH, RXSTOP_INIT >> 8);
 
-	/* set transmit buffer start
-	 * ETXST defaults to 0x0000 (beginnging of ram) */
-	chip_write (u, ETXSTL, TXSTART_INIT & 0xFF);
-	chip_write (u, ETXSTH, TXSTART_INIT >> 8);
-
 	/* do bank 2 stuff
 	 * enable MAC receive */
-	chip_write (u, MACON1, MACON1_MARXEN|MACON1_TXPAUS|MACON1_RXPAUS);
+	chip_write (u, MACON1,
+		MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS);
 
 	/* enable automatic padding and CRC operations */
-	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON3, MACON3_PADCFG0|MACON3_TXCRCEN|MACON3_FRMLNEN);
+	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON3,
+		MACON3_PADCFG0 | MACON3_TXCRCEN | MACON3_FRMLNEN);
 
 	/* set MACON 4 bits (necessary for half-duplex only) */
 /*	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON4, MACON4_DEFER);*/
