@@ -197,6 +197,14 @@
 #define	PHSTAT1_LLSTAT		0x0004
 #define	PHSTAT1_JBSTAT		0x0002
 
+/* ENC28J60 PHY PHSTAT2 Register Bit Definitions */
+#define	PHSTAT2_TXSTAT		0x2000
+#define	PHSTAT2_RXSTAT		0x1000
+#define	PHSTAT2_COLSTAT		0x0800
+#define	PHSTAT2_LSTAT		0x0400
+#define	PHSTAT2_DPXSTAT		0x0200
+#define	PHSTAT2_PLRITY		0x0010
+
 /* ENC28J60 PHY PHCON2 Register Bit Definitions */
 #define PHCON2_FRCLINK		0x4000
 #define PHCON2_TXDIS		0x2000
@@ -223,3 +231,18 @@
 #define TXSTART_INIT		0x0000	/* start TX buffer at 0 */
 #define RXSTART_INIT		0x0600	/* give TX buffer space for one full ethernet frame (~1500 bytes) */
 #define RXSTOP_INIT		0x1FFF	/* receive buffer gets the rest */
+
+/* ENC28J60 upper 16 bits of Receive Status Vector */
+#define RSV_RXLONGEVDROPEV	0x0001
+#define RSV_CARRIEREV		0x0004
+#define RSV_CRCERROR		0x0010
+#define RSV_LENCHECKERR		0x0020
+#define RSV_LENOUTOFRANGE	0x0040
+#define RSV_RXOK		0x0080
+#define RSV_RXMULTICAST		0x0100
+#define RSV_RXBROADCAST		0x0200
+#define RSV_DRIBBLENIBBLE	0x0400
+#define RSV_RXCONTROLFRAME	0x0800
+#define RSV_RXPAUSEFRAME	0x1000
+#define RSV_RXUNKNOWNOPCODE	0x2000
+#define RSV_RXTYPEVLAN		0x4000

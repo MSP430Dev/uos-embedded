@@ -17,11 +17,9 @@
 #include <enc28j60/eth.h>
 #include <enc28j60/regs.h>
 
-#ifdef UIP_CONF_BUFFER_SIZE
-#   define MAX_FRAMELEN		UIP_CONF_BUFFER_SIZE
-#else
-#   define MAX_FRAMELEN		1518	/* maximum ethernet frame length */
-#endif
+#define ETH_MTU			1518	/* maximum ethernet frame length */
+
+#define ETH_IRQ			0	/* TODO: interrupt vector */
 
 #define P2_ENIND		BIT1	/* Enable LEDs */
 #define P2_ENCLK		BIT4	/* Enable clock */
@@ -189,74 +187,67 @@ chip_phy_read (enc28j60_t *u, unsigned address)
 		continue;
 
 	chip_write (u, MICMD, 0);
-	data = chip_read (priv, MIRDL);
-	data |= chip_read (priv, MIRDH) << 8;
+	data = chip_read (u, MIRDL);
+	data |= chip_read (u, MIRDH) << 8;
 	return data;
 }
 
-
-static void
-chip_packet_send (enc28j60_t *u, unsigned len, unsigned char *packet)
+/*
+ * Should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained.
+ */
+bool_t
+enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
 {
-	/* Set the write pointer to start of transmit buffer area */
+	buf_t *q;
+	unsigned len;
+
+/*debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);*/
+	mutex_lock (&u->netif.lock);
+
+	/* Exit if link has failed */
+	if (p->tot_len < 4 || p->tot_len > ETH_MTU ||
+	    ! (chip_phy_read (u, PHSTAT2) & PHSTAT2_LSTAT)) {
+/*debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);*/
+		++u->netif.out_errors;
+		mutex_unlock (&u->netif.lock);
+		buf_free (p);
+		return 0;
+	}
+
+	/* Set the write pointer to start of transmit buffer area. */
 	chip_write (u, EWRPTL, TXSTART_INIT);
 	chip_write (u, EWRPTH, TXSTART_INIT>>8);
-	/* Set the TXND pointer to correspond to the packet size given */
-	chip_write (u, ETXNDL, (TXSTART_INIT+len));
-	chip_write (u, ETXNDH, (TXSTART_INIT+len)>>8);
 
-	/* write per-packet control byte */
+	/* Set the TXND pointer to correspond to the packet size given. */
+	len = p->tot_len;
+	if (len < 60)
+		len = 60;
+	chip_write (u, ETXNDL, (TXSTART_INIT + len));
+	chip_write (u, ETXNDH, (TXSTART_INIT + len) >> 8);
+
+	/* Write per-packet control byte. */
 	chip_write_op (ENC28J60_WRITE_BUF_MEM, 0, 0x00);
 
-	/* copy the packet into the transmit buffer */
-	chip_write_buffer (len, packet);
+	/* Send the data from the buf chain to the interface,
+	 * one buf at a time. The size of the data in each
+	 * buf is kept in the ->len variable. */
+	for (q=p; q; q=q->next) {
+		/* Copy the packet into the transmit buffer. */
+		assert (q->len > 0);
+		chip_write_buffer (q->len, q->payload);
+	}
 
-	/* send the contents of the transmit buffer onto the network */
+	/* Send the contents of the transmit buffer onto the network. */
 	chip_write_op (ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
-}
 
-static unsigned
-chip_packet_receive (enc28j60_t *u, unsigned maxlen, unsigned char *packet)
-{
-	unsigned rxstat, len;
+	++u->netif.out_packets;
+	u->netif.out_bytes += p->tot_len;
 
-	/* check if a packet has been received and buffered */
-	if (! chip_read (u, EPKTCNT))
-		return 0;
-
-	/* Set the read pointer to the start of the received packet */
-	chip_write (u, ERDPTL, (u->next_packet_ptr));
-	chip_write (u, ERDPTH, (u->next_packet_ptr)>>8);
-
-	/* read the next packet pointer */
-	u->next_packet_ptr  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
-	u->next_packet_ptr |= chip_read_op (ENC28J60_READ_BUF_MEM, 0)<<8;
-
-	/* read the packet length */
-	len  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
-	len |= chip_read_op (ENC28J60_READ_BUF_MEM, 0)<<8;
-
-	/* read the receive status */
-	rxstat  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
-	rxstat |= chip_read_op (ENC28J60_READ_BUF_MEM, 0)<<8;
-
-	/* limit retrieve length
-	 * (we reduce the MAC-reported length by 4 to remove the CRC) */
-	if (len > maxlen)
-		len = maxlen;
-
-	/* copy the packet from the receive buffer */
-	chip_read_buffer (len, packet);
-
-	/* Move the RX read pointer to the start of the next received packet
-	 * This frees the memory we just read out */
-	chip_write (u, ERXRDPTL, (u->next_packet_ptr));
-	chip_write (u, ERXRDPTH, (u->next_packet_ptr)>>8);
-
-	/* decrement the packet counter indicate we are done with this packet */
-	chip_write_op (ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
-
-	return len;
+	mutex_unlock (&u->netif.lock);
+	buf_free (p);
+	return 1;
 }
 
 static buf_t *
@@ -288,30 +279,36 @@ enc28j60_set_address (enc28j60_t *u, unsigned char *addr)
 	mutex_unlock (&u->netif.lock);
 }
 
-#if 0
 /*
  * Fetch and process the received packet from the network controller.
  */
 static void
 enc28j60_receive_data (enc28j60_t *u)
 {
-	unsigned len, event;
-	unsigned char *b, h;
+	unsigned len, rxstat;
 	buf_t *p;
 
-	/* Read and check RxEvent, expecting correctly received frame,
-	 * either broadcast or individual address */
-	event = cs_in (DATAREG);
-	len = cs_in (DATAREG);
-	if (! (event & RXE_OK) || len < 4 || len > ETH_MTU) {
+	/* Set the read pointer to the start of the received packet. */
+	chip_write (u, ERDPTL, (u->next_packet_ptr));
+	chip_write (u, ERDPTH, (u->next_packet_ptr)>>8);
+
+	/* Read the next packet pointer. */
+	u->next_packet_ptr  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
+	u->next_packet_ptr |= chip_read_op (ENC28J60_READ_BUF_MEM, 0) << 8;
+
+	/* Read the packet length. */
+	len  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
+	len |= chip_read_op (ENC28J60_READ_BUF_MEM, 0) << 8;
+
+	/* Read the receive status. */
+	rxstat  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
+	rxstat |= chip_read_op (ENC28J60_READ_BUF_MEM, 0) << 8;
+
+	if (! (rxstat & RSV_RXOK) || len < 4 || len > ETH_MTU) {
 		/* Skip this frame */
 /*debug_printf ("enc28j60_receive_data: failed, event=%#04x, length %d bytes\n", event, len);*/
 		++u->netif.in_errors;
-skip:
-		/* Throw away the last committed received frame */
-		cs_out (PACKETPP, PP_RXCFG);
-		OUT_RXCFG (SKIP_1 | RX_OK_ENBL | RX_RUNT_ENBL);
-		return;
+		goto skip;
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
@@ -332,154 +329,17 @@ skip:
 		goto skip;
 	}
 
-	/* Get received packet. */
-	for (b = p->payload; ;) {
-		b[0] = cs_inb (DATAREG);
-		h = cs_inb (DATAREG + 1);
-		if (len == 1)
-			break;
-		b[1] = h;
-		if ((len -= 2) == 0)
-			break;
-		b += 2;
-	}
-
-	/* debug_dump ("enc28j60-RX", p->payload, p->len); */
+	/* Copy the packet from the receive buffer. */
+	chip_read_buffer (len, p->payload);
 	buf_queue_put (&u->inq, p);
-}
-#endif
+skip:
+	/* Move the RX read pointer to the start of the next received packet
+	 * This frees the memory we just read out */
+	chip_write (u, ERXRDPTL, (u->next_packet_ptr));
+	chip_write (u, ERXRDPTH, (u->next_packet_ptr) >> 8);
 
-/*
- * Should do the actual transmission of the packet. The packet is
- * contained in the pbuf that is passed to the function. This pbuf
- * might be chained.
- */
-bool_t
-enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
-{
-#if 1
-	return 0;
-#else
-	buf_t *q;
-	small_uint_t hilo;
-	unsigned char *b;
-	unsigned len;
-
-/*debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);*/
-	mutex_lock (&u->netif.lock);
-
-	/* Exit if link has failed */
-	cs_out (PACKETPP, PP_LINEST);
-	if (! (cs_in (PPDATA) & LINK_OK) || p->tot_len < 4 || p->tot_len > ETH_MTU) {
-/*debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);*/
-failed: 	++u->netif.out_errors;
-		mutex_unlock (&u->netif.lock);
-		buf_free (p);
-		return 0;
-	}
-
-	/* Transmit command */
-	cs_out (TXCMD, TX_START_ALL_BYTES);
-	len = p->tot_len;
-	if (len < 60)
-		len = 60;
-	cs_out (TXLENGTH, len);
-
-#if 1	/* LY: более "умный" вариант, если нет места в tx-буфере, то:
-	 *	- пробуем вычитать приемный буфер;
-	 *	- считаем сбой если нет несущей;
-	 *	- ждем готовности бесконечно, при аварии сработает watchdog;
-	 * 	Проблем на момент commit'а не замечено.
-	*/
-	for (;;) {
-		cs_out (PACKETPP, PP_BUSST);
-		if (cs_in (PPDATA) & READY_FOR_TX_NOW)
-			break;
-		task_yield ();
-		enc28j60_interrupt (u);
-		cs_out (PACKETPP, PP_LINEST);
-		if (! (cs_in (PPDATA) & LINK_OK))
-			goto failed;
-	}
-	if (u->inq.count != 0)
-		mutex_signal (&u->netif.lock, 0);
-#else	/* LY: А так было раньше: */
-	cs_out (PACKETPP, PP_BUSST);
-	tries = 0;
-	/* Wait until ready for transmission, up to 100 retries */
-	while (! (cs_in (PPDATA) & READY_FOR_TX_NOW) && (tries++ < 100)) {
-		/* Throw away the last committed received frame */
-		cs_out (PACKETPP, PP_RXCFG);
-		OUT_RXCFG (SKIP_1 | RX_OK_ENBL | RX_RUNT_ENBL);
-		cs_out (PACKETPP, PP_BUSST);
-	}
-
-	/* Ready to transmit? */
-	if (! (cs_in (PPDATA) & READY_FOR_TX_NOW))
-		goto failed;
-#endif
-
-	/* Send the data from the buf chain to the interface,
-	 * one buf at a time. The size of the data in each
-	 * buf is kept in the ->len variable. */
-
-	hilo = DATAREG;
-	q = p; do {
-		/* LY: писать данные в чип нужно всегда словам.
-		 * Делаем здесь все правильно, с учетом возможной фрагментации пакета.
-		 */
-		assert (q->len > 0);
-		b = q->payload;
-		for (len = q->len; len; --len) {
-			cs_outb (hilo, *b++);
-			hilo ^= 1;
-		}
-		if (hilo != DATAREG)
-			cs_outb (DATAREG + 1, 0);
-		q = q->next;
-	} while (q);
-	/* debug_dump ("enc28j60-TX", p->payload, p->len); */
-
-	/* LY: pad eth-frame tail, else enc28j60 just repead last byte. */
-	if (p->tot_len < 60-1) {
-		small_uint_t pad = (60 - p->tot_len) >> 1;
-		do {
-			cs_out (DATAREG, 0);
-		} while (--pad);
-	}
-
-	++u->netif.out_packets;
-	u->netif.out_bytes += p->tot_len;
-
-	mutex_unlock (&u->netif.lock);
-	buf_free (p);
-	return 1;
-#endif
-}
-
-/*
- * Process a pending interrupt.
- */
-static void
-enc28j60_interrupt (enc28j60_t *u)
-{
-#if 0
-	for (;;) {
-		cs_out (PACKETPP, PP_RXEVENT);
-		if (0 == (cs_in (PPDATA) & RXE_ALL_BITS))
-			break;
-
-		enc28j60_receive_data (u);
-	}
-
-	/* Read RxMiss Counter (zeroes itself upon read) */
-	cs_out (PACKETPP, PP_RXMISS);
-	u->netif.in_discards += cs_in (PPDATA) >> 6;
-
-	/* Read RxCol Counter (zeroes itself upon read) */
-	cs_out (PACKETPP, PP_TXCOL);
-	u->netif.out_collisions += cs_in (PPDATA) >> 6;
-#endif
+	/* decrement the packet counter indicate we are done with this packet */
+	chip_write_op (ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
 }
 
 /*
@@ -489,13 +349,37 @@ static void
 enc28j60_receiver (void *arg)
 {
 	enc28j60_t *u = arg;
+	unsigned eir, eir_clear;
+
+	mutex_lock_irq (&u->netif.lock, ETH_IRQ, 0, 0);
+
+	/* Enable interrupts. */
+	chip_write (u, EIE, EIE_INTIE | EIE_PKTIE | EIE_TXIE);
 
 	for (;;) {
 		/* Wait for the receive interrupt. */
 		mutex_wait (&u->netif.lock);
 
+		/* Check if a packet has been received and buffered. */
+		while (chip_read (u, EPKTCNT) != 0) {
+			enc28j60_receive_data (u);
+		}
+
 		/* Process all pending interrupts. */
-		enc28j60_interrupt (u);
+		eir = chip_read (u, EIR);
+		eir_clear = 0;
+		if (eir & EIR_RXERIF) {
+			/* Count missed packets. */
+			++u->netif.in_discards;
+			eir_clear |= EIR_RXERIF;
+		}
+		if (eir & EIR_TXIF) {
+			/* TODO: u->netif.out_collisions += ???; */
+			eir_clear |= EIR_TXIF;
+		}
+		if (eir_clear)
+			chip_write_op (ENC28J60_BIT_FIELD_CLR,
+				EIR, eir_clear);
 	}
 }
 
@@ -584,13 +468,13 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_write (u, MABBIPG, 0x12);
 
 	/* Set the maximum packet size which the controller will accept */
-	chip_write (u, MAMXFLL, MAX_FRAMELEN & 0xFF);
-	chip_write (u, MAMXFLH, MAX_FRAMELEN >> 8);
+	chip_write (u, MAMXFLL, ETH_MTU & 0xFF);
+	chip_write (u, MAMXFLH, ETH_MTU >> 8);
 
 	/* no loopback of transmitted frames */
 	chip_phy_write (u, PHCON2, PHCON2_HDLDIS);
 
-	/* enable packet reception */
+	/* Enable packet reception. */
 	chip_set_bank (u, ECON1);
 	chip_write_op (ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
 
