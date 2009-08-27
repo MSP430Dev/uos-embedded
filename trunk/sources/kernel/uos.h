@@ -51,7 +51,6 @@ void task_yield ();
 
 struct _stream_t;
 void task_print (struct _stream_t *stream, task_t *t);
-void task_print_debug (task_t *t);
 
 /* Lock management. */
 void mutex_lock (mutex_t *lock);

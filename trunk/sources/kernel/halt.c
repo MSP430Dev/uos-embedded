@@ -32,11 +32,11 @@ uos_halt (int dump_flag)
 	task_t *t;
 
 	if (dump_flag) {
-		task_print_debug (0);
+		task_print (&debug, 0);
 		n = 0;
 		list_iterate (t, &task_active) {
 			if (t != task_idle && t != task_current)
-				task_print_debug (t);
+				task_print (&debug, t);
 			if (! uos_valid_memory_address (t))
 				break;
 			if (++n > 32 || list_is_empty (&t->item)) {
@@ -45,7 +45,7 @@ uos_halt (int dump_flag)
 			}
 		}
 		if (task_current && task_current != task_idle)
-			task_print_debug (task_current);
+			task_print (&debug, task_current);
 
 		debug_dump_stack (task_name (task_current), __builtin_alloca (0),
 			(void*) task_current->stack_context, __builtin_return_address (0));

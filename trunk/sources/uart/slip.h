@@ -32,7 +32,7 @@ typedef struct _slip_t {
 	buf_queue_t inq;		/* queue of received packets */
 	struct _buf_t *inqdata[8];
 
-	buf_queue_t outq;          /* queue of packets to transmit */
+	buf_queue_t outq;		/* queue of packets to transmit */
         struct _buf_t *outqdata[8];
 
 	struct _buf_t *in;		/* packet currently being received */

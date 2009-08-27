@@ -5,6 +5,9 @@
 #   if __AVR__
 #      define IP_STACKSZ	0x400
 #   endif
+#   if MSP430
+#      define IP_STACKSZ	0x600
+#   endif
 #   if I386
 #      define IP_STACKSZ	0x800
 #   endif

@@ -12,6 +12,7 @@
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
+#include <stream/stream.h>
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <enc28j60/eth.h>
@@ -192,40 +193,115 @@ chip_phy_read (enc28j60_t *u, unsigned address)
 	return data;
 }
 
+void
+enc28j60_debug (enc28j60_t *u, struct _stream_t *stream)
+{
+	unsigned short eir, estat, phstat1, phstat2;
+
+	mutex_lock (&u->netif.lock);
+	eir = chip_read (u, EIR);
+	estat = chip_read (u, ESTAT);
+	phstat1 = chip_phy_read (u, PHSTAT1);
+	phstat2 = chip_phy_read (u, PHSTAT2);
+	mutex_unlock (&u->netif.lock);
+
+	printf (stream, "EIR=%b\n", eir, EIR_BITS);
+	printf (stream, "ESTAT=%b\n", estat, ESTAT_BITS);
+	printf (stream, "PHSTAT1=%b\n", phstat1, PHSTAT1_BITS);
+	printf (stream, "PHSTAT2=%b\n", phstat2, PHSTAT2_BITS);
+}
+
+void enc28j60_start_negotiation (enc28j60_t *u)
+{
+	mutex_lock (&u->netif.lock);
+/*TODO*/
+	mutex_unlock (&u->netif.lock);
+}
+
+int enc28j60_get_carrier (enc28j60_t *u)
+{
+	unsigned phstat2;
+
+	mutex_lock (&u->netif.lock);
+	phstat2 = chip_phy_read (u, PHSTAT2);
+	mutex_unlock (&u->netif.lock);
+	return (phstat2 & PHSTAT2_LSTAT) != 0;
+}
+
+long enc28j60_get_speed (enc28j60_t *u, int *duplex)
+{
+	unsigned phstat2;
+
+	mutex_lock (&u->netif.lock);
+	phstat2 = chip_phy_read (u, PHSTAT2);
+	mutex_unlock (&u->netif.lock);
+	if (! (phstat2 & PHSTAT2_LSTAT))
+		return 0;
+	if (phstat2 & PHSTAT2_DPXSTAT) {
+                if (duplex)
+                        *duplex = 1;
+        } else {
+                if (duplex)
+                        *duplex = 0;
+        }
+        return u->netif.bps;
+}
+
+void enc28j60_set_loop (enc28j60_t *u, int on)
+{
+	mutex_lock (&u->netif.lock);
+#if 0
+	/* MAC loopback. */
+	if (on)
+		chip_write (u, MACON1, MACON1_LOOPBK |
+			MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS);
+	else
+		chip_write (u, MACON1,
+			MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS);
+#else
+	/* PHY loopback. */
+	if (on)
+		chip_phy_write (u, PHCON1, PHCON1_PLOOPBK);
+	else
+		chip_phy_write (u, PHCON1, 0);
+#endif
+	mutex_unlock (&u->netif.lock);
+}
+
+void enc28j60_set_promisc (enc28j60_t *u, int station, int group)
+{
+	unsigned erxfcon;
+
+	mutex_lock (&u->netif.lock);
+	erxfcon = ERXFCON_UCEN | ERXFCON_CRCEN | ERXFCON_BCEN;
+	if (station) {
+		/* Accept any unicast. */
+		erxfcon &= ~ERXFCON_UCEN;
+	}
+	if (group) {
+		/* Accept any multicast. */
+		erxfcon |= ERXFCON_MCEN;
+	}
+	chip_write (u, ERXFCON, erxfcon);
+	mutex_unlock (&u->netif.lock);
+}
+
 /*
- * Should do the actual transmission of the packet. The packet is
- * contained in the pbuf that is passed to the function. This pbuf
- * might be chained.
+ * Write the packet to chip memory and start transmission.
+ * Deallocate the packet.
  */
-bool_t
-enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
+static void
+chip_transmit_packet (enc28j60_t *u, buf_t *p)
 {
 	buf_t *q;
-	unsigned len;
-
-/*debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);*/
-	mutex_lock (&u->netif.lock);
-
-	/* Exit if link has failed */
-	if (p->tot_len < 4 || p->tot_len > ETH_MTU ||
-	    ! (chip_phy_read (u, PHSTAT2) & PHSTAT2_LSTAT)) {
-/*debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);*/
-		++u->netif.out_errors;
-		mutex_unlock (&u->netif.lock);
-		buf_free (p);
-		return 0;
-	}
 
 	/* Set the write pointer to start of transmit buffer area. */
 	chip_write (u, EWRPTL, TXSTART_INIT);
 	chip_write (u, EWRPTH, TXSTART_INIT>>8);
 
 	/* Set the TXND pointer to correspond to the packet size given. */
-	len = p->tot_len;
-	if (len < 60)
-		len = 60;
-	chip_write (u, ETXNDL, (TXSTART_INIT + len));
-	chip_write (u, ETXNDH, (TXSTART_INIT + len) >> 8);
+	chip_write (u, ETXNDL, (TXSTART_INIT + p->tot_len));
+	chip_write (u, ETXNDH, (TXSTART_INIT + p->tot_len) >> 8);
 
 	/* Write per-packet control byte. */
 	chip_write_op (ENC28J60_WRITE_BUF_MEM, 0, 0x00);
@@ -244,9 +320,44 @@ enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
 
 	++u->netif.out_packets;
 	u->netif.out_bytes += p->tot_len;
-
-	mutex_unlock (&u->netif.lock);
 	buf_free (p);
+}
+
+/*
+ * Should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained.
+ */
+static bool_t
+enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
+{
+/*debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);*/
+	mutex_lock (&u->netif.lock);
+
+	/* Exit if link has failed */
+	if (p->tot_len < 4 || p->tot_len > ETH_MTU ||
+	    ! (chip_phy_read (u, PHSTAT2) & PHSTAT2_LSTAT)) {
+/*debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);*/
+		++u->netif.out_errors;
+		mutex_unlock (&u->netif.lock);
+		buf_free (p);
+		return 0;
+	}
+
+	if (chip_read (u, ECON1) & ECON1_TXRTS) {
+		/* Занято, ставим в очередь. */
+		if (buf_queue_is_full (&u->outq)) {
+			++u->netif.out_discards;
+			mutex_unlock (&u->netif.lock);
+/*			debug_printf ("slip_output: overflow\n");*/
+			buf_free (p);
+			return 0;
+		}
+		buf_queue_put (&u->outq, p);
+	} else {
+		chip_transmit_packet (u, p);
+	}
+	mutex_unlock (&u->netif.lock);
 	return 1;
 }
 
@@ -349,7 +460,8 @@ static void
 enc28j60_receiver (void *arg)
 {
 	enc28j60_t *u = arg;
-	unsigned eir, eir_clear;
+	unsigned eir;
+	buf_t *p;
 
 	mutex_lock_irq (&u->netif.lock, ETH_IRQ, 0, 0);
 
@@ -367,19 +479,22 @@ enc28j60_receiver (void *arg)
 
 		/* Process all pending interrupts. */
 		eir = chip_read (u, EIR);
-		eir_clear = 0;
 		if (eir & EIR_RXERIF) {
 			/* Count missed packets. */
 			++u->netif.in_discards;
-			eir_clear |= EIR_RXERIF;
+			chip_write_op (ENC28J60_BIT_FIELD_CLR,
+				EIR, EIR_RXERIF);
 		}
 		if (eir & EIR_TXIF) {
 			/* TODO: u->netif.out_collisions += ???; */
-			eir_clear |= EIR_TXIF;
-		}
-		if (eir_clear)
 			chip_write_op (ENC28J60_BIT_FIELD_CLR,
-				EIR, eir_clear);
+				EIR, EIR_TXIF);
+
+			/* Ставим на передачу пакет из очереди. */
+			p = buf_queue_get (&u->outq);
+			if (p)
+				chip_transmit_packet (u, p);
+		}
 	}
 }
 
@@ -405,6 +520,7 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	u->netif.bps = 10000000;
 	u->pool = pool;
 	buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
+	buf_queue_init (&u->outq, u->outqdata, sizeof (u->outqdata));
 
 	/* Initialize hardware. */
 	mutex_lock (&u->netif.lock);
@@ -448,17 +564,22 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_write (u, ERXNDL, RXSTOP_INIT & 0xFF);
 	chip_write (u, ERXNDH, RXSTOP_INIT >> 8);
 
-	/* do bank 2 stuff
-	 * enable MAC receive */
+	/* Do bank 1 stuff.
+	 * Enable CRC, unicast and broadcast filters. */
+	chip_write (u, ERXFCON,
+		ERXFCON_UCEN | ERXFCON_CRCEN | ERXFCON_BCEN);
+
+	/* Do bank 2 stuff.
+	 * Enable MAC receive and pause control. */
 	chip_write (u, MACON1,
 		MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS);
 
-	/* enable automatic padding and CRC operations */
+	/* Half duplex, automatic padding and CRC operations. */
 	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON3,
 		MACON3_PADCFG0 | MACON3_TXCRCEN | MACON3_FRMLNEN);
 
 	/* set MACON 4 bits (necessary for half-duplex only) */
-/*	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON4, MACON4_DEFER);*/
+	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON4, MACON4_DEFER);
 
 	/* set inter-frame gap (non-back-to-back) */
 	chip_write (u, MAIPGL, 0x12);
@@ -471,7 +592,10 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_write (u, MAMXFLL, ETH_MTU & 0xFF);
 	chip_write (u, MAMXFLH, ETH_MTU >> 8);
 
-	/* no loopback of transmitted frames */
+	/* Half duplex, disable loopback. */
+	chip_phy_write (u, PHCON1, 0);
+
+	/* No loopback of transmitted frames. */
 	chip_phy_write (u, PHCON2, PHCON2_HDLDIS);
 
 	/* Enable packet reception. */

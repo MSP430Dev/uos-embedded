@@ -19,9 +19,9 @@ memcmp(const void *s1, const void *s2, size_t n)
 
 	if (n) {
 		signed char ret;
-		do
+		do {
 			ret = *cs1++ - *cs2++;
-		while (ret == 0 && --n);
+		} while (ret == 0 && --n);
 		return ret;
 	}
 	return 0;

@@ -3,8 +3,6 @@
 #include <kernel/internal.h>
 #include <stream/stream.h>
 
-extern stream_t debug_stream;
-
 static const char *ptr_valid_or_bad (void *ptr)
 {
 	return uos_valid_memory_address (ptr) ? "" : " (bad)";
@@ -49,12 +47,4 @@ void task_print (stream_t *stream, task_t *t)
 		}
 	}
 	putchar (stream, '\n');
-}
-
-/*
- * Print the task to the debug output.
- */
-void task_print_debug (task_t *t)
-{
-	task_print (&debug_stream, t);
 }

@@ -130,6 +130,8 @@
 #define EIR_TXIF		0x08
 #define EIR_TXERIF		0x02
 #define EIR_RXERIF		0x01
+#define EIR_BITS		\
+"\20\1rxerif\2txerif\4txif\5linkif\6dmaif\7pktif"
 
 /* ENC28J60 ESTAT Register Bit Definitions */
 #define ESTAT_INT		0x80
@@ -138,6 +140,8 @@
 #define ESTAT_RXBUSY		0x04
 #define ESTAT_TXABRT		0x02
 #define ESTAT_CLKRDY		0x01
+#define ESTAT_BITS		\
+"\20\1clkrdy\2txabrt\3rxbusy\5latecol\7bufer\10int"
 
 /* ENC28J60 ECON2 Register Bit Definitions */
 #define ECON2_AUTOINC		0x80
@@ -196,6 +200,8 @@
 #define	PHSTAT1_PHDPX		0x0800
 #define	PHSTAT1_LLSTAT		0x0004
 #define	PHSTAT1_JBSTAT		0x0002
+#define PHSTAT1_BITS		\
+"\20\02jbstat\03llstat\14phdpx\15pfdpx"
 
 /* ENC28J60 PHY PHSTAT2 Register Bit Definitions */
 #define	PHSTAT2_TXSTAT		0x2000
@@ -204,6 +210,8 @@
 #define	PHSTAT2_LSTAT		0x0400
 #define	PHSTAT2_DPXSTAT		0x0200
 #define	PHSTAT2_PLRITY		0x0010
+#define PHSTAT2_BITS		\
+"\20\05plrity\12dpxstat\13lstat\14colstat\15rxstat\16txstat"
 
 /* ENC28J60 PHY PHCON2 Register Bit Definitions */
 #define PHCON2_FRCLINK		0x4000
@@ -216,6 +224,16 @@
 #define PKTCTRL_PPADEN		0x04
 #define PKTCTRL_PCRCEN		0x02
 #define PKTCTRL_POVERRIDE	0x01
+
+/* ENC28J60 ERXFCON Register Bit Definitions */
+#define ERXFCON_UCEN		0x80
+#define ERXFCON_ANDOR		0x40
+#define ERXFCON_CRCEN		0x20
+#define ERXFCON_PMEN		0x10
+#define ERXFCON_MPEN		0x08
+#define ERXFCON_HTEN		0x04
+#define ERXFCON_MCEN		0x02
+#define ERXFCON_BCEN		0x01
 
 /* SPI operation codes */
 #define ENC28J60_READ_CTRL_REG	0x00

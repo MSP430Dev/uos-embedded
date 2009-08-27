@@ -1,15 +1,13 @@
 #include <runtime/lib.h>
 #include <stream/stream.h>
 
-stream_interface_t debug_stream_interface = {
+static stream_interface_t debug_interface = {
 	.putc = (void (*) (stream_t*, short)) debug_putchar,
 	.getc = (unsigned short (*) (stream_t*)) debug_getchar,
 	.peekc = (int (*) (stream_t*)) debug_peekchar,
 };
 
-struct {
-	stream_interface_t *interface;
-} debug_stream = { &debug_stream_interface };
+stream_t debug = { &debug_interface };
 
 int
 debug_printf (const char *fmt, ...)
@@ -18,7 +16,7 @@ debug_printf (const char *fmt, ...)
 	int err;
 
 	va_start (args, fmt);
-	err = vprintf (&debug_stream, fmt, args);
+	err = vprintf (&debug, fmt, args);
 	va_end (args);
 	return err;
 }
@@ -28,7 +26,7 @@ debug_vprintf (const char *fmt, va_list args)
 {
 	int err;
 
-	err = vprintf (&debug_stream, fmt, args);
+	err = vprintf (&debug, fmt, args);
 	return err;
 }
 
