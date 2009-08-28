@@ -49,11 +49,6 @@ typedef struct _lport_t {
 	volatile lport_desc_t *lcsr_send;
 	volatile lport_desc_t *lcsr_recv;
 
-	mem_pool_t mem_pool;
-
-	volatile dma_chain_t *dma_chain_send;
-	volatile dma_chain_t *dma_chain_recv;
-
 	unsigned long pair; 		/* Which pair of lports; 0 - LP0,LP1; 1 - LP2,LP3; */
 #define LPORT_PAIR_01	0
 #define LPORT_PAIR_23	1

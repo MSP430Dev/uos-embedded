@@ -55,11 +55,6 @@ lport_init (lport_t *l, unsigned long pair, unsigned long dir, unsigned long dma
 	l->lcsr_send->lclk  = l->clk;
 	l->lcsr_send->ldw   = l->size;
 	l->lcsr_send->len   = 1;
-
-	mem_init (&l->mem_pool, CRAM_MEM_START, CRAM_MEM_END);
-
-	l->dma_chain_send = (volatile dma_chain_t*)mem_alloc (&l->mem_pool, sizeof (dma_chain_t));
-	l->dma_chain_recv = (volatile dma_chain_t*)mem_alloc (&l->mem_pool, sizeof (dma_chain_t));
 }
 
 void
