@@ -1,19 +1,26 @@
 #ifndef _REGEXP9_H_
 #define _REGEXP9_H_ 1
 #if defined(__cplusplus)
-extern "C" { 
+extern "C" {
 #endif
 
-#ifdef AUTOLIB
-AUTOLIB(regexp9)
-#endif
+typedef unsigned short	Rune;
 
-#include <utf.h>
+enum {
+	UTFmax		= 3,		/* maximum bytes per rune */
+	Runesync	= 0x80,		/* can’t appear in UTF sequence (<) */
+	Runeself	= 0x80,		/* rune==UTF sequence (<) */
+	Runeerror	= 0x80,		/* decoding error in UTF */
+};
 
-typedef struct Resub		Resub;
-typedef struct Reclass		Reclass;
-typedef struct Reinst		Reinst;
-typedef struct Reprog		Reprog;
+int _chartorune(Rune *rune, const char *str);
+char *_utfrune(char *s, long c);
+Rune *_runestrchr(Rune*, Rune);
+
+typedef struct Resub	Resub;
+typedef struct Reclass	Reclass;
+typedef struct Reinst	Reinst;
+typedef struct Reprog	Reprog;
 
 /*
  *	Sub expression matches

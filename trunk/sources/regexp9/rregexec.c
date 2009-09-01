@@ -1,4 +1,3 @@
-#include "lib9.h"
 #include "regexp9.h"
 #include "regcomp.h"
 
@@ -45,7 +44,7 @@ rregexec1(Reprog *progp,	/* program to run */
 		if(checkstart) {
 			switch(j->starttype) {
 			case RUNE:
-				p = runestrchr(s, j->startchar);
+				p = _runestrchr(s, j->startchar);
 				if(p == 0 || p == j->reol)
 					return match;
 				s = p;
@@ -53,7 +52,7 @@ rregexec1(Reprog *progp,	/* program to run */
 			case BOL:
 				if(s == bol)
 					break;
-				p = runestrchr(s, '\n');
+				p = _runestrchr(s, '\n');
 				if(p == 0 || s == j->reol)
 					return match;
 				s = p+1;

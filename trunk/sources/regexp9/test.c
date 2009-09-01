@@ -1,5 +1,6 @@
-#include "lib9.h"
 #include <regexp9.h>
+#include <stdio.h>
+#include <string.h>
 
 struct x
 {
@@ -22,25 +23,28 @@ struct x t[] = {
 	{ 0, 0, 0 },
 };
 
-main(int ac, char **av)
+int main(int ac, char **av)
 {
 	Resub rs[10];
 	char dst[128];
-	int n;
 	struct x *tp;
+
+	if (! av[1]) {
+		printf("Usage: %s pattern\n", av[0]);
+		return 0;
+	}
 
 	for(tp = t; tp->re; tp++)
 		tp->p = regcomp(tp->re);
 
-
 	for(tp = t; tp->re; tp++){
-		print("%s VIA %s", av[1], tp->re);
+		printf("%s VIA %s", av[1], tp->re);
 		memset(rs, 0, sizeof rs);
 		if(regexec(tp->p, av[1], rs, 10)){
 			regsub(tp->s, dst, sizeof dst, rs, 10);
-			print(" sub %s -> %s", tp->s, dst);
+			printf(" sub %s -> %s", tp->s, dst);
 		}
-		print("\n");
+		printf("\n");
 	}
-	exit(0);
+	return 0;
 }

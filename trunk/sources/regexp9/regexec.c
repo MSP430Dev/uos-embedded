@@ -1,7 +1,6 @@
-#include "lib9.h"
+#include <stdlib.h>
 #include "regexp9.h"
 #include "regcomp.h"
-
 
 /*
  *  return	0 if no match
@@ -47,7 +46,7 @@ regexec1(Reprog *progp,	/* program to run */
 		if(checkstart) {
 			switch(j->starttype) {
 			case RUNE:
-				p = utfrune(s, j->startchar);
+				p = _utfrune(s, j->startchar);
 				if(p == 0 || s == j->eol)
 					return match;
 				s = p;
@@ -55,7 +54,7 @@ regexec1(Reprog *progp,	/* program to run */
 			case BOL:
 				if(s == bol)
 					break;
-				p = utfrune(s, '\n');
+				p = _utfrune(s, '\n');
 				if(p == 0 || s == j->eol)
 					return match;
 				s = p+1;
@@ -66,7 +65,7 @@ regexec1(Reprog *progp,	/* program to run */
 		if(r < Runeself)
 			n = 1;
 		else
-			n = chartorune(&r, s);
+			n = _chartorune(&r, s);
 
 		/* switch run lists */
 		tl = j->relist[flag];
@@ -167,10 +166,10 @@ regexec2(Reprog *progp,	/* program to run */
 
 	/* mark space */
 	relist0 = malloc(BIGLISTSIZE*sizeof(Relist));
-	if(relist0 == nil)
+	if(! relist0)
 		return -1;
 	relist1 = malloc(BIGLISTSIZE*sizeof(Relist));
-	if(relist1 == nil){
+	if(! relist1){
 		free(relist1);
 		return -1;
 	}

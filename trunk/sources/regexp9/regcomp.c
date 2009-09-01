@@ -1,4 +1,6 @@
-#include "lib9.h"
+#include <setjmp.h>
+#include <string.h>
+#include <stdlib.h>
 #include "regexp9.h"
 #include "regcomp.h"
 
@@ -106,7 +108,7 @@ regerr2(char *s, int c)
 	while(*s)
 		*cp++ = *s++;
 	*cp++ = c;
-	*cp = '\0'; 
+	*cp = '\0';
 	rcerror(buf);
 }
 
@@ -333,9 +335,9 @@ nextc(Rune *rp)
 		*rp = 0;
 		return 1;
 	}
-	exprp += chartorune(rp, exprp);
+	exprp += _chartorune(rp, exprp);
 	if(*rp == '\\'){
-		exprp += chartorune(rp, exprp);
+		exprp += _chartorune(rp, exprp);
 		return 1;
 	}
 	if(*rp == 0)
