@@ -2,16 +2,17 @@
 
 /* substitute into one string using the matches from the last regexec() */
 extern	void
-rregsub(Rune *sp,	/* source string */
-	Rune *dp,	/* destination string */
+regexp_substitute_unicode(
+	const unsigned short *sp,	/* source string */
+	unsigned short *dp,		/* destination string */
 	int dlen,
-	Resub *mp,	/* subexpression elements */
-	int ms)		/* number of elements pointed to by mp */
+	regexp_match_t *mp,		/* subexpression elements */
+	int ms)				/* number of elements pointed to by mp */
 {
-	Rune *ssp, *ep;
+	unsigned short *ssp, *ep;
 	int i;
 
-	ep = dp+(dlen/sizeof(Rune))-1;
+	ep = dp + (dlen / sizeof(unsigned short)) - 1;
 	while(*sp != '\0'){
 		if(*sp == '\\'){
 			switch(*++sp){

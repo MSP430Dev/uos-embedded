@@ -1,101 +1,53 @@
+/*
+ * Definitions etc. for regexp(3) routines.
+ */
 #ifndef _REGEXP9_H_
 #define _REGEXP9_H_ 1
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-typedef unsigned short	Rune;
-
-enum {
-	UTFmax		= 3,		/* maximum bytes per rune */
-	Runesync	= 0x80,		/* can’t appear in UTF sequence (<) */
-	Runeself	= 0x80,		/* rune==UTF sequence (<) */
-	Runeerror	= 0x80,		/* decoding error in UTF */
-};
-
-int _chartorune(Rune *rune, const char *str);
-char *_utfrune(char *s, long c);
-Rune *_runestrchr(Rune*, Rune);
-
-typedef struct Resub	Resub;
-typedef struct Reclass	Reclass;
-typedef struct Reinst	Reinst;
-typedef struct Reprog	Reprog;
+typedef struct _regexp_t	regexp_t;
+typedef struct _regexp_match_t	regexp_match_t;
 
 /*
- *	Sub expression matches
+ * Sub expression matches
  */
-struct Resub{
+struct _regexp_match_t {
 	union
 	{
-		char *sp;
-		Rune *rsp;
-	}s;
+		const char *sp;
+		unsigned short *rsp;
+	} s;
 	union
 	{
-		char *ep;
-		Rune *rep;
-	}e;
+		const char *ep;
+		unsigned short *rep;
+	} e;
 };
 
 /*
- *	character class, each pair of rune's defines a range
+ * Compile a regular expression into internal code.
+ * Returns 0 on failure.
  */
-struct Reclass{
-	Rune	*end;
-	Rune	spans[64];
-};
+extern regexp_t	*regexp_compile (const char*);
+extern regexp_t	*regexp_compile_literal (const char*);
+extern regexp_t	*regexp_compile_newline (const char*);
 
 /*
- *	Machine instructions
+ * Match a regular expression against a string.
+ * Returns 0 on no match, >=1 on match, or <0 on failure.
  */
-struct Reinst{
-	int	type;
-	union	{
-		Reclass	*cp;		/* class pointer */
-		Rune	r;		/* character */
-		int	subid;		/* sub-expression id for RBRA and LBRA */
-		Reinst	*right;		/* right child of OR */
-	}u1;
-	union {	/* regexp relies on these two being in the same union */
-		Reinst *left;		/* left child of OR */
-		Reinst *next;		/* next instruction for CAT & LBRA */
-	}u2;
-};
+extern int regexp_execute (regexp_t*, const char*, regexp_match_t*, int);
+extern int regexp_execute_unicode (regexp_t*, unsigned short*, regexp_match_t*, int);
 
 /*
- *	Reprogram definition
+ * Perform substitutions after a regexp match.
  */
-struct Reprog{
-	Reinst	*startinst;	/* start pc */
-	Reclass	class[16];	/* .data */
-	Reinst	firstinst[5];	/* .text */
-};
+extern void regexp_substitute (const char*, char*, int, regexp_match_t*, int);
+extern void regexp_substitute_unicode (const unsigned short*, unsigned short*, int, regexp_match_t*, int);
 
-extern Reprog	*regcomp9(char*);
-extern Reprog	*regcomplit9(char*);
-extern Reprog	*regcompnl9(char*);
-extern void	regerror9(char*);
-extern int	regexec9(Reprog*, char*, Resub*, int);
-extern void	regsub9(char*, char*, int, Resub*, int);
-
-extern int	rregexec9(Reprog*, Rune*, Resub*, int);
-extern void	rregsub9(Rune*, Rune*, int, Resub*, int);
-
-/*
- * Darwin simply cannot handle having routines that
- * override other library routines.
- */
-#ifndef NOPLAN9DEFINES
-#define regcomp regcomp9
-#define regcomplit regcomplit9
-#define regcompnl regcompnl9
-#define regerror regerror9
-#define regexec regexec9
-#define regsub regsub9
-#define rregexec rregexec9
-#define rregsub rregsub9
-#endif
+extern void regexp_error (char*);
 
 #if defined(__cplusplus)
 }

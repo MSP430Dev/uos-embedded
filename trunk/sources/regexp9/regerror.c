@@ -4,11 +4,11 @@
 #include "regexp9.h"
 
 void
-regerror(char *s)
+regexp_error(char *s)
 {
 	char buf[132];
 
-	strcpy(buf, "regerror: ");
+	strcpy(buf, "regexp_error: ");
 	strcat(buf, s);
 	strcat(buf, "\n");
 	if (write(2, buf, strlen(buf)) < 0)

@@ -7,16 +7,17 @@
  * "as is" without express or implied warranty.
  */
 #include "regexp9.h"
+#include "regpriv.h"
 
-Rune *
-_runestrchr(Rune *s, Rune c)
+unsigned short *
+_runestrchr(const unsigned short *s, unsigned short c)
 {
-	register Rune tmp;
+	register unsigned short tmp;
 
 	do {
 		tmp = *s++;
 		if (tmp == c)
-			return s-1;
+			return (unsigned short*) (s-1);
 	} while (tmp != 0);
 	return 0;
 }

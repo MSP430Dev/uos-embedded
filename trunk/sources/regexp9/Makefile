@@ -10,7 +10,7 @@ NAME		= libregexp9
 OFILES		= regcomp.$O regerror.$O regexec.$O regsub.$O regaux.$O \
 		  rregexec.$O rregsub.$O rune.$O runestrchr.$O
 
-HFILES		= regexp9.h regcomp.h
+HFILES		= regexp9.h regpriv.h
 
 all:		$(LIB) test
 
@@ -26,9 +26,6 @@ install:	$(LIB)
 test:		test.$O $(LIB)
 		$(CC) -o test test.$O $(LIB) -L/usr/local/lib
 
-test2:		test2.$O $(LIB)
-		$(CC) -o test2 test2.$O $(LIB) -L/usr/local/lib
-
 $(LIB):		$(OFILES)
 		ar rvc $(LIB) $(OFILES)
 		$(RANLIB) $(LIB)
@@ -43,6 +40,6 @@ $(LIB):		$(OFILES)
 $(OFILES):	$(HFILES)
 
 clean:
-		rm -f *.o *.a *~ test test2
+		rm -f *.o *.a *~ test
 
 .phony:		all clean nuke install tgz rpm ports

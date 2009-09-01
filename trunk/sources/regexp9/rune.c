@@ -15,9 +15,10 @@
 /* Copyright (c) 1992 AT&T - All rights reserved. */
 #include <string.h>
 #include "regexp9.h"
+#include "regpriv.h"
 
 int
-_chartorune(Rune *rune, const char *str)
+_chartorune(unsigned short *rune, const char *str)
 {
 	int c, c1, c2;
 	long l;
@@ -68,33 +69,33 @@ _chartorune(Rune *rune, const char *str)
 	 * bad decoding
 	 */
 bad:
-	*rune = Runeerror;
+	*rune = 0x80;		/* decoding error in UTF */
 	return 1;
 }
 
 char*
-_utfrune(char *s, long c)
+_utfrune(const char *s, unsigned short c)
 {
 	long c1;
-	Rune r;
+	unsigned short r;
 	int n;
 
-	if(c < Runesync)		/* not part of utf sequence */
+	if(c < 0x80)		/* not part of utf sequence */
 		return strchr(s, c);
 
 	for(;;) {
 		c1 = *(unsigned char*)s;
-		if(c1 < Runeself) {	/* one byte rune */
+		if(c1 < 0x80) {	/* one byte rune */
 			if(c1 == 0)
 				return 0;
 			if(c1 == c)
-				return s;
+				return (char*) s;
 			s++;
 			continue;
 		}
 		n = _chartorune(&r, s);
 		if(r == c)
-			return s;
+			return (char*) s;
 		s += n;
 	}
 	return 0;

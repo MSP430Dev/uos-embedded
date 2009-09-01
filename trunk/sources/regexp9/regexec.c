@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "regexp9.h"
-#include "regcomp.h"
+#include "regpriv.h"
 
 /*
  *  return	0 if no match
@@ -8,24 +8,24 @@
  *		<0 if we ran out of _relist space
  */
 static int
-regexec1(Reprog *progp,	/* program to run */
-	char *bol,	/* string to run machine on */
-	Resub *mp,	/* subexpression elements */
-	int ms,		/* number of elements at mp */
-	Reljunk *j
+regexec1(regexp_t *progp,	/* program to run */
+	const char *bol,	/* string to run machine on */
+	regexp_match_t *mp,	/* subexpression elements */
+	int ms,			/* number of elements at mp */
+	regexp_ljunk_t *j
 )
 {
 	int flag=0;
-	Reinst *inst;
-	Relist *tlp;
-	char *s;
+	regexp_instr_t *inst;
+	regexp_list_t *tlp;
+	const char *s;
 	int i, checkstart;
-	Rune r, *rp, *ep;
+	unsigned short r, *rp, *ep;
 	int n;
-	Relist* tl;		/* This list, next list */
-	Relist* nl;
-	Relist* tle;		/* ends of this and next list */
-	Relist* nle;
+	regexp_list_t* tl;	/* This list, next list */
+	regexp_list_t* nl;
+	regexp_list_t* tle;	/* ends of this and next list */
+	regexp_list_t* nle;
 	int match;
 	char *p;
 
@@ -61,8 +61,8 @@ regexec1(Reprog *progp,	/* program to run */
 				break;
 			}
 		}
-		r = *(uchar*)s;
-		if(r < Runeself)
+		r = *(unsigned char*)s;
+		if(r < 0x80)
 			n = 1;
 		else
 			n = _chartorune(&r, s);
@@ -154,21 +154,21 @@ regexec1(Reprog *progp,	/* program to run */
 }
 
 static int
-regexec2(Reprog *progp,	/* program to run */
-	char *bol,	/* string to run machine on */
-	Resub *mp,	/* subexpression elements */
-	int ms,		/* number of elements at mp */
-	Reljunk *j
+regexec2(regexp_t *progp,	/* program to run */
+	const char *bol,	/* string to run machine on */
+	regexp_match_t *mp,	/* subexpression elements */
+	int ms,			/* number of elements at mp */
+	regexp_ljunk_t *j
 )
 {
 	int rv;
-	Relist *relist0, *relist1;
+	regexp_list_t *relist0, *relist1;
 
 	/* mark space */
-	relist0 = malloc(BIGLISTSIZE*sizeof(Relist));
+	relist0 = malloc(BIGLISTSIZE*sizeof(regexp_list_t));
 	if(! relist0)
 		return -1;
-	relist1 = malloc(BIGLISTSIZE*sizeof(Relist));
+	relist1 = malloc(BIGLISTSIZE*sizeof(regexp_list_t));
 	if(! relist1){
 		free(relist1);
 		return -1;
@@ -185,13 +185,13 @@ regexec2(Reprog *progp,	/* program to run */
 }
 
 extern int
-regexec(Reprog *progp,	/* program to run */
-	char *bol,	/* string to run machine on */
-	Resub *mp,	/* subexpression elements */
-	int ms)		/* number of elements at mp */
+regexp_execute(regexp_t *progp,	/* program to run */
+	const char *bol,	/* string to run machine on */
+	regexp_match_t *mp,	/* subexpression elements */
+	int ms)			/* number of elements at mp */
 {
-	Reljunk j;
-	Relist relist0[LISTSIZE], relist1[LISTSIZE];
+	regexp_ljunk_t j;
+	regexp_list_t relist0[LISTSIZE], relist1[LISTSIZE];
 	int rv;
 
 	/*
@@ -207,7 +207,7 @@ regexec(Reprog *progp,	/* program to run */
 	}
 	j.starttype = 0;
 	j.startchar = 0;
-	if(progp->startinst->type == RUNE && progp->startinst->u1.r < Runeself) {
+	if(progp->startinst->type == RUNE && progp->startinst->u1.r < 0x80) {
 		j.starttype = RUNE;
 		j.startchar = progp->startinst->u1.r;
 	}

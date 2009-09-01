@@ -1,5 +1,5 @@
 #include "regexp9.h"
-#include "regcomp.h"
+#include "regpriv.h"
 
 /*
  *  return	0 if no match
@@ -7,24 +7,24 @@
  *		<0 if we ran out of _relist space
  */
 static int
-rregexec1(Reprog *progp,	/* program to run */
-	Rune *bol,		/* string to run machine on */
-	Resub *mp,		/* subexpression elements */
+rregexec1(regexp_t *progp,	/* program to run */
+	unsigned short *bol,	/* string to run machine on */
+	regexp_match_t *mp,	/* subexpression elements */
 	int ms,			/* number of elements at mp */
-	Reljunk *j)
+	regexp_ljunk_t *j)
 {
 	int flag=0;
-	Reinst *inst;
-	Relist *tlp;
-	Rune *s;
+	regexp_instr_t *inst;
+	regexp_list_t *tlp;
+	unsigned short *s;
 	int i, checkstart;
-	Rune r, *rp, *ep;
-	Relist* tl;		/* This list, next list */
-	Relist* nl;
-	Relist* tle;		/* ends of this and next list */
-	Relist* nle;
+	unsigned short r, *rp, *ep;
+	regexp_list_t* tl;	/* This list, next list */
+	regexp_list_t* nl;
+	regexp_list_t* tle;	/* ends of this and next list */
+	regexp_list_t* nle;
 	int match;
-	Rune *p;
+	unsigned short *p;
 
 	match = 0;
 	checkstart = j->startchar;
@@ -147,14 +147,14 @@ rregexec1(Reprog *progp,	/* program to run */
 }
 
 static int
-rregexec2(Reprog *progp,	/* program to run */
-	Rune *bol,	/* string to run machine on */
-	Resub *mp,	/* subexpression elements */
-	int ms,		/* number of elements at mp */
-	Reljunk *j
+rregexec2(regexp_t *progp,	/* program to run */
+	unsigned short *bol,	/* string to run machine on */
+	regexp_match_t *mp,	/* subexpression elements */
+	int ms,			/* number of elements at mp */
+	regexp_ljunk_t *j
 )
 {
-	Relist relist0[5*LISTSIZE], relist1[5*LISTSIZE];
+	regexp_list_t relist0[5*LISTSIZE], relist1[5*LISTSIZE];
 
 	/* mark space */
 	j->relist[0] = relist0;
@@ -166,13 +166,13 @@ rregexec2(Reprog *progp,	/* program to run */
 }
 
 extern int
-rregexec(Reprog *progp,	/* program to run */
-	Rune *bol,	/* string to run machine on */
-	Resub *mp,	/* subexpression elements */
-	int ms)		/* number of elements at mp */
+regexp_execute_unicode(regexp_t *progp,	/* program to run */
+	unsigned short *bol,	/* string to run machine on */
+	regexp_match_t *mp,	/* subexpression elements */
+	int ms)			/* number of elements at mp */
 {
-	Reljunk j;
-	Relist relist0[LISTSIZE], relist1[LISTSIZE];
+	regexp_ljunk_t j;
+	regexp_list_t relist0[LISTSIZE], relist1[LISTSIZE];
 	int rv;
 
 	/*
@@ -188,7 +188,7 @@ rregexec(Reprog *progp,	/* program to run */
 	}
 	j.starttype = 0;
 	j.startchar = 0;
-	if(progp->startinst->type == RUNE && progp->startinst->u1.r < Runeself) {
+	if(progp->startinst->type == RUNE && progp->startinst->u1.r < 0x80) {
 		j.starttype = RUNE;
 		j.startchar = progp->startinst->u1.r;
 	}

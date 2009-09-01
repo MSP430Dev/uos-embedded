@@ -6,7 +6,7 @@ struct x
 {
 	char *re;
 	char *s;
-	Reprog *p;
+	regexp_t *p;
 };
 
 struct x t[] = {
@@ -25,7 +25,7 @@ struct x t[] = {
 
 int main(int ac, char **av)
 {
-	Resub rs[10];
+	regexp_match_t rs[10];
 	char dst[128];
 	struct x *tp;
 
@@ -34,15 +34,15 @@ int main(int ac, char **av)
 		return 0;
 	}
 
-	for(tp = t; tp->re; tp++)
-		tp->p = regcomp(tp->re);
+	for (tp = t; tp->re; tp++)
+		tp->p = regexp_compile (tp->re);
 
-	for(tp = t; tp->re; tp++){
-		printf("%s VIA %s", av[1], tp->re);
-		memset(rs, 0, sizeof rs);
-		if(regexec(tp->p, av[1], rs, 10)){
-			regsub(tp->s, dst, sizeof dst, rs, 10);
-			printf(" sub %s -> %s", tp->s, dst);
+	for (tp = t; tp->re; tp++) {
+		printf ("%s VIA %s", av[1], tp->re);
+		memset (rs, 0, sizeof rs);
+		if (regexp_execute (tp->p, av[1], rs, 10)){
+			regexp_substitute (tp->s, dst, sizeof dst, rs, 10);
+			printf (" sub %s -> %s", tp->s, dst);
 		}
 		printf("\n");
 	}

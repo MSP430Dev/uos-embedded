@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "regexp9.h"
-#include "regcomp.h"
+#include "regpriv.h"
 
 #define	TRUE	1
 #define	FALSE	0
@@ -13,8 +13,8 @@
 typedef
 struct Node
 {
-	Reinst*	first;
-	Reinst*	last;
+	regexp_instr_t*	first;
+	regexp_instr_t*	last;
 }Node;
 
 #define	NSTACK	20
@@ -25,20 +25,20 @@ static	int*	atorp;
 static	int	cursubid;		/* id of current subexpression */
 static	int	subidstack[NSTACK];	/* parallel to atorstack */
 static	int*	subidp;
-static	int	lastwasand;	/* Last token was operand */
+static	int	lastwasand;		/* Last token was operand */
 static	int	nbra;
-static	char*	exprp;		/* pointer to next character in source expression */
+static	const char *exprp;		/* pointer to next character in source expression */
 static	int	lexdone;
 static	int	nclass;
-static	Reclass*classp;
-static	Reinst*	freep;
+static	regexp_class_t *classp;
+static	regexp_instr_t*	freep;
 static	int	errors;
-static	Rune	yyrune;		/* last lex'd rune */
-static	Reclass*yyclassp;	/* last lex'd class */
+static	unsigned short yyrune;		/* last lex'd rune */
+static	regexp_class_t *yyclassp;		/* last lex'd class */
 
 /* predeclared crap */
 static	void	operator(int);
-static	void	pushand(Reinst*, Reinst*);
+static	void	pushand(regexp_instr_t*, regexp_instr_t*);
 static	void	pushator(int);
 static	void	evaluntil(int);
 static	int	bldcclass(void);
@@ -49,11 +49,11 @@ static	void
 rcerror(char *s)
 {
 	errors++;
-	regerror(s);
+	regexp_error(s);
 	longjmp(regkaboom, 1);
 }
 
-static	Reinst*
+static	regexp_instr_t*
 newinst(int t)
 {
 	freep->type = t;
@@ -65,7 +65,7 @@ newinst(int t)
 static	void
 operand(int t)
 {
-	Reinst *i;
+	regexp_instr_t *i;
 
 	if(lastwasand)
 		operator(CAT);	/* catenate is implicit */
@@ -122,7 +122,7 @@ cant(char *s)
 }
 
 static	void
-pushand(Reinst *f, Reinst *l)
+pushand(regexp_instr_t *f, regexp_instr_t *l)
 {
 	if(andp >= &andstack[NSTACK])
 		cant("operand stack overflow");
@@ -143,7 +143,7 @@ pushator(int t)
 static	Node*
 popand(int op)
 {
-	Reinst *inst;
+	regexp_instr_t *inst;
 
 	if(andp <= &andstack[0]){
 		regerr2("missing operand for ", op);
@@ -166,7 +166,7 @@ static	void
 evaluntil(int pri)
 {
 	Node *op1, *op2;
-	Reinst *inst1, *inst2;
+	regexp_instr_t *inst1, *inst2;
 
 	while(pri==RBRA || atorp[-1]>=pri){
 		switch(popator()){
@@ -227,13 +227,13 @@ evaluntil(int pri)
 	}
 }
 
-static	Reprog*
-optimize(Reprog *pp)
+static	regexp_t*
+optimize(regexp_t *pp)
 {
-	Reinst *inst, *target;
+	regexp_instr_t *inst, *target;
 	int size;
-	Reprog *npp;
-	Reclass *cl;
+	regexp_t *npp;
+	regexp_class_t *cl;
 	int diff;
 
 	/*
@@ -251,12 +251,12 @@ optimize(Reprog *pp)
 	 *  necessary.  Reallocate to the actual space used
 	 *  and then relocate the code.
 	 */
-	size = sizeof(Reprog) + (freep - pp->firstinst)*sizeof(Reinst);
+	size = sizeof(regexp_t) + (freep - pp->firstinst)*sizeof(regexp_instr_t);
 	npp = realloc(pp, size);
 	if(npp==0 || npp==pp)
 		return pp;
 	diff = (char *)npp - (char *)pp;
-	freep = (Reinst *)((char *)freep + diff);
+	freep = (regexp_instr_t *)((char *)freep + diff);
 	for(inst=npp->firstinst; inst<freep; inst++){
 		switch(inst->type){
 		case OR:
@@ -293,10 +293,10 @@ dumpstack(void){
 }
 
 static	void
-dump(Reprog *pp)
+dump(regexp_t *pp)
 {
-	Reinst *l;
-	Rune *p;
+	regexp_instr_t *l;
+	unsigned short *p;
 
 	l = pp->firstinst;
 	do{
@@ -320,7 +320,7 @@ dump(Reprog *pp)
 }
 #endif
 
-static	Reclass*
+static	regexp_class_t*
 newclass(void)
 {
 	if(nclass >= NCLASS)
@@ -329,7 +329,7 @@ newclass(void)
 }
 
 static	int
-nextc(Rune *rp)
+nextc(unsigned short *rp)
 {
 	if(lexdone){
 		*rp = 0;
@@ -388,9 +388,9 @@ static int
 bldcclass(void)
 {
 	int type;
-	Rune r[NCCRUNE];
-	Rune *p, *ep, *np;
-	Rune rune;
+	unsigned short r[NCCRUNE];
+	unsigned short *p, *ep, *np;
+	unsigned short rune;
 	int quoted;
 
 	/* we have already seen the '[' */
@@ -470,16 +470,16 @@ bldcclass(void)
 	return type;
 }
 
-static	Reprog*
-regcomp1(char *s, int literal, int dot_type)
+static	regexp_t*
+regcomp1(const char *s, int literal, int dot_type)
 {
 	int token;
-	Reprog *volatile pp;
+	regexp_t *volatile pp;
 
 	/* get memory for the program */
-	pp = malloc(sizeof(Reprog) + 6*sizeof(Reinst)*strlen(s));
+	pp = malloc(sizeof(regexp_t) + 6*sizeof(regexp_instr_t)*strlen(s));
 	if(pp == 0){
-		regerror("out of memory");
+		regexp_error("out of memory");
 		return 0;
 	}
 	freep = pp->firstinst;
@@ -538,20 +538,20 @@ out:
 	return pp;
 }
 
-extern	Reprog*
-regcomp(char *s)
+extern regexp_t *
+regexp_compile(const char *s)
 {
 	return regcomp1(s, 0, ANY);
 }
 
-extern	Reprog*
-regcomplit(char *s)
+extern regexp_t *
+regexp_compile_literal(const char *s)
 {
 	return regcomp1(s, 1, ANY);
 }
 
-extern	Reprog*
-regcompnl(char *s)
+extern regexp_t *
+regexp_compile_newline(const char *s)
 {
 	return regcomp1(s, 0, ANYNL);
 }

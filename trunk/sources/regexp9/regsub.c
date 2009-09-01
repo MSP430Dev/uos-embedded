@@ -2,13 +2,14 @@
 
 /* substitute into one string using the matches from the last regexec() */
 extern	void
-regsub(char *sp,	/* source string */
-	char *dp,	/* destination string */
+regexp_substitute(const char *sp,	/* source string */
+	char *dp,			/* destination string */
 	int dlen,
-	Resub *mp,	/* subexpression elements */
-	int ms)		/* number of elements pointed to by mp */
+	regexp_match_t *mp,		/* subexpression elements */
+	int ms)				/* number of elements pointed to by mp */
 {
-	char *ssp, *ep;
+	const char *ssp;
+	char *ep;
 	int i;
 
 	ep = dp+dlen-1;
