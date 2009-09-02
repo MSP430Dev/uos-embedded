@@ -1,5 +1,5 @@
 CC		= gcc -g
-RANLIB		= true
+RANLIB		= ranlib
 O		= o
 CFLAGS		= -Wall -Wno-missing-braces -Wno-parentheses -Wno-switch -O2 -c -I.
 PREFIX		= /usr/local

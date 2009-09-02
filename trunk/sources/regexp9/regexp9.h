@@ -33,6 +33,9 @@ struct _regexp_match_t {
 extern regexp_t	*regexp_compile (const char*);
 extern regexp_t	*regexp_compile_literal (const char*);
 extern regexp_t	*regexp_compile_newline (const char*);
+extern regexp_t	*regexp_compile_unicode (const unsigned short*);
+extern regexp_t	*regexp_compile_unicode_literal (const unsigned short*);
+extern regexp_t	*regexp_compile_unicode_newline (const unsigned short*);
 
 /*
  * Match a regular expression against a string.

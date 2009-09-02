@@ -28,6 +28,7 @@ static	int*	subidp;
 static	int	lastwasand;		/* Last token was operand */
 static	int	nbra;
 static	const char *exprp;		/* pointer to next character in source expression */
+static	const unsigned short *runep;	/* alternative pointer to rune source expression */
 static	int	lexdone;
 static	int	nclass;
 static	regexp_class_t *classp;
@@ -335,9 +336,15 @@ nextc(unsigned short *rp)
 		*rp = 0;
 		return 1;
 	}
-	exprp += _chartorune(rp, exprp);
-	if(*rp == '\\'){
+	if (runep)
+		*rp = *runep++;
+	else
 		exprp += _chartorune(rp, exprp);
+	if(*rp == '\\'){
+		if (runep)
+			*rp = *runep++;
+		else
+			exprp += _chartorune(rp, exprp);
 		return 1;
 	}
 	if(*rp == 0)
@@ -470,14 +477,25 @@ bldcclass(void)
 	return type;
 }
 
+static unsigned
+runelen(const unsigned short *s)
+{
+	const unsigned short *e = s;
+
+	while (*e++ != 0)
+		continue;
+	return e - s - 1;
+}
+
 static	regexp_t*
-regcomp1(const char *s, int literal, int dot_type)
+regcomp1(const char *source, const unsigned short *rune_source, int literal, int dot_type)
 {
 	int token;
 	regexp_t *volatile pp;
 
 	/* get memory for the program */
-	pp = malloc(sizeof(regexp_t) + 6*sizeof(regexp_instr_t)*strlen(s));
+	pp = malloc (sizeof(regexp_t) + 6 * sizeof(regexp_instr_t) *
+		(rune_source ? runelen (rune_source) : strlen (source)));
 	if(pp == 0){
 		regexp_error("out of memory");
 		return 0;
@@ -491,7 +509,8 @@ regcomp1(const char *s, int literal, int dot_type)
 
 	/* go compile the sucker */
 	lexdone = 0;
-	exprp = s;
+	runep = rune_source;
+	exprp = source;
 	nclass = 0;
 	nbra = 0;
 	atorp = atorstack;
@@ -541,17 +560,35 @@ out:
 extern regexp_t *
 regexp_compile(const char *s)
 {
-	return regcomp1(s, 0, ANY);
+	return regcomp1(s, 0, 0, ANY);
 }
 
 extern regexp_t *
 regexp_compile_literal(const char *s)
 {
-	return regcomp1(s, 1, ANY);
+	return regcomp1(s, 0, 1, ANY);
 }
 
 extern regexp_t *
 regexp_compile_newline(const char *s)
 {
-	return regcomp1(s, 0, ANYNL);
+	return regcomp1(s, 0, 0, ANYNL);
+}
+
+extern regexp_t *
+regexp_compile_unicode(const unsigned short *rs)
+{
+	return regcomp1(0, rs, 0, ANY);
+}
+
+extern regexp_t *
+regexp_compile_unicode_literal(const unsigned short *rs)
+{
+	return regcomp1(0, rs, 1, ANY);
+}
+
+extern regexp_t *
+regexp_compile_unicode_newline(const unsigned short *rs)
+{
+	return regcomp1(0, rs, 0, ANYNL);
 }
