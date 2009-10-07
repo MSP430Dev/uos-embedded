@@ -5,198 +5,93 @@
  * Copyright (C) 2009 ELVEES
  *
  * Created: 24.08.2009
- * Last modify: 27.08.2009
+ * Last modify: 07.10.2009
  */
 #include <elvees/lport.h>
 
-#define CRAM_MEM_START	(uint32_t)(&_end)
-#define CRAM_MEM_SIZE	(2*sizeof (dma_chain_t))
-#define CRAM_MEM_END    (CRAM_MEM_START + CRAM_MEM_SIZE)
+ARRAY (stack_irq, 1000);
 
 void
-lport_init (lport_t *l, unsigned long pair, unsigned long dir, unsigned long dma, unsigned long clk, unsigned long size) 
+lport_send_data (lport_t *l, unsigned long *data, unsigned long size)
 {
-	l->pair = pair;
-	l->dir  = dir;
-	l->dma  = dma;
-	l->clk  = clk;
-	l->size = size;
+	unsigned long idx, crc32, magic = LPORT_MAGIC;
 
-	if (l->pair == LPORT_PAIR_01) {
-		if (l->dir == LPORT_SEND_RECV) {
-			l->send = 0;
-			l->recv = 1;
-		}
-		else {
-			l->send = 1;
-			l->recv = 0;
-		}
+	if (size > MAX_QUEUE_SIZE) {
+		debug_printf ("max queue size = %u\n", MAX_QUEUE_SIZE);
+		return;
+	}
+
+	if (l->dma == LPORT_DMA_OFF) {
+		mutex_lock (&l->irq);
+
+		queue_free (&l->queue);
+
+		for (idx = 0; idx < size; idx++)
+			queue_push (&l->queue, &data[idx]);
+
+		crc32 = queue_compute_crc32 (&l->queue, 0);
+
+		queue_push_first (&l->queue, &crc32);
+		queue_push_first (&l->queue, &size);
+		queue_push_first (&l->queue, &magic);
+
+		mutex_unlock (&l->irq);
+
+		l->lcsr->len = 1;
 	}
 	else {
-		if (l->dir == LPORT_SEND_RECV) {
-			l->send = 2;
-			l->recv = 3;
-		}
-		else {
-			l->send = 3;
-			l->recv = 2;
-		}
+		MC_IR_LPCH  (l->port) = (unsigned long)data & 0x1FFFFFFC;
+		MC_OR_LPCH  (l->port) = 1;
+		MC_Y_LPCH   (l->port) = 0;
+		MC_CP_LPCH  (l->port) = 0;
+		MC_CSR_LPCH (l->port) = (size << 16);
+
+		MC_CSR_LPCH (l->port) |= 1;
 	}
-
-	l->lcsr_recv = (volatile lport_desc_t*)&MC_LCSR (l->recv);
-	l->lcsr_send = (volatile lport_desc_t*)&MC_LCSR (l->send);
-
-	l->lcsr_recv->ltran = 0;
-	l->lcsr_recv->lclk  = l->clk;
-	l->lcsr_recv->ldw   = l->size;
-	l->lcsr_recv->len   = 1;
-
-	l->lcsr_send->ltran = 1;
-	l->lcsr_send->lclk  = l->clk;
-	l->lcsr_send->ldw   = l->size;
-	l->lcsr_send->len   = 1;
 }
 
-void
-lport_send_word (lport_t *l, unsigned long *word)
+int
+lport_recv_data (lport_t *l, unsigned long *data, unsigned long size)
 {
-	if (l->dma == 0) {
-		MC_LTX (l->send) = *word;
+	int count = 0;
+	unsigned char *buf = 0;
 
-		while (l->lcsr_send->lstat != 0);
+	if (l->dma == LPORT_DMA_OFF) {
+
+		if (queue_is_empty (&l->queue))
+			buf = (unsigned char*)mutex_wait (&l->receive);
+
+		mutex_lock (&l->irq);
+
+		while ((!queue_is_empty (&l->queue)) && (count < size)) {
+			data [count++] = queue_pop (&l->queue);
+		}
+
+		mutex_unlock (&l->irq);
+
+		l->lcsr->len = 1;
 	}
 	else {
-		MC_IR_LPCH  (l->send) = (unsigned long)word & 0x1FFFFFFC;
-		MC_OR_LPCH  (l->send) = 1;
-		MC_Y_LPCH   (l->send) = 0;
-		MC_CP_LPCH  (l->send) = 0;
-		MC_CSR_LPCH (l->send) = (1 << 16);
+		MC_IR_LPCH  (l->port) = (unsigned long)data & 0x1FFFFFFC;
+		MC_OR_LPCH  (l->port) = 1;
+		MC_Y_LPCH   (l->port) = 0;
+		MC_CP_LPCH  (l->port) = 0;
+		MC_CSR_LPCH (l->port) = (size << 16);
 
-		MC_CSR_LPCH (l->send) |= 1;
+		MC_CSR_LPCH (l->port) |= 1;
 	}
+
+	return count;
 }
 
 void
-lport_recv_word (lport_t *l, unsigned long *word)
+lport_set_mode (lport_t *l, unsigned long mode)
 {
-	if (l->dma == 0) {
-		while (l->lcsr_recv->lstat == 0);
+	lport_kill (l);
 
-		*word = MC_LRX (l->recv);
-	}
-	else {
-		MC_IR_LPCH  (l->recv) = (unsigned long)word & 0x1FFFFFFC;
-		MC_OR_LPCH  (l->recv) = 1;
-		MC_Y_LPCH   (l->recv) = 0;
-		MC_CP_LPCH  (l->recv) = 0;
-		MC_CSR_LPCH (l->recv) = (1 << 16);
+	l->mode = mode;
 
-		MC_CSR_LPCH (l->recv) |= 1;
-	}
-}
-
-void
-lport_send_data (lport_t *l, unsigned long *word, unsigned long size)
-{
-	unsigned long idx;
-
-	for (idx = 0; idx < size; idx++)
-		lport_send_word (l, word + idx);
-}
-
-void
-lport_recv_data (lport_t *l, unsigned long *word, unsigned long size)
-{
-	unsigned long idx;
-
-	for (idx = 0; idx < size; idx++)
-		lport_recv_word (l, word + idx);
-}
-
-void
-lport_set_pair (lport_t *l, unsigned long pair)
-{
-	l->pair = pair;
-
-	if (l->pair == LPORT_PAIR_01) {
-		if (l->dir == LPORT_SEND_RECV) {
-			l->send = 0;
-			l->recv = 1;
-		}
-		else {
-			l->send = 1;
-			l->recv = 0;
-		}
-	}
-	else {
-		if (l->dir == LPORT_SEND_RECV) {
-			l->send = 2;
-			l->recv = 3;
-		}
-		else {
-			l->send = 3;
-			l->recv = 2;
-		}
-	}
-
-	l->lcsr_recv = (lport_desc_t*)&MC_LCSR (l->recv);
-	l->lcsr_send = (lport_desc_t*)&MC_LCSR (l->send);
-
-	memset((void*)l->lcsr_recv, 0, sizeof (lport_desc_t));
-	memset((void*)l->lcsr_send, 0, sizeof (lport_desc_t));
-
-	l->lcsr_recv->ltran = 0;
-	l->lcsr_recv->lclk  = l->clk;
-	l->lcsr_recv->ldw   = l->size;
-	l->lcsr_recv->len   = 1;
-
-	l->lcsr_send->ltran = 1;
-	l->lcsr_send->lclk  = l->clk;
-	l->lcsr_send->ldw   = l->size;
-	l->lcsr_send->len   = 1;
-}
-
-void
-lport_set_dir (lport_t *l, unsigned long dir)
-{
-	l->dir = dir;
-
-	if (l->pair == LPORT_PAIR_01) {
-		if (l->dir == LPORT_SEND_RECV) {
-			l->send = 0;
-			l->recv = 1;
-		}
-		else {
-			l->send = 1;
-			l->recv = 0;
-		}
-	}
-	else {
-		if (l->dir == LPORT_SEND_RECV) {
-			l->send = 2;
-			l->recv = 3;
-		}
-		else {
-			l->send = 3;
-			l->recv = 2;
-		}
-	}
-
-	l->lcsr_recv = (lport_desc_t*)&MC_LCSR (l->recv);
-	l->lcsr_send = (lport_desc_t*)&MC_LCSR (l->send);
-
-	memset((void*)l->lcsr_recv, 0, sizeof (lport_desc_t));
-	memset((void*)l->lcsr_send, 0, sizeof (lport_desc_t));
-
-	l->lcsr_recv->ltran = 0;
-	l->lcsr_recv->lclk  = l->clk;
-	l->lcsr_recv->ldw   = l->size;
-	l->lcsr_recv->len   = 1;
-
-	l->lcsr_send->ltran = 1;
-	l->lcsr_send->lclk  = l->clk;
-	l->lcsr_send->ldw   = l->size;
-	l->lcsr_send->len   = 1;
+	lport_reset (l);
 }
 
 void
@@ -210,8 +105,7 @@ lport_set_clk (lport_t *l, unsigned long clk)
 {
 	l->clk = clk;
 
-	l->lcsr_recv->lclk  = clk;
-	l->lcsr_send->lclk  = clk;
+	l->lcsr->lclk  = clk;
 }
 
 void
@@ -219,8 +113,248 @@ lport_set_size (lport_t *l, unsigned long size)
 {
 	l->size = size;
 
-	l->lcsr_recv->ldw   = size;
-	l->lcsr_send->ldw   = size;
+	l->lcsr->ldw   = size;
+}
+
+static void
+lport_irq (void *arg)
+{
+	lport_t *l = (lport_t*)arg;
+		
+	mutex_lock_irq (&l->irq, LPORT_IRQ(l->port), 0, 0);
+	mutex_lock (&l->receive);
+
+	for(;;) {
+		mutex_wait (&l->irq);
+
+		l->irq_count++;
+
+		if (l->mode == LPORT_SEND)
+			lport_handle_send_irq (l);
+
+		if (l->mode == LPORT_RECV)
+			lport_handle_recv_irq (l);
+	}
+}
+
+static void
+lport_mes_speed (void *arg)
+{
+	lport_t *l = (lport_t*)arg;
+	unsigned char *buf = 0;
+
+	for(;;) {
+		buf = (unsigned char*)mutex_wait (&l->mes);
+
+		mutex_lock (&l->irq);
+
+		debug_printf ("speed = %u words/sec (%u bytes/sec)\n", 
+			(l->word_send/(l->dt/1000)),
+			(l->word_send/(l->dt/1000) * (4)));
+
+		l->word_send = 0;
+
+		mutex_unlock (&l->irq);
+	}
+}
+
+void
+lport_handle_recv_irq (lport_t *l)
+{
+	unsigned long free = 0,
+		recv = 0,
+		sz = 0,
+		crc32 = 0,
+		idx = 0,
+		magic = 0,
+		queue_sz = 0;
+
+	mutex_lock (&l->irq);
+
+	debug_printf ("begin recv irq\n");
+
+	while (l->lcsr->lstat == 0);
+	magic = MC_LRX (l->port);
+
+	if (magic == LPORT_MAGIC) {
+		while (l->lcsr->lstat == 0);
+		sz = MC_LRX (l->port);
+
+		while (l->lcsr->lstat == 0);
+		crc32 = MC_LRX (l->port);
+
+		l->word_left = 0;
+	}
+	else {
+		sz = l->word_left;
+
+		if (sz == 0) {
+			debug_printf ("\nWrong queue!\n");
+			l->lcsr->len = 0;
+
+			return;
+		}
+	}
+
+	queue_sz = queue_size (&l->queue);
+
+	for (idx = 0; idx < sz; idx++) {
+		while (l->lcsr->lstat == 0);
+		recv = MC_LRX (l->port);
+
+		free = queue_push (&l->queue, &recv);
+
+		if (free == 0) {
+			l->word_left = sz - idx + 1;
+			l->lcsr->len = 0;
+#if LPORT_DEBUG
+			debug_printf ("\n...queue is full...\n");
+#endif
+			mutex_signal (&l->receive, "recv_piece");
+			mutex_unlock (&l->irq);
+
+			return;
+		}
+	}
+
+	if ((crc32 != 0)&&(crc32 != queue_compute_crc32 (&l->queue, sz))) {
+#if LPORT_DEBUG
+		debug_printf ("\nData was corrupted:\n");
+		debug_printf ("size    = %u\n", sz);
+		debug_printf ("crc32   = %p\n", crc32);
+		debug_printf ("l->crc32= %p\n", queue_compute_crc32 (&l->queue, sz));
+		queue_print_crc32 (&l->queue, sz);
+		debug_getchar ();
+		queue_print (&l->queue);
+#endif
+		l->lcsr->len = 0;
+
+		return;
+	}
+
+	mutex_signal (&l->receive, "recv_all");
+	debug_printf ("end recv irq\n");
+	mutex_unlock (&l->irq);
+}
+
+void
+lport_handle_send_irq (lport_t *l)
+{
+	unsigned long send = 0;
+
+	if (queue_is_empty (&l->queue)) {
+		l->lcsr->len = 0;
+		return;
+	}
+#if LPORT_DEBUG
+	l->dt = 10000;
+	if (l->word_send == 0)
+		l->t0 = timer_milliseconds (&l->timer);
+#endif	
+	mutex_lock (&l->irq);
+	debug_printf ("begin send irq\n");
+#if LPORT_DEBUG
+	l->word_send += queue_size (&l->queue);
+#endif
+	while (!queue_is_empty (&l->queue)) {
+		send = queue_pop (&l->queue);
+		MC_LTX (l->port) = send;
+
+		while (l->lcsr->lstat != 0);
+	}
+#if LPORT_DEBUG
+	if (timer_milliseconds (&l->timer) - l->t0 >= l->dt) {
+		mutex_signal (&l->mes, "mes");
+	}
+#endif
+	debug_printf ("end recv irq\n");
+	mutex_unlock (&l->irq);
+}
+
+void lport_reset (lport_t *l)
+{
+	l->lcsr = (volatile lport_desc_t*)&MC_LCSR (l->port);
+
+	memset ((void*)l->lcsr, 0, sizeof (lport_desc_t));
+
+	l->lcsr->ltran = l->mode;
+	l->lcsr->lclk  = l->clk;
+	l->lcsr->ldw   = l->size;
+	l->lcsr->len   = 1;
+
+	l->irq_count = 0;
+}
+
+void
+lport_set_port (lport_t *l, unsigned long port)
+{
+	lport_kill (l);
+
+	l->port = port;
+
+	lport_reset (l);
+
+	task_delete (l->task, 0);
+	l->task = task_create (lport_irq, l, "lport_irq", l->prio,
+		l->task_stack, 0x200);
+}
+
+void
+lport_kill (lport_t *l)
+{
+	mutex_unlock_irq (&l->irq);
+
+	memset ((void*)l->lcsr, 0, sizeof (lport_desc_t));
+
+	task_delete (l->task, 0);
+	mem_free (l->task_stack);
+
+	queue_kill (&l->queue);
+}
+
+void
+lport_init (lport_t *l,
+	mem_pool_t *pool,
+	unsigned long port,
+	unsigned long mode,
+	unsigned long dma,
+	unsigned long clk,
+	unsigned long size,
+	unsigned long prio) 
+{
+	char name[10] = "lpi_";
+	void *mem = 0;
+
+	l->port = port;
+	l->mode = mode;
+	l->dma  = dma;
+	l->clk  = clk;
+	l->size = size;
+	l->pool = pool;
+	l->prio = prio;
+
+	queue_init (&l->queue, l->pool, MAX_QUEUE_SIZE + 3);
+
+	lport_reset (l);
+
+	name[4] = (char)(l->port + '0');
+	name[5] = '\0';
+
+	l->task_stack = mem_alloc (l->pool, 0x200);
+	
+	l->task = task_create (lport_irq, l, name, l->prio,
+		l->task_stack, 0x200);
+
+#if LPORT_DEBUG
+	mem = mem_alloc (l->pool, 0x200);
+	
+	l->mes_speed = task_create (lport_mes_speed, l, "mes speed", 120,
+		mem, 0x200);
+
+	timer_init (&l->timer, KHZ, 10);
+
+	mutex_lock (&l->mes);
+#endif
 }
 
 #if LPORT_DEBUG
@@ -228,21 +362,12 @@ void lport_debug_print (lport_t *l)
 {
 	debug_puts ("\n*****LPORT***CONFIG*****\n\n");
 
-	if (l->pair == LPORT_PAIR_01)
-		debug_puts ("1. Active pair: LP0, LP1\n");
-	else
-		debug_puts ("1. Active pair: LP2, LP3\n");
+	debug_printf ("1. Active port: LP%u\n", l->port);
 
-	if (l->pair == LPORT_PAIR_01)
-		if (l->dir == LPORT_SEND_RECV)
-			debug_puts ("2. Direction: LP0 => LP1\n");
-		else
-			debug_puts ("2. Direction: LP0 <= LP1\n");
+	if (l->mode == LPORT_SEND)
+		debug_puts ("2. Mode: send\n");
 	else
-		if (l->dir == LPORT_SEND_RECV)
-			debug_puts ("2. Direction: LP2 => LP3\n");
-		else
-			debug_puts ("2. Direction: LP2 <= LP3\n");
+		debug_puts ("2. Mode: receive\n");
 
 	if (l->dma == LPORT_DMA_ON)
 		debug_puts ("3. DMA: on\n");
