@@ -10,7 +10,10 @@ TESTS		= test_debug.hex test_task.hex test_timer.hex test_lcd.hex \
 OUTS            = $(TESTS:%.srec=%.out)
 
 # Using msp430-jtag programmer with JTAG LPT adapter.
-PROG            = env LIBMSPGCC_PATH=/usr/local/lib msp430-jtag
+#PROG            = env LIBMSPGCC_PATH=/usr/local/lib msp430-jtag
+
+# Using msp430-jtag programmer with JTAG USB adapter, Bi-Wire protocol.
+PROG            = env LIBMSPGCC_PATH=/usr/local/lib msp430-jtag --spy-bi-wire --lpt=/dev/ttyUSB0
 
 all:		$(OUTS) $(TESTS)
 		for f in *.out; do $(SIZE) *.out; break; done

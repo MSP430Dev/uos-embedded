@@ -8,6 +8,14 @@
 #   define RX_AVAIL	(UCA3IFG & UCRXIFG)
 #   define RX_DATA	UCA3RXBUF
 
+#elif defined (__MSP430_HAS_USCI__)
+    /* Use USCI_A0 for debug output. */
+#   define TX_BUSY	(! (IFG2 & UCA0TXIFG))
+#   define TX_DATA	UCA0TXBUF
+#   define RX_CLRERR	{ UCA0STAT &= ~(UCFE + UCPE + UCBRK); }
+#   define RX_AVAIL	(IFG2 & UCA0RXIFG)
+#   define RX_DATA	UCA0RXBUF
+
 #else
     /* Use USART0 for debug output. */
 #   define TX_BUSY	(! (UTCTL0 & TXEPT) && ! (U0IFG & UTXIFG0))

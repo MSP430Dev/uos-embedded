@@ -24,7 +24,7 @@ _init_ (void)
 	/*
 	 * Enable the crystal on XT1 and use it as MCLK.
 	 */
-#ifdef BCSCTL1_
+#ifdef USE_XT1_HIGH
 	BCSCTL1 |= XTS;				/* XT1 as high-frequency */
 	_BIC_SR (OSCOFF);			/* turn on XT1 oscillator */
 	do {					/* wait in loop until crystal is stable */
@@ -43,6 +43,27 @@ _init_ (void)
 	IFG1 &= ~OFIFG;				/* clear osc. fault int. flag */
 	BCSCTL2 = SELM0 | SELM1;		/* set XT1 as MCLK */
 #endif /* BCSCTL1_ */
+
+	/*
+	 * Setup the internal oscillator.
+	 */
+#ifdef USE_DCO
+#if KHZ == 16000
+	BCSCTL1 = CALBC1_16MHZ;
+	DCOCTL = CALDCO_16MHZ;
+#elif KHZ == 12000
+	BCSCTL1 = CALBC1_12MHZ;
+	DCOCTL = CALDCO_12MHZ;
+#elif KHZ == 8000
+	BCSCTL1 = CALBC1_8MHZ;
+	DCOCTL = CALDCO_8MHZ;
+#elif KHZ == 1000
+	BCSCTL1 = CALBC1_1MHZ;
+	DCOCTL = CALDCO_1MHZ;
+#else
+	#error Invalid KHZ, must be 16000, 12000, 8000 or 1000.
+#endif
+#endif
 
 	/*
 	 * Enable USART0 module.
@@ -65,6 +86,30 @@ _init_ (void)
 	UMCTL0 = 0;
 #  endif
 	URCTL0 = 0;				/* init receiver control register */
+#endif
+
+#ifdef MSP430_DEBUG_USCIA0
+	/* Use USCI_A0 for debug output. */
+	P3SEL = BIT4 | BIT5;			/* P3.4, P3.5 = USCI_A0 TXD/RXD */
+	UCA0CTL1 = UCSWRST;			/* Reset */
+	UCA0CTL0 = 0;				/* Async 8N1 */
+	UCA0CTL1 |= UCSSEL_SMCLK;		/* Clock source SMCLK */
+	UCA0BR0 = KHZ * 1000L / 115200;
+	UCA0BR1 = (int) (KHZ * 1000L / 115200) >> 8;
+#if KHZ == 16000
+	UCA0MCTL = UCBRS_7;
+#elif KHZ == 12000
+	UCA0MCTL = UCBRS_1;
+#elif KHZ == 8000
+	UCA0MCTL = UCBRS_4;
+#elif KHZ == 1000
+	UCA0MCTL = UCBRS_0;
+#else
+	#error Invalid KHZ, must be 16000, 12000, 8000 or 1000.
+#endif
+	UCA0CTL1 &= ~UCSWRST;			/* Clear reset */
+	/* IE2 |= UCA0RXIE; */			/* Enable USCI_A0 RX interrupt */
+//  __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, interrupts enabled
 #endif
 
 #ifdef MSP430_DEBUG_USCIA3
