@@ -114,14 +114,14 @@ arch_task_switch (task_t *target)
 void __attribute__((naked))
 _irq_handler_ (mutex_irq_t *h)
 {
-/*debug_printf ("/%d/\n", h->irq);*/
+/*debug_putchar (0, '<'); debug_putchar (0, 'A' + h->irq); debug_putchar (0, '>');*/
 	if (h->handler) {
 		/* If the lock is free -- call fast handler. */
 		if (h->lock->master) {
 			/* Lock is busy -- remember pending irq.
 			 * Call fast handler later, in mutex_unlock(). */
 			h->pending = 1;
-			asm volatile ("jump _restore_regs_");
+			asm volatile ("jmp _restore_regs_");
 		}
 		if ((h->handler) (h->arg) != 0) {
 			/* The fast handler returns 1 when it fully
@@ -129,7 +129,7 @@ _irq_handler_ (mutex_irq_t *h)
 			 * there is no need to wake up the interrupt
 			 * servicing task, stopped on mutex_wait.
 			 * Task switching is not performed. */
-			asm volatile ("jump _restore_regs_");
+			asm volatile ("jmp _restore_regs_");
 		}
 	}
 
@@ -151,7 +151,7 @@ _irq_handler_ (mutex_irq_t *h)
 	}
 
 	/* Restore registers. */
-	asm volatile ("jump _restore_regs_");
+	asm volatile ("jmp _restore_regs_");
 }
 
 /* TODO */
@@ -223,7 +223,7 @@ _intr##n (void) \
 	SAVE_REGS ();\
 	mask; /* disable the interrupt, avoiding loops */\
 	asm volatile ("mov %0, r15" : : "i" (&mutex_irq [n/2]));\
-	asm volatile ("jump _irq_handler_");\
+	asm volatile ("jmp _irq_handler_");\
 }
 
 #ifdef PORT1_VECTOR
@@ -243,6 +243,12 @@ HANDLE (USART0TX_VECTOR, (U0IE &= ~UTXIE0, UTCTL0 |= TXEPT));	/* USART 0 Transmi
 #endif
 #ifdef USART0RX_VECTOR
 HANDLE (USART0RX_VECTOR, U0IE &= ~URXIE0);	/* USART 0 Receive */
+#endif
+#ifdef USCIAB0TX_VECTOR
+HANDLE (USCIAB0TX_VECTOR, IE2 &= ~UCA0TXIE);	/* USCI A0/B0 Transmit */
+#endif
+#ifdef USCIAB0RX_VECTOR
+HANDLE (USCIAB0RX_VECTOR, IE2 &= ~UCA0RXIE);	/* USCI A0/B0 Receive */
 #endif
 #ifdef TIMERA1_VECTOR
 HANDLE (TIMERA1_VECTOR, TACCTL1 &= ~CCIE);	/* Timer A CC1-2, TA */
@@ -268,6 +274,7 @@ HANDLE (COMPARATORA_VECTOR, CACTL1 &= ~CAIE);	/* Comparator A */
 #ifdef NMI_VECTOR
 HANDLE (NMI_VECTOR, );				/* Non-maskable */
 #endif
+
 
 /* TODO:
  * ADC10_VECTOR

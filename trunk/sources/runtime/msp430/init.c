@@ -76,12 +76,12 @@ _init_ (void)
 	U0ME |= UTXE0 + URXE0;
 	UCTL0 = SWRST;				/* reset the USART */
 	UCTL0 = CHAR;				/* set the 8-bit byte, 1 stop bit, no parity */
-	UTCTL0 = SSEL_ACLK | TXEPT;		/* select ACLK for baudrate generator clock */
+	UTCTL0 = SSEL_SMCLK | TXEPT;		/* select SMCLK for baudrate generator clock */
 
-	UBR00 = KHZ * 500L / 115200;
-	UBR10 = (int) (KHZ * 500L / 115200) >> 8;
+	UBR00 = KHZ * 1000L / 115200;
+	UBR10 = (int) (KHZ * 1000L / 115200) >> 8;
 #  if KHZ == 8000
-	UMCTL0 = 0xDD;				/* optimal for 115200 and ACLK=4 MHz */
+	UMCTL0 = 0xDD;				/* optimal for 115200 and CLK=4 MHz */
 #  else
 	UMCTL0 = 0;
 #  endif
@@ -117,9 +117,9 @@ _init_ (void)
 	P10SEL = BIT4 | BIT5;			/* P10.4, P10.5 = USCI_A3 TXD/RXD */
 	UCA3CTL1 = UCSWRST;			/* Reset */
 	UCA3CTL0 = 0;				/* Async 8N1 */
-	UCA3CTL1 |= UCSSEL_ACLK;		/* Clock source ACLK */
-	UCA3BR0 = KHZ * 500L / 115200;
-	UCA3BR1 = (int) (KHZ * 500L / 115200) >> 8;
+	UCA3CTL1 |= UCSSEL_SMCLK;		/* Clock source SMCLK */
+	UCA3BR0 = KHZ * 1000L / 115200;
+	UCA3BR1 = (int) (KHZ * 1000L / 115200) >> 8;
 	UCA3MCTL = 0;
 	UCA3CTL1 &= ~UCSWRST;			/* Clear reset */
 	/* UCA3IE |= UCRXIE; */			/* Enable USCI_A0 RX interrupt */

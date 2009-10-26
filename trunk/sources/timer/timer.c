@@ -250,20 +250,20 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	MC_ITCSR = MC_ITCSR_EN;
 #endif
 #if MSP430
-        /* Ensure the timer is stopped. */
-        TACTL = 0;
+	/* Ensure the timer is stopped. */
+	TACTL = 0;
 
-        /* Run the timer of the ACLK. */
-        TACTL = TASSEL_1;
+	/* Run the timer of the SMCLK divided by 8. */
+	TACTL = TASSEL_SMCLK | ID_DIV8;
 
-        /* Set the compare match value according to the tick rate we want. */
-        TACCR0 = t->khz * t->msec_per_tick / 2;
+	/* Set the compare match value according to the tick rate we want. */
+	TACCR0 = ((unsigned long) t->khz * t->msec_per_tick) >> 3;
 
-        /* Start up clean. */
-        TACTL |= TACLR;
+	/* Start up clean. */
+	TACTL |= TACLR;
 
-        /* Up mode. */
-        TACTL |= MC_1;
+	/* Up mode. */
+	TACTL |= MC_1;
 #endif
 #if LINUX386
 	{
