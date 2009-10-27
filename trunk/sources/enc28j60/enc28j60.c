@@ -22,23 +22,27 @@
 
 #define ETH_IRQ			0	/* TODO: interrupt vector */
 
-#define P2_ENIND		BIT1	/* Enable LEDs */
-#define P2_ENCLK		BIT4	/* Enable clock */
-#define P2_INT			BIT6	/* IRQ from ethernet */
-#define P2_NRES			BIT7	/* /RESET */
-
-#define P3_NCS			BIT6 	/* UCB1STE */
-#define P3_SDO			BIT7	/* UCB1SIMO */
-
-#define P5_SDI			BIT4	/* UCB1SOMI */
-#define P5_SCK			BIT5	/* UCB1CLK */
-
 /*
  * Configure I/O pins.
  */
 static void inline
 chip_init_spi (void)
 {
+#ifdef ENC28J60_SEISMONET_E10
+/*
+ * Microcontroller MSP430F5438
+ */
+#define P2_ENIND	BIT1		/* Enable LEDs */
+#define P2_ENCLK	BIT4		/* Enable clock */
+#define P2_INT		BIT6		/* IRQ from ethernet */
+#define P2_NRES		BIT7		/* /RESET */
+
+#define P3_NCS		BIT6		/* UCB1STE */
+#define P3_SDO		BIT7		/* UCB1SIMO */
+
+#define P5_SDI		BIT4		/* UCB1SOMI */
+#define P5_SCK		BIT5		/* UCB1CLK */
+
 	P2DIR |= P2_ENIND | P2_ENCLK | P2_NRES;	/* Set outputs */
 	P2DIR &= ~P2_INT;		/* Set INT as input */
 	P2SEL &= ~(P2_ENIND | P2_ENCLK | P2_INT | P2_NRES);
@@ -63,26 +67,78 @@ chip_init_spi (void)
 	UCB1BR1 = 0;
 	UCB1CTL1 &= ~UCSWRST;		/* Clear reset */
 	/* UCB1IE |= UCRXIE; */		/* Enable USCI_A0 RX interrupt */
+#endif
+
+#ifdef ENC28J60_SEISMONET_M10
+/*
+ * Microcontroller MSP430F2272
+ */
+#define P1_INT		BIT3		/* IRQ from ethernet */
+
+#define P2_ENPOWER	BIT7		/* Enable power for ethernet */
+
+#define P3_SDO		BIT1		/* UCB0SIMO */
+#define P3_SDI		BIT2		/* UCB1SOMI */
+#define P3_SCK		BIT3		/* UCB0CLK */
+
+#define P4_NRES		BIT1		/* /RESET for ethernet */
+#define P4_NCS		BIT2		/* /CS for ethernet */
+
+	P1DIR &= ~P1_INT;		/* Set INT as input */
+	P1SEL &= ~P1_INT;
+	P1OUT &= ~P1_INT;
+
+	P2DIR |= P2_ENPOWER;		/* Set ENPOWER as output */
+	P2SEL &= ~P2_ENPOWER;
+	P2OUT |= P2_ENPOWER;		/* Enable power for ethernet */
+
+	P3DIR |= P3_SDO | P3_SCK;	/* Set SCK and MOSI as outputs */
+	P3DIR &= ~P3_SDI;		/* Set MISO as input */
+	P3OUT &= ~(P3_SDO | P3_SCK | P3_SDI); /* Clear SDO, SDI and SCK */
+	P3SEL |= P3_SDO | P3_SDI | P3_SCK; /* Special functions for SPI pins */
+
+	P4DIR |= P4_NRES | P4_NCS;	/* Set /RESET and /CS as outputs */
+	P4SEL &= ~(P4_NRES | P4_NCS);
+	P4OUT |= P4_NRES | P4_NCS;	/* Set /RESET and /CS */
+#endif
 }
 
 static void inline
 chip_select (int on)
 {
+#ifdef ENC28J60_SEISMONET_E10
 	if (on)
 		P3OUT &= ~P3_NCS;	/* assert CS */
 	else
 		P3OUT |= P3_NCS;	/* release CS */
+#endif
+#ifdef ENC28J60_SEISMONET_M10
+	if (on)
+		P4OUT &= ~P4_NCS;	/* assert CS */
+	else
+		P4OUT |= P4_NCS;	/* release CS */
+#endif
 }
 
 static unsigned
 chip_io (unsigned data)
 {
+#ifdef ENC28J60_SEISMONET_E10
 	while (! (UCB1IFG & UCTXIFG))	/* wait until TX buffer empty */
 		continue;
 	UCB1TXBUF = data;		/* send byte */
   	while (! (UCB1IFG & UCRXIFG))	/* data present in RX buffer? */
 		continue;
 	return UCB1RXBUF;		/* return read data */
+#endif
+#ifdef ENC28J60_SEISMONET_M10
+	while (! (IFG2 & UCB0TXIFG))	/* wait until TX buffer empty */
+		continue;
+	UCB0TXBUF = data;		/* send byte */
+  	while (! (IFG2 & UCB0RXIFG))	/* data present in RX buffer? */
+		continue;
+	return UCB0RXBUF;		/* return read data */
+#endif
 }
 
 static unsigned
