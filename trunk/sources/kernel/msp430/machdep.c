@@ -186,6 +186,18 @@ arch_intr_allow (int irq)
 #ifdef USART0RX_VECTOR
         case USART0RX_VECTOR/2: U0IE |= URXIE0; break;		/* USART 0 Receive */
 #endif
+#ifdef USCIAB0TX_VECTOR
+        case USCIAB0TX_VECTOR/2: /*IE2 |= UCA0TXIE;*/ break;	/* USCI A0/B0 Transmit */
+#endif
+#ifdef USCIAB0RX_VECTOR
+        case USCIAB0RX_VECTOR/2: IE2 |= UCA0RXIE; break;	/* USCI A0/B0 Receive */
+#endif
+#ifdef USCIAB1TX_VECTOR
+        case USCIAB1TX_VECTOR/2: /*IE2 |= UCA1TXIE;*/ break;	/* USCI A1/B1 Transmit */
+#endif
+#ifdef USCIAB1RX_VECTOR
+        case USCIAB1RX_VECTOR/2: IE2 |= UCA1RXIE; break;	/* USCI A1/B1 Receive */
+#endif
 #ifdef TIMERA1_VECTOR
         case TIMERA1_VECTOR/2: TACCTL1 |= CCIE; break;		/* Timer A CC1-2, TA */
 #endif
@@ -249,6 +261,12 @@ HANDLE (USCIAB0TX_VECTOR, IE2 &= ~UCA0TXIE);	/* USCI A0/B0 Transmit */
 #endif
 #ifdef USCIAB0RX_VECTOR
 HANDLE (USCIAB0RX_VECTOR, IE2 &= ~UCA0RXIE);	/* USCI A0/B0 Receive */
+#endif
+#ifdef USCIAB1TX_VECTOR
+HANDLE (USCIAB1TX_VECTOR, IE2 &= ~UCA1TXIE);	/* USCI A1/B1 Transmit */
+#endif
+#ifdef USCIAB1RX_VECTOR
+HANDLE (USCIAB1RX_VECTOR, IE2 &= ~UCA1RXIE);	/* USCI A1/B1 Receive */
 #endif
 #ifdef TIMERA1_VECTOR
 HANDLE (TIMERA1_VECTOR, TACCTL1 &= ~CCIE);	/* Timer A CC1-2, TA */

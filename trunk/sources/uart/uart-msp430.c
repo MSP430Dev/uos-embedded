@@ -40,3 +40,67 @@ msp430_set_baud (int port, unsigned khz, unsigned long baud)
 	}
 }
 #endif
+
+
+#ifdef __MSP430_HAS_USCI__
+static unsigned long
+compute_error (unsigned long hz, unsigned long baud, int mod)
+{
+	unsigned long a, b, err, maxerr;
+	unsigned int n, i;
+
+	n = hz / baud;
+	a = baud * n;
+	b = hz;
+	maxerr = 0;
+	for (i=0; i<8; ++i) {
+		if (mod & 0x80)
+			a += baud;
+		err = (b > a) ? b-a : a-b;
+		if (err > maxerr)
+			maxerr = err;
+		a += baud * n;
+		b += hz;
+		mod <<= 1;
+	}
+	return maxerr;
+}
+
+void
+msp430_set_baud (int port, unsigned khz, unsigned long baud)
+{
+	static const unsigned char modtab[8] =
+		{ 0, 0x40, 0x44, 0x54, 0x55, 0x75, 0x77, 0x7f };
+	unsigned int div, best_s, s;
+	unsigned long hz, min_err, err;
+
+	/* Compute baud divisor. */
+	hz = khz * 1000L;
+	div = hz / baud;
+
+	/* Compute modulation value. */
+	best_s = 0;
+	min_err = hz;
+	for (s=0; s<8; ++s) {
+		err = compute_error (hz, baud, modtab[s]);
+		if (err < min_err) {
+			min_err = err;
+			best_s = s;
+		}
+	}
+/*debug_printf ("port %d hz %ld baud %ld: div %04x s %d\n", port, hz, baud, div, best_s);*/
+
+#ifdef __MSP430_HAS_USCI1__
+	if (port) {
+		UCA1BR0 = div;
+		UCA1BR1 = div >> 8;
+		UCA1MCTL = best_s << 1;
+	} else
+#endif
+	{
+		UCA0BR0 = div;
+		UCA0BR1 = div >> 8;
+		UCA0MCTL = best_s << 1;
+	}
+}
+#endif
