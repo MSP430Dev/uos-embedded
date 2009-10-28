@@ -75,8 +75,6 @@ chip_init_spi (void)
  */
 #define P1_INT		BIT3		/* IRQ from ethernet */
 
-#define P2_ENPOWER	BIT7		/* Enable power for ethernet */
-
 #define P3_SDO		BIT1		/* UCB0SIMO */
 #define P3_SDI		BIT2		/* UCB1SOMI */
 #define P3_SCK		BIT3		/* UCB0CLK */
@@ -88,18 +86,23 @@ chip_init_spi (void)
 	P1SEL &= ~P1_INT;
 	P1OUT &= ~P1_INT;
 
-	P2DIR |= P2_ENPOWER;		/* Set ENPOWER as output */
-	P2SEL &= ~P2_ENPOWER;
-	P2OUT |= P2_ENPOWER;		/* Enable power for ethernet */
-
 	P3DIR |= P3_SDO | P3_SCK;	/* Set SCK and MOSI as outputs */
 	P3DIR &= ~P3_SDI;		/* Set MISO as input */
-	P3OUT &= ~(P3_SDO | P3_SCK | P3_SDI); /* Clear SDO, SDI and SCK */
 	P3SEL |= P3_SDO | P3_SDI | P3_SCK; /* Special functions for SPI pins */
+	P3OUT &= ~(P3_SDO | P3_SCK |	/* Clear SDO, SDI, SCK and TEST. */
+		P3_SDI);
 
 	P4DIR |= P4_NRES | P4_NCS;	/* Set /RESET and /CS as outputs */
 	P4SEL &= ~(P4_NRES | P4_NCS);
 	P4OUT |= P4_NRES | P4_NCS;	/* Set /RESET and /CS */
+
+	UCB0CTL1 = UCSWRST;		/* Reset */
+	UCB0CTL0 = UCSYNC | UCMST |	/* 3-pin, 8-bit master SPI */
+		UCMSB | UCCKPH;		/* MSB first, data changed on falling SCK */
+	UCB0CTL1 |= UCSSEL_SMCLK;	/* SMCLK, max 10 MHz */
+	UCB0BR0 = KHZ / 1000;		/* Set clock 1 MHz */
+	UCB0BR1 = 0;
+	UCB0CTL1 &= ~UCSWRST;		/* Clear reset */
 #endif
 }
 
@@ -123,13 +126,14 @@ chip_select (int on)
 static unsigned
 chip_io (unsigned data)
 {
+	/*debug_printf ("chip_io (%02x)", data);*/
 #ifdef ENC28J60_SEISMONET_E10
 	while (! (UCB1IFG & UCTXIFG))	/* wait until TX buffer empty */
 		continue;
 	UCB1TXBUF = data;		/* send byte */
   	while (! (UCB1IFG & UCRXIFG))	/* data present in RX buffer? */
 		continue;
-	return UCB1RXBUF;		/* return read data */
+	data = UCB1RXBUF;		/* read data */
 #endif
 #ifdef ENC28J60_SEISMONET_M10
 	while (! (IFG2 & UCB0TXIFG))	/* wait until TX buffer empty */
@@ -137,8 +141,10 @@ chip_io (unsigned data)
 	UCB0TXBUF = data;		/* send byte */
   	while (! (IFG2 & UCB0RXIFG))	/* data present in RX buffer? */
 		continue;
-	return UCB0RXBUF;		/* return read data */
+	data = UCB0RXBUF;		/* read data */
 #endif
+	/*debug_printf (" returned %02x\n", data);*/
+	return data;
 }
 
 static unsigned
