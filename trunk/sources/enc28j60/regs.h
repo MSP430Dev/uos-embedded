@@ -244,12 +244,6 @@
 #define ENC28J60_BIT_FIELD_CLR	0xA0
 #define ENC28J60_SOFT_RESET	0xFF
 
-/* buffer boundaries applied to internal 8K ram
- * entire available packet buffer space is allocated */
-#define TXSTART_INIT		0x0000	/* start TX buffer at 0 */
-#define RXSTART_INIT		0x0600	/* give TX buffer space for one full ethernet frame (~1500 bytes) */
-#define RXSTOP_INIT		0x1FFF	/* receive buffer gets the rest */
-
 /* ENC28J60 upper 16 bits of Receive Status Vector */
 #define RSV_RXLONGEVDROPEV	0x0001
 #define RSV_CARRIEREV		0x0004

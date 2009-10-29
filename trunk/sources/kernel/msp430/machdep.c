@@ -154,7 +154,9 @@ _irq_handler_ (mutex_irq_t *h)
 	asm volatile ("jmp _restore_regs_");
 }
 
-/* TODO */
+/*
+ * Shadowed interrupt masks.
+ */
 int _msp430_p1ie;
 int _msp430_p2ie;
 int _msp430_adc12ie;
@@ -239,10 +241,10 @@ _intr##n (void) \
 }
 
 #ifdef PORT1_VECTOR
-HANDLE (PORT1_VECTOR, P1IE = 0);		/* Port 1 */
+HANDLE (PORT1_VECTOR, P1IFG = P1IE = 0);	/* Port 1 */
 #endif
 #ifdef PORT2_VECTOR
-HANDLE (PORT2_VECTOR, P2IE = 0);		/* Port 2 */
+HANDLE (PORT2_VECTOR, P2IFG = P2IE = 0);	/* Port 2 */
 #endif
 #ifdef USART1TX_VECTOR
 HANDLE (USART1TX_VECTOR, (U1IE &= ~UTXIE1, UTCTL1 |= TXEPT));	/* USART 1 Transmit */

@@ -156,4 +156,11 @@
 #include <runtime/msp430/iomacros.h>
 #endif
 
+/*
+ * Shadowed interrupt masks.
+ */
+int _msp430_p1ie;
+int _msp430_p2ie;
+int _msp430_adc12ie;
+
 #endif

@@ -20,7 +20,11 @@
 
 #define ETH_MTU			1518	/* maximum ethernet frame length */
 
-#define ETH_IRQ			0	/* TODO: interrupt vector */
+/* buffer boundaries applied to internal 8K ram
+ * entire available packet buffer space is allocated */
+#define TXSTART_INIT		0x0000	/* start TX buffer at 0 */
+#define RXSTART_INIT		0x0600	/* give TX buffer space for one full ethernet frame (~1500 bytes) */
+#define RXSTOP_INIT		0x1FFF	/* receive buffer gets the rest */
 
 /*
  * Configure I/O pins.
@@ -32,6 +36,8 @@ chip_init_spi (void)
 /*
  * Microcontroller MSP430F5438
  */
+#define ETH_IRQ		PORT2_VECTOR/2	/* Interrupt vector */
+
 #define P2_ENIND	BIT1		/* Enable LEDs */
 #define P2_ENCLK	BIT4		/* Enable clock */
 #define P2_INT		BIT6		/* IRQ from ethernet */
@@ -48,6 +54,8 @@ chip_init_spi (void)
 	P2SEL &= ~(P2_ENIND | P2_ENCLK | P2_INT | P2_NRES);
 	P2OUT &= ~P2_INT;
 	P2OUT |= P2_ENIND | P2_ENCLK | P2_NRES;	/* Enable clock and indication */
+	P2IES |= P2_INT;		/* Interrupt on falling edge */
+	_msp430_p2ie |= P2_INT;		/* Interrupt enable */
 
 	P3DIR |= P3_SDO | P3_NCS;	/* Set nCS and MOSI as outputs */
 	P3SEL |= P3_SDO;		/* Special functions for SPI pins */
@@ -73,6 +81,8 @@ chip_init_spi (void)
 /*
  * Microcontroller MSP430F2272
  */
+#define ETH_IRQ		PORT1_VECTOR/2	/* Interrupt vector */
+
 #define P1_INT		BIT3		/* IRQ from ethernet */
 
 #define P3_SDO		BIT1		/* UCB0SIMO */
@@ -85,6 +95,8 @@ chip_init_spi (void)
 	P1DIR &= ~P1_INT;		/* Set INT as input */
 	P1SEL &= ~P1_INT;
 	P1OUT &= ~P1_INT;
+	P1IES |= P1_INT;		/* Interrupt on falling edge */
+	_msp430_p1ie |= P1_INT;		/* Interrupt enable */
 
 	P3DIR |= P3_SDO | P3_SCK;	/* Set SCK and MOSI as outputs */
 	P3DIR &= ~P3_SDI;		/* Set MISO as input */
@@ -163,7 +175,7 @@ chip_read_op (unsigned op, unsigned address)
 }
 
 static void
-chip_write_op (unsigned op, unsigned address, unsigned data)
+chip_write_op (unsigned op, unsigned address, unsigned char data)
 {
 	chip_select (1);
 	chip_io (op | (address & ADDR_MASK));	/* issue write command */
@@ -213,10 +225,24 @@ chip_read (enc28j60_t *u, unsigned address)
 }
 
 static void
-chip_write (enc28j60_t *u, unsigned address, unsigned data)
+chip_write (enc28j60_t *u, unsigned address, unsigned char data)
 {
 	chip_set_bank (u, address);
 	chip_write_op (ENC28J60_WRITE_CTRL_REG, address, data);
+}
+
+static void
+chip_set_bits (enc28j60_t *u, unsigned address, unsigned char data)
+{
+	chip_set_bank (u, address);
+	chip_write_op (ENC28J60_BIT_FIELD_SET, address, data);
+}
+
+static void
+chip_clear_bits (enc28j60_t *u, unsigned address, unsigned char data)
+{
+	chip_set_bank (u, address);
+	chip_write_op (ENC28J60_BIT_FIELD_CLR, address, data);
 }
 
 /*
@@ -378,7 +404,7 @@ chip_transmit_packet (enc28j60_t *u, buf_t *p)
 	}
 
 	/* Send the contents of the transmit buffer onto the network. */
-	chip_write_op (ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
+	chip_set_bits (u, ECON1, ECON1_TXRTS);
 
 	++u->netif.out_packets;
 	u->netif.out_bytes += p->tot_len;
@@ -453,42 +479,55 @@ enc28j60_set_address (enc28j60_t *u, unsigned char *addr)
 }
 
 /*
+ * ERXRDPT need to be set always at odd addresses, refer to errata datasheet
+ */
+static void
+set_erxrdpt (enc28j60_t *u, unsigned ptr)
+{
+	--ptr;
+	if (ptr < RXSTART_INIT || ptr > RXSTOP_INIT)
+		ptr = RXSTOP_INIT;
+	chip_write (u, ERXRDPTL, ptr);
+	chip_write (u, ERXRDPTH, ptr >> 8);
+/*debug_printf (" set ERXRDPT to %#04x\n", ptr);*/
+}
+
+
+/*
  * Fetch and process the received packet from the network controller.
  */
 static void
 enc28j60_receive_data (enc28j60_t *u)
 {
+	unsigned char buf[6];
 	unsigned len, rxstat;
 	buf_t *p;
 
 	/* Set the read pointer to the start of the received packet. */
+/*debug_printf ("enc28j60_receive_data:\n set ERDPT to %#04x\n", u->next_packet_ptr);*/
 	chip_write (u, ERDPTL, (u->next_packet_ptr));
 	chip_write (u, ERDPTH, (u->next_packet_ptr)>>8);
 
-	/* Read the next packet pointer. */
-	u->next_packet_ptr  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
-	u->next_packet_ptr |= chip_read_op (ENC28J60_READ_BUF_MEM, 0) << 8;
-
-	/* Read the packet length. */
-	len  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
-	len |= chip_read_op (ENC28J60_READ_BUF_MEM, 0) << 8;
-
-	/* Read the receive status. */
-	rxstat  = chip_read_op (ENC28J60_READ_BUF_MEM, 0);
-	rxstat |= chip_read_op (ENC28J60_READ_BUF_MEM, 0) << 8;
+	/* Read next packet pointer, packet length and receive status. */
+	chip_read_buffer (6, buf);
+	u->next_packet_ptr = buf[0] | buf[1] << 8;
+	len = buf[2] | buf[3] << 8;
+	rxstat = buf[4] | buf[5] << 8;
+/*debug_printf (" next packet pointer = %#04x\n", u->next_packet_ptr);*/
 
 	if (! (rxstat & RSV_RXOK) || len < 4 || len > ETH_MTU) {
 		/* Skip this frame */
-/*debug_printf ("enc28j60_receive_data: failed, event=%#04x, length %d bytes\n", event, len);*/
+debug_printf ("enc28j60_receive_data: failed, rxstat=%#04x, length %d bytes\n", rxstat, len);
+		/*TODO: if next_packet_ptr or len is incorrect, reset the receiver.*/
 		++u->netif.in_errors;
 		goto skip;
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-/*debug_printf ("enc28j60_receive_data: ok, event=%#04x, length %d bytes\n", event, len);*/
+debug_printf ("enc28j60_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);
 
 	if (buf_queue_is_full (&u->inq)) {
-/*debug_printf ("enc28j60_receive_data: input overflow\n");*/
+debug_printf ("enc28j60_receive_data: input overflow\n");
 		++u->netif.in_discards;
 		goto skip;
 	}
@@ -497,7 +536,7 @@ enc28j60_receive_data (enc28j60_t *u)
 	p = buf_alloc (u->pool, len, 2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
-/*debug_printf ("enc28j60_receive_data: ignore packet - out of memory\n");*/
+debug_printf ("enc28j60_receive_data: ignore packet - out of memory\n");
 		++u->netif.in_discards;
 		goto skip;
 	}
@@ -508,11 +547,10 @@ enc28j60_receive_data (enc28j60_t *u)
 skip:
 	/* Move the RX read pointer to the start of the next received packet
 	 * This frees the memory we just read out */
-	chip_write (u, ERXRDPTL, (u->next_packet_ptr));
-	chip_write (u, ERXRDPTH, (u->next_packet_ptr) >> 8);
+	set_erxrdpt (u, u->next_packet_ptr);
 
 	/* decrement the packet counter indicate we are done with this packet */
-	chip_write_op (ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
+	chip_set_bits (u, ECON2, ECON2_PKTDEC);
 }
 
 /*
@@ -544,13 +582,11 @@ enc28j60_receiver (void *arg)
 		if (eir & EIR_RXERIF) {
 			/* Count missed packets. */
 			++u->netif.in_discards;
-			chip_write_op (ENC28J60_BIT_FIELD_CLR,
-				EIR, EIR_RXERIF);
+			chip_clear_bits (u, EIR, EIR_RXERIF);
 		}
 		if (eir & EIR_TXIF) {
 			/* TODO: u->netif.out_collisions += ???; */
-			chip_write_op (ENC28J60_BIT_FIELD_CLR,
-				EIR, EIR_TXIF);
+			chip_clear_bits (u, EIR, EIR_TXIF);
 
 			/* Ставим на передачу пакет из очереди. */
 			p = buf_queue_get (&u->outq);
@@ -589,9 +625,6 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_init_spi ();
 	u->bank = 0;
 
-	/* Disable CLKOUT. */
-	chip_write (u, ECOCON, 0);
-
 	/* Perform system reset */
 	chip_write_op (ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
 	mdelay (10);
@@ -599,6 +632,9 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	/* Check CLKRDY bit to see if reset is complete */
 	while (! (chip_read (u, ESTAT) & ESTAT_CLKRDY))
 		continue;
+
+	/* Disable CLKOUT. */
+	chip_write (u, ECOCON, 0);
 
 	/* Set LED configuration.
 	 * LEDA is yellow: duplex status and collision activity.
@@ -617,9 +653,8 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_write (u, ERXSTL, RXSTART_INIT & 0xFF);
 	chip_write (u, ERXSTH, RXSTART_INIT >> 8);
 
-	/* Set receive pointer. */
-	chip_write (u, ERXRDPTL, RXSTART_INIT & 0xFF);
-	chip_write (u, ERXRDPTH, RXSTART_INIT >> 8);
+	/* Set receive end pointer. */
+	set_erxrdpt (u, RXSTART_INIT);
 
 	/* Set receive buffer end.
 	 * ERXND defaults to 0x1FFF (end of RAM). */
@@ -637,11 +672,11 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 		MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS);
 
 	/* Half duplex, automatic padding and CRC operations. */
-	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON3,
+	chip_set_bits (u, MACON3,
 		MACON3_PADCFG0 | MACON3_TXCRCEN | MACON3_FRMLNEN);
 
 	/* set MACON 4 bits (necessary for half-duplex only) */
-	chip_write_op (ENC28J60_BIT_FIELD_SET, MACON4, MACON4_DEFER);
+	chip_set_bits (u, MACON4, MACON4_DEFER);
 
 	/* set inter-frame gap (non-back-to-back) */
 	chip_write (u, MAIPGL, 0x12);
@@ -660,10 +695,10 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	/* No loopback of transmitted frames. */
 	chip_phy_write (u, PHCON2, PHCON2_HDLDIS);
 
-	/* Enable packet reception. */
-	chip_set_bank (u, ECON1);
-	chip_write_op (ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
+	chip_write (u, ECON2, ECON2_AUTOINC | ECON2_VRPS);
 
+	/* Enable packet reception. */
+	chip_set_bits (u, ECON1, ECON1_RXEN);
 	mutex_unlock (&u->netif.lock);
 
 	/* Create receive task. */

@@ -396,6 +396,7 @@ void mem_init (mem_pool_t *m, size_t start, size_t stop)
 	mheader_t *h = (mheader_t*) start;
 
 /*debug_printf ("mem_init start=0x%x, size %d bytes\n", start, size);*/
+	assert (stop > start);
 	h->size = stop - start;
 	h->pool = m;
 #if MEM_DEBUG
