@@ -18,13 +18,17 @@
 #include <enc28j60/eth.h>
 #include <enc28j60/regs.h>
 
-#define ETH_MTU			1518	/* maximum ethernet frame length */
+#define ETH_MTU		1518		/* maximum ethernet frame length */
 
-/* buffer boundaries applied to internal 8K ram
- * entire available packet buffer space is allocated */
-#define TXSTART_INIT		0x0000	/* start TX buffer at 0 */
-#define RXSTART_INIT		0x0600	/* give TX buffer space for one full ethernet frame (~1500 bytes) */
-#define RXSTOP_INIT		0x1FFF	/* receive buffer gets the rest */
+/*
+ * There are 8 kbytes of internal RAM.
+ * Receive buffer must start at 0 because of chip bug (see errata).
+ * Give TX buffer space for one full ethernet frame (~1500 bytes).
+ */
+#define MEM_SIZE	0x2000
+#define MEM_TXSIZE	0x0600
+#define MEM_RXSIZE	(MEM_SIZE - MEM_TXSIZE)
+#define MEM_TXSTART	MEM_RXSIZE
 
 /*
  * Configure I/O pins.
@@ -232,6 +236,14 @@ chip_write (enc28j60_t *u, unsigned address, unsigned char data)
 }
 
 static void
+chip_write16 (enc28j60_t *u, unsigned address, unsigned data)
+{
+	chip_set_bank (u, address);
+	chip_write_op (ENC28J60_WRITE_CTRL_REG, address, data);
+	chip_write_op (ENC28J60_WRITE_CTRL_REG, address + 1, data >> 8);
+}
+
+static void
 chip_set_bits (enc28j60_t *u, unsigned address, unsigned char data)
 {
 	chip_set_bank (u, address);
@@ -252,8 +264,7 @@ static void
 chip_phy_write (enc28j60_t *u, unsigned address, unsigned data)
 {
 	chip_write (u, MIREGADR, address);	/* set the PHY register address */
-	chip_write (u, MIWRL, data);		/* write the PHY data */
-	chip_write (u, MIWRH, data >> 8);
+	chip_write16 (u, MIWRL, data);		/* write the PHY data */
 
 	/* wait until the PHY write completes */
 	while (chip_read (u, MISTAT) & MISTAT_BUSY)
@@ -384,12 +395,10 @@ chip_transmit_packet (enc28j60_t *u, buf_t *p)
 	buf_t *q;
 
 	/* Set the write pointer to start of transmit buffer area. */
-	chip_write (u, EWRPTL, TXSTART_INIT);
-	chip_write (u, EWRPTH, TXSTART_INIT>>8);
+	chip_write16 (u, EWRPTL, MEM_TXSTART);
 
 	/* Set the TXND pointer to correspond to the packet size given. */
-	chip_write (u, ETXNDL, (TXSTART_INIT + p->tot_len));
-	chip_write (u, ETXNDH, (TXSTART_INIT + p->tot_len) >> 8);
+	chip_write16 (u, ETXNDL, MEM_TXSTART + p->tot_len);
 
 	/* Write per-packet control byte. */
 	chip_write_op (ENC28J60_WRITE_BUF_MEM, 0, 0x00);
@@ -485,10 +494,9 @@ static void
 set_erxrdpt (enc28j60_t *u, unsigned ptr)
 {
 	--ptr;
-	if (ptr < RXSTART_INIT || ptr > RXSTOP_INIT)
-		ptr = RXSTOP_INIT;
-	chip_write (u, ERXRDPTL, ptr);
-	chip_write (u, ERXRDPTH, ptr >> 8);
+	if (ptr < 0 || ptr >= MEM_RXSIZE)
+		ptr = MEM_RXSIZE - 1;
+	chip_write16 (u, ERXRDPTL, ptr);
 /*debug_printf (" set ERXRDPT to %#04x\n", ptr);*/
 }
 
@@ -505,8 +513,7 @@ enc28j60_receive_data (enc28j60_t *u)
 
 	/* Set the read pointer to the start of the received packet. */
 /*debug_printf ("enc28j60_receive_data:\n set ERDPT to %#04x\n", u->next_packet_ptr);*/
-	chip_write (u, ERDPTL, (u->next_packet_ptr));
-	chip_write (u, ERDPTH, (u->next_packet_ptr)>>8);
+	chip_write16 (u, ERDPTL, u->next_packet_ptr);
 
 	/* Read next packet pointer, packet length and receive status. */
 	chip_read_buffer (6, buf);
@@ -645,21 +652,18 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	 * 16-bit transfers, must write low byte first.
 	 * Set transmit buffer start.
 	 * ETXST defaults to 0x0000 (beginnging of RAM). */
-	chip_write (u, ETXSTL, TXSTART_INIT & 0xFF);
-	chip_write (u, ETXSTH, TXSTART_INIT >> 8);
+	chip_write16 (u, ETXSTL, MEM_TXSTART);
 
 	/* Initialize receive buffer. */
-	u->next_packet_ptr = RXSTART_INIT;
-	chip_write (u, ERXSTL, RXSTART_INIT & 0xFF);
-	chip_write (u, ERXSTH, RXSTART_INIT >> 8);
+	u->next_packet_ptr = 0;
+	chip_write16 (u, ERXSTL, 0);
 
 	/* Set receive end pointer. */
-	set_erxrdpt (u, RXSTART_INIT);
+	set_erxrdpt (u, 0);
 
 	/* Set receive buffer end.
 	 * ERXND defaults to 0x1FFF (end of RAM). */
-	chip_write (u, ERXNDL, RXSTOP_INIT & 0xFF);
-	chip_write (u, ERXNDH, RXSTOP_INIT >> 8);
+	chip_write16 (u, ERXNDL, MEM_RXSIZE - 1);
 
 	/* Do bank 1 stuff.
 	 * Enable CRC, unicast and broadcast filters. */
@@ -679,15 +683,13 @@ enc28j60_init (enc28j60_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_set_bits (u, MACON4, MACON4_DEFER);
 
 	/* set inter-frame gap (non-back-to-back) */
-	chip_write (u, MAIPGL, 0x12);
-	chip_write (u, MAIPGH, 0x0C);
+	chip_write16 (u, MAIPGL, 0x0C12);
 
 	/* set inter-frame gap (back-to-back) */
 	chip_write (u, MABBIPG, 0x12);
 
 	/* Set the maximum packet size which the controller will accept */
-	chip_write (u, MAMXFLL, ETH_MTU & 0xFF);
-	chip_write (u, MAMXFLH, ETH_MTU >> 8);
+	chip_write16 (u, MAMXFLL, ETH_MTU);
 
 	/* Half duplex, disable loopback. */
 	chip_phy_write (u, PHCON1, 0);
