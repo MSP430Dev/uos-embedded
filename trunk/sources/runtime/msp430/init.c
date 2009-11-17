@@ -49,12 +49,39 @@ _init_ (void)
 	 */
 #ifdef USE_DCO
 #ifdef __MSP430_HAS_UCS__
-	UCSCTL0 = 0;			/* Set lowest possible DCOx, MODx */
 	UCSCTL3 = SELREF__REFOCLK;	/* Set DCO FLL reference = REFO */
-	UCSCTL1 = DCORSEL_6;		/* Select range for 12MHz operation */
-	UCSCTL2 = 249;			/* Set DCO Multiplier for 8MHz */
-	UCSCTL4 = SELM__DCOCLK |	/* Set MCLK = DCOCLK (not used?) */
-		SELS__DCOCLK;		/* Set SMCLK = DCOCLK */
+	UCSCTL4 |= SELS__DCOCLK |	/* Set SMCLK = DCOCLK */
+		SELA__REFOCLK;		/* Set ACLK = REFO */
+	__bis_SR_register (SCG0);	/* Disable the FLL control loop */
+	UCSCTL0 = 0;			/* Set lowest possible DCOx, MODx */
+#if KHZ < 700
+	#error Too low KHZ, must be >=700
+#elif KHZ < 1400
+	UCSCTL1 = DCORSEL_3;		/* Select range 0.64-1.51 MHz */
+#elif KHZ < 2800
+	UCSCTL1 = DCORSEL_4;		/* Select range 1.3-3.2 MHz */
+#elif KHZ < 5300
+	UCSCTL1 = DCORSEL_5;		/* Select range 2.5-6.0 MHz */
+#elif KHZ < 9600
+	UCSCTL1 = DCORSEL_6;		/* Select range 4.6-10.7 MHz */
+#elif KHZ < 19600
+	UCSCTL1 = DCORSEL_6;		/* Select range 8.5-19.6 MHz */
+#else
+	#error Too high KHZ, must be <19600
+#endif
+	UCSCTL2 = (KHZ*1000L - 16384) / 32768;	/* Set DCO Multiplier for 8MHz */
+					/* (N + 1) * FLLRef = Fdco */
+	__bic_SR_register (SCG0);	/* Enable the FLL control loop */
+	mdelay (30);			/* Time to settle: 1024 REFO cycles */
+
+	/* Loop until XT1,XT2 & DCO fault flag is cleared */
+	do {
+		/* Clear XT2,XT1,DCO fault flags */
+		UCSCTL7 &= ~(XT2OFFG + XT1LFOFFG + XT1HFOFFG + DCOFFG);
+		SFRIFG1 &= ~OFIFG;	/* Clear fault flags */
+	} while (SFRIFG1 & OFIFG);	/* Test oscillator fault flag */
+
+	UCSCTL4 |= SELM__DCOCLK;	/* Set MCLK = DCOCLK */
 #else
 #if KHZ == 16000
 	BCSCTL1 = CALBC1_16MHZ;
