@@ -23,7 +23,13 @@
 /*
  * The total number of different hardware interrupts.
  */
-#define ARCH_INTERRUPTS		15
+#if defined(__MSP430_5418__) || defined(__MSP430_5419__) || \
+    defined(__MSP430_5435__) || defined(__MSP430_5436__) || \
+    defined(__MSP430_5437__) || defined(__MSP430_5438__)
+#   define ARCH_INTERRUPTS	63
+#else
+#   define ARCH_INTERRUPTS	15
+#endif
 
 /*
  * Type for saving task stack context.

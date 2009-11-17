@@ -48,6 +48,14 @@ _init_ (void)
 	 * Setup the internal oscillator.
 	 */
 #ifdef USE_DCO
+#ifdef __MSP430_HAS_UCS__
+	UCSCTL0 = 0;			/* Set lowest possible DCOx, MODx */
+	UCSCTL3 = SELREF__REFOCLK;	/* Set DCO FLL reference = REFO */
+	UCSCTL1 = DCORSEL_6;		/* Select range for 12MHz operation */
+	UCSCTL2 = 249;			/* Set DCO Multiplier for 8MHz */
+	UCSCTL4 = SELM__DCOCLK |	/* Set MCLK = DCOCLK (not used?) */
+		SELS__DCOCLK;		/* Set SMCLK = DCOCLK */
+#else
 #if KHZ == 16000
 	BCSCTL1 = CALBC1_16MHZ;
 	DCOCTL = CALDCO_16MHZ;
@@ -62,6 +70,7 @@ _init_ (void)
 	DCOCTL = CALDCO_1MHZ;
 #else
 	#error Invalid KHZ, must be 16000, 12000, 8000 or 1000.
+#endif
 #endif
 #endif
 
@@ -120,7 +129,17 @@ _init_ (void)
 	UCA3CTL1 |= UCSSEL_SMCLK;		/* Clock source SMCLK */
 	UCA3BR0 = KHZ * 1000L / 115200;
 	UCA3BR1 = (int) (KHZ * 1000L / 115200) >> 8;
-	UCA3MCTL = 0;
+#if KHZ == 16000
+	UCA3MCTL = UCBRS_7;
+#elif KHZ == 12000
+	UCA3MCTL = UCBRS_1;
+#elif KHZ == 8000
+	UCA3MCTL = UCBRS_4;
+#elif KHZ == 1000
+	UCA3MCTL = UCBRS_0;
+#else
+	#error Invalid KHZ, must be 16000, 12000, 8000 or 1000.
+#endif
 	UCA3CTL1 &= ~UCSWRST;			/* Clear reset */
 	/* UCA3IE |= UCRXIE; */			/* Enable USCI_A0 RX interrupt */
 #endif
