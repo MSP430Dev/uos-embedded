@@ -12,7 +12,7 @@
  * $Id: timera.h,v 1.14 2008/10/09 15:00:14 sb-sf Exp $
  */
 
-/* Switches: 
+/* Switches:
 
 __MSP430_HAS_TA2__  - if the device has a timer0 A with 2 channels
 __MSP430_HAS_TA3__  - if the device has a timer0 A with 3 channels
@@ -21,7 +21,7 @@ __MSP430_HAS_T1A5__ - if the device has a timer1 A with 5 channels, as well as t
 
 */
 
-#if defined(__MSP430_HAS_TA2__)  ||  defined(__MSP430_HAS_TA3__)
+#if defined(__MSP430_HAS_TA2__) || defined(__MSP430_HAS_TA3__)
 #define TA0IV_              0x012E  /* Timer A 0 Interrupt Vector Word */
 sfrw (TA0IV,TA0IV_);
 #define TA0CTL_             0x0160  /* Timer A 0 Control */
@@ -85,7 +85,7 @@ sfrw (TA0CCR2,TA0CCR2_);
 #define CCR2_               TA0CCR2_
 #endif
 
-#if defined(__MSP430_HAS_T1A2__) ||  defined(__MSP430_HAS_T1A5__)
+#if defined(__MSP430_HAS_T1A2__) || defined(__MSP430_HAS_T1A5__)
 #define TA1IV_              0x011E  /* Timer A 1 Interrupt Vector Word */
 sfrw (TA1IV, TA1IV_);
 #define TA1CTL_             0x0180  /* Timer A 1 Control */
@@ -116,6 +116,36 @@ sfrw (TA1CCR3, TA1CCR3_);
 #define TA1CCR4_            0x019A  /* Timer A 1 Capture/Compare 4 */
 sfrw (TA1CCR4, TA1CCR4_);
 #endif
+#endif
+
+#if defined(__MSP430_HAS_T0A5__)
+sfrw (TA0CTL,	__MSP430_TA0_BASE__+0x00);	/* Timer0_A5 Control */
+sfrw (TA0CCTL0,	__MSP430_TA0_BASE__+0x02);	/* Timer0_A5 Capture/Compare Control 0 */
+sfrw (TA0CCTL1,	__MSP430_TA0_BASE__+0x04);	/* Timer0_A5 Capture/Compare Control 1 */
+sfrw (TA0CCTL2,	__MSP430_TA0_BASE__+0x06);	/* Timer0_A5 Capture/Compare Control 2 */
+sfrw (TA0CCTL3,	__MSP430_TA0_BASE__+0x08);	/* Timer0_A5 Capture/Compare Control 3 */
+sfrw (TA0CCTL4,	__MSP430_TA0_BASE__+0x0A);	/* Timer0_A5 Capture/Compare Control 4 */
+sfrw (TA0R,	__MSP430_TA0_BASE__+0x10);	/* Timer0_A5 */
+sfrw (TA0CCR0,	__MSP430_TA0_BASE__+0x12);	/* Timer0_A5 Capture/Compare 0 */
+sfrw (TA0CCR1,	__MSP430_TA0_BASE__+0x14);	/* Timer0_A5 Capture/Compare 1 */
+sfrw (TA0CCR2,	__MSP430_TA0_BASE__+0x16);	/* Timer0_A5 Capture/Compare 2 */
+sfrw (TA0CCR3,	__MSP430_TA0_BASE__+0x18);	/* Timer0_A5 Capture/Compare 3 */
+sfrw (TA0CCR4,	__MSP430_TA0_BASE__+0x1A);	/* Timer0_A5 Capture/Compare 4 */
+sfrw (TA0EX0,	__MSP430_TA0_BASE__+0x20);	/* Timer0_A5 Expansion Register 0 */
+sfrw (TA0IV,	__MSP430_TA0_BASE__+0x2E);	/* Timer0_A5 Interrupt Vector Word */
+#endif
+
+#if defined(__MSP430_HAS_T1A3__)
+sfrw (TA1CTL,	__MSP430_TA1_BASE__+0x00);	/* Timer1_A3 Control */
+sfrw (TA1CCTL0,	__MSP430_TA1_BASE__+0x02);	/* Timer1_A3 Capture/Compare Control 0 */
+sfrw (TA1CCTL1,	__MSP430_TA1_BASE__+0x04);	/* Timer1_A3 Capture/Compare Control 1 */
+sfrw (TA1CCTL2,	__MSP430_TA1_BASE__+0x06);	/* Timer1_A3 Capture/Compare Control 2 */
+sfrw (TA1R,	__MSP430_TA1_BASE__+0x10);	/* Timer1_A3 */
+sfrw (TA1CCR0,	__MSP430_TA1_BASE__+0x12);	/* Timer1_A3 Capture/Compare 0 */
+sfrw (TA1CCR1,	__MSP430_TA1_BASE__+0x14);	/* Timer1_A3 Capture/Compare 1 */
+sfrw (TA1CCR2,	__MSP430_TA1_BASE__+0x16);	/* Timer1_A3 Capture/Compare 2 */
+sfrw (TA1EX0,	__MSP430_TA1_BASE__+0x20);	/* Timer1_A3 Expansion Register 0 */
+sfrw (TA1IV,	__MSP430_TA1_BASE__+0x2E);	/* Timer1_A3 Interrupt Vector Word */
 #endif
 
 #if !defined(__ASSEMBLER__)

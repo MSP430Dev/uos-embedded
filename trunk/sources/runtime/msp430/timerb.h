@@ -15,8 +15,31 @@
 /* Switches:
 
 __MSP430_HAS_TB7__ - if timer B has 7 capture/compare registers (default is 3)
+__MSP430_HAS_T0B7__ - if timer 0B is available with 7 capture/compare registers
 
 */
+#if defined(__MSP430_HAS_T0B7__)
+
+sfrw (TB0CTL,	__MSP430_TB0_BASE__+0x00);	/* Timer0_B7 Control */
+sfrw (TB0CCTL0,	__MSP430_TB0_BASE__+0x02);	/* Timer0_B7 Capture/Compare Control 0 */
+sfrw (TB0CCTL1,	__MSP430_TB0_BASE__+0x04);	/* Timer0_B7 Capture/Compare Control 1 */
+sfrw (TB0CCTL2,	__MSP430_TB0_BASE__+0x06);	/* Timer0_B7 Capture/Compare Control 2 */
+sfrw (TB0CCTL3,	__MSP430_TB0_BASE__+0x08);	/* Timer0_B7 Capture/Compare Control 3 */
+sfrw (TB0CCTL4,	__MSP430_TB0_BASE__+0x0A);	/* Timer0_B7 Capture/Compare Control 4 */
+sfrw (TB0CCTL5,	__MSP430_TB0_BASE__+0x0C);	/* Timer0_B7 Capture/Compare Control 5 */
+sfrw (TB0CCTL6,	__MSP430_TB0_BASE__+0x0E);	/* Timer0_B7 Capture/Compare Control 6 */
+sfrw (TB0R,	__MSP430_TB0_BASE__+0x10);	/* Timer0_B7 */
+sfrw (TB0CCR0,	__MSP430_TB0_BASE__+0x12);	/* Timer0_B7 Capture/Compare 0 */
+sfrw (TB0CCR1,	__MSP430_TB0_BASE__+0x14);	/* Timer0_B7 Capture/Compare 1 */
+sfrw (TB0CCR2,	__MSP430_TB0_BASE__+0x16);	/* Timer0_B7 Capture/Compare 2 */
+sfrw (TB0CCR3,	__MSP430_TB0_BASE__+0x18);	/* Timer0_B7 Capture/Compare 3 */
+sfrw (TB0CCR4,	__MSP430_TB0_BASE__+0x1A);	/* Timer0_B7 Capture/Compare 4 */
+sfrw (TB0CCR5,	__MSP430_TB0_BASE__+0x1C);	/* Timer0_B7 Capture/Compare 5 */
+sfrw (TB0CCR6,	__MSP430_TB0_BASE__+0x1E);	/* Timer0_B7 Capture/Compare 6 */
+sfrw (TB0EX0,	__MSP430_TB0_BASE__+0x20);	/* Timer0_B7 Expansion Register 0 */
+sfrw (TB0IV,	__MSP430_TB0_BASE__+0x2e);	/* Timer0_B7 Interrupt Vector Word */
+
+#else /* __MSP430_HAS_T0B7__ */
 
 #define TBIV_               0x011E  /* Timer B Interrupt Vector Word */
 sfrw(TBIV,TBIV_);
@@ -57,7 +80,9 @@ sfrw(TBCCR5,TBCCR5_);
 #define TBCCR6_             0x019E  /* Timer B Capture/Compare 6 */
 sfrw(TBCCR6,TBCCR6_);
 
-#endif
+#endif /* __MSP430_HAS_TB7__ */
+
+#endif /* __MSP430_HAS_T0B7__ */
 
 #ifndef __ASSEMBLER__
 /* Structured declaration */

@@ -24,6 +24,9 @@
 #define __MSP430_HAS_USCI1_5__
 #define __MSP430_HAS_USCI2_5__
 #define __MSP430_HAS_USCI3_5__
+#define __MSP430_HAS_T0A5__
+#define __MSP430_HAS_T0B7__
+#define __MSP430_HAS_T1A3__
 #define __MSP430_SYS_BASE__     0x180
 #define __MSP430_WDT_A_BASE__   0x150
 #define __MSP430_PORT1_BASE__   0x200
@@ -39,6 +42,10 @@
 #define __MSP430_PORT11_BASE__  0x2A0
 #define __MSP430_PORTJ_BASE__   0x320
 
+#define __MSP430_TA0_BASE__	0x340
+#define __MSP430_TA1_BASE__	0x380
+#define __MSP430_TB0_BASE__	0x3C0
+
 #define __MSP430_MPY32_BASE__   0x4C0
 #define __MSP430_USCI0_BASE__	0x5C0
 #define __MSP430_USCI1_BASE__	0x600
@@ -50,6 +57,7 @@
 #include <runtime/msp430/gpio_5xxx.h>
 #include <runtime/msp430/mpy32.h>
 #include <runtime/msp430/timera.h>
+#include <runtime/msp430/timerb.h>
 #include <runtime/msp430/unified_clock_system.h>
 #include <runtime/msp430/usci.h>
 

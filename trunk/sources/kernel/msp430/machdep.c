@@ -170,12 +170,19 @@ arch_intr_allow (int irq)
 {
 /*debug_printf ("intr_allow (%d)\n", irq);*/
 	switch (irq) {
+/*
+ * I/O ports.
+ */
 #ifdef PORT1_VECTOR
         case PORT1_VECTOR/2: P1IE = _msp430_p1ie; break;	/* Port 1 */
 #endif
 #ifdef PORT2_VECTOR
         case PORT2_VECTOR/2: P2IE = _msp430_p2ie; break;	/* Port 2 */
 #endif
+
+/*
+ * UARTs.
+ */
 #ifdef USART1TX_VECTOR
         case USART1TX_VECTOR/2: /*U1IE |= UTXIE1;*/ break;	/* USART 1 Transmit */
 #endif
@@ -200,6 +207,10 @@ arch_intr_allow (int irq)
 #ifdef USCIAB1RX_VECTOR
         case USCIAB1RX_VECTOR/2: IE2 |= UCA1RXIE; break;	/* USCI A1/B1 Receive */
 #endif
+
+/*
+ * Timers.
+ */
 #ifdef TIMERA1_VECTOR
         case TIMERA1_VECTOR/2: TACCTL1 |= CCIE; break;		/* Timer A CC1-2, TA */
 #endif
@@ -212,6 +223,28 @@ arch_intr_allow (int irq)
 #ifdef TIMERB0_VECTOR
         case TIMERB0_VECTOR/2: TBCCTL0 |= CCIE; break;		/* Timer B 0 */
 #endif
+#ifdef TIMER1_A1_VECTOR
+        case TIMER1_A1_VECTOR/2: TA1CCTL1 |= CCIE; break;	/* Timer1_A3 CC1-2, TA1 */
+#endif
+#ifdef TIMER1_A0_VECTOR
+        case TIMER1_A0_VECTOR/2: TA1CCTL0 |= CCIE; break;	/* Timer1_A3 CC0 */
+#endif
+#ifdef TIMER0_A1_VECTOR
+        case TIMER0_A1_VECTOR/2: TA0CCTL1 |= CCIE; break;	/* Timer0_A5 CC1-4, TA0 */
+#endif
+#ifdef TIMER0_A0_VECTOR
+        case TIMER0_A0_VECTOR/2: TA0CCTL0 |= CCIE; break;	/* Timer0_A5 CC0 */
+#endif
+#ifdef TIMER0_B1_VECTOR
+        case TIMER0_B1_VECTOR/2: TB0CCTL1 |= CCIE; break;	/* Timer_B7 CC1-6, TB */
+#endif
+#ifdef TIMER0_B0_VECTOR
+        case TIMER0_B0_VECTOR/2: TB0CCTL0 |= CCIE; break;	/* Timer_B7 CC0 */
+#endif
+
+/*
+ * Others.
+ */
 #ifdef ADC12_VECTOR
         case ADC12_VECTOR/2: ADC12IE = _msp430_adc12ie; break;	/* ADC */
 #endif
@@ -240,12 +273,19 @@ _intr##n (void) \
 	asm volatile ("jmp _irq_handler_");\
 }
 
+/*
+ * I/O ports.
+ */
 #ifdef PORT1_VECTOR
 HANDLE (PORT1_VECTOR, P1IFG = P1IE = 0);	/* Port 1 */
 #endif
 #ifdef PORT2_VECTOR
 HANDLE (PORT2_VECTOR, P2IFG = P2IE = 0);	/* Port 2 */
 #endif
+
+/*
+ * UARTs.
+ */
 #ifdef USART1TX_VECTOR
 HANDLE (USART1TX_VECTOR, (U1IE &= ~UTXIE1, UTCTL1 |= TXEPT));	/* USART 1 Transmit */
 #endif
@@ -270,6 +310,10 @@ HANDLE (USCIAB1TX_VECTOR, IE2 &= ~UCA1TXIE);	/* USCI A1/B1 Transmit */
 #ifdef USCIAB1RX_VECTOR
 HANDLE (USCIAB1RX_VECTOR, IE2 &= ~UCA1RXIE);	/* USCI A1/B1 Receive */
 #endif
+
+/*
+ * Timers.
+ */
 #ifdef TIMERA1_VECTOR
 HANDLE (TIMERA1_VECTOR, TACCTL1 &= ~CCIE);	/* Timer A CC1-2, TA */
 #endif
@@ -282,6 +326,28 @@ HANDLE (TIMERB1_VECTOR, TBCCTL1 &= ~CCIE);	/* Timer B 1-7 */
 #ifdef TIMERB0_VECTOR
 HANDLE (TIMERB0_VECTOR, TBCCTL0 &= ~CCIE);	/* Timer B 0 */
 #endif
+#ifdef TIMER1_A1_VECTOR
+HANDLE (TIMER1_A1_VECTOR, TA1CCTL1 &= ~CCIE);	/* Timer1_A3 CC1-2, TA1 */
+#endif
+#ifdef TIMER1_A0_VECTOR
+HANDLE (TIMER1_A0_VECTOR, TA1CCTL0 &= ~CCIE);	/* Timer1_A3 CC0 */
+#endif
+#ifdef TIMER0_A1_VECTOR
+HANDLE (TIMER0_A1_VECTOR, TA0CCTL1 &= ~CCIE);	/* Timer0_A5 CC1-4, TA0 */
+#endif
+#ifdef TIMER0_A0_VECTOR
+HANDLE (TIMER0_A0_VECTOR, TA0CCTL0 &= ~CCIE);	/* Timer0_A5 CC0 */
+#endif
+#ifdef TIMER0_B1_VECTOR
+HANDLE (TIMER0_B1_VECTOR, TB0CCTL1 &= ~CCIE);	/* Timer_B7 CC1-6, TB */
+#endif
+#ifdef TIMER0_B0_VECTOR
+HANDLE (TIMER0_B0_VECTOR, TB0CCTL0 &= ~CCIE);	/* Timer_B7 CC0 */
+#endif
+
+/*
+ * Others.
+ */
 #ifdef ADC12_VECTOR
 HANDLE (ADC12_VECTOR, ADC12IE = 0);		/* ADC */
 #endif
@@ -295,8 +361,7 @@ HANDLE (COMPARATORA_VECTOR, CACTL1 &= ~CAIE);	/* Comparator A */
 HANDLE (NMI_VECTOR, );				/* Non-maskable */
 #endif
 
-
-/* TODO:
+/* --TODO--
  * ADC10_VECTOR
  * BASICTIMER_VECTOR
  * DACDMA_VECTOR
@@ -306,8 +371,18 @@ HANDLE (NMI_VECTOR, );				/* Non-maskable */
  * TIMERPORT_VECTOR
  * UARTRX_VECTOR
  * UARTTX_VECTOR
- * USCIAB0RX_VECTOR
- * USCIAB0TX_VECTOR
- * USCIAB1RX_VECTOR
- * USCIAB1TX_VECTOR
+ *
+ * RTC_A_VECTOR
+ * DMA_VECTOR
+ * AD12_A_VECTOR
+ * USER_NMI_VECTOR
+ *
+ * USCIB3_RXTX_VECTOR
+ * USCIA3_RXTX_VECTOR
+ * USCIB1_RXTX_VECTOR
+ * USCIA1_RXTX_VECTOR
+ * USCIB2_RXTX_VECTOR
+ * USCIA2_RXTX_VECTOR
+ * USCIB0_RXTX_VECTOR
+ * USCIA0_RXTX_VECTOR
  */

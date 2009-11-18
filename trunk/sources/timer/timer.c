@@ -47,7 +47,14 @@
 #endif
 
 #if MSP430
-#   define TIMER_IRQ		(TIMERA0_VECTOR / 2)
+#   ifdef TIMERA0_VECTOR
+#      define TIMER_IRQ		(TIMERA0_VECTOR / 2)
+#   else
+#      define TIMER_IRQ		(TIMER0_A0_VECTOR / 2)
+#      define TACTL 		TA0CTL
+#      define TACCR0 		TA0CCR0
+#      define TAEX0 		TA0EX0
+#   endif
 #endif
 
 #if LINUX386
@@ -250,19 +257,19 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	MC_ITCSR = MC_ITCSR_EN;
 #endif
 #if MSP430
-	/* Ensure the timer is stopped. */
-	TACTL = 0;
+	/* Stop timer. */
+	TACTL = TACLR;
 
-	/* Run the timer of the SMCLK divided by 8. */
+	/* Source clock SMCLK divided by 8. */
 	TACTL = TASSEL_SMCLK | ID_DIV8;
-
+#ifdef TAEX0
+	/* Disable divider expansion. */
+	TAEX0 = 0;
+#endif
 	/* Set the compare match value according to the tick rate we want. */
-	TACCR0 = ((unsigned long) t->khz * t->msec_per_tick) >> 3;
+	TACCR0 = (t->khz * t->msec_per_tick) >> 3;
 
-	/* Start up clean. */
-	TACTL |= TACLR;
-
-	/* Up mode. */
+	/* Start timer in up mode. */
 	TACTL |= MC_1;
 #endif
 #if LINUX386
