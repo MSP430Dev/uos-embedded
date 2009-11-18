@@ -50,8 +50,8 @@ _init_ (void)
 #ifdef USE_DCO
 #ifdef __MSP430_HAS_UCS__
 	UCSCTL3 = SELREF__REFOCLK;	/* Set DCO FLL reference = REFO */
-	UCSCTL4 |= SELS__DCOCLK |	/* Set SMCLK = DCOCLK */
-		SELA__REFOCLK;		/* Set ACLK = REFO */
+	UCSCTL4 = (UCSCTL4 & ~SELA_7) |
+		SELA__REFOCLK;		/* Set ACLK to REFO */
 	__bis_SR_register (SCG0);	/* Disable the FLL control loop */
 	UCSCTL0 = 0;			/* Set lowest possible DCOx, MODx */
 #if KHZ < 700
@@ -65,7 +65,7 @@ _init_ (void)
 #elif KHZ < 9600
 	UCSCTL1 = DCORSEL_6;		/* Select range 4.6-10.7 MHz */
 #elif KHZ < 19600
-	UCSCTL1 = DCORSEL_6;		/* Select range 8.5-19.6 MHz */
+	UCSCTL1 = DCORSEL_7;		/* Select range 8.5-19.6 MHz */
 #else
 	#error Too high KHZ, must be <19600
 #endif
@@ -76,12 +76,13 @@ _init_ (void)
 
 	/* Loop until XT1,XT2 & DCO fault flag is cleared */
 	do {
-		/* Clear XT2,XT1,DCO fault flags */
+		/* Clear XT2, XT1, DCO fault flags */
 		UCSCTL7 &= ~(XT2OFFG + XT1LFOFFG + XT1HFOFFG + DCOFFG);
 		SFRIFG1 &= ~OFIFG;	/* Clear fault flags */
 	} while (SFRIFG1 & OFIFG);	/* Test oscillator fault flag */
 
-	UCSCTL4 |= SELM__DCOCLK;	/* Set MCLK = DCOCLK */
+	UCSCTL4 = (UCSCTL4 & ~(SELS_7 | SELM_7)) |
+		SELS__DCOCLK | SELM__DCOCLK; /* Set MCLK, SMCLK to DCO */
 #else
 #if KHZ == 16000
 	BCSCTL1 = CALBC1_16MHZ;
@@ -145,15 +146,14 @@ _init_ (void)
 #endif
 	UCA0CTL1 &= ~UCSWRST;			/* Clear reset */
 	/* IE2 |= UCA0RXIE; */			/* Enable USCI_A0 RX interrupt */
-//  __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, interrupts enabled
 #endif
 
 #ifdef MSP430_DEBUG_USCIA3
 	/* Use USCI_A3 for debug output. */
 	P10SEL = BIT4 | BIT5;			/* P10.4, P10.5 = USCI_A3 TXD/RXD */
-	UCA3CTL1 = UCSWRST;			/* Reset */
+	UCA3CTL1 = UCSWRST |			/* Reset */
+		UCSSEL_SMCLK;			/* Clock source SMCLK */
 	UCA3CTL0 = 0;				/* Async 8N1 */
-	UCA3CTL1 |= UCSSEL_SMCLK;		/* Clock source SMCLK */
 	UCA3BR0 = KHZ * 1000L / 115200;
 	UCA3BR1 = (int) (KHZ * 1000L / 115200) >> 8;
 #if KHZ == 16000
@@ -168,7 +168,7 @@ _init_ (void)
 	#error Invalid KHZ, must be 16000, 12000, 8000 or 1000.
 #endif
 	UCA3CTL1 &= ~UCSWRST;			/* Clear reset */
-	/* UCA3IE |= UCRXIE; */			/* Enable USCI_A0 RX interrupt */
+	/* UCA3IE |= UCRXIE; */			/* Enable USCI_A3 RX interrupt */
 #endif
 
 #ifndef EMULATOR /* not needed on emulator */

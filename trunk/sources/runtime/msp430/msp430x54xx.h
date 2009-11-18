@@ -106,8 +106,8 @@ sfrb(SFRRPCR_H, SFRRPCR_H_);
 /*
  * Universal Serial Communication Interface
  */
-sfrb (UCA0CTL0,	 __MSP430_USCI0_BASE__+0x00);	/* USCI A0 control 0 */
-sfrb (UCA0CTL1,	 __MSP430_USCI0_BASE__+0x01);	/* USCI A0 control 1 */
+sfrb (UCA0CTL1,	 __MSP430_USCI0_BASE__+0x00);	/* USCI A0 control 1 */
+sfrb (UCA0CTL0,	 __MSP430_USCI0_BASE__+0x01);	/* USCI A0 control 0 */
 sfrb (UCA0BR0,	 __MSP430_USCI0_BASE__+0x06);	/* USCI A0 baud rate 0 */
 sfrb (UCA0BR1,	 __MSP430_USCI0_BASE__+0x07);	/* USCI A0 baud rate 1 */
 sfrb (UCA0MCTL,	 __MSP430_USCI0_BASE__+0x08);	/* USCI A0 modulation control */
@@ -135,8 +135,8 @@ sfrb (UCB0IE,	 __MSP430_USCI0_BASE__+0x3C);	/* USCI B0 interrupt enable */
 sfrb (UCB0IFG,	 __MSP430_USCI0_BASE__+0x3D);	/* USCI B0 interrupt flags */
 sfrw (UCB0IV,	 __MSP430_USCI0_BASE__+0x3E);	/* USCI B0 interrupt vector word */
 
-sfrb (UCA1CTL0,	 __MSP430_USCI1_BASE__+0x00);	/* USCI A1 control 0 */
-sfrb (UCA1CTL1,	 __MSP430_USCI1_BASE__+0x01);	/* USCI A1 control 1 */
+sfrb (UCA1CTL1,	 __MSP430_USCI1_BASE__+0x00);	/* USCI A1 control 1 */
+sfrb (UCA1CTL0,	 __MSP430_USCI1_BASE__+0x01);	/* USCI A1 control 0 */
 sfrb (UCA1BR0,	 __MSP430_USCI1_BASE__+0x06);	/* USCI A1 baud rate 0 */
 sfrb (UCA1BR1,	 __MSP430_USCI1_BASE__+0x07);	/* USCI A1 baud rate 1 */
 sfrb (UCA1MCTL,	 __MSP430_USCI1_BASE__+0x08);	/* USCI A1 modulation control */
@@ -164,8 +164,8 @@ sfrb (UCB1IE,	 __MSP430_USCI1_BASE__+0x3C);	/* USCI B1 interrupt enable */
 sfrb (UCB1IFG,	 __MSP430_USCI1_BASE__+0x3D);	/* USCI B1 interrupt flags */
 sfrw (UCB1IV,	 __MSP430_USCI1_BASE__+0x3E);	/* USCI B1 interrupt vector word */
 
-sfrb (UCA2CTL0,	 __MSP430_USCI2_BASE__+0x00);	/* USCI A2 control 0 */
-sfrb (UCA2CTL1,	 __MSP430_USCI2_BASE__+0x01);	/* USCI A2 control 1 */
+sfrb (UCA2CTL1,	 __MSP430_USCI2_BASE__+0x00);	/* USCI A2 control 1 */
+sfrb (UCA2CTL0,	 __MSP430_USCI2_BASE__+0x01);	/* USCI A2 control 0 */
 sfrb (UCA2BR0,	 __MSP430_USCI2_BASE__+0x06);	/* USCI A2 baud rate 0 */
 sfrb (UCA2BR1,	 __MSP430_USCI2_BASE__+0x07);	/* USCI A2 baud rate 1 */
 sfrb (UCA2MCTL,	 __MSP430_USCI2_BASE__+0x08);	/* USCI A2 modulation control */
@@ -193,8 +193,8 @@ sfrb (UCB2IE,	 __MSP430_USCI2_BASE__+0x3C);	/* USCI B2 interrupt enable */
 sfrb (UCB2IFG,	 __MSP430_USCI2_BASE__+0x3D);	/* USCI B2 interrupt flags */
 sfrw (UCB2IV,	 __MSP430_USCI2_BASE__+0x3E);	/* USCI B2 interrupt vector word */
 
-sfrb (UCA3CTL0,	 __MSP430_USCI3_BASE__+0x00);	/* USCI A3 control 0 */
-sfrb (UCA3CTL1,	 __MSP430_USCI3_BASE__+0x01);	/* USCI A3 control 1 */
+sfrb (UCA3CTL1,	 __MSP430_USCI3_BASE__+0x00);	/* USCI A3 control 1 */
+sfrb (UCA3CTL0,	 __MSP430_USCI3_BASE__+0x01);	/* USCI A3 control 0 */
 sfrb (UCA3BR0,	 __MSP430_USCI3_BASE__+0x06);	/* USCI A3 baud rate 0 */
 sfrb (UCA3BR1,	 __MSP430_USCI3_BASE__+0x07);	/* USCI A3 baud rate 1 */
 sfrb (UCA3MCTL,	 __MSP430_USCI3_BASE__+0x08);	/* USCI A3 modulation control */
