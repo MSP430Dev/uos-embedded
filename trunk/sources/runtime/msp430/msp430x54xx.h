@@ -20,10 +20,11 @@
 #define __MSP430_HAS_T0A5__
 #define __MSP430_HAS_T1A3__
 #define __MSP430_HAS_UCS__
-#define __MSP430_HAS_USCI0_5__
-#define __MSP430_HAS_USCI1_5__
-#define __MSP430_HAS_USCI2_5__
-#define __MSP430_HAS_USCI3_5__
+#define __MSP430_HAS_USCI__
+#define __MSP430_HAS_USCI_AB0__
+#define __MSP430_HAS_USCI_AB1__
+#define __MSP430_HAS_USCI_AB2__
+#define __MSP430_HAS_USCI_AB3__
 #define __MSP430_HAS_T0A5__
 #define __MSP430_HAS_T0B7__
 #define __MSP430_HAS_T1A3__
@@ -233,6 +234,9 @@ sfrw (UCB3IV,	 __MSP430_USCI3_BASE__+0x3E);	/* USCI B3 interrupt vector word */
 #define UCRXIFG			(1<<0)
 #define UCTXIFG			(1<<1)
 
+/* UCAxIE Control Bits */
+#define UCRXIE			(1<<0)	/* USCI Receive Interrupt Enable */
+#define UCTXIE			(1<<1)	/* USCI Transmit Interrupt Enable */
 
 #define RTC_A_VECTOR        0x52    /* 0xFFD2 Basic Timer / RTC */
 #define PORT2_VECTOR        0x54    /* 0xFFD4 Port 2 */

@@ -76,6 +76,40 @@
 #define clear_overrun_error(p)		(URCTL0 &= ~OE)
 #define clear_break_error(p)		(URCTL0 &= ~BRK)
 
+#elif defined (__MSP430_HAS_USCI_AB0__)
+/*
+ * Using new USCI.
+ */
+#define RECEIVE_IRQ(p)			(p==0 ? USCIA0_RXTX_VECTOR/2 : \
+					 p==1 ? USCIA1_RXTX_VECTOR/2 : \
+					 p==2 ? USCIA2_RXTX_VECTOR/2 : \
+					        USCIA3_RXTX_VECTOR/2)
+
+#define enable_receiver(p)		/* empty */
+#define test_transmitter_enabled(p)	1
+
+#define enable_receive_interrupt(p)	((&UCA0IE)[p<<6] |= UCRXIE)
+#define enable_transmit_interrupt(p)	((&UCA0IE)[p<<6] |= UCTXIE)
+#define disable_transmit_interrupt(p)	((&UCA0IE)[p<<6] &= ~UCTXIE)
+
+#define transmit_byte(p,c)		(&UCA0TXBUF)[p<<6] = (c)
+#define get_received_byte(p)		(&UCA0RXBUF)[p<<6]
+
+#define test_transmitter_empty(p)	((&UCA0IFG)[p<<6] & UCTXIFG)
+#define test_receive_data(p)		((&UCA0IFG)[p<<6] & UCRXIFG)
+#define test_get_receive_data(p,d)	(((&UCA0IFG)[p<<6] & UCRXIFG) ? \
+					((*d) = (&UCA0RXBUF)[p<<6], 1) : 0)
+
+#define test_frame_error(p)		((&UCA0STAT)[p<<6] & UCFE)
+#define test_parity_error(p) 		((&UCA0STAT)[p<<6] & UCPE)
+#define test_overrun_error(p) 		((&UCA0STAT)[p<<6] & UCOE)
+#define test_break_error(p)		((&UCA0STAT)[p<<6] & UCBRK)
+
+#define clear_frame_error(p)		((&UCA0STAT)[p<<6] &= ~UCFE)
+#define clear_parity_error(p)		((&UCA0STAT)[p<<6] &= ~UCPE)
+#define clear_overrun_error(p)		/* empty */
+#define clear_break_error(p)		((&UCA0STAT)[p<<6] &= ~UCBRK)
+
 #elif defined (__MSP430_HAS_USCI__)
 /*
  * Using USCI.
