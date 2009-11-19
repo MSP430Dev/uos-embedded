@@ -73,12 +73,12 @@ chip_init_spi (void)
 
 	/* Use USCI_B1 as SPI interface. */
 	UCB1CTL1 = UCSWRST;		/* Reset */
-	UCB1CTL0 = UCSYNC | UCMST | UCMSB; /* Master 3-bit SPI, 8-bit data, MSB first */
-	UCB1CTL1 |= UCSSEL_ACLK;	/* Clock source ACLK */
-	UCB1BR0 = 2;			/* Baud rate UCLK/2 (maximum rate) */
+	UCB1CTL0 = UCSYNC | UCMST |	/* 3-pin, 8-bit master SPI */
+		UCMSB | UCCKPH;		/* MSB first, data changed on falling SCK */
+	UCB1CTL1 |= UCSSEL_SMCLK;	/* Clock source SMCLK */
+	UCB1BR0 = KHZ / 1000;		/* Set clock 1 MHz */
 	UCB1BR1 = 0;
 	UCB1CTL1 &= ~UCSWRST;		/* Clear reset */
-	/* UCB1IE |= UCRXIE; */		/* Enable USCI_A0 RX interrupt */
 #endif
 
 #ifdef ENC28J60_SEISMONET_M10
@@ -112,6 +112,7 @@ chip_init_spi (void)
 	P4SEL &= ~(P4_NRES | P4_NCS);
 	P4OUT |= P4_NRES | P4_NCS;	/* Set /RESET and /CS */
 
+	/* Use USCI_B0 as SPI interface. */
 	UCB0CTL1 = UCSWRST;		/* Reset */
 	UCB0CTL0 = UCSYNC | UCMST |	/* 3-pin, 8-bit master SPI */
 		UCMSB | UCCKPH;		/* MSB first, data changed on falling SCK */

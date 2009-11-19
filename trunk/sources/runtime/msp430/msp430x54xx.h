@@ -130,8 +130,8 @@ sfrb (UCA0IE,	 __MSP430_USCI0_BASE__+0x1C);	/* USCI A0 interrupt enable */
 sfrb (UCA0IFG,	 __MSP430_USCI0_BASE__+0x1D);	/* USCI A0 interrupt flags */
 sfrw (UCA0IV,	 __MSP430_USCI0_BASE__+0x1E);	/* USCI A0 interrupt vector word */
 
-sfrb (UCB0CTL0,	 __MSP430_USCI0_BASE__+0x20);	/* USCI B0 synchronous control 0 */
-sfrb (UCB0CTL1,	 __MSP430_USCI0_BASE__+0x21);	/* USCI B0 synchronous control 1 */
+sfrb (UCB0CTL1,	 __MSP430_USCI0_BASE__+0x20);	/* USCI B0 synchronous control 1 */
+sfrb (UCB0CTL0,	 __MSP430_USCI0_BASE__+0x21);	/* USCI B0 synchronous control 0 */
 sfrb (UCB0BR0,	 __MSP430_USCI0_BASE__+0x26);	/* USCI B0 synchronous bit rate 0 */
 sfrb (UCB0BR1,	 __MSP430_USCI0_BASE__+0x27);	/* USCI B0 synchronous bit rate 1 */
 sfrb (UCB0I2CIE, __MSP430_USCI0_BASE__+0x28);	/* USCI B0 I2C interrupt enable */
@@ -159,8 +159,8 @@ sfrb (UCA1IE,	 __MSP430_USCI1_BASE__+0x1C);	/* USCI A1 interrupt enable */
 sfrb (UCA1IFG,	 __MSP430_USCI1_BASE__+0x1D);	/* USCI A1 interrupt flags */
 sfrw (UCA1IV,	 __MSP430_USCI1_BASE__+0x1E);	/* USCI A1 interrupt vector word */
 
-sfrb (UCB1CTL0,	 __MSP430_USCI1_BASE__+0x20);	/* USCI B1 synchronous control 0 */
-sfrb (UCB1CTL1,	 __MSP430_USCI1_BASE__+0x21);	/* USCI B1 synchronous control 1 */
+sfrb (UCB1CTL1,	 __MSP430_USCI1_BASE__+0x20);	/* USCI B1 synchronous control 1 */
+sfrb (UCB1CTL0,	 __MSP430_USCI1_BASE__+0x21);	/* USCI B1 synchronous control 0 */
 sfrb (UCB1BR0,	 __MSP430_USCI1_BASE__+0x26);	/* USCI B1 synchronous bit rate 0 */
 sfrb (UCB1BR1,	 __MSP430_USCI1_BASE__+0x27);	/* USCI B1 synchronous bit rate 1 */
 sfrb (UCB1I2CIE, __MSP430_USCI1_BASE__+0x28);	/* USCI B1 I2C interrupt enable */
@@ -188,8 +188,8 @@ sfrb (UCA2IE,	 __MSP430_USCI2_BASE__+0x1C);	/* USCI A2 interrupt enable */
 sfrb (UCA2IFG,	 __MSP430_USCI2_BASE__+0x1D);	/* USCI A2 interrupt flags */
 sfrw (UCA2IV,	 __MSP430_USCI2_BASE__+0x1E);	/* USCI A2 interrupt vector word */
 
-sfrb (UCB2CTL0,	 __MSP430_USCI2_BASE__+0x20);	/* USCI B2 synchronous control 0 */
-sfrb (UCB2CTL1,	 __MSP430_USCI2_BASE__+0x21);	/* USCI B2 synchronous control 1 */
+sfrb (UCB2CTL1,	 __MSP430_USCI2_BASE__+0x20);	/* USCI B2 synchronous control 1 */
+sfrb (UCB2CTL0,	 __MSP430_USCI2_BASE__+0x21);	/* USCI B2 synchronous control 0 */
 sfrb (UCB2BR0,	 __MSP430_USCI2_BASE__+0x26);	/* USCI B2 synchronous bit rate 0 */
 sfrb (UCB2BR1,	 __MSP430_USCI2_BASE__+0x27);	/* USCI B2 synchronous bit rate 1 */
 sfrb (UCB2I2CIE, __MSP430_USCI2_BASE__+0x28);	/* USCI B2 I2C interrupt enable */
@@ -217,8 +217,8 @@ sfrb (UCA3IE,	 __MSP430_USCI3_BASE__+0x1C);	/* USCI A3 interrupt enable */
 sfrb (UCA3IFG,	 __MSP430_USCI3_BASE__+0x1D);	/* USCI A3 interrupt flags */
 sfrw (UCA3IV,	 __MSP430_USCI3_BASE__+0x1E);	/* USCI A3 interrupt vector word */
 
-sfrb (UCB3CTL0,	 __MSP430_USCI3_BASE__+0x20);	/* USCI B3 synchronous control 0 */
-sfrb (UCB3CTL1,	 __MSP430_USCI3_BASE__+0x21);	/* USCI B3 synchronous control 1 */
+sfrb (UCB3CTL1,	 __MSP430_USCI3_BASE__+0x20);	/* USCI B3 synchronous control 1 */
+sfrb (UCB3CTL0,	 __MSP430_USCI3_BASE__+0x21);	/* USCI B3 synchronous control 0 */
 sfrb (UCB3BR0,	 __MSP430_USCI3_BASE__+0x26);	/* USCI B3 synchronous bit rate 0 */
 sfrb (UCB3BR1,	 __MSP430_USCI3_BASE__+0x27);	/* USCI B3 synchronous bit rate 1 */
 sfrb (UCB3I2CIE, __MSP430_USCI3_BASE__+0x28);	/* USCI B3 I2C interrupt enable */
