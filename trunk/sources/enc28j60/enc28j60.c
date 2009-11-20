@@ -350,7 +350,6 @@ long enc28j60_get_speed (enc28j60_t *u, int *duplex)
 void enc28j60_set_loop (enc28j60_t *u, int on)
 {
 	mutex_lock (&u->netif.lock);
-#if 0
 	/* MAC loopback. */
 	if (on)
 		chip_write (u, MACON1, MACON1_LOOPBK |
@@ -358,13 +357,6 @@ void enc28j60_set_loop (enc28j60_t *u, int on)
 	else
 		chip_write (u, MACON1,
 			MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS);
-#else
-	/* PHY loopback. */
-	if (on)
-		chip_phy_write (u, PHCON1, PHCON1_PLOOPBK);
-	else
-		chip_phy_write (u, PHCON1, 0);
-#endif
 	mutex_unlock (&u->netif.lock);
 }
 
@@ -447,7 +439,7 @@ enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
 		if (buf_queue_is_full (&u->outq)) {
 			++u->netif.out_discards;
 			mutex_unlock (&u->netif.lock);
-/*			debug_printf ("slip_output: overflow\n");*/
+			debug_printf ("slip_output: overflow\n");
 			buf_free (p);
 			return 0;
 		}
@@ -525,17 +517,17 @@ enc28j60_receive_data (enc28j60_t *u)
 
 	if (! (rxstat & RSV_RXOK) || len < 4 || len > ETH_MTU) {
 		/* Skip this frame */
-debug_printf ("enc28j60_receive_data: failed, rxstat=%#04x, length %d bytes\n", rxstat, len);
+/*debug_printf ("enc28j60_receive_data: failed, rxstat=%#04x, length %d bytes\n", rxstat, len);*/
 		/*TODO: if next_packet_ptr or len is incorrect, reset the receiver.*/
 		++u->netif.in_errors;
 		goto skip;
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-debug_printf ("enc28j60_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);
+/*debug_printf ("enc28j60_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);*/
 
 	if (buf_queue_is_full (&u->inq)) {
-debug_printf ("enc28j60_receive_data: input overflow\n");
+/*debug_printf ("enc28j60_receive_data: input overflow\n");*/
 		++u->netif.in_discards;
 		goto skip;
 	}
@@ -544,7 +536,7 @@ debug_printf ("enc28j60_receive_data: input overflow\n");
 	p = buf_alloc (u->pool, len, 2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
-debug_printf ("enc28j60_receive_data: ignore packet - out of memory\n");
+/*debug_printf ("enc28j60_receive_data: ignore packet - out of memory\n");*/
 		++u->netif.in_discards;
 		goto skip;
 	}

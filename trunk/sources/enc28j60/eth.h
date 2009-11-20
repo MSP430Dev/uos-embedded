@@ -2,7 +2,7 @@
 #include <buf/buf-queue.h>
 
 #ifndef ENC28J60_STACKSZ
-#   define ENC28J60_STACKSZ	200
+#   define ENC28J60_STACKSZ	250
 #endif
 
 struct _mem_pool_t;

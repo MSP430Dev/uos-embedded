@@ -160,6 +160,7 @@
 #define ECON1_BSEL0		0x01
 
 /* ENC28J60 MACON1 Register Bit Definitions */
+#define MACON1_LOOPBK		0x10
 #define MACON1_TXPAUS		0x08
 #define MACON1_RXPAUS		0x04
 #define MACON1_PASSALL		0x02

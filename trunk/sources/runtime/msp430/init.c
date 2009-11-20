@@ -199,7 +199,7 @@ uos_valid_memory_address (void *ptr)
 {
 	unsigned u = (unsigned) ptr;
 
-	if (u >= 0x200 && u < 0xA00)
+	if (u >= (unsigned) &__data_start && u < (unsigned) &_etext)
 		return 1;
 	return 0;
 }
