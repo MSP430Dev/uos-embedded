@@ -1,6 +1,10 @@
 #include <runtime/lib.h>
 #include <crc/crc16-inet.h>
 
+/*#undef __i386__*/
+/*#undef HTONS*/
+/*#define HTONS(v) ~v*/
+
 /*
  * Calculate a new sum given the current sum and the new data.
  * Use 0 as the initial sum value.
@@ -245,8 +249,9 @@ crc16_inet_header (unsigned char *src, unsigned char *dest,
 		"2" (*(unsigned long*) src), "3" (*(unsigned long*) dest)
 	: "cc");
 #else
-	unsigned long longsum = proto_len + proto + src[1] + src[3] + dest[1] + dest[3];
-	longsum = (longsum >> 8) + ((unsigned char) longsum << 8);
+	unsigned long longsum = proto_len;
+	longsum += proto + src[1] + src[3] + dest[1] + dest[3];
+	longsum <<= 8;
 	longsum += src[0] + src[2] + dest[0] + dest[2];
 
 	/* Build cyclic sum. */
