@@ -94,6 +94,7 @@ crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 		"	xorb %%ah, %%ah \n"
 		"	addw %%ax, %0 \n"
 		"	adcw $0, %0 \n"
+		"	rolw $8, %w0 \n"
 		: "=g" (sum), "=S" (tmp1)
 		: "0" (sum), "1" (tmp1)
 		: "ax");
@@ -236,18 +237,23 @@ crc16_inet_header (unsigned char *src, unsigned char *dest,
 	"	movw %w2, %w3 \n"
 	"	roll $16, %2 \n"
 	"	addw %w3, %0 \n"
-	"	addw %w2, %0 \n"
+	"	adcw %w2, %0 \n"
 	"	adcw %1, %0 \n"
 	"	adcw $0, %0 \n"
-	: "=q" (sum), "=q" (tmp1), "=q" (tmp2), "=q" (tmp3)
+	: "=r" (sum), "=r" (tmp1), "=r" (tmp2), "=r" (tmp3)
 	: "0" ((unsigned short) proto), "1" (proto_len),
 		"2" (*(unsigned long*) src), "3" (*(unsigned long*) dest)
 	: "cc");
 #else
-	proto_len = HTONS (proto_len);
-	sum = crc16_inet (HTONS (proto), (unsigned char*) &proto_len, 2);
-	sum = crc16_inet (sum, src, 4);
-	sum = crc16_inet (sum, dest, 4);
+	unsigned long longsum = proto_len + proto + src[1] + src[3] + dest[1] + dest[3];
+	longsum = (longsum >> 8) + ((unsigned char) longsum << 8);
+	longsum += src[0] + src[2] + dest[0] + dest[2];
+
+	/* Build cyclic sum. */
+	longsum = (longsum >> 16) + (unsigned short) longsum;
+	sum = longsum;
+	if (longsum & 0x10000)
+		++sum;
 #endif
 	return sum;
 }
@@ -371,7 +377,7 @@ int main ()
 	test_sum (0x1234, 0x1234, 0, "\x12\x34\x56\x78");
 
 	printf ("Test 2: crc16_inet()\n");
-	test_sum (0x1246, 0x1234, 1, "\x12\x34\x56\x78");
+	test_sum (0x4612, 0x1234, 1, "\x12\x34\x56\x78");
 
 	printf ("Test 3: crc16_inet()\n");
 	test_sum (0xbe9c, 0x1234, 4, "\x12\x34\x56\x78");
@@ -401,7 +407,7 @@ int main ()
 		printf ("ERROR:\tsum = %04x, expected be9c\n", sum);
 
 	printf ("Test 5: crc16_inet_header()\n");
-	test_header (0x7879, 0x77, 0xabcd, "\x12\x34\x56\x78", "\xa1\xb2\xc3\xd4");
+	test_header (0x787a, 0x77, 0xabcd, "\x12\x34\x56\x78", "\xa1\xb2\xc3\xd4");
 
 	printf ("Test 6: crc16_inet_header()\n");
 	test_header (0x1100, 0x11, 0x0000, "\x00\x00\x00\x00", "\x00\x00\x00\x00");
