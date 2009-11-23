@@ -41,6 +41,32 @@ crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 		: "+r" (sum), "+e" (buf) : : "cc", __tmp_reg__);
 	}
 
+#elif defined (MSP430)
+	if ((int) buf & 1) {
+		/* get first non-aligned byte */
+		asm volatile (
+		"	add %1, %0 \n"
+		"	addc #0, %0 \n"
+		"	swpb %0 \n"
+		: "+r" (sum) : "r" ((unsigned short) *buf++) : "cc");
+		--len;
+	}
+	if (len >= 2) do {
+		asm volatile (
+		"	add @%1+, %0 \n"
+		"	addc #0, %0 \n"
+		: "+r" (sum), "+r" (buf) : : "cc");
+	} while ((len -= 2) > 0);
+
+	/* Did we have an odd number of bytes to do? */
+	if (len == 1) {
+		asm volatile (
+		"	add %1, %0 \n"
+		"	addc #0, %0 \n"
+		"	swpb %0 \n"
+		: "+r" (sum) : "r" ((unsigned short) *buf) : "cc");
+	}
+
 #elif __i386__
 	/* Taken from Liquorice.
 	 * Copyright (C) 2000 David J. Hudson <dave@humbug.demon.co.uk> */
@@ -180,6 +206,23 @@ crc16_inet_header (unsigned char *src, unsigned char *dest,
 	"	adc %B0, __zero_reg__ \n"
 	: "+r" (sum), "+e" (dest) : : "cc", __tmp_reg__);
 
+#elif defined (MSP430)
+	sum = (unsigned short) proto + src[1] + src[3] + dest[1] + dest[3];
+	asm volatile (
+	"	add %1, %0 \n"
+	"	addc #0, %0 \n"
+	"	swpb %0 \n"
+	: "+r" (sum)
+	: "r" (proto_len)
+	: "cc");
+
+	asm volatile (
+	"	add %1, %0 \n"
+	"	addc #0, %0 \n"
+	: "+r" (sum)
+	: "r" (src[0] + src[2] + dest[0] + dest[2])
+	: "cc");
+
 #elif __i386__
 	unsigned short tmp1;
 	unsigned long tmp2, tmp3;
@@ -228,13 +271,22 @@ crc16_inet_byte (unsigned short sum, unsigned char data)
 	: "r" (data)
 	: "cc");
 
+#elif defined (MSP430)
+	asm volatile (
+	"	add %1, %0 \n"
+	"	addc #0, %0 \n"
+	"	swpb %0 \n"
+	: "+r" (sum)
+	: "r" ((unsigned short) data)
+	: "cc");
+
 #elif __i386__
 	asm volatile (
-	"	addw %2, %0 \n"
+	"	addw %1, %0 \n"
 	"	adcw $0, %0 \n"
 	"	rolw $8, %w0 \n"
-	: "=g" (sum)
-	: "0" (sum), "g" (data)
+	: "+r" (sum)
+	: "r" ((unsigned short) data)
 	: "ax", "cc");
 #else
 	unsigned long longsum;
@@ -261,30 +313,107 @@ crc16_inet_byte (unsigned short sum, unsigned char data)
 
 #ifdef DEBUG_CRC16
 #include <stdio.h>
-#include <time.h>
+/*#include <time.h>*/
 
 /*
  * Compile with:
- * make crc16-inet CFLAGS=-DDEBUG_CRC16 -I.. -Dsize_t=int -U__i386__
+ * make crc16-inet CFLAGS='-DDEBUG_CRC16 -I.. -DLINUX386 -I__i386__'
  */
-int
-main ()
+int test_sum (unsigned expected, unsigned initial, unsigned bytes, unsigned char *data)
 {
-#define N 1024
-	unsigned char array [N];
-	unsigned char array1 [N+1];
-	unsigned short i, sum, sum1;
+	unsigned sum, i;
 
-	srandom (time(0));
-	for (i=0; i<N; ++i)
-		array1[i+1] = array[i] = random();
-
-	for (i=1; i<=N; ++i) {
-		sum = crc16_inet (0xaa55, array, i);
-		sum1 = crc16_inet (0xaa55, array1+1, i);
-		if (sum != sum1)
-			printf ("[%d] - %02x - %02x\n", i, sum, sum1);
+	printf ("\tinitial %04x, length %d bytes, data '", initial, bytes);
+	for (i=0; i<bytes; ++i) {
+		if (i)
+			printf ("-");
+		printf ("%02x", data[i]);
 	}
+	printf ("'\n");
+	sum = crc16_inet (initial, data, bytes);
+	if (sum == expected)
+		printf ("OK:\tsum = %04x\n", sum);
+	else
+		printf ("ERROR:\tsum = %04x, expected %04x\n", sum, expected);
+}
+
+int test_header (unsigned expected, unsigned proto, unsigned proto_len,
+	unsigned char *src, unsigned char *dest)
+{
+	unsigned sum, i;
+
+	printf ("\tsrc '");
+	for (i=0; i<4; ++i) {
+		if (i)
+			printf ("-");
+		printf ("%02x", src[i]);
+	}
+	printf ("' dest '");
+	for (i=0; i<4; ++i) {
+		if (i)
+			printf ("-");
+		printf ("%02x", dest[i]);
+	}
+	printf ("', proto %02x, proto_len %04x\n", proto, proto_len);
+	sum = crc16_inet_header (src, dest, proto, proto_len);
+	if (sum == expected)
+		printf ("OK:\tsum = %04x\n", sum);
+	else
+		printf ("ERROR:\tsum = %04x, expected %04x\n", sum, expected);
+}
+
+int main ()
+{
+	unsigned short sum, proto_len;
+	unsigned char proto;
+
+	printf ("Test 1: crc16_inet()\n");
+	test_sum (0x1234, 0x1234, 0, "\x12\x34\x56\x78");
+
+	printf ("Test 2: crc16_inet()\n");
+	test_sum (0x1246, 0x1234, 1, "\x12\x34\x56\x78");
+
+	printf ("Test 3: crc16_inet()\n");
+	test_sum (0xbe9c, 0x1234, 4, "\x12\x34\x56\x78");
+
+	sum = 0x1234;
+	printf ("Test 4: crc16_inet_byte()\n");
+	printf ("\tdata '12-34-56-78' length 4 bytes, initial %04x\n", sum);
+	sum = crc16_inet_byte (sum, '\x12');
+	if (sum == 0x4612)
+		printf ("OK:\tsum = %04x\n", sum);
+	else
+		printf ("ERROR:\tsum = %04x, expected 4612\n", sum);
+	sum = crc16_inet_byte (sum, '\x34');
+	if (sum == 0x4646)
+		printf ("OK:\tsum = %04x\n", sum);
+	else
+		printf ("ERROR:\tsum = %04x, expected 4646\n", sum);
+	sum = crc16_inet_byte (sum, '\x56');
+	if (sum == 0x9c46)
+		printf ("OK:\tsum = %04x\n", sum);
+	else
+		printf ("ERROR:\tsum = %04x, expected 9c46\n", sum);
+	sum = crc16_inet_byte (sum, '\x78');
+	if (sum == 0xbe9c)
+		printf ("OK:\tsum = %04x\n", sum);
+	else
+		printf ("ERROR:\tsum = %04x, expected be9c\n", sum);
+
+	printf ("Test 5: crc16_inet_header()\n");
+	test_header (0x7879, 0x77, 0xabcd, "\x12\x34\x56\x78", "\xa1\xb2\xc3\xd4");
+
+	printf ("Test 6: crc16_inet_header()\n");
+	test_header (0x1100, 0x11, 0x0000, "\x00\x00\x00\x00", "\x00\x00\x00\x00");
+
+	printf ("Test 7: crc16_inet_header()\n");
+	test_header (0x3322, 0x00, 0x2233, "\x00\x00\x00\x00", "\x00\x00\x00\x00");
+
+	printf ("Test 8: crc16_inet_header()\n");
+	test_header (0x4231, 0x00, 0x0000, "\x01\x02\x30\x40", "\x00\x00\x00\x00");
+
+	printf ("Test 9: crc16_inet_header()\n");
+	test_header (0x2413, 0x00, 0x0000, "\x00\x00\x00\x00", "\x10\x20\x03\x04");
 	return 0;
 }
 #endif /* DEBUG_CRC16 */

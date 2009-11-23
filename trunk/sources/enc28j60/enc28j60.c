@@ -421,25 +421,25 @@ chip_transmit_packet (enc28j60_t *u, buf_t *p)
 static bool_t
 enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
 {
-/*debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);*/
 	mutex_lock (&u->netif.lock);
 
 	/* Exit if link has failed */
 	if (p->tot_len < 4 || p->tot_len > ETH_MTU ||
 	    ! (chip_phy_read (u, PHSTAT2) & PHSTAT2_LSTAT)) {
-/*debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);*/
+debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);
 		++u->netif.out_errors;
 		mutex_unlock (&u->netif.lock);
 		buf_free (p);
 		return 0;
 	}
+debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);
 
 	if (chip_read (u, ECON1) & ECON1_TXRTS) {
 		/* Занято, ставим в очередь. */
 		if (buf_queue_is_full (&u->outq)) {
 			++u->netif.out_discards;
 			mutex_unlock (&u->netif.lock);
-			debug_printf ("slip_output: overflow\n");
+			debug_printf ("enc28j60_output: overflow\n");
 			buf_free (p);
 			return 0;
 		}
@@ -524,7 +524,7 @@ enc28j60_receive_data (enc28j60_t *u)
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-/*debug_printf ("enc28j60_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);*/
+debug_printf ("enc28j60_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);
 
 	if (buf_queue_is_full (&u->inq)) {
 /*debug_printf ("enc28j60_receive_data: input overflow\n");*/
@@ -571,6 +571,7 @@ enc28j60_receiver (void *arg)
 	for (;;) {
 		/* Wait for the receive interrupt. */
 		mutex_wait (&u->netif.lock);
+		++u->intr;
 
 		/* Check if a packet has been received and buffered. */
 		while (chip_read (u, EPKTCNT) != 0) {

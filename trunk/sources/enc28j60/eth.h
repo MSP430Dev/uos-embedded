@@ -2,7 +2,7 @@
 #include <buf/buf-queue.h>
 
 #ifndef ENC28J60_STACKSZ
-#   define ENC28J60_STACKSZ	250
+#   define ENC28J60_STACKSZ	400
 #endif
 
 struct _mem_pool_t;
@@ -21,6 +21,8 @@ typedef struct _enc28j60_t {
 
 	unsigned bank;			/* current bank of chip registers */
 	unsigned next_packet_ptr;	/* next receive packet address */
+
+	unsigned long intr;		/* interrupt counter */
 
 	ARRAY (stack, ENC28J60_STACKSZ); /* stack for interrupt task */
 } enc28j60_t;
