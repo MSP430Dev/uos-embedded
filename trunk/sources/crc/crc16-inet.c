@@ -60,7 +60,7 @@ crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 		"	add @%1+, %0 \n"
 		"	addc #0, %0 \n"
 		: "+r" (sum), "+r" (buf) : : "cc");
-	} while ((len -= 2) > 0);
+	} while ((len -= 2) >= 2);
 
 	/* Did we have an odd number of bytes to do? */
 	if (len == 1) {

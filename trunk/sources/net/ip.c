@@ -321,8 +321,8 @@ ip_main (void *arg)
 		mutex_lock (&ip->lock);
 		if (ip->timer && m == &ip->timer->decisec) {
 			/* Per 0.1 second timer interrupt. */
-			/* debug_printf ("ip: timer %d\n",
-				timer_milliseconds (ip->timer)); */
+			/*debug_printf ("ip: timer %d\n",
+				timer_milliseconds (ip->timer));*/
 			if (ip->arp)
 				arp_timer (ip->arp);
 
@@ -347,8 +347,8 @@ ip_main (void *arg)
 				p = netif_input (netif);
 				if (! p)
 					break;
-				/* debug_printf ("ip: netif %S received %d bytes\n",
-					netif->name, p->tot_len); */
+				/*debug_printf ("ip: netif %S received %d bytes\n",
+					netif->name, p->tot_len);*/
 				/*buf_print_ip (p);*/
 				ip_input (ip, p, netif);
 			}

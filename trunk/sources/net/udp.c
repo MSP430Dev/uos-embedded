@@ -113,11 +113,11 @@ drop:
 		return 0;
 	}
 	h = (udp_hdr_t*) p->payload;
-	/* debug_printf (CONST("udp_input: driver %s received %d bytes\n"),
-		inp->name, p->tot_len); */
 
 	/* LY: p->tot_len may include a eth-tail, use udp-len instead. */
 	len = (h->len_h << 8) | h->len_l;
+	/*debug_printf ("udp_input: driver %s received %d bytes, useful %d bytes\n",
+		inp->name, p->tot_len, len);*/
 	if (len > p->tot_len)
 		goto drop;
 
@@ -125,7 +125,7 @@ drop:
 	    buf_chksum (p, crc16_inet_header (iph->src,
 	    iph->dest, IP_PROTO_UDP, len)) != 0) {
 		/* Checksum failed for received UDP packet. */
-		/* debug_printf (CONST("udp_input: bad checksum\n")); */
+		/*debug_printf ("udp_input: bad checksum\n");*/
 		goto drop;
 	}
 
@@ -133,9 +133,9 @@ drop:
 	dest = h->dest_h << 8 | h->dest_l;
 	src = h->src_h << 8 | h->src_l;
 	for (s = ip->udp_sockets; s; s = s->next) {
-		/* debug_printf (CONST("<local :%d remote %d.%d.%d.%d:%d> "),
+		/*debug_printf ("<local :%d remote %d.%d.%d.%d:%d> ",
 			s->local_port, s->peer_ip[0], s->peer_ip[1],
-			s->peer_ip[2], s->peer_ip[3], s->peer_port); */
+			s->peer_ip[2], s->peer_ip[3], s->peer_port);*/
 		/* Compare local port number. */
 		if (s->local_port != dest)
 			continue;
@@ -155,22 +155,22 @@ drop:
 		mutex_lock (&s->lock);
 		if (udp_queue_is_full (s)) {
 			mutex_unlock (&s->lock);
-			/*debug_printf (CONST("udp_input: socket overflow\n"));*/
+			/*debug_printf ("udp_input: socket overflow\n");*/
 			goto drop;
 		}
 		udp_queue_put (s, p, iph->src, src);
 		mutex_signal (&s->lock, p);
 		mutex_unlock (&s->lock);
-		/* debug_printf (CONST("udp_input: signaling socket on port %d\n"),
-			s->local_port); */
+		/*debug_printf ("udp_input: signaling socket on port %d\n",
+			s->local_port);*/
 		return 0;
 	}
 
 	/* No match was found. */
-	/* debug_printf (CONST("udp_input: no socket found\n")); */
-	/* debug_printf (CONST("    source %d.%d.%d.%d port %d, destination port %d\n"),
+	/*debug_printf ("udp_input: no socket found\n");*/
+	/*debug_printf ("    source %d.%d.%d.%d port %d, destination port %d\n",
 		iph->src[0], iph->src[1], iph->src[2], iph->src[3],
-		src, dest); */
+		src, dest);*/
 	++ip->udp_no_ports;
 	return p;
 }

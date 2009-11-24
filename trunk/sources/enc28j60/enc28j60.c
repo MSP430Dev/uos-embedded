@@ -386,12 +386,16 @@ static void
 chip_transmit_packet (enc28j60_t *u, buf_t *p)
 {
 	buf_t *q;
+	unsigned len, i;
 
 	/* Set the write pointer to start of transmit buffer area. */
 	chip_write16 (u, EWRPTL, MEM_TXSTART);
 
 	/* Set the TXND pointer to correspond to the packet size given. */
-	chip_write16 (u, ETXNDL, MEM_TXSTART + p->tot_len);
+	len = p->tot_len;
+	if (len < 60)
+		len = 60;
+	chip_write16 (u, ETXNDL, MEM_TXSTART + len);
 
 	/* Write per-packet control byte. */
 	chip_write_op (ENC28J60_WRITE_BUF_MEM, 0, 0x00);
@@ -404,12 +408,15 @@ chip_transmit_packet (enc28j60_t *u, buf_t *p)
 		assert (q->len > 0);
 		chip_write_buffer (q->len, q->payload);
 	}
+	/* Pad to minimal ethernet packet size (64 bytes). */
+	for (i=p->tot_len; i<len; i++)
+		chip_write_op (ENC28J60_WRITE_BUF_MEM, 0, 0x00);
 
 	/* Send the contents of the transmit buffer onto the network. */
 	chip_set_bits (u, ECON1, ECON1_TXRTS);
 
 	++u->netif.out_packets;
-	u->netif.out_bytes += p->tot_len;
+	u->netif.out_bytes += len;
 	buf_free (p);
 }
 
@@ -426,20 +433,20 @@ enc28j60_output (enc28j60_t *u, buf_t *p, small_uint_t prio)
 	/* Exit if link has failed */
 	if (p->tot_len < 4 || p->tot_len > ETH_MTU ||
 	    ! (chip_phy_read (u, PHSTAT2) & PHSTAT2_LSTAT)) {
-debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);
+/*debug_printf ("enc28j60_output: transmit %d bytes, link failed\n", p->tot_len);*/
 		++u->netif.out_errors;
 		mutex_unlock (&u->netif.lock);
 		buf_free (p);
 		return 0;
 	}
-debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);
+/*debug_printf ("enc28j60_output: transmit %d bytes\n", p->tot_len);*/
 
 	if (chip_read (u, ECON1) & ECON1_TXRTS) {
 		/* Занято, ставим в очередь. */
 		if (buf_queue_is_full (&u->outq)) {
 			++u->netif.out_discards;
 			mutex_unlock (&u->netif.lock);
-			debug_printf ("enc28j60_output: overflow\n");
+/*			debug_printf ("enc28j60_output: overflow\n");*/
 			buf_free (p);
 			return 0;
 		}
@@ -524,7 +531,7 @@ enc28j60_receive_data (enc28j60_t *u)
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-debug_printf ("enc28j60_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);
+/*debug_printf ("enc28j60_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);*/
 
 	if (buf_queue_is_full (&u->inq)) {
 /*debug_printf ("enc28j60_receive_data: input overflow\n");*/
@@ -569,9 +576,11 @@ enc28j60_receiver (void *arg)
 	chip_write (u, EIE, EIE_INTIE | EIE_PKTIE | EIE_TXIE);
 
 	for (;;) {
-		/* Wait for the receive interrupt. */
+		/* Wait for the interrupt. */
 		mutex_wait (&u->netif.lock);
 		++u->intr;
+		eir = chip_read (u, EIR);
+/*debug_printf ("enc28j60 irq: EIR = %b\n", eir, EIR_BITS);*/
 
 		/* Check if a packet has been received and buffered. */
 		while (chip_read (u, EPKTCNT) != 0) {
@@ -579,7 +588,6 @@ enc28j60_receiver (void *arg)
 		}
 
 		/* Process all pending interrupts. */
-		eir = chip_read (u, EIR);
 		if (eir & EIR_RXERIF) {
 			/* Count missed packets. */
 			++u->netif.in_discards;

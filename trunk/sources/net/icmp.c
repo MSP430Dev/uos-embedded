@@ -58,6 +58,7 @@ icmp_dest_unreach (ip_t *ip, buf_t *p, small_uint_t op)
 	if (! q) {
 		buf_free (p);
 		++ip->icmp_out_errors;
+		/*debug_printf ("icmp_dest_unreach: no memory\n");*/
 		return;
 	}
 	h = (icmp_hdr_t*) q->payload;
@@ -70,8 +71,9 @@ icmp_dest_unreach (ip_t *ip, buf_t *p, small_uint_t op)
 
 	/* calculate checksum */
 	h->chksum = 0;
-	h->chksum = ~crc16_inet (0, q->payload, q->len);
+	h->chksum = ~crc16_inet (0, q->payload, q->tot_len);
 
+	/*debug_printf ("icmp_dest_unreach: send %d bytes\n", q->tot_len);*/
 	ip_output (ip, q, iphdr->src, 0, IP_PROTO_ICMP);
 	++ip->icmp_out_msgs;
         ++ip->icmp_out_dest_unreachs;
