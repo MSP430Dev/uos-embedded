@@ -70,8 +70,7 @@ typedef enum _tcp_state_t {
 #define TCP_SLOW_INTERVAL	500	/* coarse grained timeout in msec */
 #endif
 
-#define TCP_FIN_WAIT_TIMEOUT	20000	/* milliseconds */
-#define TCP_SYN_RCVD_TIMEOUT	20000	/* milliseconds */
+#define TCP_STUCK_TIMEOUT	5000	/* milliseconds */
 
 #define TCP_MSL			60000  /* maximum segment lifetime in usec */
 

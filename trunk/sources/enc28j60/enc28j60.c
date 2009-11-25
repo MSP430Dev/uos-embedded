@@ -579,28 +579,38 @@ enc28j60_receiver (void *arg)
 		/* Wait for the interrupt. */
 		mutex_wait (&u->netif.lock);
 		++u->intr;
-		eir = chip_read (u, EIR);
+
+		for (;;) {
+			/* Process all pending interrupts. */
+			eir = chip_read (u, EIR);
 /*debug_printf ("enc28j60 irq: EIR = %b\n", eir, EIR_BITS);*/
+			if (eir & EIR_RXERIF) {
+				/* Count lost incoming packets. */
+				++u->netif.in_discards;
+				chip_clear_bits (u, EIR, EIR_RXERIF);
+			}
+			if (eir & EIR_TXERIF) {
+				/* Count collisions. */
+				++u->netif.out_collisions;
+				chip_clear_bits (u, EIR, EIR_TXERIF);
+			}
+			if (! (eir & (EIR_PKTIF | EIR_TXIF))) {
+				/* All interrupts processed. */
+				break;
+			}
 
-		/* Check if a packet has been received and buffered. */
-		while (chip_read (u, EPKTCNT) != 0) {
-			enc28j60_receive_data (u);
-		}
+			/* Check if a packet has been received and buffered. */
+			while (chip_read (u, EPKTCNT) != 0) {
+				enc28j60_receive_data (u);
+			}
+			if (eir & EIR_TXIF) {
+				chip_clear_bits (u, EIR, EIR_TXIF);
 
-		/* Process all pending interrupts. */
-		if (eir & EIR_RXERIF) {
-			/* Count missed packets. */
-			++u->netif.in_discards;
-			chip_clear_bits (u, EIR, EIR_RXERIF);
-		}
-		if (eir & EIR_TXIF) {
-			/* TODO: u->netif.out_collisions += ???; */
-			chip_clear_bits (u, EIR, EIR_TXIF);
-
-			/* Ставим на передачу пакет из очереди. */
-			p = buf_queue_get (&u->outq);
-			if (p)
-				chip_transmit_packet (u, p);
+				/* Transmit a packet from queue. */
+				p = buf_queue_get (&u->outq);
+				if (p)
+					chip_transmit_packet (u, p);
+			}
 		}
 	}
 }

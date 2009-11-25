@@ -72,18 +72,18 @@ tcp_slowtmr (ip_t *ip)
 					s->cwnd, s->ssthresh);
 			}
 		}
-		/* Check if this PCB has stayed too long in FIN-WAIT-2 */
-		if (s->state == FIN_WAIT_2 && ip->tcp_ticks - s->tmr >
-		    TCP_FIN_WAIT_TIMEOUT / TCP_SLOW_INTERVAL) {
-			++s_remove;
-			tcp_debug (CONST("tcp_slowtmr: removing s stuck in FIN-WAIT-2\n"));
-		}
-
-		/* Check if this PCB has stayed too long in SYN-RCVD */
-		if (s->state == SYN_RCVD && ip->tcp_ticks - s->tmr >
-		    TCP_SYN_RCVD_TIMEOUT / TCP_SLOW_INTERVAL) {
-			++s_remove;
-			tcp_debug (CONST("tcp_slowtmr: removing s stuck in SYN-RCVD\n"));
+		/* Check if this PCB has stayed too long in transitional state */
+		if (ip->tcp_ticks - s->tmr > TCP_STUCK_TIMEOUT / TCP_SLOW_INTERVAL) {
+			if (s->state == SYN_RCVD) {
+				++s_remove;
+				tcp_debug (CONST("tcp_slowtmr: removing s stuck in %S\n"),
+					tcp_state_name (s->state));
+			} else if (s->state == FIN_WAIT_1 ||
+			    s->state == FIN_WAIT_2 || s->state == CLOSING) {
+				tcp_list_remove (&s->ip->tcp_sockets, s);
+				tcp_set_socket_state (s, TIME_WAIT);
+				tcp_list_add (&s->ip->tcp_closing_sockets, s);
+			}
 		}
 
 		/* If the PCB should be removed, do it. */

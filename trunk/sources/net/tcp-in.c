@@ -554,17 +554,12 @@ tcp_process (tcp_socket_t *s, tcp_segment_t *inseg, tcp_hdr_t *h)
 		tcp_receive (s, inseg, h);
 		if (s->ip->tcp_input_flags & TCP_FIN) {
 			if ((s->ip->tcp_input_flags & TCP_ACK) &&
-			    s->ip->tcp_input_ackno == s->snd_nxt) {
-				tcp_debug (CONST("TCP connection closed %d -> %d.\n"),
-					inseg->tcphdr->src, inseg->tcphdr->dest);
-				tcp_ack_now (s);
-				tcp_list_remove (&s->ip->tcp_sockets, s);
-				tcp_set_socket_state (s, TIME_WAIT);
-				tcp_list_add (&s->ip->tcp_closing_sockets, s);
-			} else {
-				tcp_ack_now (s);
-				tcp_set_socket_state (s, CLOSING);
-			}
+			    s->ip->tcp_input_ackno == s->snd_nxt)
+				goto close_time_wait;
+
+			tcp_ack_now (s);
+			tcp_set_socket_state (s, CLOSING);
+
 		} else if ((s->ip->tcp_input_flags & TCP_ACK) &&
 		    s->ip->tcp_input_ackno == s->snd_nxt && ! s->unsent) {
 			tcp_set_socket_state (s, FIN_WAIT_2);
@@ -573,21 +568,15 @@ tcp_process (tcp_socket_t *s, tcp_segment_t *inseg, tcp_hdr_t *h)
 
 	case FIN_WAIT_2:
 		tcp_receive (s, inseg, h);
-		if (s->ip->tcp_input_flags & TCP_FIN) {
-			tcp_debug (CONST("TCP connection closed %u -> %u.\n"),
-				inseg->tcphdr->src, inseg->tcphdr->dest);
-			tcp_ack_now (s);
-			tcp_list_remove (&s->ip->tcp_sockets, s);
-			tcp_set_socket_state (s, TIME_WAIT);
-			tcp_list_add (&s->ip->tcp_closing_sockets, s);
-		}
+		if (s->ip->tcp_input_flags & TCP_FIN)
+			goto close_time_wait;
 		break;
 
 	case CLOSING:
 		tcp_receive (s, inseg, h);
 		if ((s->ip->tcp_input_flags & TCP_ACK) &&
 		    s->ip->tcp_input_ackno == s->snd_nxt) {
-			tcp_debug (CONST("TCP connection closed %u -> %u.\n"),
+close_time_wait:	tcp_debug (CONST("TCP connection closed %u -> %u.\n"),
 				inseg->tcphdr->src, inseg->tcphdr->dest);
 			tcp_ack_now (s);
 			tcp_list_remove (&s->ip->tcp_sockets, s);
