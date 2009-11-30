@@ -90,17 +90,33 @@ msp430_set_baud (int port, unsigned khz, unsigned long baud)
 	}
 /*debug_printf ("port %d hz %ld baud %ld: div %04x s %d\n", port, hz, baud, div, best_s);*/
 
-#ifdef __MSP430_HAS_USCI1__
-	if (port) {
-		UCA1BR0 = div;
-		UCA1BR1 = div >> 8;
-		UCA1MCTL = best_s << 1;
-	} else
-#endif
-	{
+	switch (port) {
+	case 0:
 		UCA0BR0 = div;
 		UCA0BR1 = div >> 8;
 		UCA0MCTL = best_s << 1;
+		break;
+#ifdef __MSP430_HAS_USCI_AB1__
+	case 1:
+		UCA1BR0 = div;
+		UCA1BR1 = div >> 8;
+		UCA1MCTL = best_s << 1;
+		break;
+#endif
+#ifdef __MSP430_HAS_USCI_AB2__
+	case 2:
+		UCA2BR0 = div;
+		UCA2BR1 = div >> 8;
+		UCA2MCTL = best_s << 1;
+		break;
+#endif
+#ifdef __MSP430_HAS_USCI_AB3__
+	case 3:
+		UCA3BR0 = div;
+		UCA3BR1 = div >> 8;
+		UCA3MCTL = best_s << 1;
+		break;
+#endif
 	}
 }
 #endif
