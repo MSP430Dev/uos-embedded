@@ -102,6 +102,7 @@ arch_task_switch (task_t *target)
 	"	pop	r6 \n"
 	"	pop	r5 \n"
 	"	pop	r4 \n"
+	"	bic	#0x10,0(sp) \n"	/* clear CPUOFF */
 	"	reti"
 	);
 }
