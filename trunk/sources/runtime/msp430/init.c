@@ -162,10 +162,10 @@ _init_ (void)
 	UCA3MCTL = UCBRS_1;
 #elif KHZ == 8000
 	UCA3MCTL = UCBRS_4;
-#elif KHZ == 1000
+#elif KHZ == 1000 || KHZ*10 % 1152 == 0
 	UCA3MCTL = UCBRS_0;
 #else
-	#error Invalid KHZ, must be 16000, 12000, 8000 or 1000.
+	#error Invalid KHZ for debug UART.
 #endif
 	UCA3CTL1 &= ~UCSWRST;			/* Clear reset */
 	/* UCA3IE |= UCRXIE; */			/* Enable USCI_A3 RX interrupt */
