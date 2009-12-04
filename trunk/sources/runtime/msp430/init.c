@@ -160,6 +160,10 @@ _init_ (void)
 	UCA3MCTL = UCBRS_7;
 #elif KHZ == 12000
 	UCA3MCTL = UCBRS_1;
+#elif KHZ == 12288
+	UCA3MCTL = UCBRS_5;
+#elif KHZ == 6144
+	UCA3MCTL = UCBRS_2;
 #elif KHZ == 8000
 	UCA3MCTL = UCBRS_4;
 #elif KHZ == 1000 || KHZ*10 % 1152 == 0

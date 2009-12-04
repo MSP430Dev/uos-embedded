@@ -47,18 +47,20 @@ else:
 # N = hz / baud
 # UCBRSx = round( ( N − INT(N) ) * 8 )
 def compute_low_freq (hz, baud):
+	n = hz / baud
+	best_n = n+1
 	best_s = 0
-	min_err = 100
+	min_err = compute_low_freq_error (hz, baud, best_n, best_s)
 	for s in range(8):
-		err = compute_low_freq_error (hz, baud, s)
+		err = compute_low_freq_error (hz, baud, n, s)
 		#print "low freq s=%#02x error=%.2f%%" % (s, err)
 		if err < min_err:
 			min_err = err
+			best_n = n
 			best_s = s
-	return (hz/baud, best_s, min_err)
+	return (best_n, best_s, min_err)
 
-def compute_low_freq_error (hz, baud, s):
-	n = hz / baud
+def compute_low_freq_error (hz, baud, n, s):
 	m = [0, 0x40, 0x44, 0x54, 0x55, 0x75, 0x77, 0x7f] [s]
 	a = baud * n
 	b = hz
