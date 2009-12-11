@@ -221,6 +221,7 @@ tcp_socket_t *tcp_accept (tcp_socket_t *s);
 int tcp_close (tcp_socket_t *s);
 void tcp_abort (tcp_socket_t *s);
 int tcp_read (tcp_socket_t *s, void *dataptr, unsigned short len);
+int tcp_read_poll (tcp_socket_t *s, void *dataptr, unsigned short len, int nonblock);
 int tcp_write (tcp_socket_t *s, const void *dataptr, unsigned short len);
 unsigned long tcp_inactivity (tcp_socket_t *s);
 

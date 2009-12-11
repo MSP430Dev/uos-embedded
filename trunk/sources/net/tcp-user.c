@@ -134,9 +134,11 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 
 /*
  * Receive len>0 bytes. Return <0 on error.
+ * When nonblock flag is zero, blocks until data get available (never returns 0).
+ * When nonblock flag is nonzero, returns 0 if no data is available.
  */
 int
-tcp_read (tcp_socket_t *s, void *arg, unsigned short len)
+tcp_read_poll (tcp_socket_t *s, void *arg, unsigned short len, int nonblock)
 {
 	buf_t *p, *q;
 	char *buf;
@@ -154,6 +156,10 @@ tcp_read (tcp_socket_t *s, void *arg, unsigned short len)
 			mutex_unlock (&s->lock);
 			tcp_debug (CONST("tcp_read() called in invalid state\n"));
 			return -1;
+		}
+		if (nonblock) {
+			mutex_unlock (&s->lock);
+			return 0;
 		}
 		mutex_wait (&s->lock);
 	}
@@ -184,6 +190,17 @@ tcp_read (tcp_socket_t *s, void *arg, unsigned short len)
 	}
 	buf_free (p);
 	return n;
+}
+
+/*
+ * Blocking receive.
+ * Return a number of received bytes >0.
+ * Return <0 on error.
+ */
+int
+tcp_read (tcp_socket_t *s, void *arg, unsigned short len)
+{
+	return tcp_read_poll (s, arg, len, 0);
 }
 
 /*
