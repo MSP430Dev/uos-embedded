@@ -85,7 +85,7 @@
 					 p==2 ? USCIA2_RXTX_VECTOR/2 : \
 					        USCIA3_RXTX_VECTOR/2)
 
-#define enable_receiver(p)		/* empty */
+#define enable_receiver(p)		((&UCA0CTL1)[p<<6] &= ~UCSWRST)
 #define test_transmitter_enabled(p)	1
 
 #define enable_receive_interrupt(p)	((&UCA0IE)[p<<6] |= UCRXIE)
