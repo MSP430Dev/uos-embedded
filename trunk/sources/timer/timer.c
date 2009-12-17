@@ -98,17 +98,24 @@ timer_handler (timer_t *t)
 	/* Clear interrupt. */
 	*AT91C_PITC_PIVR;
 #endif
+	/* Increment current time. */
 	t->milliseconds += t->msec_per_tick;
-	if (t->milliseconds >= t->last_decisec + 100) {
-		t->last_decisec = t->milliseconds;
-/*debug_putchar (0, '~');*/
-		mutex_activate (&t->decisec, 0);
-		ret = 0;
+
+	/* Send signal every 100 msec. */
+	if (t->msec_per_tick < 100 &&
+	    t->milliseconds >= t->next_decisec) {
+		t->next_decisec += 100;
+/*debug_printf ("<ms=%lu,nxt=%lu> ", t->milliseconds, t->next_decisec);*/
+		if (! list_is_empty (&t->decisec.waiters) ||
+		    ! list_is_empty (&t->decisec.groups)) {
+			mutex_activate (&t->decisec, 0);
+			ret = 0;
+		}
 	}
 	if (t->milliseconds >= TIMER_MSEC_PER_DAY) {
 		++t->days;
 		t->milliseconds -= TIMER_MSEC_PER_DAY;
-		t->last_decisec -= TIMER_MSEC_PER_DAY;
+		t->next_decisec -= TIMER_MSEC_PER_DAY;
 	}
 	arch_intr_allow (TIMER_IRQ);
 
@@ -257,20 +264,23 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	MC_ITCSR = MC_ITCSR_EN;
 #endif
 #if MSP430
-	/* Stop timer. */
-	TACTL = TACLR;
-
-	/* Source clock SMCLK divided by 8. */
-	TACTL = TASSEL_SMCLK | ID_DIV8;
+	{
+	unsigned long divider = t->msec_per_tick * t->khz;
 #ifdef TAEX0
-	/* Disable divider expansion. */
-	TAEX0 = 0;
+	/* Setup divider expansion. */
+	small_uint_t nx = (divider - 4) >> (16 + 3);
+	assert (nx <= 7);
+	TAEX0 = nx;
+	if (nx)
+		divider /= nx + 1;
 #endif
-	/* Set the compare match value according to the tick rate we want. */
-	TACCR0 = (t->khz * t->msec_per_tick) >> 3;
-
-	/* Start timer in up mode. */
-	TACTL |= MC_1;
+	TACTL = TACLR;				/* Stop timer. */
+	TACTL = TASSEL_SMCLK | ID_DIV8;		/* Source clock SMCLK divided by 8. */
+	divider = (divider + 4) >> 3;
+	assert (divider <= 65536);
+	TACCR0 = divider - 1;			/* Set tick rate. */
+	TACTL |= MC_1;				/* Start timer in up mode. */
+	}
 #endif
 #if LINUX386
 	{

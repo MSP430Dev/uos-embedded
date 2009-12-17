@@ -30,7 +30,7 @@ struct _timer_t {
 	unsigned long khz;		/* reference clock */
 	small_uint_t msec_per_tick;
 	unsigned long milliseconds;	/* real time counter */
-	unsigned long last_decisec;	/* when decisecond was signalled */
+	unsigned long next_decisec;	/* when next decisecond must be signalled */
 	unsigned int days;		/* days counter */
 };
 
