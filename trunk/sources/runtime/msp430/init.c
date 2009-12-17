@@ -42,7 +42,41 @@ _init_ (void)
 		continue;			/* amplitude is OK) */
 	IFG1 &= ~OFIFG;				/* clear osc. fault int. flag */
 	BCSCTL2 = SELM0 | SELM1;		/* set XT1 as MCLK */
-#endif /* BCSCTL1_ */
+#endif /* USE_XT1_HIGH */
+
+	/*
+	 * Enable the crystal on XT2 and use it as MCLK.
+	 */
+#ifdef USE_XT2
+	P5SEL |= 0x0c;				/* Use pins P5.2-3 as XT2IN/XT2OUT */
+	UCSCTL6 &= ~XT2OFF;			// Enable XT2
+	UCSCTL3 = SELREF__REFOCLK;		/* FLLref = REFO */
+	UCSCTL4 = (UCSCTL4 & ~SELA_7) |
+		SELA__REFOCLK;			/* Set ACLK to REFO */
+
+	// Loop until XT1,XT2 & DCO stabilizes
+	do {
+		/* Clear XT2, XT1, DCO fault flags */
+		UCSCTL7 &= ~(XT2OFFG + XT1LFOFFG + XT1HFOFFG + DCOFFG);
+		SFRIFG1 &= ~OFIFG;		/* Clear fault flags */
+	} while (SFRIFG1 & OFIFG);		/* Test oscillator fault flag */
+	UCSCTL6 &= ~XT2DRIVE0;			// Decrease XT2 Drive according to expected frequency
+	UCSCTL4 = (UCSCTL4 & ~(SELS_7 | SELM_7)) |
+		SELS__DCOCLK | SELM__DCOCLK; /* Set MCLK, SMCLK to DCO */
+
+#endif /* USE_XT2 */
+#ifdef USE_XT2_BYPASS
+	P5SEL |= 0x0c;				/* Use pin P5.2 as XT2IN */
+	P5OUT |= 0x08;				/* Drive P5.3 high - enable generator */
+	P5DIR |= 0x08;				/* Set pin P5.3 as output */
+	UCSCTL3 = SELREF__REFOCLK;		/* Set DCO FLL reference = REFO */
+	UCSCTL4 = (UCSCTL4 & ~SELA_7) |
+		SELA__REFOCLK;			/* Set ACLK to REFO */
+	UCSCTL6 |= XT2BYPASS;			/* Enable XT2 */
+	udelay (1000);				/* Some time for frequency to settle */
+	UCSCTL4 = (UCSCTL4 & ~(SELS_7 | SELM_7)) |
+		SELM__XT2CLK | SELS__XT2CLK;	/* Set MCLK, SMCLK to XT2 */
+#endif /* USE_XT2_BYPASS */
 
 	/*
 	 * Setup the internal oscillator.
@@ -69,7 +103,7 @@ _init_ (void)
 #else
 	#error Too high KHZ, must be <19600
 #endif
-	UCSCTL2 = (KHZ*1000L - 16384) / 32768;	/* Set DCO Multiplier for 8MHz */
+	UCSCTL2 = (KHZ*1000L - 16384) / 32768;	/* Set DCO Multiplier */
 					/* (N + 1) * FLLRef = Fdco */
 	__bic_SR_register (SCG0);	/* Enable the FLL control loop */
 	mdelay (30);			/* Time to settle: 1024 REFO cycles */
