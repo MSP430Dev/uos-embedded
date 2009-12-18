@@ -248,7 +248,10 @@ arch_intr_allow (int irq)
         case TIMERB0_VECTOR/2: TBCCTL0 |= CCIE; break;		/* Timer B 0 */
 #endif
 #ifdef TIMER1_A1_VECTOR
-        case TIMER1_A1_VECTOR/2: TA1CCTL1 |= CCIE; break;	/* Timer1_A3 CC1-2, TA1 */
+        case TIMER1_A1_VECTOR/2:				/* Timer1_A3 CC1-2, TA1 */
+		if (TA1CCTL1 & CM_3) TA1CCTL1 |= CCIE;
+		if (TA1CCTL2 & CM_3) TA1CCTL2 |= CCIE;
+		break;
 #endif
 #ifdef TIMER1_A0_VECTOR
         case TIMER1_A0_VECTOR/2: TA1CCTL0 |= CCIE; break;	/* Timer1_A3 CC0 */
@@ -375,7 +378,8 @@ HANDLE (TIMERB1_VECTOR, TBCCTL1 &= ~CCIE);	/* Timer B 1-7 */
 HANDLE (TIMERB0_VECTOR, TBCCTL0 &= ~CCIE);	/* Timer B 0 */
 #endif
 #ifdef TIMER1_A1_VECTOR
-HANDLE (TIMER1_A1_VECTOR, TA1CCTL1 &= ~CCIE);	/* Timer1_A3 CC1-2, TA1 */
+HANDLE (TIMER1_A1_VECTOR, (TA1CCTL1 &= ~CCIE,
+			   TA1CCTL2 &= ~CCIE));	/* Timer1_A3 CC1-2, TA1 */
 #endif
 #ifdef TIMER1_A0_VECTOR
 HANDLE (TIMER1_A0_VECTOR, TA1CCTL0 &= ~CCIE);	/* Timer1_A3 CC0 */

@@ -17,6 +17,7 @@
 __MSP430_HAS_TA2__  - if the device has a timer0 A with 2 channels
 __MSP430_HAS_TA3__  - if the device has a timer0 A with 3 channels
 __MSP430_HAS_T1A2__ - if the device has a timer1 A with 2 channels, as well as timer0 A
+__MSP430_HAS_T1A3__ - if the device has a timer1 A with 3 channels, as well as timer0 A
 __MSP430_HAS_T1A5__ - if the device has a timer1 A with 5 channels, as well as timer0 A
 
 */
@@ -323,10 +324,10 @@ struct timera1_t timera1 asm("0x0180");
 #define CM_BOTH             CM_3
 
 /* TimerA IV names */
-#if defined(__MSP430_HAS_TA3__) || defined(__MSP430_HAS_TA2____)
+#if defined(__MSP430_HAS_TA3__) || defined(__MSP430_HAS_TA2____) || defined(__MSP430_HAS_T1A3__)
     #define TAIV_NONE       0x00   /* No interrupt pending */
     #define TAIV_CCR1       0x02   /* Capture/compare 1 TACCR1 CCIFG Highest */
-    #if defined(__MSP430_HAS_TA3__)
+    #if defined(__MSP430_HAS_TA3__) || defined(__MSP430_HAS_T1A3__)
         #define TAIV_CCR2   0x04   /* Capture/compare 2 TACCR2 CCIFG */
     #endif /*__MSP430_HAS_TA3__*/
     #define TAIV_OVERFLOW   0x0A   /* Timer overflow TAIFG Lowest */

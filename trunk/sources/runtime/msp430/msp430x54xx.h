@@ -17,8 +17,6 @@
 
 #include <runtime/msp430/iomacros.h>
 
-#define __MSP430_HAS_T0A5__
-#define __MSP430_HAS_T1A3__
 #define __MSP430_HAS_UCS__
 #define __MSP430_HAS_USCI__
 #define __MSP430_HAS_USCI_AB0__
