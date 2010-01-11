@@ -46,6 +46,10 @@
 #define __MSP430_TB0_BASE__	0x3C0
 
 #define __MSP430_MPY32_BASE__   0x4C0
+#define __MSP430_DMA_BASE__     0x500
+#define __MSP430_DMA0_BASE__    0x510
+#define __MSP430_DMA1_BASE__    0x520
+#define __MSP430_DMA2_BASE__    0x530
 #define __MSP430_USCI0_BASE__	0x5C0
 #define __MSP430_USCI1_BASE__	0x600
 #define __MSP430_USCI2_BASE__	0x640
@@ -59,6 +63,7 @@
 #include <runtime/msp430/timerb.h>
 #include <runtime/msp430/unified_clock_system.h>
 #include <runtime/msp430/usci.h>
+#include <runtime/msp430/dma.h>
 
 #include <runtime/msp430/common.h>
 
@@ -235,6 +240,136 @@ sfrw (UCB3IV,	 __MSP430_USCI3_BASE__+0x3E);	/* USCI B3 interrupt vector word */
 /* UCAxIE Control Bits */
 #define UCRXIE			(1<<0)	/* USCI Receive Interrupt Enable */
 #define UCTXIE			(1<<1)	/* USCI Transmit Interrupt Enable */
+
+/*
+ * DMA controller
+ */
+sfrw (DMACTL0,	__MSP430_DMA_BASE__+0x00);	/* DMA module control 0 */
+sfrw (DMACTL1,	__MSP430_DMA_BASE__+0x02);	/* DMA module control 1 */
+sfrw (DMACTL2,	__MSP430_DMA_BASE__+0x04);	/* DMA module control 2 */
+sfrw (DMACTL3,	__MSP430_DMA_BASE__+0x06);	/* DMA module control 3 */
+sfrw (DMACTL4,	__MSP430_DMA_BASE__+0x08);	/* DMA module control 4 */
+sfrw (DMAIV,	__MSP430_DMA_BASE__+0x0E);	/* DMA interrupt vector */
+
+sfrw (DMA0CTL,	__MSP430_DMA0_BASE__+0x00);	/* DMA channel 0 control */
+sfrw (DMA0SAL,	__MSP430_DMA0_BASE__+0x02);	/* DMA channel 0 source address low */
+sfrw (DMA0SAH,	__MSP430_DMA0_BASE__+0x04);	/* DMA channel 0 source address high */
+sfrw (DMA0DAL,	__MSP430_DMA0_BASE__+0x06);	/* DMA channel 0 destination address low */
+sfrw (DMA0DAH,	__MSP430_DMA0_BASE__+0x08);	/* DMA channel 0 destination address high */
+sfrw (DMA0SZ,	__MSP430_DMA0_BASE__+0x0A);	/* DMA channel 0 transfer size */
+
+sfrw (DMA1CTL,	__MSP430_DMA1_BASE__+0x00);	/* DMA channel 1 control */
+sfrw (DMA1SAL,	__MSP430_DMA1_BASE__+0x02);	/* DMA channel 1 source address low */
+sfrw (DMA1SAH,	__MSP430_DMA1_BASE__+0x04);	/* DMA channel 1 source address high */
+sfrw (DMA1DAL,	__MSP430_DMA1_BASE__+0x06);	/* DMA channel 1 destination address low */
+sfrw (DMA1DAH,	__MSP430_DMA1_BASE__+0x08);	/* DMA channel 1 destination address high */
+sfrw (DMA1SZ,	__MSP430_DMA1_BASE__+0x0A);	/* DMA channel 1 transfer size */
+
+sfrw (DMA2CTL,	__MSP430_DMA2_BASE__+0x00);	/* DMA channel 2 control */
+sfrw (DMA2SAL,	__MSP430_DMA2_BASE__+0x02);	/* DMA channel 2 source address low */
+sfrw (DMA2SAH,	__MSP430_DMA2_BASE__+0x04);	/* DMA channel 2 source address high */
+sfrw (DMA2DAL,	__MSP430_DMA2_BASE__+0x06);	/* DMA channel 2 destination address low */
+sfrw (DMA2DAH,	__MSP430_DMA2_BASE__+0x08);	/* DMA channel 2 destination address high */
+sfrw (DMA2SZ,	__MSP430_DMA2_BASE__+0x0A);	/* DMA channel 2 transfer size */
+
+#define DMA0TSEL__DMA_REQ      (0*0x0001u)    /* DMA channel 0 transfer select 0:  DMA_REQ (sw) */
+#define DMA0TSEL__TA0CCR0      (1*0x0001u)    /* DMA channel 0 transfer select 1:  Timer0_A (TA0CCR0.IFG) */
+#define DMA0TSEL__TA0CCR2      (2*0x0001u)    /* DMA channel 0 transfer select 2:  Timer0_A (TA0CCR2.IFG) */
+#define DMA0TSEL__TA1CCR0      (3*0x0001u)    /* DMA channel 0 transfer select 3:  Timer1_A (TA1CCR0.IFG) */
+#define DMA0TSEL__TA1CCR2      (4*0x0001u)    /* DMA channel 0 transfer select 4:  Timer1_A (TA1CCR2.IFG) */
+#define DMA0TSEL__TB0CCR0      (5*0x0001u)    /* DMA channel 0 transfer select 5:  TimerB (TB0CCR0.IFG) */
+#define DMA0TSEL__TB0CCR2      (6*0x0001u)    /* DMA channel 0 transfer select 6:  TimerB (TB0CCR2.IFG) */
+#define DMA0TSEL__RES7         (7*0x0001u)    /* DMA channel 0 transfer select 7:  Reserved */
+#define DMA0TSEL__RES8         (8*0x0001u)    /* DMA channel 0 transfer select 8:  Reserved */
+#define DMA0TSEL__RES9         (9*0x0001u)    /* DMA channel 0 transfer select 9:  Reserved */
+#define DMA0TSEL__RES10        (10*0x0001u)   /* DMA channel 0 transfer select 10: Reserved */
+#define DMA0TSEL__RES11        (11*0x0001u)   /* DMA channel 0 transfer select 11: Reserved */
+#define DMA0TSEL__RES12        (12*0x0001u)   /* DMA channel 0 transfer select 12: Reserved */
+#define DMA0TSEL__RES13        (13*0x0001u)   /* DMA channel 0 transfer select 13: Reserved */
+#define DMA0TSEL__RES14        (14*0x0001u)   /* DMA channel 0 transfer select 14: Reserved */
+#define DMA0TSEL__RES15        (15*0x0001u)   /* DMA channel 0 transfer select 15: Reserved */
+#define DMA0TSEL__USCIA0RX     (16*0x0001u)   /* DMA channel 0 transfer select 16: USCIA0 receive */
+#define DMA0TSEL__USCIA0TX     (17*0x0001u)   /* DMA channel 0 transfer select 17: USCIA0 transmit */
+#define DMA0TSEL__USCIB0RX     (18*0x0001u)   /* DMA channel 0 transfer select 18: USCIB0 receive */
+#define DMA0TSEL__USCIB0TX     (19*0x0001u)   /* DMA channel 0 transfer select 19: USCIB0 transmit */
+#define DMA0TSEL__USCIA1RX     (20*0x0001u)   /* DMA channel 0 transfer select 20: USCIA1 receive */
+#define DMA0TSEL__USCIA1TX     (21*0x0001u)   /* DMA channel 0 transfer select 21: USCIA1 transmit */
+#define DMA0TSEL__USCIB1RX     (22*0x0001u)   /* DMA channel 0 transfer select 22: USCIB1 receive */
+#define DMA0TSEL__USCIB1TX     (23*0x0001u)   /* DMA channel 0 transfer select 23: USCIB1 transmit */
+#define DMA0TSEL__ADC12IFG     (24*0x0001u)   /* DMA channel 0 transfer select 24: ADC12IFGx */
+#define DMA0TSEL__RES25        (25*0x0001u)   /* DMA channel 0 transfer select 25: Reserved */
+#define DMA0TSEL__RES26        (26*0x0001u)   /* DMA channel 0 transfer select 26: Reserved */
+#define DMA0TSEL__RES27        (27*0x0001u)   /* DMA channel 0 transfer select 27: Reserved */
+#define DMA0TSEL__RES28        (28*0x0001u)   /* DMA channel 0 transfer select 28: Reserved */
+#define DMA0TSEL__MPY          (29*0x0001u)   /* DMA channel 0 transfer select 29: Multiplier ready */
+#define DMA0TSEL__DMA2IFG      (30*0x0001u)   /* DMA channel 0 transfer select 30: previous DMA channel DMA2IFG */
+#define DMA0TSEL__DMAE0        (31*0x0001u)   /* DMA channel 0 transfer select 31: ext. Trigger (DMAE0) */
+
+#define DMA1TSEL__DMA_REQ      (0*0x0100u)    /* DMA channel 1 transfer select 0:  DMA_REQ (sw) */
+#define DMA1TSEL__TA0CCR0      (1*0x0100u)    /* DMA channel 1 transfer select 1:  Timer0_A (TA0CCR0.IFG) */
+#define DMA1TSEL__TA0CCR2      (2*0x0100u)    /* DMA channel 1 transfer select 2:  Timer0_A (TA0CCR2.IFG) */
+#define DMA1TSEL__TA1CCR0      (3*0x0100u)    /* DMA channel 1 transfer select 3:  Timer1_A (TA1CCR0.IFG) */
+#define DMA1TSEL__TA1CCR2      (4*0x0100u)    /* DMA channel 1 transfer select 4:  Timer1_A (TA1CCR2.IFG) */
+#define DMA1TSEL__TB0CCR0      (5*0x0100u)    /* DMA channel 1 transfer select 5:  TimerB (TB0CCR0.IFG) */
+#define DMA1TSEL__TB0CCR2      (6*0x0100u)    /* DMA channel 1 transfer select 6:  TimerB (TB0CCR2.IFG) */
+#define DMA1TSEL__RES7         (7*0x0100u)    /* DMA channel 1 transfer select 7:  Reserved */
+#define DMA1TSEL__RES8         (8*0x0100u)    /* DMA channel 1 transfer select 8:  Reserved */
+#define DMA1TSEL__RES9         (9*0x0100u)    /* DMA channel 1 transfer select 9:  Reserved */
+#define DMA1TSEL__RES10        (10*0x0100u)   /* DMA channel 1 transfer select 10: Reserved */
+#define DMA1TSEL__RES11        (11*0x0100u)   /* DMA channel 1 transfer select 11: Reserved */
+#define DMA1TSEL__RES12        (12*0x0100u)   /* DMA channel 1 transfer select 12: Reserved */
+#define DMA1TSEL__RES13        (13*0x0100u)   /* DMA channel 1 transfer select 13: Reserved */
+#define DMA1TSEL__RES14        (14*0x0100u)   /* DMA channel 1 transfer select 14: Reserved */
+#define DMA1TSEL__RES15        (15*0x0100u)   /* DMA channel 1 transfer select 15: Reserved */
+#define DMA1TSEL__USCIA0RX     (16*0x0100u)   /* DMA channel 1 transfer select 16: USCIA0 receive */
+#define DMA1TSEL__USCIA0TX     (17*0x0100u)   /* DMA channel 1 transfer select 17: USCIA0 transmit */
+#define DMA1TSEL__USCIB0RX     (18*0x0100u)   /* DMA channel 1 transfer select 18: USCIB0 receive */
+#define DMA1TSEL__USCIB0TX     (19*0x0100u)   /* DMA channel 1 transfer select 19: USCIB0 transmit */
+#define DMA1TSEL__USCIA1RX     (20*0x0100u)   /* DMA channel 1 transfer select 20: USCIA1 receive */
+#define DMA1TSEL__USCIA1TX     (21*0x0100u)   /* DMA channel 1 transfer select 21: USCIA1 transmit */
+#define DMA1TSEL__USCIB1RX     (22*0x0100u)   /* DMA channel 1 transfer select 22: USCIB1 receive */
+#define DMA1TSEL__USCIB1TX     (23*0x0100u)   /* DMA channel 1 transfer select 23: USCIB1 transmit */
+#define DMA1TSEL__ADC12IFG     (24*0x0100u)   /* DMA channel 1 transfer select 24: ADC12IFGx */
+#define DMA1TSEL__RES25        (25*0x0100u)   /* DMA channel 1 transfer select 25: Reserved */
+#define DMA1TSEL__RES26        (26*0x0100u)   /* DMA channel 1 transfer select 26: Reserved */
+#define DMA1TSEL__RES27        (27*0x0100u)   /* DMA channel 1 transfer select 27: Reserved */
+#define DMA1TSEL__RES28        (28*0x0100u)   /* DMA channel 1 transfer select 28: Reserved */
+#define DMA1TSEL__MPY          (29*0x0100u)   /* DMA channel 1 transfer select 29: Multiplier ready */
+#define DMA1TSEL__DMA0IFG      (30*0x0100u)   /* DMA channel 1 transfer select 30: previous DMA channel DMA0IFG */
+#define DMA1TSEL__DMAE0        (31*0x0100u)   /* DMA channel 1 transfer select 31: ext. Trigger (DMAE0) */
+
+#define DMA2TSEL__DMA_REQ      (0*0x0001u)    /* DMA channel 2 transfer select 0:  DMA_REQ (sw) */
+#define DMA2TSEL__TA0CCR0      (1*0x0001u)    /* DMA channel 2 transfer select 1:  Timer0_A (TA0CCR0.IFG) */
+#define DMA2TSEL__TA0CCR2      (2*0x0001u)    /* DMA channel 2 transfer select 2:  Timer0_A (TA0CCR2.IFG) */
+#define DMA2TSEL__TA1CCR0      (3*0x0001u)    /* DMA channel 2 transfer select 3:  Timer1_A (TA1CCR0.IFG) */
+#define DMA2TSEL__TA1CCR2      (4*0x0001u)    /* DMA channel 2 transfer select 4:  Timer1_A (TA1CCR2.IFG) */
+#define DMA2TSEL__TB0CCR0      (5*0x0001u)    /* DMA channel 2 transfer select 5:  TimerB (TB0CCR0.IFG) */
+#define DMA2TSEL__TB0CCR2      (6*0x0001u)    /* DMA channel 2 transfer select 6:  TimerB (TB0CCR2.IFG) */
+#define DMA2TSEL__RES7         (7*0x0001u)    /* DMA channel 2 transfer select 7:  Reserved */
+#define DMA2TSEL__RES8         (8*0x0001u)    /* DMA channel 2 transfer select 8:  Reserved */
+#define DMA2TSEL__RES9         (9*0x0001u)    /* DMA channel 2 transfer select 9:  Reserved */
+#define DMA2TSEL__RES10        (10*0x0001u)   /* DMA channel 2 transfer select 10: Reserved */
+#define DMA2TSEL__RES11        (11*0x0001u)   /* DMA channel 2 transfer select 11: Reserved */
+#define DMA2TSEL__RES12        (12*0x0001u)   /* DMA channel 2 transfer select 12: Reserved */
+#define DMA2TSEL__RES13        (13*0x0001u)   /* DMA channel 2 transfer select 13: Reserved */
+#define DMA2TSEL__RES14        (14*0x0001u)   /* DMA channel 2 transfer select 14: Reserved */
+#define DMA2TSEL__RES15        (15*0x0001u)   /* DMA channel 2 transfer select 15: Reserved */
+#define DMA2TSEL__USCIA0RX     (16*0x0001u)   /* DMA channel 2 transfer select 16: USCIA0 receive */
+#define DMA2TSEL__USCIA0TX     (17*0x0001u)   /* DMA channel 2 transfer select 17: USCIA0 transmit */
+#define DMA2TSEL__USCIB0RX     (18*0x0001u)   /* DMA channel 2 transfer select 18: USCIB0 receive */
+#define DMA2TSEL__USCIB0TX     (19*0x0001u)   /* DMA channel 2 transfer select 19: USCIB0 transmit */
+#define DMA2TSEL__USCIA1RX     (20*0x0001u)   /* DMA channel 2 transfer select 20: USCIA1 receive */
+#define DMA2TSEL__USCIA1TX     (21*0x0001u)   /* DMA channel 2 transfer select 21: USCIA1 transmit */
+#define DMA2TSEL__USCIB1RX     (22*0x0001u)   /* DMA channel 2 transfer select 22: USCIB1 receive */
+#define DMA2TSEL__USCIB1TX     (23*0x0001u)   /* DMA channel 2 transfer select 23: USCIB1 transmit */
+#define DMA2TSEL__ADC12IFG     (24*0x0001u)   /* DMA channel 2 transfer select 24: ADC12IFGx */
+#define DMA2TSEL__RES25        (25*0x0001u)   /* DMA channel 2 transfer select 25: Reserved */
+#define DMA2TSEL__RES26        (26*0x0001u)   /* DMA channel 2 transfer select 26: Reserved */
+#define DMA2TSEL__RES27        (27*0x0001u)   /* DMA channel 2 transfer select 27: Reserved */
+#define DMA2TSEL__RES28        (28*0x0001u)   /* DMA channel 2 transfer select 28: Reserved */
+#define DMA2TSEL__MPY          (29*0x0001u)   /* DMA channel 2 transfer select 29: Multiplier ready */
+#define DMA2TSEL__DMA1IFG      (30*0x0001u)   /* DMA channel 2 transfer select 30: previous DMA channel DMA1IFG */
+#define DMA2TSEL__DMAE0        (31*0x0001u)   /* DMA channel 2 transfer select 31: ext. Trigger (DMAE0) */
 
 #define RTC_A_VECTOR        0x52    /* 0xFFD2 Basic Timer / RTC */
 #define PORT2_VECTOR        0x54    /* 0xFFD4 Port 2 */

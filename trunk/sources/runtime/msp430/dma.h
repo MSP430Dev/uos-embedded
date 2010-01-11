@@ -19,6 +19,7 @@ __MSP430_HAS_DMA_3__  - if module has 16-bit address registers
 __MSP430_HAS_DMAX_3__ - if module has 20-bit address registers (430X core)
 
  */
+#if ! defined(__MSP430_DMA_BASE__)
 
 #define DMACTL0_             0x0122  /* DMA module control 0 */
 sfrw(DMACTL0,DMACTL0_);
@@ -98,6 +99,8 @@ sfrw(DMA2DAL, DMA2DAL_);
 #define DMA2SZ_              0x01F2  /* DMA channel 2 transfer size */
 sfrw(DMA2SZ, DMA2SZ_);
 #endif
+
+#endif /* __MSP430_DMA_BASE__ */
 
 #define DMA0TSEL0           0x0001  /* DMA channel 0 transfer select bit 0 */
 #define DMA0TSEL1           0x0002  /* DMA channel 0 transfer select bit 1 */
