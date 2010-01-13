@@ -16,12 +16,18 @@
 __MSP430_HAS_FLASH2__
 */
 
-#define FCTL1_              0x0128  /* FLASH Control 1 */
+#ifdef __MSP430_FLASH_BASE__
+sfrw (FCTL1,	__MSP430_FLASH_BASE__+0);	/* FLASH Control 1 */
+sfrw (FCTL3,	__MSP430_FLASH_BASE__+4);	/* FLASH Control 3 */
+sfrw (FCTL4,	__MSP430_FLASH_BASE__+6);	/* FLASH Control 4 */
+#else
+#define FCTL1_              0x0128		/* FLASH Control 1 */
 sfrw (FCTL1,FCTL1_);
-#define FCTL2_              0x012A  /* FLASH Control 2 */
+#define FCTL2_              0x012A		/* FLASH Control 2 */
 sfrw (FCTL2,FCTL2_);
-#define FCTL3_              0x012C  /* FLASH Control 3 */
+#define FCTL3_              0x012C		/* FLASH Control 3 */
 sfrw (FCTL3,FCTL3_);
+#endif
 
 #define FRKEY               0x9600  /* Flash key returned by read */
 #define FWKEY               0xA500  /* Flash key for write */

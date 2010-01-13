@@ -26,8 +26,10 @@
 #define __MSP430_HAS_T0A5__
 #define __MSP430_HAS_T0B7__
 #define __MSP430_HAS_T1A3__
-#define __MSP430_SYS_BASE__     0x180
+#define __MSP430_PMM_BASE__	0x120
+#define __MSP430_FLASH_BASE__   0x140
 #define __MSP430_WDT_A_BASE__   0x150
+#define __MSP430_SYS_BASE__     0x180
 #define __MSP430_PORT1_BASE__   0x200
 #define __MSP430_PORT2_BASE__   0x200
 #define __MSP430_PORT3_BASE__   0x220
@@ -64,6 +66,7 @@
 #include <runtime/msp430/unified_clock_system.h>
 #include <runtime/msp430/usci.h>
 #include <runtime/msp430/dma.h>
+#include <runtime/msp430/flash.h>
 
 #include <runtime/msp430/common.h>
 
@@ -370,6 +373,136 @@ sfrw (DMA2SZ,	__MSP430_DMA2_BASE__+0x0A);	/* DMA channel 2 transfer size */
 #define DMA2TSEL__MPY          (29*0x0001u)   /* DMA channel 2 transfer select 29: Multiplier ready */
 #define DMA2TSEL__DMA1IFG      (30*0x0001u)   /* DMA channel 2 transfer select 30: previous DMA channel DMA1IFG */
 #define DMA2TSEL__DMAE0        (31*0x0001u)   /* DMA channel 2 transfer select 31: ext. Trigger (DMAE0) */
+
+/*
+ * PMM - Power Management System
+ */
+#define __MSP430_HAS_PMM__			/* Definition to show that Module is available */
+
+sfrw (PMMCTL0,	__MSP430_PMM_BASE__+0x00);	/* PMM Control 0 */
+sfrw (PMMCTL1,  __MSP430_PMM_BASE__+0x02);	/* PMM Control 1 */
+sfrw (SVSMHCTL, __MSP430_PMM_BASE__+0x04);	/* SVS and SVM high side control register */
+sfrw (SVSMLCTL, __MSP430_PMM_BASE__+0x06);	/* SVS and SVM low side control register */
+sfrw (PMMIFG,   __MSP430_PMM_BASE__+0x0C);	/* PMM Interrupt Flag */
+sfrw (PMMRIE,   __MSP430_PMM_BASE__+0x0E);	/* PMM and RESET Interrupt Enable */
+
+#define PMMPW			(0xA500)	/* PMM Register Write Password */
+
+/* PMMCTL0 Control Bits */
+#define PMMCOREV0		(0x0001)	/* PMM Core Voltage Bit: 0 */
+#define PMMCOREV1		(0x0002)	/* PMM Core Voltage Bit: 1 */
+#define PMMSWBOR		(0x0004)	/* PMM Software BOR */
+#define PMMSWPOR		(0x0008)	/* PMM Software POR */
+#define PMMREGOFF		(0x0010)	/* PMM Turn Regulator off */
+#define PMMHPMRE		(0x0080)	/* PMM Global High Power Module Request Enable */
+
+/* PMMCTL0 Control Bits */
+
+#define PMMCOREV_0		(0x0000)	/* PMM Core Voltage 0 (1.35V) */
+#define PMMCOREV_1		(0x0001)	/* PMM Core Voltage 1 (1.55V) */
+#define PMMCOREV_2		(0x0002)	/* PMM Core Voltage 2 (1.75V) */
+#define PMMCOREV_3		(0x0003)	/* PMM Core Voltage 3 (1.85V) */
+
+/* PMMCTL1 Control Bits */
+#define PMMREFMD		(0x0001)	/* PMM Reference Mode */
+#define PMMCMD0			(0x0010)	/* PMM Voltage Regulator Current Mode Bit: 0 */
+#define PMMCMD1			(0x0020)	/* PMM Voltage Regulator Current Mode Bit: 1 */
+
+/* SVSMHCTL Control Bits */
+#define SVSMHRRL0		(0x0001)	/* SVS and SVM high side Reset Release Voltage Level Bit: 0 */
+#define SVSMHRRL1		(0x0002)	/* SVS and SVM high side Reset Release Voltage Level Bit: 1 */
+#define SVSMHRRL2		(0x0004)	/* SVS and SVM high side Reset Release Voltage Level Bit: 2 */
+#define SVSMHDLYST		(0x0008)	/* SVS and SVM high side delay status */
+#define SVSHMD			(0x0010)	/* SVS high side mode */
+#define SVSMHEVM		(0x0040)	/* SVS and SVM high side event mask */
+#define SVSMHACE		(0x0080)	/* SVS and SVM high side auto control enable */
+#define SVSHRVL0		(0x0100)	/* SVS high side reset voltage level Bit: 0 */
+#define SVSHRVL1		(0x0200)	/* SVS high side reset voltage level Bit: 1 */
+#define SVSHE			(0x0400)	/* SVS high side enable */
+#define SVSHFP			(0x0800)	/* SVS high side full performace mode */
+#define SVMHOVPE		(0x1000)	/* SVM high side over-voltage enable */
+#define SVMHE			(0x4000)	/* SVM high side enable */
+#define SVMHFP			(0x8000)	/* SVM high side full performace mode */
+
+#define SVSMHRRL_0		(0x0000)	/* SVS and SVM high side Reset Release Voltage Level 0 */
+#define SVSMHRRL_1		(0x0001)	/* SVS and SVM high side Reset Release Voltage Level 1 */
+#define SVSMHRRL_2		(0x0002)	/* SVS and SVM high side Reset Release Voltage Level 2 */
+#define SVSMHRRL_3		(0x0003)	/* SVS and SVM high side Reset Release Voltage Level 3 */
+#define SVSMHRRL_4		(0x0004)	/* SVS and SVM high side Reset Release Voltage Level 4 */
+#define SVSMHRRL_5		(0x0005)	/* SVS and SVM high side Reset Release Voltage Level 5 */
+#define SVSMHRRL_6		(0x0006)	/* SVS and SVM high side Reset Release Voltage Level 6 */
+#define SVSMHRRL_7		(0x0007)	/* SVS and SVM high side Reset Release Voltage Level 7 */
+
+#define SVSHRVL_0		(0x0000)	/* SVS high side Reset Release Voltage Level 0 */
+#define SVSHRVL_1		(0x0100)	/* SVS high side Reset Release Voltage Level 1 */
+#define SVSHRVL_2		(0x0200)	/* SVS high side Reset Release Voltage Level 2 */
+#define SVSHRVL_3		(0x0300)	/* SVS high side Reset Release Voltage Level 3 */
+
+/* SVSMLCTL Control Bits */
+#define SVSMLRRL0		(0x0001)	/* SVS and SVM low side Reset Release Voltage Level Bit: 0 */
+#define SVSMLRRL1		(0x0002)	/* SVS and SVM low side Reset Release Voltage Level Bit: 1 */
+#define SVSMLRRL2		(0x0004)	/* SVS and SVM low side Reset Release Voltage Level Bit: 2 */
+#define SVSMLDLYST		(0x0008)	/* SVS and SVM low side delay status */
+#define SVSLMD			(0x0010)	/* SVS low side mode */
+#define SVSMLEVM		(0x0040)	/* SVS and SVM low side event mask */
+#define SVSMLACE		(0x0080)	/* SVS and SVM low side auto control enable */
+#define SVSLRVL0		(0x0100)	/* SVS low side reset voltage level Bit: 0 */
+#define SVSLRVL1		(0x0200)	/* SVS low side reset voltage level Bit: 1 */
+#define SVSLE			(0x0400)	/* SVS low side enable */
+#define SVSLFP			(0x0800)	/* SVS low side full performace mode */
+#define SVMLOVPE		(0x1000)	/* SVM low side over-voltage enable */
+#define SVMLE			(0x4000)	/* SVM low side enable */
+#define SVMLFP			(0x8000)	/* SVM low side full performace mode */
+
+#define SVSMLRRL_0		(0x0000)	/* SVS and SVM low side Reset Release Voltage Level 0 */
+#define SVSMLRRL_1		(0x0001)	/* SVS and SVM low side Reset Release Voltage Level 1 */
+#define SVSMLRRL_2		(0x0002)	/* SVS and SVM low side Reset Release Voltage Level 2 */
+#define SVSMLRRL_3		(0x0003)	/* SVS and SVM low side Reset Release Voltage Level 3 */
+#define SVSMLRRL_4		(0x0004)	/* SVS and SVM low side Reset Release Voltage Level 4 */
+#define SVSMLRRL_5		(0x0005)	/* SVS and SVM low side Reset Release Voltage Level 5 */
+#define SVSMLRRL_6		(0x0006)	/* SVS and SVM low side Reset Release Voltage Level 6 */
+#define SVSMLRRL_7		(0x0007)	/* SVS and SVM low side Reset Release Voltage Level 7 */
+
+#define SVSLRVL_0		(0x0000)	/* SVS low side Reset Release Voltage Level 0 */
+#define SVSLRVL_1		(0x0100)	/* SVS low side Reset Release Voltage Level 1 */
+#define SVSLRVL_2		(0x0200)	/* SVS low side Reset Release Voltage Level 2 */
+#define SVSLRVL_3		(0x0300)	/* SVS low side Reset Release Voltage Level 3 */
+
+/* SVSMIO Control Bits */
+#define SVMLOE			(0x0008)	/* SVM low side output enable */
+#define SVMLVLROE		(0x0010)	/* SVM low side voltage level reached output enable */
+#define SVMOUTPOL		(0x0020)	/* SVMOUT pin polarity */
+#define SVMHOE			(0x0800)	/* SVM high side output enable */
+#define SVMHVLROE		(0x1000)	/* SVM high side voltage level reached output enable */
+
+/* PMMIFG Control Bits */
+#define SVSMLDLYIFG		(0x0001)	/* SVS and SVM low side Delay expired interrupt flag */
+#define SVMLIFG			(0x0002)	/* SVM low side interrupt flag */
+#define SVMLVLRIFG		(0x0004)	/* SVM low side Voltage Level Reached interrupt flag */
+#define SVSMHDLYIFG		(0x0010)	/* SVS and SVM high side Delay expired interrupt flag */
+#define SVMHIFG			(0x0020)	/* SVM high side interrupt flag */
+#define SVMHVLRIFG		(0x0040)	/* SVM high side Voltage Level Reached interrupt flag */
+#define PMMBORIFG		(0x0100)	/* PMM Software BOR interrupt flag */
+#define PMMRSTIFG		(0x0200)	/* PMM RESET pin interrupt flag */
+#define PMMPORIFG		(0x0400)	/* PMM Software POR interrupt flag */
+#define SVSHIFG			(0x1000)	/* SVS low side interrupt flag */
+#define SVSLIFG			(0x2000)	/* SVS high side interrupt flag */
+#define PMMLPM5IFG		(0x8000)	/* LPM5 indication Flag */
+
+#define PMMRSTLPM5IFG		PMMLPM5IFG	/* LPM5 indication Flag */
+
+/* PMMIE and RESET Control Bits */
+#define SVSMLDLYIE		(0x0001)	/* SVS and SVM low side Delay expired interrupt enable */
+#define SVMLIE			(0x0002)	/* SVM low side interrupt enable */
+#define SVMLVLRIE		(0x0004)	/* SVM low side Voltage Level Reached interrupt enable */
+#define SVSMHDLYIE		(0x0010)	/* SVS and SVM high side Delay expired interrupt enable */
+#define SVMHIE			(0x0020)	/* SVM high side interrupt enable */
+#define SVMHVLRIE		(0x0040)	/* SVM high side Voltage Level Reached interrupt enable */
+#define SVSLPE			(0x0100)	/* SVS low side POR enable */
+#define SVMLVLRPE		(0x0200)	/* SVM low side Voltage Level reached POR enable */
+#define SVSHPE			(0x1000)	/* SVS high side POR enable */
+#define SVMHVLRPE		(0x2000)	/* SVM high side Voltage Level reached POR enable */
+
 
 #define RTC_A_VECTOR        0x52    /* 0xFFD2 Basic Timer / RTC */
 #define PORT2_VECTOR        0x54    /* 0xFFD4 Port 2 */

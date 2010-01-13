@@ -1,6 +1,7 @@
 ;
 ; Startup code for MSP430 microcontroller.
 ;
+		.extern	_init_
 
 ;---------------------------------------
 ; Handler for unexpected interrupt.
@@ -91,11 +92,17 @@ _unexpected_interrupt_:
 		VEC vector_fff4
 		VEC vector_fff6
 		VEC vector_fff8
+#if defined(__MSP430_5418__) || defined(__MSP430_5419__) || \
+    defined(__MSP430_5435__) || defined(__MSP430_5436__) || \
+    defined(__MSP430_5437__) || defined(__MSP430_5438__)
+		.word _init_
+		.word _init_
+#else
 		VEC vector_fffa
 		VEC vector_fffc
+#endif
 
 ;---------------------------------------
 ; Reset vector at FFFE.
 ;
-		.extern	_init_
 		.word _init_
