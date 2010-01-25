@@ -1,3 +1,6 @@
+/*
+ * Ethernet driver over Linux tun/tap interface.
+ */
 #include "runtime/lib.h"
 #include "kernel/uos.h"
 #include "mem/mem.h"
@@ -6,6 +9,7 @@
 
 #if LINUX386
 #   define _SYS_TYPES_H 1
+#   define _STDINT_H 1
 
 #   include <stdio.h>
 #   include <unistd.h>
@@ -14,12 +18,15 @@
 
 #   define __USE_GNU
 #   include <fcntl.h>
+#   include <sys/ioctl.h>
+#   include <arpa/inet.h>
+#   include <linux/if.h>
+#   include <linux/if_tun.h>
 
 #   define RECEIVE_IRQ		SIGIO	/* TAP receive complete */
-#   define DEVNAME		"/dev/tap0"
 #endif
 
-#define TAP_MTU			1520	/* Max size = 1518 + 2 extra bytes */
+#define TAP_MTU			1518	/* Max size = 1500+14+4 bytes */
 
 /*
  * Should do the actual transmission of the packet. The packet is
@@ -31,24 +38,20 @@ tap_output (tap_t *u, buf_t *p, small_uint_t prio)
 {
 	buf_t *q;
 	unsigned char buf [TAP_MTU], *bufptr;
-	int i;
-
-	/* Add 16 extra bytes (/dev/tap feature). */
-	memcpy (buf, "\0\0" "\376\375\0\0\0\0" "\0\0\0\0\0\0" "\10\0", 16);
-	bufptr = buf + 16;
 
 	/* Copy the data to imtermediate buffer. */
+	bufptr = buf;
 	for (q=p; q; q=q->next) {
 		memcpy (bufptr, q->payload, q->len);
 		bufptr += q->len;
 	}
-	debug_printf ("tap_output %d bytes", p->tot_len);
-	debug_printf (": %02x", buf[16]);
-	for (i=1; i<p->tot_len; ++i)
-		debug_printf ("-%02x", buf [i+16]);
-	debug_printf ("\n");
+	debug_printf ("tap tx:");
+	if (u->netif.arp)
+		buf_print_ethernet (p);
+	else
+		buf_print_ip (p);
 
-	if (write (u->fd, buf, p->tot_len + 16) != p->tot_len + 16)
+	if (write (u->fd, buf, p->tot_len) != p->tot_len)
 		/*ignore*/;
 
 	mutex_lock (&u->netif.lock);
@@ -85,34 +88,19 @@ tap_set_address (tap_t *u, unsigned char *addr)
 static void
 tap_receive_data (tap_t *u)
 {
-	unsigned char *data;
 	buf_t *p;
-	int len, i;
+	int len;
+	unsigned char data [TAP_MTU];
 
 	for (;;) {
 		/* Get received packet. */
 #if LINUX386
-		unsigned char buf [TAP_MTU];
-
-		len = read (u->fd, buf, TAP_MTU);
+		len = read (u->fd, data, TAP_MTU);
 		if (len <= 0)
 			return;
-		if (len <= 16) {
-			++u->netif.in_errors;
-			continue;
-		}
-
-		/* Remove 2 extra bytes (/dev/tap feature). */
-		data = buf + 16;
-		len -= 16;
 #endif
 		++u->netif.in_packets;
 		u->netif.in_bytes += len;
-		debug_printf ("tap_receive %d bytes", len);
-		debug_printf (": %02x", data[0]);
-		for (i=1; i<len; ++i)
-			debug_printf ("-%02x", data [i]);
-		debug_printf ("\n");
 
 		if (buf_queue_is_full (&u->inq)) {
 			debug_printf ("tap_receiver: input overflow\n");
@@ -127,6 +115,12 @@ tap_receive_data (tap_t *u)
 			continue;
 		}
 		memcpy (p->payload, data, len);
+
+		debug_printf ("taprcv:");
+		if (u->netif.arp)
+			buf_print_ethernet (p);
+		else
+			buf_print_ip (p);
 
 		buf_queue_put (&u->inq, p);
 	}
@@ -171,29 +165,51 @@ tap_init (tap_t *u, char *name, int prio, mem_pool_t *pool, arp_t *arp)
 {
 	u->netif.interface = &tap_interface;
 	u->netif.name = name;
-	u->netif.arp = 0;
+	u->netif.arp = arp;
 	u->netif.mtu = 1500;
 	u->netif.type = NETIF_ETHERNET_CSMACD;
 	u->netif.bps = 10000000;
 	u->pool = pool;
 	buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
 
-	/* Obtain MAC address from network interface.
-	 * We just fake an address... */
-	memcpy (&u->netif.ethaddr, "\1\2\3\4\5\6", 6);
-
 #if LINUX386
 	/* Do whatever else is needed to initialize interface. */
 	u->pid = getpid ();
 
-	/* Activate the interface by command:
-	 * ifconfig tap0 inet XXX.XXX.XXX.XXX
-	 */
-	u->fd = open (DEVNAME, O_RDWR | O_NDELAY);
-	if (u->fd == -1) {
-		perror (DEVNAME);
+	u->fd = open("/dev/net/tun", O_RDWR | O_NDELAY);
+	if (u->fd < 0) {
+		perror ("Opening /dev/net/tun");
 		exit (1);
 	}
+
+	struct ifreq ifr;
+	memset (&ifr, 0, sizeof(ifr));
+	if (arp) {
+		/* Ethernet device.
+		 * Activate the interface by command:
+		 * ifconfig tap0 inet XXX.XXX.XXX.XXX
+		 */
+		ifr.ifr_flags = IFF_TAP;
+	} else {
+		/* Point-to-point IP device.
+		 * Activate the interface by command:
+		 * ifconfig tap0 inet XXX.XXX.XXX.XXX dstaddr YYY.YYY.YYY.YYY
+		 */
+		ifr.ifr_flags = IFF_TUN;
+	}
+	ifr.ifr_flags |= IFF_NO_PI;
+	memcpy (ifr.ifr_name, name, IFNAMSIZ);
+	if (ioctl (u->fd, TUNSETIFF, &ifr) < 0) {
+		perror ("ioctl(TUNSETIFF)");
+		exit (1);
+	}
+
+	/* Obtain MAC address from network interface. */
+	if (ioctl (u->fd, SIOCGIFHWADDR, &ifr) < 0) {
+		perror ("ioctl(SIOCGIFHWADDR)");
+		exit (1);
+	}
+	memcpy (&u->netif.ethaddr, ifr.ifr_hwaddr.sa_data, 6);
 #endif
 
 	/* Create tap receive task. */
