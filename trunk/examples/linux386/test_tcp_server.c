@@ -70,10 +70,12 @@ void uos_init (void)
 	ip_init (&ip, &pool, 70, &timer, 0, g);
 
 	/*
-	 * Create interface tap0 200.0.0.2 / 255.255.255.0
+	 * Create interface tap0 200.0.0.2 / 0.0.0.0
 	 */
 	tap_init (&tap, "tap0", 80, &pool, 0);
-	route_add_netif (&ip, &route, my_ip, 24, &tap.netif);
+	if (system ("sudo ifconfig tap0 10.0.0.2 dstaddr 200.0.0.2") == -1)
+		/*ignore*/;
+	route_add_netif (&ip, &route, my_ip, 0, &tap.netif);
 
 	task_create (main_task, 0, "main", 1, task, sizeof (task));
 }
