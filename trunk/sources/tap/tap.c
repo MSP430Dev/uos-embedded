@@ -45,12 +45,13 @@ tap_output (tap_t *u, buf_t *p, small_uint_t prio)
 		memcpy (bufptr, q->payload, q->len);
 		bufptr += q->len;
 	}
+#if 0
 	debug_printf ("tap tx:");
 	if (u->netif.arp)
 		buf_print_ethernet (p);
 	else
 		buf_print_ip (p);
-
+#endif
 	if (write (u->fd, buf, p->tot_len) != p->tot_len)
 		/*ignore*/;
 
@@ -115,13 +116,13 @@ tap_receive_data (tap_t *u)
 			continue;
 		}
 		memcpy (p->payload, data, len);
-
+#if 0
 		debug_printf ("taprcv:");
 		if (u->netif.arp)
 			buf_print_ethernet (p);
 		else
 			buf_print_ip (p);
-
+#endif
 		buf_queue_put (&u->inq, p);
 	}
 }

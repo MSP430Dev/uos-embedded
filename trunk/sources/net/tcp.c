@@ -236,6 +236,7 @@ tcp_socket_purge (tcp_socket_t *s)
 		tcp_segments_free (s->unacked);
 		s->unacked = 0;
 	}
+	s->snd_queuelen = 0;
 }
 
 /*

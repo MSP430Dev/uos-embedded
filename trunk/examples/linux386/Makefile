@@ -6,8 +6,8 @@ CFLAGS		+= -DKHZ=10000
 #TESTS		= test_debug test_task test_timer test_uart test_mem \
 #		  test_group test_tap test_arp test_ip test_udp test_snmp \
 #		  test_pipe test_tcp_client test_tcp_server #test_telnet
-TESTS		= test_tcp_client test_tcp_server
-PROGS		= tcp-client tcp-server
+TESTS		= test_tcp_sender #test_tcp_client test_tcp_server
+PROGS		= tcp-receiver #tcp-client tcp-server
 
 all:		$(TESTS) $(PROGS)
 
