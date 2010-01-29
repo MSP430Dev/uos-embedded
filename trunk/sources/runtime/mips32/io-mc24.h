@@ -244,6 +244,8 @@
 #define MC_CSCON_W64		(1 << 23)	/* 64-bit data width */
 #define MC_CSCON3_BYTE		(1 << 23)	/* 8-bit data width for nCS3 */
 #define MC_CSCON3_OVER		(1 << 24)	/* Status: no nACK for 256 CLK periods */
+#define MC_CSCON3_ADDR(addr)	((addr & 3) << 20)
+						/* Address bits 1:0 for 8-bit memory access */
 
 /*
  * Регистр конфигурации синхронной динамической памяти SDRCON
