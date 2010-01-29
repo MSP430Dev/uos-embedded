@@ -8,6 +8,7 @@
 [http://sourceforge.net/projects/mspgcc/ MSPGCC].
 
 Готовый бинарный пакет можно скачать здесь:
+ * [http://uos-embedded.googlecode.com/files/gcc323-msp430-cygwin.zip gcc323-msp430-cygwin.zip] -- для Windows и Cygwin (10.6 Мбайт)
  * [http://uos-embedded.googlecode.com/files/gcc323-msp430-linux.tgz gcc323-msp430-linux.tgz] -- для Linux (7.2 Мбайт)
  * [http://uos-embedded.googlecode.com/files/gcc323-msp430-macosx.tgz gcc323-msp430-macosx.tgz] -- для Mac OS X (7.9 Мбайт)
 
