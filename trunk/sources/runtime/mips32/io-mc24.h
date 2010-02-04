@@ -87,6 +87,14 @@
 #define MC_MASKR	MC_R (0x4000)	/* Регистр маски */
 #define MC_QSTR		MC_R (0x4004)	/* Регистр заявок */
 #define MC_CSR		MC_R (0x4008)	/* Регистр управления */
+#define MC_MASKR_DSP	MC_R (0x4010)	/* Регистр маски DSP */
+#define MC_QSTR_DSP	MC_R (0x4014)	/* Регистр заявок DSP */
+#define MC_MASKR_HM	MC_R (0x4018)	/* Регистр маски кода Хемминга */
+#define MC_QSTR_HM	MC_R (0x401C)	/* Регистр заявок кода Хемминга */
+#define MC_CSR_CRAM	MC_R (0x4410)	/* Регистр управления CRAM */
+#define MC_AERROR_CRAM	MC_R (0x4414)	/* FIFO ошибочных адресов CRAM */
+#define MC_CSR_ICACHE	MC_R (0x4800)	/* Регистр управления CRAM */
+#define MC_AERROR_ICACHE MC_R (0x4814)	/* FIFO ошибочных адресов CRAM */
 
 /*
  * Регистры порта внешней памяти
@@ -98,6 +106,8 @@
 #define MC_CSCON4	MC_R (0x1010)	/* Регистр конфигурации 4 */
 #define MC_SDRCON	MC_R (0x1014)	/* Регистр конфигурации памяти SDRAM */
 #define MC_CKE_CTR	MC_R (0x1018)	/* Регистр управления состоянием вывода CKE микросхемы */
+#define MC_CSR_EXT	MC_R (0x101C)	/* Регистр управления и состояния внешней памяти */
+#define MC_AER_ROR_EXT	MC_R (0x1020)	/* FIFO ошибочных адресов внешней памяти */
 
 /*
  * Регистры UART
