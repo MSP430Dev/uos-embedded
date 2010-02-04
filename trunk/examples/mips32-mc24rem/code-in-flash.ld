@@ -8,8 +8,8 @@ OUTPUT_ARCH(mips)
 /* ENTRY(_start_) */
 MEMORY
 {
-  sram   (rx)   : ORIGIN = 0xbfc00000,	LENGTH = 1M
-  iram   (rw!x) : ORIGIN = 0xb8000000,	LENGTH = 32K
+  flash  (rx)   : ORIGIN = 0xbfc00000,	LENGTH = 1M
+  cram   (rw!x) : ORIGIN = 0xb8000000,	LENGTH = 32K
 }
 SECTIONS
 {
@@ -64,7 +64,7 @@ SECTIONS
     /* Align here to ensure that the .text section ends on word boundary. */
     . = ALIGN (32 / 8);
     _etext = .;
-  } > sram
+  } > flash
 
   /* Start data (internal SRAM).  */
   .data		  : AT (ADDR (.text) + SIZEOF (.text))
@@ -78,7 +78,7 @@ SECTIONS
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.eh_frame)
     _edata = .;
-  } > iram
+  } > cram
 
   .bss ADDR (.data) + SIZEOF (.data) (NOLOAD) :
   {
@@ -92,7 +92,7 @@ SECTIONS
       _end.  Align after .bss to ensure correct alignment even if the
       .bss section disappears because there are no input sections.  */
    . = ALIGN (32 / 8);
-  } > iram
+  } > cram
   __bss_end = . ;
   _end = .;
 

@@ -7,9 +7,6 @@
 #define SDRAM_START	0xA0000000
 #define SDRAM_SIZE	(128*1024*1024)
 
-ARRAY (stack_console, 1000);	/* Task: menu on console */
-extern void _etext();
-
 static inline unsigned word_check (unsigned addr, unsigned val)
 {
 	volatile unsigned *p = (unsigned*) addr;
@@ -165,13 +162,7 @@ void menu ()
 	}
 }
 
-void main_console (void *data)
-{
-	for (;;)
-		menu ();
-}
-
-void uos_init (void)
+int main (void)
 {
 	debug_printf ("\nTesting memory on MC-24R_EM board\n");
 	debug_printf ("Generator %d.%d MHz, CPU clock %d.%d MHz\n",
@@ -198,6 +189,11 @@ void uos_init (void)
 	debug_printf ("  CSCON3 = %08X\n", MC_CSCON3);
 	debug_printf ("  SDRCON = %08X\n", MC_SDRCON);
 
-	task_create (main_console, 0, "console", 1,
-		stack_console, sizeof (stack_console));
+	for (;;)
+		menu ();
+}
+
+void _irq_handler_ ()
+{
+/*	uos_halt (0);*/
 }

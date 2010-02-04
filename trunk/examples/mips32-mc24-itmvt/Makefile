@@ -6,6 +6,7 @@ include target.cfg
 #TESTS		= test_debug.srec
 
 TESTS		= test_task.srec test_timer.srec test_uart.srec philosophers.srec
+TESTS		+= test_ram.srec
 #TESTS		+= test_tcp_server.srec test_tcp_client.srec
 
 all:		$(TESTS)
