@@ -9,7 +9,7 @@
 
 ARRAY (stack_console, 1000);	/* Task: menu on console */
 
-unsigned word_check (unsigned addr, unsigned val)
+static inline unsigned word_check (unsigned addr, unsigned val)
 {
 	volatile unsigned *p = (unsigned*) addr;
 	unsigned rval;
@@ -47,9 +47,7 @@ void sram_test (void)
 {
 	unsigned addr, nerrors;
 
-	debug_puts ("\nTesting all SRAM ");
-	debug_puts ("--------------------------------");
-	debug_puts ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	debug_puts ("\nTesting all SRAM ... 0%");
 	nerrors = 0;
 	for (addr=SRAM_START; addr<SRAM_START+SRAM_SIZE; addr+=4) {
 		nerrors += word_check (addr, 0x55555555);
@@ -58,8 +56,14 @@ void sram_test (void)
 			debug_puts ("\nToo many errors, test stopped.\n");
 			return;
 		}
-		if ((addr & 0x7ffc) == 0x7ffc)
-			debug_putchar (0, '.');
+		if ((addr & 0x7ffc) == 0x7ffc) {
+			debug_printf ("\b\b\b%2d%%",
+				(((addr-SRAM_START) >> 15) * 100) / (SRAM_SIZE >> 15));
+			if (debug_peekchar () >= 0) {
+				debug_getchar ();
+				break;
+			}
+		}
 	}
 	debug_puts (" done.\n");
 }
@@ -71,69 +75,54 @@ sram_write (unsigned addr, unsigned val)
 	*(volatile unsigned*) addr = val;
 }
 
-static void
+static int
 sram_check (unsigned addr, unsigned val)
 {
 	unsigned rval;
 
-	addr += SRAM_START;
-	rval = *(volatile unsigned*) addr;
-	if (rval != val)
-		debug_printf ("\nAddress %08X written %08X read %08X ",
-			addr, val, rval);
+	rval = *(volatile unsigned*) (SRAM_START + addr);
+	if (rval == val)
+		return 0;
+	debug_printf ("\nAddress %08X written %08X read %08X ",
+		SRAM_START + addr, val, rval);
+	return 1;
+}
+
+/*
+ * Вычисляем "бегущую единицу" - слово, в котором установлен
+ * единственный бит, соответствующий указанному номеру.
+ */
+unsigned running_one (unsigned bitno)
+{
+	return 1 << (bitno & 31);
 }
 
 void sram_test_address_bus ()
 {
-	int i;
+	int d, a, nerrors;
 
 	debug_printf ("\nTesting SRAM address signals ");
 	debug_puts ("----------------");
 	debug_puts ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	for (i=0; i<16; ++i) {
-		sram_write (0x000000, 0x55555555);
-		sram_write (0x000004, 0x00000001);
-		sram_write (0x000008, 0x00000002);
-		sram_write (0x000010, 0x00000004);
-		sram_write (0x000020, 0x00000008);
-		sram_write (0x000040, 0x00000010);
-		sram_write (0x000080, 0x00000020);
-		sram_write (0x000100, 0x00000040);
-		sram_write (0x000200, 0x00000080);
-		sram_write (0x000400, 0x00000100);
-		sram_write (0x000800, 0x00000200);
-		sram_write (0x001000, 0x00000400);
-		sram_write (0x002000, 0x00000800);
-		sram_write (0x004000, 0x00001000);
-		sram_write (0x008000, 0x00002000);
-		sram_write (0x010000, 0x00004000);
-		sram_write (0x020000, 0x00008000);
-		sram_write (0x040000, 0x00010000);
-		sram_write (0x080000, 0x00020000);
-		sram_write (0x100000, 0x00040000);
-		sram_write (0x200000, 0x00080000);
+	nerrors = 0;
+	for (d=0; d<1; ++d) {
+		sram_write (0x0000000, 0x55555555);
+		for (a=2; a<22; ++a) {
+			/* Пробегаем единицей по всем битам адреса,
+			 * записывая разные значения. */
+			sram_write (1 << a, running_one (a+d));
+		}
 
-		sram_check (0x000000, 0x55555555);
-		sram_check (0x000004, 0x00000001);
-		sram_check (0x000008, 0x00000002);
-		sram_check (0x000010, 0x00000004);
-		sram_check (0x000020, 0x00000008);
-		sram_check (0x000040, 0x00000010);
-		sram_check (0x000080, 0x00000020);
-		sram_check (0x000100, 0x00000040);
-		sram_check (0x000200, 0x00000080);
-		sram_check (0x000400, 0x00000100);
-		sram_check (0x000800, 0x00000200);
-		sram_check (0x001000, 0x00000400);
-		sram_check (0x002000, 0x00000800);
-		sram_check (0x004000, 0x00001000);
-		sram_check (0x008000, 0x00002000);
-		sram_check (0x010000, 0x00004000);
-		sram_check (0x020000, 0x00008000);
-		sram_check (0x040000, 0x00010000);
-		sram_check (0x080000, 0x00020000);
-		sram_check (0x100000, 0x00040000);
-		sram_check (0x200000, 0x00080000);
+		/* Проверяем, не затёрлись ли данные. */
+		nerrors += sram_check (0x0000000, 0x55555555);
+		for (a=2; a<22; ++a) {
+			nerrors += sram_check (1 << a, running_one (a+d));
+		}
+
+		if (nerrors) {
+			debug_puts ("\nTest aborted.\n");
+			return;
+		}
 		debug_putchar (0, '.');
 	}
 	debug_puts (" done.\n");
@@ -191,11 +180,12 @@ void uos_init (void)
 	/* Configure 1 Mbyte of external SRAM memory at nCS3. */
 	MC_CSCON3 = MC_CSCON_WS (7);		/* Wait states  */
 
-	/* Configure 128 Mbytes of external 64-bit SRAM memory at nCS0. */
+	/* Configure external 32-bit SRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
-		MC_CSCON_WS (15) |		/* Wait states  */
-		MC_CSCON_CSBA (0x00000000) |	/* Base address */
-		MC_CSCON_CSMASK (0xFF000000);	/* Address mask */
+		MC_CSCON_WS (7) |		/* Wait states  */
+		MC_CSCON_W64 |			/* 64-bit data width */
+		MC_CSCON_CSBA (0) |		/* Base address */
+		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
 	udelay (2);
 
 	debug_printf ("  CSR    = %08X\n", MC_CSR);

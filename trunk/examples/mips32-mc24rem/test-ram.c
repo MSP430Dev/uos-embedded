@@ -6,6 +6,7 @@
 
 #define SDRAM_START	0xA0000000
 #define SDRAM_SIZE	(128*1024*1024)
+#define FLASH_START	0xBFC00000
 
 static inline unsigned word_check (unsigned addr, unsigned val)
 {
@@ -125,14 +126,38 @@ void sdram_test_address_bus ()
 	debug_puts (" done.\n");
 }
 
+void test_boot_flash ()
+{
+	unsigned id;
+
+	debug_printf ("Testing boot flash: 32-bit width.\n");
+	for (;;) {
+		*(volatile unsigned*) (FLASH_START + 0x555*4) = 0xAAAAAAAA;
+		*(volatile unsigned*) (FLASH_START + 0x2AA*4) = 0x55555555;
+		*(volatile unsigned*) (FLASH_START + 0x555*4) = 0x90909090;
+
+		id = *(volatile unsigned*) (FLASH_START + 4);
+
+		*(volatile unsigned*) FLASH_START = 0xF0F0F0F0;
+
+		debug_printf ("id = %08x\n", id);
+		if (debug_peekchar () >= 0) {
+			debug_getchar ();
+			break;
+		}
+	}
+}
+
 void menu ()
 {
 	int cmd;
 
+	debug_printf ("\n  0. Show memory registers");
 	debug_printf ("\n  1. Test SDRAM address signals");
 	debug_printf ("\n  2. Test SDRAM address %08X", SDRAM_START + 0x02aaaaa8);
 	debug_printf ("\n  3. Test SDRAM address %08X", SDRAM_START + 0x05555554);
 	debug_printf ("\n  4. Test all SDRAM (%d Mbytes)", SDRAM_SIZE/1024/1024);
+	debug_printf ("\n  5. Test flash");
 	debug_puts ("\n\n");
 	for (;;) {
 		/* Ввод команды. */
@@ -143,6 +168,15 @@ void menu ()
 		if (cmd == '\n' || cmd == '\r')
 			break;
 
+		if (cmd == '0') {
+			debug_printf ("  CSR    = %08X\n", MC_CSR);
+			debug_printf ("  CSCON0 = %08X\n", MC_CSCON0);
+			debug_printf ("  CSCON1 = %08X\n", MC_CSCON1);
+			debug_printf ("  CSCON2 = %08X\n", MC_CSCON2);
+			debug_printf ("  CSCON3 = %08X\n", MC_CSCON3);
+			debug_printf ("  SDRCON = %08X\n", MC_SDRCON);
+			break;
+		}
 		if (cmd == '1') {
 			sdram_test_address_bus ();
 			break;
@@ -157,6 +191,10 @@ void menu ()
 		}
 		if (cmd == '4') {
 			sdram_test ();
+			break;
+		}
+		if (cmd == '5') {
+			test_boot_flash ();
 			break;
 		}
 	}
@@ -183,11 +221,6 @@ int main (void)
 		MC_SDRCON_RFR (64000000/8192, KHZ) |	/* Refresh period */
 		MC_SDRCON_PS_512;		/* Page size 512 */
 	udelay (2);
-
-	debug_printf ("  CSR    = %08X\n", MC_CSR);
-	debug_printf ("  CSCON0 = %08X\n", MC_CSCON0);
-	debug_printf ("  CSCON3 = %08X\n", MC_CSCON3);
-	debug_printf ("  SDRCON = %08X\n", MC_SDRCON);
 
 	for (;;)
 		menu ();

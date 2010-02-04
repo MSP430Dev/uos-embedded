@@ -2,9 +2,6 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-#TESTS		= test-ram.srec
-#LDFLAGS		+= -T $(TARGET)/all-in-cram.ld
-
 TESTS		= test-debug.srec test-task.srec test-timer.srec test-uart.srec \
 		  test-ram.srec test-tcl.srec philosophers.srec test-lport.srec
 LDFLAGS		+= -T $(TARGET)/code-in-flash.ld
@@ -18,6 +15,12 @@ $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
 		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
+
+#load:		test-ram.mdb test-ram.srec
+#		sudo mdb -f test-ram.mdb
+
+load:		test-tcl.srec
+		sudo mcprog test-tcl.srec
 
 include $(OS)/sources/rules.mak
 
