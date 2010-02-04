@@ -199,7 +199,7 @@ memerr:
 	}
 	tcp_debug (CONST("tcp_enqueue: %d (with mem err)\n"),
 		s->snd_queuelen);
-	return 1;
+	return 0;
 }
 
 static void

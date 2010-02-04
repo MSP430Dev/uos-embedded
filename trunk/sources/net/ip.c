@@ -68,8 +68,8 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 	/* Identify the IP header */
 	if ((iphdr->version & 0xf0) != 0x40) {
 		/* Bad version number. */
-		/* debug_printf ("ip_input: bad version number %d\n",
-			iphdr->version >> 4); */
+		/*debug_printf ("ip_input: bad version number %d\n",
+			iphdr->version >> 4);*/
 		buf_free (p);
 		++ip->in_hdr_errors;
 		return;
@@ -78,8 +78,8 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 	hlen = (iphdr->version & 0x0f) * 4;
 	if (hlen > p->len) {
 		/* Too short packet. */
-		/* debug_printf ("ip_input: too short packet (hlen=%d bytes)\n",
-			hlen); */
+		/*debug_printf ("ip_input: too short packet (hlen=%d bytes)\n",
+			hlen);*/
 		buf_free (p);
 		++ip->in_hdr_errors;
 		return;
@@ -88,7 +88,7 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 	/* Verify checksum */
 	if (crc16_inet (0, p->payload, hlen) != CRC16_INET_GOOD) {
 		/* Failing checksum. */
-		/* debug_printf ("ip_input: bad checksum\n", hlen); */
+		/*debug_printf ("ip_input: bad checksum\n", hlen);*/
 		buf_free (p);
 		++ip->in_hdr_errors;
 		return;
@@ -123,8 +123,8 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 					buf_free (p);
 			} else {
 				++ip->in_addr_errors;
-				/* debug_printf ("ip_input: no route to host %d.%d.%d.%d\n",
-					iphdr->dest[0], iphdr->dest[1], iphdr->dest[2], iphdr->dest[3]); */
+				/*debug_printf ("ip_input: no route to host %d.%d.%d.%d\n",
+					iphdr->dest[0], iphdr->dest[1], iphdr->dest[2], iphdr->dest[3]);*/
 				buf_free (p);
 			}
 			return;
@@ -135,7 +135,7 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 
 	if (iphdr->offset_l || (iphdr->offset_h & (IP_OFFMASK | IP_MF)) != 0) {
 		/* Drop fragmented packets. */
-		/* debug_printf ("ip_input: fragmentation not implemented\n"); */
+		/*debug_printf ("ip_input: fragmentation not implemented\n");*/
 		buf_free (p);
 		++ip->in_hdr_errors;
 		return;
@@ -143,7 +143,7 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 
 	if (hlen > IP_HLEN) {
 		/* Drop packets with IP options. */
-		/* debug_printf ("ip_input: options not implemented\n"); */
+		/*debug_printf ("ip_input: options not implemented\n");*/
 		buf_free (p);
 		++ip->in_hdr_errors;
 		return;
@@ -187,7 +187,7 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 			break;
 		default:
 			/* ICMP type not supported. */
-			/* debug_printf ("ip_input: unsupported ICMP op\n"); */
+			/*debug_printf ("ip_input: unsupported ICMP op\n");*/
 			++ip->icmp_in_errors;
 			buf_free (p);
 			break;
@@ -196,7 +196,7 @@ ip_input (ip_t *ip, buf_t *p, netif_t *inp)
 
 	default:
 proto_unreach:
-		/* debug_printf ("ip_input: protocol not implemented\n"); */
+		/*debug_printf ("ip_input: protocol not implemented\n");*/
 
 		/* Send ICMP destination protocol unreachable
 		 * unless is was a broadcast */
@@ -341,7 +341,7 @@ ip_main (void *arg)
 		} else {
 			/* Interrupt from driver. */
 			netif = (netif_t*) m;
-			/* debug_printf ("ip: netif %S\n", netif->name); */
+			/*debug_printf ("ip: netif %S\n", netif->name);*/
 
 			for (;;) {
 				p = netif_input (netif);
