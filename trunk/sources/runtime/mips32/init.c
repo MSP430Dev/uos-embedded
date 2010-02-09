@@ -66,7 +66,11 @@ void __attribute ((noreturn))_init_ (void)
 	MC_CSCON0 = MC_CSCON_WS (15);
 	MC_CSCON1 = MC_CSCON_WS (15);
 	MC_CSCON2 = MC_CSCON_WS (15);
+#ifdef BOOT_FLASH_8BIT
+	MC_CSCON3 = MC_CSCON_WS (15) | MC_CSCON3_BYTE;
+#else
 	MC_CSCON3 = MC_CSCON_WS (15);
+#endif
 	MC_CSCON4 = MC_CSCON_WS (15);
 	MC_SDRCON = 0;
 

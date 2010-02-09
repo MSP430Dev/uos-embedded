@@ -161,6 +161,7 @@
 /*
  * Регистры портов обмена последовательным кодом SPORT0, SPORT1
  */
+#ifdef MC_HAVE_SPORT
 #define MC_STX(n)	MC_R (0x5000+(n<<12))	/* Буфер передачи данных */
 #define MC_RX(n)	MC_R (0x5000+(n<<12))	/* Буфер приема данных */
 #define MC_STCTL(n)	MC_R (0x5004+(n<<12))	/* Регистр управления передачей данных */
@@ -172,6 +173,11 @@
 #define MC_KEYWD(n)	MC_R (0x501C+(n<<12))	/* Регистр кода сравнения */
 #define MC_KEYMASK(n)	MC_R (0x5020+(n<<12))	/* Регистр маски сравнения */
 #define MC_MRCE(n)	MC_R (0x5024+(n<<12))	/* Выбор канала для сравнения принимаемых данных */
+#endif
+
+#ifdef MC_HAVE_SWIC
+TODO
+#endif
 
 /*
  * Регистры DMA
