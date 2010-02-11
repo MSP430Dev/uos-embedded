@@ -157,7 +157,7 @@ void menu ()
 	debug_printf ("\n  2. Test SDRAM address %08X", SDRAM_START + 0x02aaaaa8);
 	debug_printf ("\n  3. Test SDRAM address %08X", SDRAM_START + 0x05555554);
 	debug_printf ("\n  4. Test all SDRAM (%d Mbytes)", SDRAM_SIZE/1024/1024);
-	debug_printf ("\n  5. Test flash");
+/*	debug_printf ("\n  5. Test flash");*/
 	debug_puts ("\n\n");
 	for (;;) {
 		/* Ввод команды. */
@@ -193,10 +193,10 @@ void menu ()
 			sdram_test ();
 			break;
 		}
-		if (cmd == '5') {
+/*		if (cmd == '5') {
 			test_boot_flash ();
 			break;
-		}
+		} */
 	}
 }
 
