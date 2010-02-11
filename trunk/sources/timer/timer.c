@@ -87,8 +87,6 @@ interval_greater_or_equal (long interval, long msec)
 static bool_t
 timer_handler (timer_t *t)
 {
-	int ret = 1;
-
 /*debug_printf ("<ms=%ld> ", t->milliseconds);*/
 #if ELVEES_MC24
 	/* Clear interrupt. */
@@ -100,30 +98,28 @@ timer_handler (timer_t *t)
 #endif
 	/* Increment current time. */
 	t->milliseconds += t->msec_per_tick;
+	if (t->milliseconds >= TIMER_MSEC_PER_DAY) {
+		++t->days;
+		t->milliseconds -= TIMER_MSEC_PER_DAY;
+		t->next_decisec -= TIMER_MSEC_PER_DAY;
+	}
 
 	/* Send signal every 100 msec. */
-	if (t->msec_per_tick < 100 &&
+	if (t->msec_per_tick <= 100 &&
 	    t->milliseconds >= t->next_decisec) {
 		t->next_decisec += 100;
 /*debug_printf ("<ms=%lu,nxt=%lu> ", t->milliseconds, t->next_decisec);*/
 		if (! list_is_empty (&t->decisec.waiters) ||
 		    ! list_is_empty (&t->decisec.groups)) {
-			mutex_activate (&t->decisec, 0);
-			ret = 0;
+			mutex_activate (&t->decisec, (void*) t->milliseconds);
 		}
-	}
-	if (t->milliseconds >= TIMER_MSEC_PER_DAY) {
-		++t->days;
-		t->milliseconds -= TIMER_MSEC_PER_DAY;
-		t->next_decisec -= TIMER_MSEC_PER_DAY;
 	}
 	arch_intr_allow (TIMER_IRQ);
 
 	/* Must signal a lock, for timer_wait().
 	 * TODO: Optimize timer_delay, keeping a sorted
 	 * queue of delay values. */
-	ret = 0;
-	return ret;
+	return 0;
 }
 
 /**\~english

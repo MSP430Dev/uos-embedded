@@ -1,3 +1,5 @@
+#define MC_HAVE_SPORT
+
 /*
  * Hardware register defines for Elvees MC-24 microcontroller.
  */
