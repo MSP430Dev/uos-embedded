@@ -10,6 +10,8 @@
 #include <net/ip.h>
 #include <net/tcp.h>
 
+#include <timer/timer.h>
+
 /*
  * A nastly hack featuring 'goto' statements that allocates a
  * new TCP local port.
@@ -122,7 +124,10 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 	for (;;) {
 		if (tcp_enqueue (s, (void*) arg, len, 0, 0, 0))
 			break;
-		mutex_wait (&s->lock);
+/*		mutex_wait (&s->lock);*/
+		mutex_unlock (&s->lock);
+		mutex_wait (&s->ip->timer->decisec);
+		mutex_lock (&s->lock);
 	}
 	mutex_unlock (&s->lock);
 

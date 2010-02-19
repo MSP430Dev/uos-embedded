@@ -594,7 +594,9 @@ enc28j60_receiver (void *arg)
 				++u->netif.out_collisions;
 				chip_set_bits (u, ECON1, ECON1_TXRST);
 				chip_clear_bits (u, ECON1, ECON1_TXRST);
+				chip_clear_bits (u, ESTAT, ESTAT_TXABRT);
 				chip_clear_bits (u, EIR, EIR_TXERIF);
+eir |= EIR_TXIF;
 			}
 			if (! (eir & (EIR_PKTIF | EIR_TXIF))) {
 				/* All interrupts processed. */

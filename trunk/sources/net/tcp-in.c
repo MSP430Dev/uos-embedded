@@ -116,18 +116,22 @@ tcp_receive (tcp_socket_t *s, tcp_segment_t *inseg, tcp_hdr_t *h)
 			/* Update the congestion control variables (cwnd and
 			 * ssthresh). */
 			if (s->state >= ESTABLISHED) {
+				unsigned short new_cwnd;
 				if (s->cwnd < s->ssthresh) {
-					if ((unsigned short)(s->cwnd + s->mss) > s->cwnd) {
-						s->cwnd += s->mss;
-					}
-					tcp_debug (CONST("tcp_receive: slow start cwnd %u\n"),
-						s->cwnd);
-				} else {
-					unsigned short new_cwnd = (s->cwnd + s->mss * s->mss / s->cwnd);
+					/* Window grows exponentially. */
+					new_cwnd = s->cwnd + s->cwnd;
 					if (new_cwnd > s->cwnd) {
 						s->cwnd = new_cwnd;
 					}
 					tcp_debug (CONST("tcp_receive: congestion avoidance cwnd %u\n"),
+						s->cwnd);
+				} else {
+					/* Window grows linearly. */
+					new_cwnd = s->cwnd + s->mss;
+					if (new_cwnd > s->cwnd) {
+						s->cwnd = new_cwnd;
+					}
+					tcp_debug (CONST("tcp_receive: slow start cwnd %u\n"),
 						s->cwnd);
 				}
 			}

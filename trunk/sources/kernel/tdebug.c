@@ -34,7 +34,7 @@ void task_print (stream_t *stream, task_t *t)
 
 	if (! list_is_empty (&t->slaves)) {
 		mutex_t *m;
-		puts (stream, "\n\t\t\t\t\tOwning:");
+		puts (stream, "\n\tOwning");
 		n = 0;
 		list_iterate (m, &t->slaves) {
 			printf (stream, " %p%S", m, ptr_valid_or_bad (m));
