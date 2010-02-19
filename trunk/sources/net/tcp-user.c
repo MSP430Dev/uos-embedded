@@ -112,7 +112,7 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 	mutex_lock (&s->lock);
 
 	if (s->state != SYN_SENT && s->state != SYN_RCVD &&
-	    s->state != ESTABLISHED && s->state != CLOSE_WAIT) {
+	    s->state != ESTABLISHED /*&& s->state != CLOSE_WAIT*/) {
 		mutex_unlock (&s->lock);
 		tcp_debug (CONST("tcp_write() called in invalid state\n"));
 		return -1;
@@ -128,6 +128,11 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 		mutex_unlock (&s->lock);
 		mutex_wait (&s->ip->timer->decisec);
 		mutex_lock (&s->lock);
+		if (s->state != SYN_SENT && s->state != SYN_RCVD &&
+		    s->state != ESTABLISHED /*&& s->state != CLOSE_WAIT*/) {
+			mutex_unlock (&s->lock);
+			return -1;
+		}
 	}
 	mutex_unlock (&s->lock);
 
