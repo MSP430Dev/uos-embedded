@@ -560,6 +560,70 @@ skip:
 	chip_set_bits (u, ECON2, ECON2_PKTDEC);
 }
 
+static unsigned
+handle_interrupts (enc28j60_t *u)
+{
+	unsigned active, eir;
+	buf_t *p;
+
+	active = 0;
+	for (;;) {
+		/* Process all pending interrupts. */
+		eir = chip_read (u, EIR);
+/*debug_printf ("enc28j60 irq: EIR = %b\n", eir, EIR_BITS);*/
+		if (eir & EIR_RXERIF) {
+			/* Count lost incoming packets. */
+			++u->netif.in_discards;
+			chip_clear_bits (u, EIR, EIR_RXERIF);
+			chip_clear_bits (u, ESTAT, ESTAT_BUFER);
+		}
+		if (eir & EIR_TXERIF) {
+			/* Count collisions. */
+			++u->netif.out_collisions;
+
+			/* Transmitter stopped, reset required. */
+			chip_set_bits (u, ECON1, ECON1_TXRST);
+			chip_clear_bits (u, ECON1, ECON1_TXRST);
+			chip_clear_bits (u, ESTAT, ESTAT_TXABRT);
+
+			/* Retransmit the packet. */
+			chip_clear_bits (u, EIR, EIR_TXERIF | EIR_TXIF);
+			chip_set_bits (u, ECON1, ECON1_TXRTS);
+			eir &= ~EIR_TXIF;
+		}
+		if (! (eir & (EIR_PKTIF | EIR_TXIF))) {
+			/* All interrupts processed. */
+			return active;
+		}
+		++active;
+
+		/* Check if a packet has been received and buffered. */
+		while (chip_read (u, EPKTCNT) != 0) {
+			enc28j60_receive_data (u);
+		}
+		if (eir & EIR_TXIF) {
+			chip_clear_bits (u, EIR, EIR_TXIF);
+
+			/* Transmit a packet from queue. */
+			p = buf_queue_get (&u->outq);
+			if (p)
+				chip_transmit_packet (u, p);
+		}
+	}
+}
+
+/*
+ * Receive interrupt task.
+ */
+void
+enc28j60_poll (enc28j60_t *u)
+{
+	mutex_lock (&u->netif.lock);
+	if (handle_interrupts (u))
+		mutex_signal (&u->netif.lock, 0);
+	mutex_unlock (&u->netif.lock);
+}
+
 /*
  * Receive interrupt task.
  */
@@ -567,8 +631,6 @@ static void
 enc28j60_receiver (void *arg)
 {
 	enc28j60_t *u = arg;
-	unsigned eir;
-	buf_t *p;
 
 	mutex_lock_irq (&u->netif.lock, ETH_IRQ, 0, 0);
 
@@ -579,43 +641,7 @@ enc28j60_receiver (void *arg)
 		/* Wait for the interrupt. */
 		mutex_wait (&u->netif.lock);
 		++u->intr;
-
-		for (;;) {
-			/* Process all pending interrupts. */
-			eir = chip_read (u, EIR);
-/*debug_printf ("enc28j60 irq: EIR = %b\n", eir, EIR_BITS);*/
-			if (eir & EIR_RXERIF) {
-				/* Count lost incoming packets. */
-				++u->netif.in_discards;
-				chip_clear_bits (u, EIR, EIR_RXERIF);
-			}
-			if (eir & EIR_TXERIF) {
-				/* Count collisions. */
-				++u->netif.out_collisions;
-				chip_set_bits (u, ECON1, ECON1_TXRST);
-				chip_clear_bits (u, ECON1, ECON1_TXRST);
-				chip_clear_bits (u, ESTAT, ESTAT_TXABRT);
-				chip_clear_bits (u, EIR, EIR_TXERIF);
-eir |= EIR_TXIF;
-			}
-			if (! (eir & (EIR_PKTIF | EIR_TXIF))) {
-				/* All interrupts processed. */
-				break;
-			}
-
-			/* Check if a packet has been received and buffered. */
-			while (chip_read (u, EPKTCNT) != 0) {
-				enc28j60_receive_data (u);
-			}
-			if (eir & EIR_TXIF) {
-				chip_clear_bits (u, EIR, EIR_TXIF);
-
-				/* Transmit a packet from queue. */
-				p = buf_queue_get (&u->outq);
-				if (p)
-					chip_transmit_packet (u, p);
-			}
-		}
+		handle_interrupts (u);
 	}
 }
 

@@ -35,3 +35,4 @@ int enc28j60_get_carrier (enc28j60_t *u);
 long enc28j60_get_speed (enc28j60_t *u, int *duplex);
 void enc28j60_set_loop (enc28j60_t *u, int on);
 void enc28j60_set_promisc (enc28j60_t *u, int station, int group);
+void enc28j60_poll (enc28j60_t *u);
