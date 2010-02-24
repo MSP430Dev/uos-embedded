@@ -76,7 +76,7 @@ chip_init_spi (void)
 	UCB1CTL0 = UCSYNC | UCMST |	/* 3-pin, 8-bit master SPI */
 		UCMSB | UCCKPH;		/* MSB first, data changed on falling SCK */
 	UCB1CTL1 |= UCSSEL_SMCLK;	/* Clock source SMCLK */
-	UCB1BR0 = KHZ / 1000;		/* Set clock 1 MHz */
+	UCB1BR0 = KHZ / 4000;		/* Set clock 4 MHz */
 	UCB1BR1 = 0;
 	UCB1CTL1 &= ~UCSWRST;		/* Clear reset */
 #endif

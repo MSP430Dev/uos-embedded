@@ -111,7 +111,8 @@ timer_handler (timer_t *t)
 /*debug_printf ("<ms=%lu,nxt=%lu> ", t->milliseconds, t->next_decisec);*/
 		if (! list_is_empty (&t->decisec.waiters) ||
 		    ! list_is_empty (&t->decisec.groups)) {
-			mutex_activate (&t->decisec, (void*) t->milliseconds);
+			mutex_activate (&t->decisec,
+				(void*) (size_t) t->milliseconds);
 		}
 	}
 	arch_intr_allow (TIMER_IRQ);

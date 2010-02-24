@@ -18,15 +18,14 @@ buf_copy (buf_t *p)
 
 	/* Make a single chunk, big enough. */
 	header_size = (p->payload - (unsigned char*) p);
-	x = mem_alloc (mem_pool (p), p->tot_len + header_size);
+	x = mem_alloc_dirty (mem_pool (p), p->tot_len + header_size);
 	if (! x)
 		return 0;
+	memset (x, 0, header_size);
 
 	/* Set up internal structure of the buf. */
-	x->next = 0;
 	x->payload = (unsigned char*) x + header_size;
 	x->tot_len = p->tot_len;
-	x->len = 0;
 
 	/* Copy all chunks. */
 	for (q = p; q; q = q->next) {

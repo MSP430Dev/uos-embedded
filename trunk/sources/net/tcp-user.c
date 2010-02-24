@@ -124,10 +124,13 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 	for (;;) {
 		if (tcp_enqueue (s, (void*) arg, len, 0, 0, 0))
 			break;
-/*		mutex_wait (&s->lock);*/
+#if 0
+		mutex_wait (&s->lock);
+#else
 		mutex_unlock (&s->lock);
 		mutex_wait (&s->ip->timer->decisec);
 		mutex_lock (&s->lock);
+#endif
 		if (s->state != SYN_SENT && s->state != SYN_RCVD &&
 		    s->state != ESTABLISHED /*&& s->state != CLOSE_WAIT*/) {
 			mutex_unlock (&s->lock);

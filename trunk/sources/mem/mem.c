@@ -160,15 +160,14 @@ void *mem_alloc_dirty (mem_pool_t *m, size_t required)
 
 /*
  * Add new hole to the free list.
+ * Must be called with poll locked.
  */
-static void mem_make_hole (mheader_t *newh)
+static void make_hole_locked (mheader_t *newh)
 {
 	mheader_t *h, **hprev;
 	mem_pool_t *m;
 
 	m = newh->pool;
-	mutex_lock (&m->lock);
-
 	m->free_size += newh->size;
 #if MEM_DEBUG
 	newh->magic = MEMORY_HOLE_MAGIC;
@@ -209,7 +208,16 @@ static void mem_make_hole (mheader_t *newh)
         	hprev = &NEXT(h);
         	h = NEXT(h);
         }
-	mutex_unlock (&m->lock);
+}
+
+/*
+ * Add new hole to the free list.
+ */
+static void mem_make_hole (mheader_t *newh)
+{
+	mutex_lock (&newh->pool->lock);
+	make_hole_locked (newh);
+	mutex_unlock (&newh->pool->lock);
 }
 
 /**
@@ -307,9 +315,11 @@ void mem_truncate (void *block, size_t required)
 		newh = (mheader_t*) ((size_t)h + required);
 		newh->pool = h->pool;
 		newh->size = h->size - required;
-		h->size = required;
 
-		mem_make_hole (newh);
+		mutex_lock (&newh->pool->lock);
+		h->size = required;
+		make_hole_locked (newh);
+		mutex_unlock (&newh->pool->lock);
 	}
 }
 
