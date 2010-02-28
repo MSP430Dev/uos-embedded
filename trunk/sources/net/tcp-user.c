@@ -9,7 +9,6 @@
 #include <mem/mem.h>
 #include <net/ip.h>
 #include <net/tcp.h>
-
 #include <timer/timer.h>
 
 /*
@@ -121,16 +120,14 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 		mutex_unlock (&s->lock);
 		return -1;
 	}
-	for (;;) {
-		if (tcp_enqueue (s, (void*) arg, len, 0, 0, 0))
-			break;
-#if 0
-		mutex_wait (&s->lock);
-#else
+	while (tcp_enqueue (s, (void*) arg, len, 0, 0, 0) == 0) {
+		/* Не удалось поставить пакет в очередь - мало памяти.
+		 * Каждые 100 мсек делаем повторную попытку. */
 		mutex_unlock (&s->lock);
 		mutex_wait (&s->ip->timer->decisec);
 		mutex_lock (&s->lock);
-#endif
+
+		/* Проверим, не закрылось ли соединение. */
 		if (s->state != SYN_SENT && s->state != SYN_RCVD &&
 		    s->state != ESTABLISHED /*&& s->state != CLOSE_WAIT*/) {
 			mutex_unlock (&s->lock);
