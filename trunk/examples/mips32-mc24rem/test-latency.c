@@ -82,10 +82,7 @@ void uos_init (void)
 
 	/* Стираем экран. */
 	debug_puts ("\33[H\33[2J");
-#if 1
-	/* Включение кэша команд для сегмента kseg0. */
-	mips32_write_c0_register (C0_CONFIG, 3);
-#endif
+
 	/* Устанавливаем быстрый обработчик прерывания. */
 	mutex_attach_irq (&timer_lock, TIMER_IRQ, timer_handler, 0);
 

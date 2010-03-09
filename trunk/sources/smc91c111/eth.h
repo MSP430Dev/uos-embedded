@@ -2,7 +2,7 @@
 #include <buf/buf-queue.h>
 
 #ifndef SMC91C111_STACKSZ
-#   define SMC91C111_STACKSZ	300
+#   define SMC91C111_STACKSZ	2000
 #endif
 
 struct _mem_pool_t;

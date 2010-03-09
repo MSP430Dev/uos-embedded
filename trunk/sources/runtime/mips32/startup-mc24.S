@@ -17,7 +17,8 @@ _reset_vector_:	.globl	_reset_vector_
 		.extern	_init_
 		la	$sp, 0xb8008000-16		# Stack at end of internal SRAM
 
-		j	_init_				# Jump to _init_()
+		la	$31, _init_			# Jump to _init_() at kseg0
+		jr	$31				# Via register, to enable cache
 		lui	$gp, 0xb800			# Set global pointer (delay slot)
 
 #---------------------------------------
@@ -28,6 +29,11 @@ _reset_vector_:	.globl	_reset_vector_
 
 		.set	noat
 		sw	$1, (CONTEXT_R1 * 4) ($sp)	# Save general registers
+#ifdef ENABLE_ICACHE
+		la	$1, 1f				# Jump to kseg0
+		jr	$1				# to enable cache
+1:
+#endif
 		sw	$2, (CONTEXT_R2 * 4) ($sp)
 		sw	$3, (CONTEXT_R3 * 4) ($sp)
 		sw	$4, (CONTEXT_R4 * 4) ($sp)

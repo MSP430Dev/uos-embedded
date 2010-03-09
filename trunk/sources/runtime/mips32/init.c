@@ -24,9 +24,13 @@ void __attribute ((noreturn))_init_ (void)
 	 * internal interrupts enabled, master interrupt disable. */
 	mips32_write_c0_register (C0_STATUS, ST_CU0 | ST_BEV | ST_IM_MCU);
 
+#ifdef ENABLE_ICACHE
+	/* Enable cache for kseg0 segment. */
+	mips32_write_c0_register (C0_CONFIG, 3);
+#else
 	/* Disable cache for kseg0 segment. */
 	mips32_write_c0_register (C0_CONFIG, 2);
-
+#endif
 	/*
 	 * Setup all essential system registers.
 	 */

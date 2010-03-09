@@ -9,6 +9,8 @@ CURRENT		= test-latency
 TESTS		+= $(CURRENT).srec
 OUTS		= $(TESTS:%.srec=%.out)
 #LDFLAGS		+= -T $(TARGET)/code-in-flash.ld
+
+# Enable instruction cache
 LDFLAGS		+= -T $(TARGET)/code-in-kseg0.ld
 
 all:		$(OUTS) $(TESTS) $(CURRENT).dis
