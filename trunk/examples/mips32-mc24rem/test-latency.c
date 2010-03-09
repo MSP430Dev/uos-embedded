@@ -12,10 +12,10 @@
 ARRAY (task, 0x400);
 mutex_t timer_lock;
 
-unsigned nirqs;
-unsigned latency_sum;
-unsigned latency_min = ~0;
-unsigned latency_max;
+volatile unsigned nirqs;
+volatile unsigned latency_sum;
+volatile unsigned latency_min = ~0;
+volatile unsigned latency_max;
 
 /*
  * Печать рационального числа a/b с двумя знаками после запятой.
@@ -33,13 +33,17 @@ void print_rational (char *title, unsigned a, unsigned b)
 void console (void *arg)
 {
 	for (;;) {
-//		mdelay (200);
 		mutex_wait (&timer_lock);
 		debug_puts ("\33[H");
-		debug_puts ("Testing interrupt latency.\n\n");
+		debug_puts ("Measuring interrupt latency.\n\n");
 
-		debug_printf ("CPU frequency: %u MHz\n\n", KHZ / 1000);
-
+		debug_printf ("CPU frequency: %u MHz\n", KHZ / 1000);
+		debug_printf ("   Reg.CSCON3: %08x  \n", MC_CSCON3);
+#ifdef ENABLE_ICACHE
+		debug_printf ("  Instr.cache: enabled  \n\n");
+#else
+		debug_printf ("  Instr.cache: disabled  \n\n");
+#endif
 		debug_printf ("   Interrupts: %u  \n\n", nirqs);
 
 		print_rational (" Latency, min: ", latency_min * 1000, KHZ);
