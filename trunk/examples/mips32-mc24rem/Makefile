@@ -2,27 +2,25 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TESTS		= test-debug.srec test-task.srec test-timer.srec test-uart.srec \
-		  test-ram.srec test-tcl.srec philosophers.srec
-LDFLAGS		+= -T $(TARGET)/code-in-flash.ld
-
+CURRENT		= test-latency
+#TESTS		+= test-debug.srec test-task.srec test-timer.srec
+#TESTS		+= test-uart.srec test-ram.srec test-tcl.srec
+#TESTS		+= philosophers.srec test-latency.srec
+TESTS		+= $(CURRENT).srec
 OUTS		= $(TESTS:%.srec=%.out)
+#LDFLAGS		+= -T $(TARGET)/code-in-flash.ld
+LDFLAGS		+= -T $(TARGET)/code-in-kseg0.ld
 
-all:		$(OUTS) $(TESTS) test-ram.dis
+all:		$(OUTS) $(TESTS) $(CURRENT).dis
 		$(SIZE) *.out
 
-$(OUTS) $(TESTS): startup.o libuos.a
-
-dis:		$(TESTS:%.srec=%.dis)
+$(OUTS) $(TESTS) $(CURRENT).out: startup.o libuos.a
 
 clean:
 		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
 
-#load:		test-ram.mdb test-ram.srec
-#		sudo mdb -f test-ram.mdb
-
-load:		test-tcl.srec
-		sudo mcprog test-tcl.srec
+load:		$(CURRENT).srec
+		mcprog $(CURRENT).srec
 
 include $(OS)/sources/rules.mak
 
