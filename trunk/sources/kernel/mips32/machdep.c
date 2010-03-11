@@ -326,3 +326,38 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	t->fpu_state = 0;		/* FPU disabled */
 #endif
 }
+
+#ifdef ARCH_HAVE_FPU
+/*
+ * Control modes of float point coprocessor.
+ * Return a previous mode of FPU.
+ * Setting of new mode is permitted only for current task.
+ * Called with interrupts disabled.
+ */
+unsigned int
+arch_fpu_control (task_t *t, unsigned int mode, unsigned int mask)
+{
+	unsigned int old;
+
+	/* Get current FPU mode. */
+	if (t == task_current)
+		old = mips32_read_fpu_control (C1_FCSR);
+	else
+		old = ~t->fpu_state;
+
+	if (mask != 0) {
+		/* Change FPU state. */
+		if (t != task_current && old == ~0) {
+			debug_printf ("task_fpu_control: enabling FPU is allowed only for current task\n");
+			uos_halt (1);
+		}
+		mode |= old & ~mask;
+		if (t == task_current)
+			mips32_write_fpu_control (C1_FCSR, mode);
+		t->fpu_state = ~mode;
+	}
+
+	/* Return previous mode. */
+	return old;
+}
+#endif

@@ -52,6 +52,11 @@ void task_yield ();
 struct _stream_t;
 void task_print (struct _stream_t *stream, task_t *t);
 
+#ifndef ARCH_HAVE_FPU
+__attribute__ ((error ("FPU not enabled")))
+#endif
+unsigned int task_fpu_control (task_t *t, unsigned int mode, unsigned int mask);
+
 /* Lock management. */
 void mutex_lock (mutex_t *lock);
 void mutex_unlock (mutex_t *lock);

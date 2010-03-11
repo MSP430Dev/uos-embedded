@@ -127,3 +127,8 @@ arch_idle ()
  * State of float-point coprocessor.
  */
 typedef unsigned arch_fpu_t;
+
+/*
+ * Change/query a mode of float-point coprocessor.
+ */
+unsigned int arch_fpu_control (task_t *t, unsigned int mode, unsigned int mask);
