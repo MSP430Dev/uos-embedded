@@ -92,6 +92,48 @@ do {								\
 } while (0)
 
 /*
+ * Read FPU (C1 coprocessor) register.
+ */
+#define mips32_read_fpu_register(reg)				\
+({ int __value;							\
+	asm volatile (						\
+	"mfc1	%0, $%1"					\
+	: "=r" (__value) : "K" (reg));				\
+	__value;						\
+})
+
+/*
+ * Write FPU (C1 coprocessor) register.
+ */
+#define mips32_write_fpu_register(reg, value)			\
+do {								\
+	asm volatile (						\
+	"mtc1	%z0, $%1"					\
+	: : "r" (value), "K" (reg));				\
+} while (0)
+
+/*
+ * Read FPU control register.
+ */
+#define mips32_read_fpu_control(reg)				\
+({ int __value;							\
+	asm volatile (						\
+	"cfc1	%0, $%1"					\
+	: "=r" (__value) : "K" (reg));				\
+	__value;						\
+})
+
+/*
+ * Write FPU control register.
+ */
+#define mips32_write_fpu_control(reg, value)			\
+do {								\
+	asm volatile (						\
+	"ctc1	%z0, $%1"					\
+	: : "r" ((unsigned int) (value)), "K" (reg));		\
+} while (0)
+
+/*
  * Disable the hardware interrupts.
  * saving the interrupt state into the supplied variable.
  */

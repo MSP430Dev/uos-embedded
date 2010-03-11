@@ -47,6 +47,7 @@
 #define ST_BEV		0x00400000	/* размещение векторов: начальная загрузка */
 
 #define ST_CU0		0x10000000	/* разрешение сопроцессора 0 */
+#define ST_CU1		0x20000000	/* разрешение сопроцессора 1 (FPU) */
 
 /*
  * Сause register.
@@ -220,7 +221,9 @@ TODO
  */
 #define MC_CSR_FM		0x00000001	/* Fixed mapping */
 #define MC_CSR_CLK(n)		(n << 4)	/* PLL clock multiply, 1..31, 0=1/16 */
-#define MC_CSR_FLUSH		0x00001000	/* instriction cache invalidate */
+#define MC_CSR_TST_CACHE	0x00000800	/* random access to cache */
+#define MC_CSR_FLUSH_I		0x00001000	/* instruction cache invalidate */
+#define MC_CSR_FLUSH_D		0x00004000	/* data cache invalidate */
 #define MC_CSR_CLKEN		0x00010000	/* PLL clock enable */
 
 /*
@@ -382,5 +385,14 @@ TODO
  * Round to the nearest integer.
  */
 #define MC_DL_BAUD(fr,bd)	((fr/8 + (bd)) / (bd) / 2)
+
+/*--------------------------------------
+ * Coprocessor 1 (FPU) registers.
+ */
+#define C1_FIR		0	/* implementation and revision */
+#define C1_FCCR		25	/* condition codes */
+#define C1_FEXR		26	/* exceptions */
+#define C1_FENR		28	/* enables */
+#define C1_FCSR		31	/* control/status */
 
 #endif /* _IO_MC24_H */

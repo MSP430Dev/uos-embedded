@@ -22,15 +22,62 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Initialize STATUS register: CP0 usable, ROM vectors used,
 	 * internal interrupts enabled, master interrupt disable. */
-	mips32_write_c0_register (C0_STATUS, ST_CU0 | ST_BEV | ST_IM_MCU);
+	mips32_write_c0_register (C0_STATUS, ST_BEV | ST_IM_MCU | ST_CU0
+#ifdef HAVE_FPU
+		 | ST_CU1
+#endif
+		);
 
 #ifdef ENABLE_ICACHE
 	/* Enable cache for kseg0 segment. */
 	mips32_write_c0_register (C0_CONFIG, 3);
+	MC_CSR |= MC_CSR_FLUSH_I | MC_CSR_FLUSH_D;
+	asm volatile (
+		"la	$k0, 1f \n"
+		"jr	$k0 \n"
+	"1:");
 #else
 	/* Disable cache for kseg0 segment. */
 	mips32_write_c0_register (C0_CONFIG, 2);
 #endif
+
+#ifdef HAVE_FPU
+	/* Clear all FPU registers. */
+	mips32_write_fpu_control (C1_FCSR, 0);
+	mips32_write_fpu_register (0, 0);
+	mips32_write_fpu_register (1, 0);
+	mips32_write_fpu_register (2, 0);
+	mips32_write_fpu_register (3, 0);
+	mips32_write_fpu_register (4, 0);
+	mips32_write_fpu_register (5, 0);
+	mips32_write_fpu_register (6, 0);
+	mips32_write_fpu_register (7, 0);
+	mips32_write_fpu_register (8, 0);
+	mips32_write_fpu_register (9, 0);
+	mips32_write_fpu_register (10, 0);
+	mips32_write_fpu_register (11, 0);
+	mips32_write_fpu_register (12, 0);
+	mips32_write_fpu_register (13, 0);
+	mips32_write_fpu_register (14, 0);
+	mips32_write_fpu_register (15, 0);
+	mips32_write_fpu_register (16, 0);
+	mips32_write_fpu_register (17, 0);
+	mips32_write_fpu_register (18, 0);
+	mips32_write_fpu_register (19, 0);
+	mips32_write_fpu_register (20, 0);
+	mips32_write_fpu_register (21, 0);
+	mips32_write_fpu_register (22, 0);
+	mips32_write_fpu_register (23, 0);
+	mips32_write_fpu_register (24, 0);
+	mips32_write_fpu_register (25, 0);
+	mips32_write_fpu_register (26, 0);
+	mips32_write_fpu_register (27, 0);
+	mips32_write_fpu_register (28, 0);
+	mips32_write_fpu_register (29, 0);
+	mips32_write_fpu_register (30, 0);
+	mips32_write_fpu_register (31, 0);
+#endif /* HAVE_FPU */
+
 	/*
 	 * Setup all essential system registers.
 	 */
