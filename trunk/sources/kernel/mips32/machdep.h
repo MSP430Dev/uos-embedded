@@ -122,3 +122,8 @@ arch_idle ()
 		"	.set mips1");
 	}
 }
+
+/*
+ * State of float-point coprocessor.
+ */
+typedef unsigned arch_fpu_t;

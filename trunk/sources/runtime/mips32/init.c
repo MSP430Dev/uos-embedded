@@ -23,7 +23,7 @@ void __attribute ((noreturn))_init_ (void)
 	/* Initialize STATUS register: CP0 usable, ROM vectors used,
 	 * internal interrupts enabled, master interrupt disable. */
 	mips32_write_c0_register (C0_STATUS, ST_BEV | ST_IM_MCU | ST_CU0
-#ifdef HAVE_FPU
+#ifdef ARCH_HAVE_FPU
 		 | ST_CU1
 #endif
 		);
@@ -41,7 +41,7 @@ void __attribute ((noreturn))_init_ (void)
 	mips32_write_c0_register (C0_CONFIG, 2);
 #endif
 
-#ifdef HAVE_FPU
+#ifdef ARCH_HAVE_FPU
 	/* Clear all FPU registers. */
 	mips32_write_fpu_control (C1_FCSR, 0);
 	mips32_write_fpu_register (0, 0);
@@ -76,7 +76,7 @@ void __attribute ((noreturn))_init_ (void)
 	mips32_write_fpu_register (29, 0);
 	mips32_write_fpu_register (30, 0);
 	mips32_write_fpu_register (31, 0);
-#endif /* HAVE_FPU */
+#endif
 
 	/*
 	 * Setup all essential system registers.

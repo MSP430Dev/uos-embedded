@@ -395,4 +395,36 @@ TODO
 #define C1_FENR		28	/* enables */
 #define C1_FCSR		31	/* control/status */
 
+/*
+ * FPU control/status register
+ */
+#define FCSR_ROUND_N	0x00000000	/* round to nearest */
+#define FCSR_ROUND_Z	0x00000001	/* round toward zero */
+#define FCSR_ROUND_P	0x00000002	/* round toward positive infinity */
+#define FCSR_ROUND_M	0x00000003	/* round toward negative infinity */
+#define FCSR_FLAG_I	0x00000004	/* flag: inexact result */
+#define FCSR_FLAG_U	0x00000008	/* flag: underflow */
+#define FCSR_FLAG_O	0x00000010	/* flag: overflow */
+#define FCSR_FLAG_Z	0x00000020	/* flag: divide by zero */
+#define FCSR_FLAG_V	0x00000040	/* flag: invalid operation */
+#define FCSR_ENABLE_I	0x00000080	/* enables: inexact result */
+#define FCSR_ENABLE_U	0x00000100	/* enables: underflow */
+#define FCSR_ENABLE_O	0x00000200	/* enables: overflow */
+#define FCSR_ENABLE_Z	0x00000400	/* enables: divide by zero */
+#define FCSR_ENABLE_V	0x00000800	/* enables: invalid operation */
+#define FCSR_CAUSE_I	0x00001000	/* cause: inexact result */
+#define FCSR_CAUSE_U	0x00002000	/* cause: underflow */
+#define FCSR_CAUSE_O	0x00004000	/* cause: overflow */
+#define FCSR_CAUSE_Z	0x00008000	/* cause: divide by zero */
+#define FCSR_CAUSE_V	0x00010000	/* cause: invalid operation */
+#define FCSR_CAUSE_E	0x00020000	/* cause: unimplemented */
+#define FCSR_COND_C	0x00800000	/* condition code 0:  */
+#define FCSR_FS		0x01000000	/* flush to zero */
+#define FCSR_COND_1	0x02000000	/* condition code 1 */
+#define FCSR_COND_2	0x04000000	/* condition code 2 */
+#define FCSR_COND_3	0x08000000	/* condition code 3 */
+#define FCSR_COND_4	0x10000000	/* condition code 4 */
+#define FCSR_COND_5	0x20000000	/* condition code 5 */
+#define FCSR_COND_6	0x40000000	/* condition code 6 */
+#define FCSR_COND_7	0x80000000	/* condition code 7 */
 #endif /* _IO_MC24_H */

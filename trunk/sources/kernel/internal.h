@@ -63,6 +63,9 @@ struct _task_t {
 	arch_stack_t	stack_context;	/* saved sp when not running */
 	mutex_t		finish;		/* lock to wait on for task finished */
 	unsigned long	ticks;		/* a number of switches to the task */
+#ifdef ARCH_HAVE_FPU
+	arch_fpu_t	fpu_state;	/* per-task state of FP coprocessor */
+#endif
 	unsigned char	stack [1]	/* stack area is placed here */
 		__attribute__((aligned(sizeof(void*))));
 };
