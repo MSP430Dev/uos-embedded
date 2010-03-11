@@ -13,7 +13,6 @@ ARRAY (task, 0x400);
 mutex_t timer_lock;
 
 volatile unsigned nirqs;
-volatile unsigned latency_sum;
 volatile unsigned latency_min = ~0;
 volatile unsigned latency_max;
 
@@ -24,7 +23,7 @@ void print_rational (char *title, unsigned a, unsigned b)
 {
 	unsigned val = a * 100 / b;
 
-	debug_printf ("%s%u.%02u usec\n", title, val/100, val%100);
+	debug_printf ("%s%u.%02u usec  \n", title, val/100, val%100);
 }
 
 /*
@@ -47,7 +46,6 @@ void console (void *arg)
 		debug_printf ("   Interrupts: %u  \n\n", nirqs);
 
 		print_rational (" Latency, min: ", latency_min * 1000, KHZ);
-		print_rational ("      average: ", latency_sum / nirqs * 1000, KHZ);
 		print_rational ("          max: ", latency_max * 1000, KHZ);
 	}
 }
@@ -68,12 +66,12 @@ static bool_t timer_handler (void *arg)
 	arch_intr_allow (TIMER_IRQ);
 
 	/*debug_printf ("<%u> ", latency);*/
-	++nirqs;
-	latency_sum += latency;
-	if (latency_min > latency)
-		latency_min = latency;
-	if (latency_max < latency)
-		latency_max = latency;
+	if (++nirqs > 10) {
+		if (latency_min > latency)
+			latency_min = latency;
+		if (latency_max < latency)
+			latency_max = latency;
+	}
 
 	/* Возвращаем 0: прерывание полностью обработано. */
 	return 0;

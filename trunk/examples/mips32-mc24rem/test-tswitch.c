@@ -12,7 +12,6 @@ ARRAY (task_receiver, 0x400);
 mutex_t mailbox;
 
 volatile unsigned nmessages;
-volatile unsigned latency_sum;
 volatile unsigned latency_min = ~0;
 volatile unsigned latency_max;
 
@@ -23,7 +22,7 @@ void print_rational (char *title, unsigned a, unsigned b)
 {
 	unsigned val = a * 100 / b;
 
-	debug_printf ("%s%u.%02u usec\n", title, val/100, val%100);
+	debug_printf ("%s%u.%02u usec  \n", title, val/100, val%100);
 }
 
 /*
@@ -50,7 +49,6 @@ void console (void *arg)
 		debug_printf ("Task switches: %u  \n\n", nmessages);
 
 		print_rational (" Latency, min: ", latency_min * 1000, KHZ);
-		print_rational ("      average: ", latency_sum / nmessages * 1000, KHZ);
 		print_rational ("          max: ", latency_max * 1000, KHZ);
 	}
 }
@@ -70,12 +68,12 @@ void receiver (void *arg)
 		latency = t1 - t0;
 
 		/*debug_printf ("<%u> ", latency);*/
-		++nmessages;
-		latency_sum += latency;
-		if (latency_min > latency)
-			latency_min = latency;
-		if (latency_max < latency)
-			latency_max = latency;
+		if (++nmessages > 10) {
+			if (latency_min > latency)
+				latency_min = latency;
+			if (latency_max < latency)
+				latency_max = latency;
+		}
 	}
 }
 
