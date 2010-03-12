@@ -278,6 +278,9 @@ double      yn (int, double);
 #if I386
 #include <runtime/i386/mathinline.h>
 #endif
+#if MIPS32
+#include <runtime/mips32/mathinline.h>
+#endif
 
 #ifdef __cplusplus
 }
