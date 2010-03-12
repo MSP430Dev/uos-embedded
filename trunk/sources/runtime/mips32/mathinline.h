@@ -10,3 +10,10 @@ __MATH_INLINE float sqrtf (float x)
 	asm volatile ("sqrt.s	%0, %1" : "=f" (result) : "f" (x));
 	return result;
 }
+
+__MATH_INLINE double sqrt (double x)
+{
+	register double result;
+	asm volatile ("sqrt.d	%0, %1" : "=f" (result) : "f" (x));
+	return result;
+}
