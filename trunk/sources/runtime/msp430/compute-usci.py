@@ -60,8 +60,7 @@ def compute_low_freq (hz, baud):
 			best_s = s
 	return (best_n, best_s, min_err)
 
-def compute_low_freq_error (hz, baud, s):
-	n = (hz + baud/2) / baud
+def compute_low_freq_error (hz, baud, n, s):
 	m = [0, 0x40, 0x44, 0x54, 0x55, 0x75, 0x77, 0x7f] [s]
 	a = baud * n
 	b = hz

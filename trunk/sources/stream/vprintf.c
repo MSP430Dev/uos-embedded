@@ -54,7 +54,7 @@ static unsigned char *ksprintn (unsigned char *buf, unsigned long v, unsigned ch
 	int width, unsigned char *lp);
 static unsigned char mkhex (unsigned char ch);
 
-#if DBL_DIG
+#if ARCH_HAVE_FPU
 static int cvt (double number, int prec, int sharpflag, unsigned char *negp,
 	unsigned char fmtch, unsigned char *startp, unsigned char *endp);
 #endif
@@ -397,7 +397,7 @@ number:		if (sign && ((long) ul != 0L)) {
 					PUTC (' ');
 				} while (--width > 0);
 			break;
-#if DBL_DIG
+#if ARCH_HAVE_FPU
 		case 'e':
 		case 'E':
 		case 'f':
@@ -528,7 +528,7 @@ mkhex (unsigned char ch)
 	return ch + '0';
 }
 
-#if DBL_DIG
+#if ARCH_HAVE_FPU
 static unsigned char *
 cvtround (double fract, int *exp, unsigned char *start, unsigned char *end, unsigned char ch,
 	unsigned char *negp)
@@ -823,7 +823,7 @@ eformat:	if (expcnt) {
 	}
 	return(t - startp);
 }
-#endif /* DBL_DIG */
+#endif /* ARCH_HAVE_FPU */
 
 #ifdef TEST
 /*

@@ -6,12 +6,14 @@ include target.cfg
 #CURRENT		= test-latency
 #CURRENT		= test-fpu
 CURRENT		= test-timer
-#TESTS		+= test-debug.srec test-task.srec test-timer.srec
-#TESTS		+= test-uart.srec test-ram.srec test-tcl.srec
-#TESTS		+= philosophers.srec test-latency.srec
+TESTS		+= test-debug.srec test-task.srec test-timer.srec
+TESTS		+= test-uart.srec test-ram.srec #test-tcl.srec
+TESTS		+= philosophers.srec test-latency.srec test-tswitch.srec
 TESTS		+= $(CURRENT).srec
 OUTS		= $(TESTS:%.srec=%.out)
-#LDFLAGS		+= -T $(TARGET)/code-in-flash.ld
+
+# No caches
+#LDFLAGS	+= -T $(TARGET)/code-in-flash.ld
 
 # Enable instruction cache
 LDFLAGS		+= -T $(TARGET)/code-in-kseg0.ld

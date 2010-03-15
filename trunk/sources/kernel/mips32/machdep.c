@@ -82,44 +82,28 @@ _arch_task_switch_ ()
 
 	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4 + 16));
 
-#if 0 //def ARCH_HAVE_FPU
+#ifdef ARCH_HAVE_FPU
 	if (task_current->fpu_state != ~0) {
 		/* Save FPU state. */
-		asm volatile ("addi	$sp, $sp, -%0" : : "i" (32 * 4));
-		asm volatile ("swc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
-		asm volatile ("swc1	$1, %0 ($sp)" : : "i" (1 * 4 + 16));
-		asm volatile ("swc1	$2, %0 ($sp)" : : "i" (2 * 4 + 16));
-		asm volatile ("swc1	$3, %0 ($sp)" : : "i" (3 * 4 + 16));
-		asm volatile ("swc1	$4, %0 ($sp)" : : "i" (4 * 4 + 16));
-		asm volatile ("swc1	$5, %0 ($sp)" : : "i" (5 * 4 + 16));
-		asm volatile ("swc1	$6, %0 ($sp)" : : "i" (6 * 4 + 16));
-		asm volatile ("swc1	$7, %0 ($sp)" : : "i" (7 * 4 + 16));
-		asm volatile ("swc1	$8, %0 ($sp)" : : "i" (8 * 4 + 16));
-		asm volatile ("swc1	$9, %0 ($sp)" : : "i" (9 * 4 + 16));
-		asm volatile ("swc1	$10, %0 ($sp)" : : "i" (10 * 4 + 16));
-		asm volatile ("swc1	$11, %0 ($sp)" : : "i" (11 * 4 + 16));
-		asm volatile ("swc1	$12, %0 ($sp)" : : "i" (12 * 4 + 16));
-		asm volatile ("swc1	$13, %0 ($sp)" : : "i" (13 * 4 + 16));
-		asm volatile ("swc1	$14, %0 ($sp)" : : "i" (14 * 4 + 16));
-		asm volatile ("swc1	$15, %0 ($sp)" : : "i" (15 * 4 + 16));
-		asm volatile ("swc1	$16, %0 ($sp)" : : "i" (16 * 4 + 16));
-		asm volatile ("swc1	$17, %0 ($sp)" : : "i" (17 * 4 + 16));
-		asm volatile ("swc1	$18, %0 ($sp)" : : "i" (18 * 4 + 16));
-		asm volatile ("swc1	$19, %0 ($sp)" : : "i" (19 * 4 + 16));
-		asm volatile ("swc1	$20, %0 ($sp)" : : "i" (20 * 4 + 16));
-		asm volatile ("swc1	$21, %0 ($sp)" : : "i" (21 * 4 + 16));
-		asm volatile ("swc1	$22, %0 ($sp)" : : "i" (22 * 4 + 16));
-		asm volatile ("swc1	$23, %0 ($sp)" : : "i" (23 * 4 + 16));
-		asm volatile ("swc1	$24, %0 ($sp)" : : "i" (24 * 4 + 16));
-		asm volatile ("swc1	$25, %0 ($sp)" : : "i" (25 * 4 + 16));
-		asm volatile ("swc1	$26, %0 ($sp)" : : "i" (26 * 4 + 16));
-		asm volatile ("swc1	$27, %0 ($sp)" : : "i" (27 * 4 + 16));
-		asm volatile ("swc1	$28, %0 ($sp)" : : "i" (28 * 4 + 16));
-		asm volatile ("swc1	$29, %0 ($sp)" : : "i" (29 * 4 + 16));
-		asm volatile ("swc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
-		asm volatile ("swc1	$31, %0 ($sp)" : : "i" (31 * 4 + 16));
-
 		task_current->fpu_state = mips32_read_fpu_control (C1_FCSR);
+
+		asm volatile ("addi	$sp, $sp, -%0" : : "i" (32 * 4));
+		asm volatile ("sdc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
+		asm volatile ("sdc1	$2, %0 ($sp)" : : "i" (2 * 4 + 16));
+		asm volatile ("sdc1	$4, %0 ($sp)" : : "i" (4 * 4 + 16));
+		asm volatile ("sdc1	$6, %0 ($sp)" : : "i" (6 * 4 + 16));
+		asm volatile ("sdc1	$8, %0 ($sp)" : : "i" (8 * 4 + 16));
+		asm volatile ("sdc1	$10, %0 ($sp)" : : "i" (10 * 4 + 16));
+		asm volatile ("sdc1	$12, %0 ($sp)" : : "i" (12 * 4 + 16));
+		asm volatile ("sdc1	$14, %0 ($sp)" : : "i" (14 * 4 + 16));
+		asm volatile ("sdc1	$16, %0 ($sp)" : : "i" (16 * 4 + 16));
+		asm volatile ("sdc1	$18, %0 ($sp)" : : "i" (18 * 4 + 16));
+		asm volatile ("sdc1	$20, %0 ($sp)" : : "i" (20 * 4 + 16));
+		asm volatile ("sdc1	$22, %0 ($sp)" : : "i" (22 * 4 + 16));
+		asm volatile ("sdc1	$24, %0 ($sp)" : : "i" (24 * 4 + 16));
+		asm volatile ("sdc1	$26, %0 ($sp)" : : "i" (26 * 4 + 16));
+		asm volatile ("sdc1	$28, %0 ($sp)" : : "i" (28 * 4 + 16));
+		asm volatile ("sdc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
 	}
 #endif
 	/* Save current task stack. */
@@ -130,44 +114,28 @@ _arch_task_switch_ ()
 	/* Switch to the new task. */
 	mips32_set_stack_pointer (task_current->stack_context);
 
-#if 0 //def ARCH_HAVE_FPU
+#ifdef ARCH_HAVE_FPU
 	if (task_current->fpu_state != ~0) {
 		/* Restore FPU state. */
-		asm volatile ("lwc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
-		asm volatile ("lwc1	$1, %0 ($sp)" : : "i" (1 * 4 + 16));
-		asm volatile ("lwc1	$2, %0 ($sp)" : : "i" (2 * 4 + 16));
-		asm volatile ("lwc1	$3, %0 ($sp)" : : "i" (3 * 4 + 16));
-		asm volatile ("lwc1	$4, %0 ($sp)" : : "i" (4 * 4 + 16));
-		asm volatile ("lwc1	$5, %0 ($sp)" : : "i" (5 * 4 + 16));
-		asm volatile ("lwc1	$6, %0 ($sp)" : : "i" (6 * 4 + 16));
-		asm volatile ("lwc1	$7, %0 ($sp)" : : "i" (7 * 4 + 16));
-		asm volatile ("lwc1	$8, %0 ($sp)" : : "i" (8 * 4 + 16));
-		asm volatile ("lwc1	$9, %0 ($sp)" : : "i" (9 * 4 + 16));
-		asm volatile ("lwc1	$10, %0 ($sp)" : : "i" (10 * 4 + 16));
-		asm volatile ("lwc1	$11, %0 ($sp)" : : "i" (11 * 4 + 16));
-		asm volatile ("lwc1	$12, %0 ($sp)" : : "i" (12 * 4 + 16));
-		asm volatile ("lwc1	$13, %0 ($sp)" : : "i" (13 * 4 + 16));
-		asm volatile ("lwc1	$14, %0 ($sp)" : : "i" (14 * 4 + 16));
-		asm volatile ("lwc1	$15, %0 ($sp)" : : "i" (15 * 4 + 16));
-		asm volatile ("lwc1	$16, %0 ($sp)" : : "i" (16 * 4 + 16));
-		asm volatile ("lwc1	$17, %0 ($sp)" : : "i" (17 * 4 + 16));
-		asm volatile ("lwc1	$18, %0 ($sp)" : : "i" (18 * 4 + 16));
-		asm volatile ("lwc1	$19, %0 ($sp)" : : "i" (19 * 4 + 16));
-		asm volatile ("lwc1	$20, %0 ($sp)" : : "i" (20 * 4 + 16));
-		asm volatile ("lwc1	$21, %0 ($sp)" : : "i" (21 * 4 + 16));
-		asm volatile ("lwc1	$22, %0 ($sp)" : : "i" (22 * 4 + 16));
-		asm volatile ("lwc1	$23, %0 ($sp)" : : "i" (23 * 4 + 16));
-		asm volatile ("lwc1	$24, %0 ($sp)" : : "i" (24 * 4 + 16));
-		asm volatile ("lwc1	$25, %0 ($sp)" : : "i" (25 * 4 + 16));
-		asm volatile ("lwc1	$26, %0 ($sp)" : : "i" (26 * 4 + 16));
-		asm volatile ("lwc1	$27, %0 ($sp)" : : "i" (27 * 4 + 16));
-		asm volatile ("lwc1	$28, %0 ($sp)" : : "i" (28 * 4 + 16));
-		asm volatile ("lwc1	$29, %0 ($sp)" : : "i" (29 * 4 + 16));
-		asm volatile ("lwc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
-		asm volatile ("lwc1	$31, %0 ($sp)" : : "i" (31 * 4 + 16));
-		asm volatile ("addi	$sp, $sp, %0" : : "i" (32 * 4));
-
 		mips32_write_fpu_control (C1_FCSR, task_current->fpu_state);
+
+		asm volatile ("ldc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
+		asm volatile ("ldc1	$2, %0 ($sp)" : : "i" (2 * 4 + 16));
+		asm volatile ("ldc1	$4, %0 ($sp)" : : "i" (4 * 4 + 16));
+		asm volatile ("ldc1	$6, %0 ($sp)" : : "i" (6 * 4 + 16));
+		asm volatile ("ldc1	$8, %0 ($sp)" : : "i" (8 * 4 + 16));
+		asm volatile ("ldc1	$10, %0 ($sp)" : : "i" (10 * 4 + 16));
+		asm volatile ("ldc1	$12, %0 ($sp)" : : "i" (12 * 4 + 16));
+		asm volatile ("ldc1	$14, %0 ($sp)" : : "i" (14 * 4 + 16));
+		asm volatile ("ldc1	$16, %0 ($sp)" : : "i" (16 * 4 + 16));
+		asm volatile ("ldc1	$18, %0 ($sp)" : : "i" (18 * 4 + 16));
+		asm volatile ("ldc1	$20, %0 ($sp)" : : "i" (20 * 4 + 16));
+		asm volatile ("ldc1	$22, %0 ($sp)" : : "i" (22 * 4 + 16));
+		asm volatile ("ldc1	$24, %0 ($sp)" : : "i" (24 * 4 + 16));
+		asm volatile ("ldc1	$26, %0 ($sp)" : : "i" (26 * 4 + 16));
+		asm volatile ("ldc1	$28, %0 ($sp)" : : "i" (28 * 4 + 16));
+		asm volatile ("ldc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
+		asm volatile ("addi	$sp, $sp, %0" : : "i" (32 * 4));
 	}
 #endif
 	/* Restore registers. */
@@ -283,7 +251,12 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	unsigned *sp = (unsigned*) ((char*) t + stacksz);
 	extern void _gp;
 
-	*--sp = 0;			/* space for saving arg0 */
+	if ((unsigned) sp & 4)
+		*--sp = 0;		/* align of double word boundary */
+	*--sp = 0;			/* 16 bytes of frame space: arg4 */
+	*--sp = 0;			/* arg3 */
+	*--sp = 0;			/* arg2 */
+	*--sp = 0;			/* arg1 */
 	*--sp = (unsigned) func;	/* epc - callee address */
 	*--sp = mips32_read_c0_register (C0_STATUS) | ST_IE; /* enable interrupts */
 	*--sp = 0;			/* hi */
@@ -320,10 +293,10 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* arg3 */
 	*--sp = 0;			/* arg2 */
 	*--sp = 0;			/* arg1 */
-	t->stack_context = (void*) sp;
+	t->stack_context = (void*) sp;	/* must be at 8-byte boundary */
 
 #ifdef ARCH_HAVE_FPU
-	t->fpu_state = ~0;		/* FPU disabled */
+	t->fpu_state = ARCH_FPU_STATE;	/* FPU disabled */
 #endif
 }
 

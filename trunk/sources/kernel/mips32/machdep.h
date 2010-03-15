@@ -128,6 +128,8 @@ arch_idle ()
  */
 typedef unsigned arch_fpu_t;
 
+#define ARCH_FPU_STATE	(~0)		/* FPU disabled by default */
+
 /*
  * Change/query a mode of float-point coprocessor.
  */

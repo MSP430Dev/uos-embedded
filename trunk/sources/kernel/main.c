@@ -90,6 +90,10 @@ main (void)
 	task_idle->name = "idle";
 	list_init (&task_idle->item);
 	list_init (&task_idle->slaves);
+#ifdef ARCH_HAVE_FPU
+	/* Default state of float point unit. */
+	task_idle->fpu_state = ARCH_FPU_STATE;
+#endif
 
 	/* Make list of active tasks. */
 	list_init (&task_active);
