@@ -34,6 +34,9 @@ volatile unsigned timer_sec, timer_min, timer_hour;
  */
 double compute_e (double r1)
 {
+	/* Do not allow optimizer to treat this function as const. */
+	asm ("");
+
 	double r2 = r1 / 2;
 	double r3 = r2 / 3;
 	double r4 = r3 / 4;
@@ -73,6 +76,9 @@ double compute_e (double r1)
  */
 double compute_pi_machin (double x, double y)
 {
+	/* Do not allow optimizer to treat this function as const. */
+	asm ("");
+
 	double x2 = x * x;
 	double x3 = x2 * x;
 	double x5 = x3 * x2;
@@ -111,6 +117,9 @@ double compute_pi_machin (double x, double y)
  */
 double compute_pi_gauss (double x, double y, double z)
 {
+	/* Do not allow optimizer to treat this function as const. */
+	asm ("");
+
 	double x2 = x * x;
 	double x3 = x2 * x;
 	double x5 = x3 * x2;
@@ -169,6 +178,9 @@ double compute_pi_gauss (double x, double y, double z)
  */
 double compute_pi_brent (double a0, double b0, double t0, double p0)
 {
+	/* Do not allow optimizer to treat this function as const. */
+	asm ("");
+
 	double a1 = (a0 + b0) / 2;
 	double b1 = sqrt (a0 * b0);
 	double t1 = t0 - p0 * (a0 - a1)*(a0 - a1);
@@ -217,6 +229,16 @@ void console (void *arg)
 	}
 }
 
+static inline unsigned long long double_to_uint64 (double d)
+{
+	union {
+		double d;
+		unsigned long long uint64;
+	} u;
+	u.d = d;
+	return u.uint64;
+}
+
 /*
  * Счётные задачи в бесконечном цикле вычисляют некоторое значение и
  * сравнивают его с эталоном. Подсчитывается количество циклов и
@@ -229,7 +251,8 @@ void test_fpu1 (void *arg)
 		/* Вычисляем E - основание натурального логарифма. */
 		e = compute_e (1);
 		count_e_loops++;
-		if (e != 0x1.5bf0a8b145769p+1)
+//		if (e != 0x2.b7e151628aed2p0)
+		if (double_to_uint64 (e) != 0x4005bf0a8b145769ULL)
 			count_e_errors++;
 	}
 }
@@ -241,7 +264,8 @@ void test_fpu2 (void *arg)
 		/* Вычисление константы пи по формуле Джона Мэчина. */
 		pi_machin = compute_pi_machin (1.0/5, 1.0/239);
 		count_machin_loops++;
-		if (pi_machin != 0x1.921fb54442d15p+1)
+//		if (pi_machin != 0x3.243f6a8885a2ap0)
+		if (double_to_uint64 (pi_machin) != 0x400921fb54442d15ULL)
 			count_machin_errors++;
 	}
 }
@@ -253,7 +277,8 @@ void test_fpu3 (void *arg)
 		/* Вычисление константы пи по формуле Гаусса. */
 		pi_gauss = compute_pi_gauss (1.0/18, 1.0/57, 1.0/239);
 		count_gauss_loops++;
-		if (pi_gauss != 0x1.921fb54442d17p+1)
+//		if (pi_gauss != 0x3.243f6a8885a2ep0)
+		if (double_to_uint64 (pi_gauss) != 0x400921fb54442d17ULL)
 			count_gauss_errors++;
 	}
 }
@@ -265,7 +290,8 @@ void test_fpu4 (void *arg)
 		/* Вычисление константы пи по алгоритму Брента-Саламина. */
 		pi_brent = compute_pi_brent (1.0, 1/sqrt(2), 0.25, 1.0);
 		count_brent_loops++;
-		if (pi_brent != 0x1.921fb54442d1ap+1)
+//		if (pi_brent != 0x3.243f6a8885a34p0)
+		if (double_to_uint64 (pi_brent) != 0x400921fb54442d1aULL)
 			count_brent_errors++;
 	}
 }
@@ -300,7 +326,7 @@ static bool_t timer_handler (void *arg)
 		}
 
 	}
-#if 1
+
 	/* Меняем приоритеты вычислительных задач.
 	 * Одна из задач (по циклу) получает приоритет 2, остальные - 1. */
 	if (t1->prio == 2) {
@@ -316,7 +342,7 @@ static bool_t timer_handler (void *arg)
 		t4->prio = 1;
 		t1->prio = 2;
 	}
-#endif
+
 	/* Устанавливаем флаг: необходимо сменить текущую задачу. */
 	task_need_schedule = 1;
 
