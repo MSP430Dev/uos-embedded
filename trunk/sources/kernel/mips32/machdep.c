@@ -28,7 +28,7 @@
 void
 _arch_task_switch_ ()
 {
-	task_t *target;
+	register task_t *target __asm ("v0");
 
 	/* Save all registers in stack. */
 	asm volatile (
@@ -82,6 +82,9 @@ _arch_task_switch_ ()
 
 	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4 + 16));
 
+	asm volatile (
+"switch_task:");
+
 #ifdef ARCH_HAVE_FPU
 	if (task_current->fpu_state != ~0) {
 		/* Save FPU state. */
@@ -117,8 +120,6 @@ _arch_task_switch_ ()
 #ifdef ARCH_HAVE_FPU
 	if (task_current->fpu_state != ~0) {
 		/* Restore FPU state. */
-		mips32_write_fpu_control (C1_FCSR, task_current->fpu_state);
-
 		asm volatile ("ldc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
 		asm volatile ("ldc1	$2, %0 ($sp)" : : "i" (2 * 4 + 16));
 		asm volatile ("ldc1	$4, %0 ($sp)" : : "i" (4 * 4 + 16));
@@ -136,6 +137,8 @@ _arch_task_switch_ ()
 		asm volatile ("ldc1	$28, %0 ($sp)" : : "i" (28 * 4 + 16));
 		asm volatile ("ldc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
 		asm volatile ("addi	$sp, $sp, %0" : : "i" (32 * 4));
+
+		mips32_write_fpu_control (C1_FCSR, task_current->fpu_state);
 	}
 #endif
 	/* Restore registers. */
@@ -203,15 +206,16 @@ _arch_interrupt_ (void)
 
 	/* LY: copy a few lines of code from task_schedule() here. */
 	if (task_need_schedule)	{
-		task_t *t;
+		register task_t *t __asm ("v0");
 
 		task_need_schedule = 0;
 		t = task_policy ();
 		if (t != task_current) {
-			task_current->stack_context = mips32_get_stack_pointer ();
-			task_current = t;
 			t->ticks++;
-			mips32_set_stack_pointer (t->stack_context);
+			asm volatile (
+			"	j	switch_task \n"
+			"	nop"
+			);
 		}
 	}
 

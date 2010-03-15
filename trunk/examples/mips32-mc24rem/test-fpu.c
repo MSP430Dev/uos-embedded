@@ -7,7 +7,7 @@
 #include <kernel/internal.h>
 
 #define TIMER_IRQ	29	/* Прерывание от интервального таймера */
-#define MSEC_PER_TICK	10	/* Период таймера в миллисекундах */
+#define MSEC_PER_TICK	1	/* Период таймера в миллисекундах */
 #define CS3_WAIT_STATES	3	/* Такты ожидания для flash-памяти на CS3 */
 
 ARRAY (task_console, 0x800);
@@ -192,7 +192,7 @@ void console (void *arg)
 {
 	/* Разрешаем FPU для текущей задачи.
 	 * Округление к ближайшему целому, исключения отключены. */
-//	task_fpu_control (task_current, FCSR_ROUND_N, FCSR_ROUND | FCSR_ENABLES);
+	task_fpu_control (task_current, FCSR_ROUND_N, FCSR_ROUND | FCSR_ENABLES);
 
 	for (;;) {
 		debug_puts ("\33[H");
@@ -213,9 +213,7 @@ void console (void *arg)
 		debug_printf (" Brent:  %-20.15f  %-10u  %u \n", pi_brent, count_brent_loops, count_brent_errors);
 
 		/* Выдача каждые полсекунды. */
-//		mutex_wait (&timer_lock);
 		mutex_wait (&timer_half_sec);
-//		mdelay (10);
 	}
 }
 
@@ -302,7 +300,7 @@ static bool_t timer_handler (void *arg)
 		}
 
 	}
-#if 0
+#if 1
 	/* Меняем приоритеты вычислительных задач.
 	 * Одна из задач (по циклу) получает приоритет 2, остальные - 1. */
 	if (t1->prio == 2) {
@@ -347,8 +345,8 @@ void uos_init (void)
 	/* Запускаем задачи вычислений.
 	 * По таймеру будем менять их приоритет, чтобы добиться
 	 * большого количества переключений контекста. */
-//	t1 = task_create (test_fpu1, 0, "fpu", 2, task_fpu1, sizeof (task_fpu1));
-//	t2 = task_create (test_fpu2, 0, "fpu", 1, task_fpu2, sizeof (task_fpu2));
-//	t3 = task_create (test_fpu3, 0, "fpu", 1, task_fpu3, sizeof (task_fpu3));
-//	t4 = task_create (test_fpu4, 0, "fpu", 1, task_fpu4, sizeof (task_fpu4));
+	t1 = task_create (test_fpu1, 0, "fpu", 2, task_fpu1, sizeof (task_fpu1));
+	t2 = task_create (test_fpu2, 0, "fpu", 1, task_fpu2, sizeof (task_fpu2));
+	t3 = task_create (test_fpu3, 0, "fpu", 1, task_fpu3, sizeof (task_fpu3));
+	t4 = task_create (test_fpu4, 0, "fpu", 1, task_fpu4, sizeof (task_fpu4));
 }
