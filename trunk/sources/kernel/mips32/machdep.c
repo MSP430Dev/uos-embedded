@@ -163,6 +163,18 @@ _arch_interrupt_ (void)
 	asm volatile (
 "_irq_handler_: .globl _irq_handler_"
 	);
+#ifdef ELVEES_FPU_EPC_BUG
+	/* Исправляем ошибку в процессоре MC-24RT3: требуется откат
+	 * адреса EPC, если прерывание произошло в слоте перехода
+	 * команд BC1T/BC1F. При этом признак BD в регистре Cause
+	 * не установлен. */
+	unsigned *sp = mips32_get_stack_pointer ();
+	unsigned epc = sp[CONTEXT_PC+4] - 4;
+	if ((*(unsigned*)epc & 0xffe00000) == 0x45000000) {
+		/* Была команда перехода FPU - откатываемся. */
+		sp[CONTEXT_PC+4] = epc;
+	}
+#endif
 	for (;;) {
 		/* Get the current irq number */
 #ifdef ELVEES_MC24
