@@ -4,7 +4,8 @@ include target.cfg
 
 #CURRENT		= test-tswitch
 #CURRENT		= test-latency
-CURRENT		= test-fpu
+#CURRENT		= test-fpu
+CURRENT		= test-timer
 #TESTS		+= test-debug.srec test-task.srec test-timer.srec
 #TESTS		+= test-uart.srec test-ram.srec test-tcl.srec
 #TESTS		+= philosophers.srec test-latency.srec

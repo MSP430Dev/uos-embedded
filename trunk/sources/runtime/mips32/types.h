@@ -30,4 +30,8 @@ typedef unsigned long size_t;
 
 typedef long jmp_buf [10];
 
+#if ARCH_HAVE_FPU
+#include <float.h>
+#endif
+
 #endif /* __MACHINE_TYPES_H_ */

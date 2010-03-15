@@ -82,8 +82,8 @@ _arch_task_switch_ ()
 
 	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4 + 16));
 
-#ifdef ARCH_HAVE_FPU
-	if (task_current->fpu_state) {
+#if 0 //def ARCH_HAVE_FPU
+	if (task_current->fpu_state != ~0) {
 		/* Save FPU state. */
 		asm volatile ("addi	$sp, $sp, -%0" : : "i" (32 * 4));
 		asm volatile ("swc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
@@ -119,7 +119,7 @@ _arch_task_switch_ ()
 		asm volatile ("swc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
 		asm volatile ("swc1	$31, %0 ($sp)" : : "i" (31 * 4 + 16));
 
-		task_current->fpu_state = ~mips32_read_fpu_control (C1_FCSR);
+		task_current->fpu_state = mips32_read_fpu_control (C1_FCSR);
 	}
 #endif
 	/* Save current task stack. */
@@ -130,8 +130,8 @@ _arch_task_switch_ ()
 	/* Switch to the new task. */
 	mips32_set_stack_pointer (task_current->stack_context);
 
-#ifdef ARCH_HAVE_FPU
-	if (task_current->fpu_state) {
+#if 0 //def ARCH_HAVE_FPU
+	if (task_current->fpu_state != ~0) {
 		/* Restore FPU state. */
 		asm volatile ("lwc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
 		asm volatile ("lwc1	$1, %0 ($sp)" : : "i" (1 * 4 + 16));
@@ -167,7 +167,7 @@ _arch_task_switch_ ()
 		asm volatile ("lwc1	$31, %0 ($sp)" : : "i" (31 * 4 + 16));
 		asm volatile ("addi	$sp, $sp, %0" : : "i" (32 * 4));
 
-		mips32_write_fpu_control (C1_FCSR, ~task_current->fpu_state);
+		mips32_write_fpu_control (C1_FCSR, task_current->fpu_state);
 	}
 #endif
 	/* Restore registers. */
@@ -323,7 +323,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	t->stack_context = (void*) sp;
 
 #ifdef ARCH_HAVE_FPU
-	t->fpu_state = 0;		/* FPU disabled */
+	t->fpu_state = ~0;		/* FPU disabled */
 #endif
 }
 
@@ -343,7 +343,7 @@ arch_fpu_control (task_t *t, unsigned int mode, unsigned int mask)
 	if (t == task_current)
 		old = mips32_read_fpu_control (C1_FCSR);
 	else
-		old = ~t->fpu_state;
+		old = t->fpu_state;
 
 	if (mask != 0) {
 		/* Change FPU state. */
@@ -354,7 +354,7 @@ arch_fpu_control (task_t *t, unsigned int mode, unsigned int mask)
 		mode |= old & ~mask;
 		if (t == task_current)
 			mips32_write_fpu_control (C1_FCSR, mode);
-		t->fpu_state = ~mode;
+		t->fpu_state = mode;
 	}
 
 	/* Return previous mode. */

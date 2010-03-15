@@ -73,7 +73,7 @@ static bool_t timer_handler (void *arg)
 			latency_max = latency;
 	}
 
-	/* Возвращаем 0: прерывание полностью обработано. */
+	/* Возвращаем 0, чтобы послать сигнал для mutex_wait(). */
 	return 0;
 }
 
