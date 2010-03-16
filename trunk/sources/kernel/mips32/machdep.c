@@ -178,18 +178,28 @@ _arch_interrupt_ (void)
 	for (;;) {
 		/* Get the current irq number */
 #ifdef ELVEES_MC24
-		irq = 31 - mips32_count_leading_zeroes (MC_QSTR & MC_MASKR);
-		if (irq < 0)
+		unsigned status = mips32_read_c0_register (C0_STATUS);
+		unsigned pending = (unsigned char) ((status &
+			mips32_read_c0_register (C0_CAUSE)) >> 8);
+		irq = 63 - mips32_count_leading_zeroes (pending);
+		if (irq < 32)
 			break;
+		if (irq == 39) {
+			/* Internal interrupt. */
+			irq = 31 - mips32_count_leading_zeroes (MC_QSTR & MC_MASKR);
+			if (irq < 0)
+				break;
+			/* Disable the internal irq, to avoid loops */
+			MC_MASKR &= ~(1 << irq);	/* disable */
+		} else {
+			/* Disable the external irq, to avoid loops */
+			status &= ~(0x100 << (irq & 7));
+		}
 /*debug_printf ("<%d>", irq);*/
 #endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
 
-		/* Disable the irq, to avoid loops */
-#ifdef ELVEES_MC24
-		MC_MASKR &= ~(1 << irq);	/* disable */
-#endif
 		h = &mutex_irq [irq];
 		if (! h->lock)
 			continue;
