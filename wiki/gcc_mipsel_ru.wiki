@@ -36,13 +36,13 @@ little endian. Устанавливается поддержка языков С
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [http://ftp.gnu.org/pub/gnu/binutils/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/binutils/binutils-2.20.1.tar.bz2 binutils-2.20.1.tar.bz2] (16 Мбайт)
   * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.1/gcc-4.4.1.tar.bz2  gcc-4.4.1.tar.bz2      ] (60 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils-2.19.1.tar.bz2
+  tar xvjf binutils-2.20.1.tar.bz2
   tar xvjf gcc-4.4.1.tar.bz2
 }}}
 
@@ -51,20 +51,11 @@ little endian. Устанавливается поддержка языков С
 архиватор AR, а также набор утилит для работы с объектными файлами
 (SIZE, NM, RANLIB, STRIP, и прочие).
 
-Для успешной сборки binutils 2.19.1 следует использовать правку, исправляющую
-ошибки в файле gas/config/tc-mips.c:
-[http://uos-embedded.googlecode.com/files/binutils-2.19.1-mips.pch binutils-2.19.1-mips.pch].
-Чтобы применить правку, выполните команды:
-{{{
-  cd /src/binutils-2.19.1
-  patch -p1 < binutils-2.19.1-mips.pch
-}}}
-
 Сборка производится в отдельном каталоге binutils-mipsel. Выполните команды:
 {{{
   mkdir /src/binutils-mipsel
   cd /src/binutils-mipsel
-  /src/binutils-2.19.1/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel441 --disable-nls
+  /src/binutils-2.20.1/configure --target=mipsel-elf32 --prefix=/usr/local/mipsel441 --disable-nls
   make
 }}}
 
