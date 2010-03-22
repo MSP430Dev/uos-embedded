@@ -15,6 +15,7 @@ verbose = 0
 section_level = 0
 inside_para = ""
 inside_code = 0
+inside_table = 0
 re_heading1 = re.compile ("=(.*)=$")
 re_heading2 = re.compile ("==(.*)==$")
 re_heading3 = re.compile ("===(.*)===$")
@@ -160,7 +161,6 @@ def parse_entities (line):
 #
 def convert_line (line):
 	line = parse_links (line)
-	line = parse_emph (line)
 
 	match = re_heading3.match (line)
 	if match:
@@ -200,6 +200,20 @@ def put_image (url):
 	if url.startswith (base_url):
 		file = "file:./" + url [len(base_url):]
 	print "<graphic fileref=\"" + file + "\"></graphic>"
+
+#
+# Make a row of table.
+#
+def add_table_row (line, nrows):
+	cells = line[2:].split ("||")
+	print "<row>",
+	for i in range (nrows):
+		if i < len(cells):
+			cell = cells[i].strip()
+		else:
+			cell = ""
+		print "<entry>" + cell.encode('utf-8') + "</entry>",
+	print "</row>"
 
 #
 # Print usage info.
@@ -256,7 +270,7 @@ for filename in args:
 			continue
 		line = parse_entities (line)
 
-		# Blocks pf literal text.
+		# Blocks of literal text.
 		if not inside_code and line == "{{{":
 			inside_code = 1
 			print "<screen>"
@@ -274,6 +288,26 @@ for filename in args:
 		if match:
 			put_image (match.expand ("\\1"))
 			continue
+
+		line = parse_emph (line)
+
+		# Tables.
+		if not inside_table and line.startswith ("||"):
+			set_para ("")
+			inside_table = line.count ("||", 2)
+			if inside_table < 1:
+				inside_table = 1
+			print "<table frame='all'><title></title>",
+			print "<tgroup cols='%d' align='left' colsep='1' rowsep='1'>" % inside_table,
+			print "<tbody>"
+			add_table_row (line, inside_table)
+			continue
+		if inside_table:
+			if line.startswith ("||"):
+				add_table_row (line, inside_table)
+				continue
+			inside_table = 0
+			print "</tbody></tgroup></table>"
 
 		# Ordinary text/
 		convert_line (line)

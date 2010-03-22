@@ -43,7 +43,7 @@ all:
 		done
 
 clean:
-		rm -rf *~ xml *.xml *.rtf
+		rm -rf *~ xml *.xml *.rtf *.html
 
 docbook:	$(DOCBOOK)
 
@@ -51,9 +51,13 @@ verify:		$(DOCBOOK)
 		for doc in $(DOCBOOK); do echo $$doc:; xmllint --noout --valid $$doc; done
 
 rtf:		$(DOCBOOK:%.xml=%.rtf)
-		#for doc in $(DOCBOOK); do echo $$doc:; docbook2rtf $$doc; done
 
-.SUFFIXES:	.wiki .xml .rtf
+html:		$(DOCBOOK:%.xml=%.html)
+
+.SUFFIXES:	.wiki .xml .rtf .html
 
 .wiki.xml:;	./gwiki2docbook.py -l ru $< > $@
+
 .xml.rtf:;	docbook2rtf $<
+
+.xml.html:;	docbook2html $<
