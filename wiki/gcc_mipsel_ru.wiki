@@ -97,7 +97,7 @@ little endian. Устанавливается поддержка языков С
   make install
 }}}
 
-== Установка под Windows и Cygwin ==
+== Установка под Windows для Cygwin ==
 
 Установите Cygwin. Для этого на сайте [http://cygwin.com] щёлкните
 "Install Cygwin now". Это приведет к загрузке небольшого файла setup.exe,
@@ -106,7 +106,7 @@ little endian. Устанавливается поддержка языков С
 
 После установки Cygwin сборка GCC производится так же, как и в Linux.
 
-== Установка под Windows и MinGW ==
+== Установка под Windows для MinGW ==
 
 Установите MinGW и Msys по инструкции: [http://mingw.org/wiki/HOWTO_Install_the_MinGW_GCC_Compiler_Suite]. Либо готовый к употреблению пакет можно скачать здесь: [http://uos-embedded.googlecode.com/files/mingw51.zip mingw51.zip]. Распакуйте его в каталог c:\, затем вызывайте c:\Msys\1.0\msys.bat.
 
