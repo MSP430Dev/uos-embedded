@@ -145,7 +145,8 @@ _restore_regs_: .globl _restore_regs_
 		lw	$31, (CONTEXT_RA * 4) ($sp)
 		.set	at
 
-		lw	$k0, (CONTEXT_STATUS * 4) ($sp)	# K0 = saved status
+#		lw	$k0, (CONTEXT_STATUS * 4) ($sp)	# K0 = saved status
+		mfc0	$k0, $C0_STATUS
 
 		addi	$sp, $sp, CONTEXT_WORDS*4	# Deallocate saved context
 

@@ -50,9 +50,9 @@ docbook:	$(DOCBOOK)
 verify:		$(DOCBOOK)
 		for doc in $(DOCBOOK); do echo $$doc:; xmllint --noout --valid $$doc; done
 
-rtf:		$(DOCBOOK:%.xml=%.rtf)
+rtf:		docbook $(DOCBOOK:%.xml=%.rtf)
 
-html:		$(DOCBOOK:%.xml=%.html)
+html:		docbook $(DOCBOOK:%.xml=%.html)
 
 .SUFFIXES:	.wiki .xml .rtf .html
 

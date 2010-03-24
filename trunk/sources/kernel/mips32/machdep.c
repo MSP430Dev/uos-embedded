@@ -181,21 +181,24 @@ _arch_interrupt_ (void)
 		unsigned status = mips32_read_c0_register (C0_STATUS);
 		unsigned pending = (unsigned char) ((status &
 			mips32_read_c0_register (C0_CAUSE)) >> 8);
-		irq = 63 - mips32_count_leading_zeroes (pending);
-		if (irq < 32)
+		if (! pending)
 			break;
-		if (irq == 39) {
-			/* Internal interrupt. */
+		if (pending & 0x80) {
+			/* Internal interrupt: 0..31. */
 			irq = 31 - mips32_count_leading_zeroes (MC_QSTR & MC_MASKR);
+/*debug_printf ("<%d>", irq);*/
 			if (irq < 0)
 				break;
 			/* Disable the internal irq, to avoid loops */
-			MC_MASKR &= ~(1 << irq);	/* disable */
+			MC_MASKR &= ~(1 << irq);
 		} else {
+			/* External irq: 32..38. */
+			irq = 63 - mips32_count_leading_zeroes (pending);
+/*debug_printf ("[%d]", irq);*/
 			/* Disable the external irq, to avoid loops */
 			status &= ~(0x100 << (irq & 7));
+			mips32_write_c0_register (C0_STATUS, status);
 		}
-/*debug_printf ("<%d>", irq);*/
 #endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
@@ -257,8 +260,16 @@ void
 arch_intr_allow (int irq)
 {
 #ifdef ELVEES_MC24
-	MC_MASKR |= 1 << irq;
+	if (irq < 32) {
+		/* Internal interrupt: 0..31. */
+		MC_MASKR |= 1 << irq;
 /*debug_printf ("enable irq %d, MASKR=%#x\n", irq, MC_MASKR);*/
+	} else {
+		/* External irq: 32..38. */
+		unsigned status = mips32_read_c0_register (C0_STATUS);
+		status |= 0x100 << (irq & 7);
+		mips32_write_c0_register (C0_STATUS, status);
+	}
 #endif
 }
 

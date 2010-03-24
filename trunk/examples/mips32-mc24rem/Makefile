@@ -3,9 +3,10 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 CURRENT		= test-uart
-#TESTS		+= test-debug.srec test-task.srec test-timer.srec
-#TESTS		+= test-uart.srec test-ram.srec test-tcl.srec
-#TESTS		+= philosophers.srec test-latency.srec test-tswitch.srec
+TESTS		+= test-debug.srec test-task.srec test-timer.srec
+TESTS		+= test-uart.srec test-ram.srec test-tcl.srec
+TESTS		+= philosophers.srec test-latency.srec test-tswitch.srec
+TESTS		+= test-fpu.srec
 TESTS		+= $(CURRENT).srec
 OUTS		= $(TESTS:%.srec=%.out)
 
