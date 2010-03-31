@@ -47,7 +47,7 @@
  * \~russian
  * Структура данных для драйвера UART.
  */
-typedef struct _uart_t {
+typedef struct _uartx_t {
 	stream_interface_t *interface;
 	mutex_t transmitter;
 	mutex_t receiver;
@@ -57,17 +57,11 @@ typedef struct _uart_t {
 	unsigned char *out_first, *out_last;
 	unsigned char in_buf [UART_INBUFSZ];
 	unsigned char *in_first, *in_last;
-	bool_t (*cts_query) (struct _uart_t*);
+
+	unsigned lsr;
 
 	ARRAY (rstack, UART_STACKSZ);		/* task receive stack */
-} uart_t;
+} uartx_t;
 
-void uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
+void uartx_init (uartx_t *u, small_uint_t port, int prio, unsigned int khz,
 	unsigned long baud);
-void uart_set_cts_poller (uart_t *u, bool_t (*) (uart_t*));
-void uart_cts_ready (uart_t *u);
-void uart_transmit_wait (uart_t *u);
-
-unsigned short uart_getchar (uart_t *u);
-int uart_peekchar (uart_t *u);
-void uart_putchar (uart_t *u, short c);
