@@ -54,10 +54,14 @@ rtf:		docbook $(DOCBOOK:%.xml=%.rtf)
 
 html:		docbook $(DOCBOOK:%.xml=%.html)
 
-.SUFFIXES:	.wiki .xml .rtf .html
+odf:		$(DOCBOOK:%.xml=%.odf)
+
+.SUFFIXES:	.wiki .xml .rtf .html .odf
 
 .wiki.xml:;	./gwiki2docbook.py -l ru $< > $@
 
 .xml.rtf:;	docbook2rtf $<
 
 .xml.html:;	docbook2html $<
+
+.xml.odf:;	docbook2odf $< -o $@

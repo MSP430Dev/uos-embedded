@@ -51,17 +51,19 @@ typedef struct _uartx_t {
 	stream_interface_t *interface;
 	mutex_t transmitter;
 	mutex_t receiver;
-	small_uint_t port;
 	unsigned int khz;
 	unsigned char out_buf [UART_OUTBUFSZ];
 	unsigned char *out_first, *out_last;
 	unsigned char in_buf [UART_INBUFSZ];
 	unsigned char *in_first, *in_last;
 
+	unsigned port;
 	unsigned lsr;
+	unsigned frame_errors;
+	unsigned parity_errors;
+	unsigned overruns;
 
 	ARRAY (rstack, UART_STACKSZ);		/* task receive stack */
 } uartx_t;
 
-void uartx_init (uartx_t *u, small_uint_t port, int prio, unsigned int khz,
-	unsigned long baud);
+void uartx_init (uartx_t *u, int prio, unsigned int khz, unsigned long baud);

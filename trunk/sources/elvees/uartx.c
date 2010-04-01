@@ -1,11 +1,14 @@
+/*
+ * UART driver for external 3-channel controller.
+ */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <elvees/uartx.h>
 
 /*
- * Регистры UART, n=1..3
+ * External UART registers.
  */
-#define UARTX_R(n,r)	*(volatile unsigned*)(0x10000000 | (n)<<12 | (r))
+#define UARTX_R(n,r)	*(volatile unsigned*)(0x10001000 + ((n)<<12) + (r))
 
 #define UARTX_RBR(n)	UARTX_R (n, 0x00)	/* Приемный буфер */
 #define UARTX_THR(n)	UARTX_R (n, 0x00)	/* Передающий буфер */
@@ -21,10 +24,9 @@
 #define UARTX_DLM(n)	UARTX_R (n, 0x04)	/* Делитель старший */
 #define UARTX_SCLR(n)	UARTX_R (n, 0x14)	/* Предделитель (scaler) */
 
-/*
- * Elvees Multicore-specific defines for extended UART driver.
- */
-#define RECEIVE_IRQ(p)	36		/* external interrupt /IRQ2 */
+#define RECEIVE_IRQ	36			/* external interrupt /IRQ2 */
+
+mutex_t uartx_lock;
 
 /*
  * Start transmitting a byte.
@@ -143,6 +145,48 @@ uartx_peekchar (uartx_t *u)
 	return c;
 }
 
+static void
+uartx_interrupt (uartx_t *u)
+{
+	u->lsr = UARTX_LSR (u->port);
+/*debug_printf ("<%08x> ", *AT91C_DBGU_CSR);*/
+
+	if (u->lsr & MC_LSR_FE) {
+		u->frame_errors++;
+		/*debug_printf ("FRAME ERROR\n");*/
+	}
+	if (u->lsr & MC_LSR_PE) {
+		u->parity_errors++;
+		/*debug_printf ("PARITY ERROR\n");*/
+	}
+	if (u->lsr & MC_LSR_OE) {
+		u->overruns++;
+		/*debug_printf ("RECEIVE OVERRUN\n");*/
+	}
+	if (u->lsr & MC_LSR_BI) {
+		/*debug_printf ("BREAK DETECTED\n");*/
+	}
+	uartx_transmit_start (u);
+
+	/* Check that receive data is available,
+	 * and get the received byte. */
+	if (u->lsr & MC_LSR_RXRDY) {
+		unsigned c = UARTX_RBR (u->port);
+/*debug_printf ("%02x", c);*/
+
+		unsigned char *newlast = u->in_last + 1;
+		if (newlast >= u->in_buf + UART_INBUFSZ)
+			newlast = u->in_buf;
+
+		/* Ignore input on buffer overflow. */
+		if (u->in_first != newlast) {
+			*u->in_last = c;
+			u->in_last = newlast;
+		}
+		mutex_signal (&u->receiver, 0);
+	}
+}
+
 /*
  * Receive interrupt task.
  */
@@ -150,64 +194,20 @@ static void
 uartx_receiver (void *arg)
 {
 	uartx_t *u = arg;
-	unsigned char c = 0, *newlast;
+	unsigned port;
 
 	/*
 	 * Enable receiver.
 	 */
-	mutex_lock_irq (&u->receiver, RECEIVE_IRQ (u->port), 0, 0);
-
-	UARTX_SCLR (u->port) = 0;
-	UARTX_SPR (u->port) = 0;
-	UARTX_IER (u->port) = 0;
-	UARTX_MSR (u->port) = 0;
-	UARTX_MCR (u->port) = MC_MCR_DTR | MC_MCR_RTS | MC_MCR_OUT2;
-	UARTX_FCR (u->port) = MC_FCR_RCV_RST | MC_FCR_XMT_RST | MC_FCR_ENABLE;
-
-	/* Clear pending status, data and irq. */
-	(void) UARTX_LSR (u->port);
-	(void) UARTX_MSR (u->port);
-	(void) UARTX_RBR (u->port);
-	(void) UARTX_IIR (u->port);
-
-	UARTX_IER (u->port) |= MC_IER_ERXRDY | MC_IER_ERLS;
+	mutex_lock_irq (&uartx_lock, RECEIVE_IRQ, 0, 0);
+	UARTX_IER (0) |= MC_IER_ERXRDY | MC_IER_ERLS;
+	UARTX_IER (1) |= MC_IER_ERXRDY | MC_IER_ERLS;
+	UARTX_IER (2) |= MC_IER_ERXRDY | MC_IER_ERLS;
 
 	for (;;) {
-		mutex_wait (&u->receiver);
-		u->lsr = UARTX_LSR (u->port);
-/*debug_printf ("<%08x> ", *AT91C_DBGU_CSR);*/
-
-		if (u->lsr & MC_LSR_FE) {
-			/*debug_printf ("FRAME ERROR\n");*/
-		}
-		if (u->lsr & MC_LSR_PE) {
-			/*debug_printf ("PARITY ERROR\n");*/
-		}
-		if (u->lsr & MC_LSR_OE) {
-			/*debug_printf ("RECEIVE OVERRUN\n");*/
-		}
-		if (u->lsr & MC_LSR_BI) {
-			/*debug_printf ("BREAK DETECTED\n");*/
-		}
-		uartx_transmit_start (u);
-
-		/* Check that receive data is available,
-		 * and get the received byte. */
-		if (! (u->lsr & MC_LSR_RXRDY))
-			continue;
-		c = UARTX_RBR (u->port);
-/*debug_printf ("%02x", c);*/
-
-		newlast = u->in_last + 1;
-		if (newlast >= u->in_buf + UART_INBUFSZ)
-			newlast = u->in_buf;
-
-		/* Ignore input on buffer overflow. */
-		if (u->in_first == newlast)
-			continue;
-
-		*u->in_last = c;
-		u->in_last = newlast;
+		mutex_wait (&uartx_lock);
+		for (port=0; port<3; port++)
+			uartx_interrupt (u + port);
 	}
 }
 
@@ -226,21 +226,36 @@ static stream_interface_t uartx_interface = {
 };
 
 void
-uartx_init (uartx_t *u, small_uint_t port, int prio, unsigned int khz,
-	unsigned long baud)
+uartx_init (uartx_t *u, int prio, unsigned int khz, unsigned long baud)
 {
-	u->interface = &uartx_interface;
-	u->port = port;
-	u->khz = khz;
-	u->in_first = u->in_last = u->in_buf;
-	u->out_first = u->out_last = u->out_buf;
+	unsigned port, divisor;
 
-	/* Setup baud rate generator. */
-	unsigned divisor = MC_DL_BAUD (u->khz * 1000, baud);
-	UARTX_LCR (u->port) = MC_LCR_8BITS | MC_LCR_DLAB;
-	UARTX_DLM (u->port) = divisor >> 8;
-	UARTX_DLL (u->port) = divisor;
-	UARTX_LCR (u->port) = MC_LCR_8BITS;
+	divisor = MC_DL_BAUD (khz * 1000, baud);
+	for (port=0; port<3; port++) {
+		u[port].interface = &uartx_interface;
+		u[port].port = port;
+		u[port].khz = khz;
+		u[port].in_first = u[port].in_last = u[port].in_buf;
+		u[port].out_first = u[port].out_last = u[port].out_buf;
+
+		/* Setup baud rate generator. */
+		UARTX_LCR (port) = MC_LCR_8BITS | MC_LCR_DLAB;
+		UARTX_DLM (port) = divisor >> 8;
+		UARTX_DLL (port) = divisor;
+		UARTX_LCR (port) = MC_LCR_8BITS;
+		UARTX_SCLR (port) = 0;
+		UARTX_SPR (port) = 0;
+		UARTX_IER (port) = 0;
+		UARTX_MSR (port) = 0;
+		UARTX_MCR (port) = MC_MCR_DTR | MC_MCR_RTS | MC_MCR_OUT2;
+		UARTX_FCR (port) = MC_FCR_RCV_RST | MC_FCR_XMT_RST | MC_FCR_ENABLE;
+
+		/* Clear pending status, data and irq. */
+		(void) UARTX_LSR (port);
+		(void) UARTX_MSR (port);
+		(void) UARTX_RBR (port);
+		(void) UARTX_IIR (port);
+	}
 
 	/* Create uart receive task. */
 	task_create (uartx_receiver, u, "uartx", prio,
