@@ -8,7 +8,7 @@
 /*
  * External UART registers.
  */
-#define UARTX_R(n,r)	*(volatile unsigned*)(0x10001000 + ((n)<<12) + (r))
+#define UARTX_R(n,r)	*(volatile unsigned*)(0xB0001000 + ((n)<<12) + (r))
 
 #define UARTX_RBR(n)	UARTX_R (n, 0x00)	/* Приемный буфер */
 #define UARTX_THR(n)	UARTX_R (n, 0x00)	/* Передающий буфер */
@@ -176,7 +176,7 @@ static void
 uartx_interrupt (uartx_t *u)
 {
 	u->lsr = UARTX_LSR (u->port);
-/*debug_printf ("<%08x> ", *AT91C_DBGU_CSR);*/
+debug_printf ("lsr%d=%02x; ", u->port, u->lsr);
 
 	if (u->lsr & MC_LSR_FE) {
 		u->frame_errors++;
@@ -233,7 +233,7 @@ uartx_receiver (void *arg)
 
 	for (;;) {
 		mutex_wait (&uartx_lock);
-debug_printf ("%");
+debug_putchar (0, '!');
 		for (port=0; port<3; port++)
 			uartx_interrupt (u + port);
 	}
@@ -252,6 +252,71 @@ static stream_interface_t uartx_interface = {
 	.flush = (void (*) (stream_t*))			uartx_fflush,
 	.receiver = (mutex_t *(*) (stream_t*))		uartx_receive_lock,
 };
+
+/*
+ * Проверка регистров UART.
+ */
+void
+uartx_test_registers (int port)
+{
+	unsigned i, msr, spr;
+
+	/* Проверяем регистр модемного статуса.
+	 * Он не может быть FF. */
+	(void) UARTX_MSR (port);
+	for (i=0; i<10; i++) {
+		msr = UARTX_MSR (port);
+		if (msr == 0xff)
+			debug_printf ("uartx %d error: MSR=%02x\n",
+				port, msr);
+	}
+
+	/* Проверяем, что регистр Scratchpad доступен на запись. */
+	for (i=0; i<0x100; i++) {
+		UARTX_SPR (port) = i;
+		spr = UARTX_SPR (port);
+		if (spr != i)
+			debug_printf ("uartx %d error: SPR written %02x read %02x\n",
+				port, i, spr);
+	}
+	UARTX_SPR (port) = 0;
+}
+
+/*
+ * Проверка прерывания UART.
+ */
+void
+uartx_test_irq ()
+{
+	unsigned cause;
+
+	UARTX_IER (0) = 0;
+	UARTX_IER (1) = 0;
+	UARTX_IER (2) = 0;
+	udelay (10);
+	cause = mips32_read_c0_register (C0_CAUSE);
+	if (cause & CA_IP_IRQ2)
+		debug_printf ("uartx error: incorrect /IRQ2, cause=%08x\n",
+			cause);
+
+	UARTX_IER (0) = ~0;
+	UARTX_IER (1) = ~0;
+	UARTX_IER (2) = ~0;
+	udelay (10);
+	cause = mips32_read_c0_register (C0_CAUSE);
+	if (! (cause & CA_IP_IRQ2))
+		debug_printf ("uartx error: no /IRQ2, cause=%08x\n",
+			cause);
+
+	UARTX_IER (0) = 0;
+	UARTX_IER (1) = 0;
+	UARTX_IER (2) = 0;
+	udelay (10);
+	cause = mips32_read_c0_register (C0_CAUSE);
+	if (cause & CA_IP_IRQ2)
+		debug_printf ("uartx error: unexpected /IRQ2, cause=%08x\n",
+			cause);
+}
 
 void
 uartx_init (uartx_t *u, int prio, unsigned int khz, unsigned long baud)
@@ -283,7 +348,11 @@ uartx_init (uartx_t *u, int prio, unsigned int khz, unsigned long baud)
 		(void) UARTX_MSR (port);
 		(void) UARTX_RBR (port);
 		(void) UARTX_IIR (port);
+
+		uartx_test_registers (port);
 	}
+
+	uartx_test_irq ();
 
 	/* Create uart receive task. */
 	task_create (uartx_receiver, u, "uartx", prio,

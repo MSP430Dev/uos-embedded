@@ -219,8 +219,8 @@ _arch_interrupt_ (void)
 		/* Get the current irq number */
 #ifdef ELVEES_MC24
 		unsigned status = mips32_read_c0_register (C0_STATUS);
-		unsigned pending = (unsigned char) ((status &
-			mips32_read_c0_register (C0_CAUSE)) >> 8);
+		unsigned cause = mips32_read_c0_register (C0_CAUSE);
+		unsigned pending = (unsigned char) ((status & cause) >> 8);
 		if (! pending)
 			break;
 		if (pending & 0x80) {
@@ -234,7 +234,7 @@ _arch_interrupt_ (void)
 		} else {
 			/* External irq: 32..38. */
 			irq = 63 - mips32_count_leading_zeroes (pending);
-/*debug_printf ("[%d]", irq);*/
+debug_printf ("[%d-%08x-%08x]", irq, status, cause);
 			/* Disable the external irq, to avoid loops */
 			status &= ~(0x100 << (irq & 7));
 			mips32_write_c0_register (C0_STATUS, status);
