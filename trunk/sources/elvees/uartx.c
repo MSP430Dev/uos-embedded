@@ -28,6 +28,33 @@
 
 mutex_t uartx_lock;
 
+/**\def TIMER_STACKSZ
+ * \~english
+ * Size of stack for UART task in bytes.
+ *
+ * \~russian
+ * Размер стека для задачи драйвера UART, в байтах.
+ */
+#ifndef UART_STACKSZ
+#   if __AVR__
+#      define UART_STACKSZ	0x100		/* 100 enough for AVR */
+#   endif
+#   if defined (__arm__) || defined (__thumb__)
+#      define UART_STACKSZ	0x200
+#   endif
+#   if MIPS32
+#      define UART_STACKSZ	0x400
+#   endif
+#   if MSP430
+#      define UART_STACKSZ	0x100
+#   endif
+#   if LINUX386
+#      define UART_STACKSZ	4000
+#   endif
+#endif
+
+ARRAY (uartx_rstack, UART_STACKSZ);		/* task receive stack */
+
 /*
  * Start transmitting a byte.
  * Assume the transmitter is stopped, and the transmit queue is not empty.
@@ -206,6 +233,7 @@ uartx_receiver (void *arg)
 
 	for (;;) {
 		mutex_wait (&uartx_lock);
+debug_printf ("%");
 		for (port=0; port<3; port++)
 			uartx_interrupt (u + port);
 	}
@@ -259,5 +287,5 @@ uartx_init (uartx_t *u, int prio, unsigned int khz, unsigned long baud)
 
 	/* Create uart receive task. */
 	task_create (uartx_receiver, u, "uartx", prio,
-		u->rstack, sizeof (u->rstack));
+		uartx_rstack, sizeof (uartx_rstack));
 }
