@@ -1,0 +1,13 @@
+#file test1.out
+target remote localhost:2000
+set remote hardware-breakpoint-limit 6
+set remote hardware-watchpoint-limit 4
+
+#b os_halt
+
+define as
+set $old = $pc*2
+si
+x/3i ($old+2==$pc*2 || $old+4==$pc*2) ? $old : $pc*2-2
+regs
+end
