@@ -234,7 +234,7 @@ _arch_interrupt_ (void)
 		} else {
 			/* External irq: 32..38. */
 			irq = 63 - mips32_count_leading_zeroes (pending);
-debug_printf ("[%d-%08x-%08x]", irq, status, cause);
+/*debug_printf ("[%d-%08x-%08x]", irq, status, cause);*/
 			/* Disable the external irq, to avoid loops */
 			status &= ~(0x100 << (irq & 7));
 			mips32_write_c0_register (C0_STATUS, status);

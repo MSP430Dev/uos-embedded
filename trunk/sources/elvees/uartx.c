@@ -176,7 +176,7 @@ static void
 uartx_interrupt (uartx_t *u)
 {
 	u->lsr = UARTX_LSR (u->port);
-debug_printf ("lsr%d=%02x; ", u->port, u->lsr);
+/*debug_printf ("lsr%d=%02x; ", u->port, u->lsr);*/
 
 	if (u->lsr & MC_LSR_FE) {
 		u->frame_errors++;
@@ -233,7 +233,7 @@ uartx_receiver (void *arg)
 
 	for (;;) {
 		mutex_wait (&uartx_lock);
-debug_putchar (0, '!');
+/*debug_putchar (0, '!');*/
 		for (port=0; port<3; port++)
 			uartx_interrupt (u + port);
 	}
@@ -259,27 +259,34 @@ static stream_interface_t uartx_interface = {
 void
 uartx_test_registers (int port)
 {
-	unsigned i, msr, spr;
+	unsigned i, msr, spr, errors = 0;
 
 	/* Проверяем регистр модемного статуса.
 	 * Он не может быть FF. */
 	(void) UARTX_MSR (port);
 	for (i=0; i<10; i++) {
 		msr = UARTX_MSR (port);
-		if (msr == 0xff)
+		if (msr == 0xff) {
 			debug_printf ("uartx %d error: MSR=%02x\n",
 				port, msr);
+			++errors;
+		}
 	}
 
 	/* Проверяем, что регистр Scratchpad доступен на запись. */
 	for (i=0; i<0x100; i++) {
 		UARTX_SPR (port) = i;
 		spr = UARTX_SPR (port);
-		if (spr != i)
+		if (spr != i) {
 			debug_printf ("uartx %d error: SPR written %02x read %02x\n",
 				port, i, spr);
+			++errors;
+		}
 	}
 	UARTX_SPR (port) = 0;
+	if (! errors) {
+		debug_printf ("Testing UART%d registers: OK\n", port);
+	}
 }
 
 /*
@@ -288,34 +295,43 @@ uartx_test_registers (int port)
 void
 uartx_test_irq ()
 {
-	unsigned cause;
+	unsigned cause, errors = 0;
 
 	UARTX_IER (0) = 0;
 	UARTX_IER (1) = 0;
 	UARTX_IER (2) = 0;
 	udelay (10);
 	cause = mips32_read_c0_register (C0_CAUSE);
-	if (cause & CA_IP_IRQ2)
+	if (cause & CA_IP_IRQ2) {
 		debug_printf ("uartx error: incorrect /IRQ2, cause=%08x\n",
 			cause);
+		++errors;
+	}
 
 	UARTX_IER (0) = ~0;
 	UARTX_IER (1) = ~0;
 	UARTX_IER (2) = ~0;
 	udelay (10);
 	cause = mips32_read_c0_register (C0_CAUSE);
-	if (! (cause & CA_IP_IRQ2))
+	if (! (cause & CA_IP_IRQ2)) {
 		debug_printf ("uartx error: no /IRQ2, cause=%08x\n",
 			cause);
+		++errors;
+	}
 
 	UARTX_IER (0) = 0;
 	UARTX_IER (1) = 0;
 	UARTX_IER (2) = 0;
 	udelay (10);
 	cause = mips32_read_c0_register (C0_CAUSE);
-	if (cause & CA_IP_IRQ2)
+	if (cause & CA_IP_IRQ2) {
 		debug_printf ("uartx error: unexpected /IRQ2, cause=%08x\n",
 			cause);
+		++errors;
+	}
+	if (! errors) {
+		debug_printf ("Testing UART interrupts: OK\n");
+	}
 }
 
 void
