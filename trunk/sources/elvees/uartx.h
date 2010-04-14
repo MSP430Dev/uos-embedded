@@ -6,7 +6,7 @@
  * \~russian
  * Размер буфера ввода.
  */
-#define UART_INBUFSZ	8
+#define UART_INBUFSZ	256
 
 /**\~english
  * Size of output buffer.
@@ -14,7 +14,7 @@
  * \~russian
  * Размер буфера вывода.
  */
-#define UART_OUTBUFSZ	32
+#define UART_OUTBUFSZ	16
 
 /**\~english
  * Data structure of UART driver.

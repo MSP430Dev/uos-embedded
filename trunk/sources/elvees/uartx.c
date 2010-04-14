@@ -63,13 +63,11 @@ ARRAY (uartx_rstack, UART_STACKSZ);		/* task receive stack */
 static bool_t
 uartx_transmit_start (uartx_t *u)
 {
-/*debug_printf ("[%08x] ", *AT91C_DBGU_CSR);*/
 	if (u->out_first == u->out_last)
 		mutex_signal (&u->transmitter, 0);
 
 	/* Check that transmitter buffer is busy. */
 	if (! (UARTX_LSR(u->port) & MC_LSR_TXRDY)) {
-/*debug_putchar (0, '`');*/
 		return 1;
 	}
 
@@ -77,14 +75,11 @@ uartx_transmit_start (uartx_t *u)
 	if (u->out_first == u->out_last) {
 		/* Disable `transmitter empty' interrupt. */
 		UARTX_IER (u->port) &= ~MC_IER_ETXRDY;
-/*debug_putchar (0, '#');*/
 		return 0;
 	}
 
 	/* Send byte. */
-/*debug_putchar (0, '<');*/
 	UARTX_THR (u->port) = *u->out_first;
-/*debug_putchar (0, '>');*/
 
 	++u->out_first;
 	if (u->out_first >= u->out_buf + UART_OUTBUFSZ)
@@ -92,7 +87,6 @@ uartx_transmit_start (uartx_t *u)
 
 	/* Enable `transmitter empty' interrupt. */
 	UARTX_IER (u->port) |= MC_IER_ETXRDY;
-/*debug_printf ("{e%02x}", IE1);*/
 	return 1;
 }
 
@@ -119,7 +113,7 @@ uartx_putchar (uartx_t *u, short c)
 	unsigned char *newlast;
 
 	mutex_lock (&u->transmitter);
-again:
+
 	newlast = u->out_last + 1;
 	if (newlast >= u->out_buf + UART_OUTBUFSZ)
 		newlast = u->out_buf;
@@ -131,10 +125,6 @@ again:
 	u->out_last = newlast;
 	uartx_transmit_start (u);
 
-	if (c == '\n') {
-		c = '\r';
-		goto again;
-	}
 	mutex_unlock (&u->transmitter);
 }
 
@@ -176,19 +166,16 @@ static void
 uartx_interrupt (uartx_t *u)
 {
 	u->lsr = UARTX_LSR (u->port);
-/*debug_printf ("lsr%d=%02x; ", u->port, u->lsr);*/
+	/*debug_printf ("lsr%d=%02x; ", u->port, u->lsr);*/
 
 	if (u->lsr & MC_LSR_FE) {
 		u->frame_errors++;
-		/*debug_printf ("FRAME ERROR\n");*/
 	}
 	if (u->lsr & MC_LSR_PE) {
 		u->parity_errors++;
-		/*debug_printf ("PARITY ERROR\n");*/
 	}
 	if (u->lsr & MC_LSR_OE) {
 		u->overruns++;
-		/*debug_printf ("RECEIVE OVERRUN\n");*/
 	}
 	if (u->lsr & MC_LSR_BI) {
 		/*debug_printf ("BREAK DETECTED\n");*/
@@ -199,7 +186,6 @@ uartx_interrupt (uartx_t *u)
 	 * and get the received byte. */
 	if (u->lsr & MC_LSR_RXRDY) {
 		unsigned c = UARTX_RBR (u->port);
-/*debug_printf ("%02x", c);*/
 
 		unsigned char *newlast = u->in_last + 1;
 		if (newlast >= u->in_buf + UART_INBUFSZ)
@@ -209,7 +195,8 @@ uartx_interrupt (uartx_t *u)
 		if (u->in_first != newlast) {
 			*u->in_last = c;
 			u->in_last = newlast;
-		}
+		} else
+			u->overruns++;
 		mutex_signal (&u->receiver, 0);
 	}
 }
