@@ -10,9 +10,13 @@ void udelay (unsigned usec)
 
 	if (! usec)
 		return;
-
 	nloops = (usec * (KHZ / 1000) + 7) >> 3;
+#ifdef BOOT_FLASH_8BIT
+	/* 8-bit flash memory is slower. */
+	nloops = (nloops + 31) >> 5;
+#endif
 	do {
+		asm volatile ("nop");
 		asm volatile ("nop");
 		asm volatile ("nop");
 		asm volatile ("nop");
