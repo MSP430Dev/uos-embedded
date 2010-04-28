@@ -27,6 +27,9 @@ clean:
 load:		$(CURRENT).srec
 		mcprog $(CURRENT).srec
 
+gdb:		$(CURRENT).out
+		arm-elf-gdb -x gdbinit $(CURRENT).out
+
 include $(OS)/sources/rules.mak
 
 ###

@@ -1,0 +1,16 @@
+file test-fpu.out
+#set debug remote 1
+#set debug arch 1
+#set debug mips 1
+target remote localhost:2000
+set remote hardware-breakpoint-limit 2
+set remote hardware-watchpoint-limit 2
+
+#b os_halt
+
+define as
+set $oldpc = $pc
+si
+x/3i $oldpc
+i reg
+end

@@ -1,0 +1,2 @@
+file test_lcd.out
+target remote localhost:2000
