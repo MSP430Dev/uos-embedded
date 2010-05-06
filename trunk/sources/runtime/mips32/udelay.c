@@ -8,8 +8,6 @@
 
 /* Specialization for Elvees MC-24 */
 
-#include <runtime/mips32/io.h>
-
 #define TIME_BEFORE(unknown, known) ((long)(unknown) - (long)(known) < 0)
 
 void udelay (unsigned usec)
