@@ -1,7 +1,7 @@
 #ifdef __cplusplus
-# define __MATH_INLINE	__inline
+# define __MATH_INLINE	__inline __attribute__((always_inline))
 #else
-# define __MATH_INLINE	extern __inline
+# define __MATH_INLINE	extern __inline __attribute__((always_inline))
 #endif
 
 __MATH_INLINE float sqrtf (float x)
