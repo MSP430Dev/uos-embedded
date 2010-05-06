@@ -1,4 +1,5 @@
 #define MC_HAVE_SPORT
+#define MC_HAVE_SWIC
 
 /*
  * Hardware register defines for Elvees MC-24 microcontroller.
@@ -178,8 +179,108 @@
 #define MC_MRCE(n)	MC_R (0x5024+(n<<12))	/* Выбор канала для сравнения принимаемых данных */
 #endif
 
+/*
+ * Регистры интерфейсов Space Wire, размещенных в контроллере (SWIC0, SWIC1)
+ */
 #ifdef MC_HAVE_SWIC
-TODO
+/* SWIC0 */
+#define MC_SWIC0_HW_VER		MC_R (0x5000)	/* Регистр аппаратной версии контроллера */
+#define MC_SWIC0_STATUS		MC_R (0x5004)	/* Регистр состояния */
+#define MC_SWIC0_RX_CODE	MC_R (0x5008)	/* Регистр принятого управляющего символа */
+#define MC_SWIC0_MODE_CR	MC_R (0x500C)	/* Регистр управления режимом работы */
+#define MC_SWIC0_TX_SPEED	MC_R (0x5010)	/* Регистр управления скоростью передачи */
+#define MC_SWIC0_TX_CODE	MC_R (0x5014)	/* Регистр передаваемого управляющего символа */
+#define MC_SWIC0_RX_SPEED	MC_R (0x5018)	/* Регистр измерителя скорости приема */
+#define MC_SWIC0_CNT_RX_PACK	MC_R (0x501C)	/* Регистр счетчика принятых пакетов ненулевой длины */
+#define MC_SWIC0_CNT_RX0_PACK	MC_R (0x5020)	/* Регистр счетчика принятых пакетов нулевой длины */
+#define MC_SWIC0_ISR_L		MC_R (0x5024)	/* Регистр кодов распределенных прерываний (младшая часть) */
+#define MC_SWIC0_ISR_H		MC_R (0x5028)	/* Регистр кодов распределенных прерываний (старшая часть) */
+/* SWIC1 */
+#define MC_SWIC1_HW_VER		MC_R (0x6000)	/* Регистр аппаратной версии контроллера */
+#define MC_SWIC1_STATUS		MC_R (0x6004)	/* Регистр состояния */
+#define MC_SWIC1_RX_CODE	MC_R (0x6008)	/* Регистр принятого управляющего символа */
+#define MC_SWIC1_MODE_CR	MC_R (0x600C)	/* Регистр управления режимом работы */
+#define MC_SWIC1_TX_SPEED	MC_R (0x6010)	/* Регистр управления скоростью передачи */
+#define MC_SWIC1_TX_CODE	MC_R (0x6014)	/* Регистр передаваемого управляющего символа */
+#define MC_SWIC1_RX_SPEED	MC_R (0x6018)	/* Регистр измерителя скорости приема */
+#define MC_SWIC1_CNT_RX_PACK	MC_R (0x601C)	/* Регистр счетчика принятых пакетов ненулевой длины */
+#define MC_SWIC1_CNT_RX0_PACK	MC_R (0x6020)	/* Регистр счетчика принятых пакетов нулевой длины */
+#define MC_SWIC1_ISR_L		MC_R (0x6024)	/* Регистр кодов распределенных прерываний (младшая часть) */
+#define MC_SWIC1_ISR_H		MC_R (0x6028)	/* Регистр кодов распределенных прерываний (старшая часть) */
+
+/* 
+ * Маски для установки отдельных полей регистров
+ */
+
+/* STATUS */
+#define MC_SWIC_DC_ERR		0x00000001	/* Признак ошибки рассоединения */
+#define MC_SWIC_P_ERR		0x00000002	/* Признак ошибки четности */
+#define MC_SWIC_ESC_ERR		0x00000004	/* Признак ошибки в ESC-последовательности */
+#define MC_SWIC_CREDIT_ERR	0x00000008	/* Признак ошибки кредитования */
+#define MC_SWIC_DS_STATE	0x000000E0	/* Состояние DS-макроячейки */
+#define MC_SWIC_RX_BUF_FULL	0x00000100	/* Буфер приема полон */
+#define MC_SWIC_RX_BUF_EMPTY	0x00000200	/* Буфер приема пуст */
+#define MC_SWIC_TX_BUF_FULL	0x00000400	/* Буфер передачи полон */
+#define MC_SWIC_TX_BUF_EMPTY	0x00000800	/* Буфер передачи пуст */
+#define MC_SWIC_CONNECTED	0x00001000	/* Признак установленного соединения */
+#define MC_SWIC_GOT_TIME	0x00004000	/* Принят маркер времени из сети */
+#define MC_SWIC_GOT_INT		0x00008000	/* Принят код распределенного прерывания из сети */
+#define	MC_SWIC_GOT_POLL	0x00010000	/* Принят poll-код из сети */
+#define MC_SWIC_FL_CONTROL	0x00020000	/* Признак занятости передачей управляющего кода */
+#define MC_SWIC_IRQ_LINK	0x00040000	/* Состояние запроса прерырывания LINK */
+#define MC_SWIC_IRQ_TIM		0x00080000	/* Состояние запроса прерырывания TIM */
+#define MC_SWIC_IRQ_ERR		0x00100000	/* Состояние запроса прерырывания ERR */
+
+/* Значения поля DS_STATE регистра STATUS */
+#define MC_SWIC_DS_ERROR_RESET	0
+#define MC_SWIC_DS_ERROR_WAIT	1
+#define MC_SWIC_DS_READY	2
+#define MC_SWIC_DS_STARTED	3
+#define MC_SWIC_DS_CONNECTING	4
+#define MC_SWIC_DS_RUN		5
+
+/* RX_CODE */
+#define MC_SWIC_TIME_CODE	0x000000FF	/* Значение маркера времени, принятого из сети последним */
+#define MC_SWIC_INT_CODE	0x0000FF00	/* Значение кода распределенного прерывания, принятого из сети последним */
+#define MC_SWIC_POLE_CODE	0x00FF0000	/* Значение poll-кода, принятого из сети последним */
+
+/* MODE_CR */
+#define MC_SWIC_LinkDisabled	0x00000001	/* Установка LinkDisabled для блока DS-кодирования */
+#define MC_SWIC_AutoStart	0x00000002	/* Установка AutoStart для блока DS-кодирования */
+#define MC_SWIC_LinkStart	0x00000004	/* Установка LinkStart для блока DS-кодирования */
+#define MC_SWIC_RX_RST		0x00000008	/* Установка блока приема в начальное состояние */
+#define MC_SWIC_TX_RST		0x00000010	/* Установка блока передачи в начальное состояние */
+#define MC_SWIC_DS_RST		0x00000020	/* Установка DS-макроячейки в начальное состояние */
+#define MC_SWIC_SWCORE_RST	0x00000040	/* Установка контроллера в начальное состояние */
+#define MC_SWIC_WORK_TYPE	0x00000100	/* Тип режима работы */
+#define MC_SWIC_LINK_MASK	0x00040000	/* Маска прерывания LINK */
+#define MC_SWIC_TIM_MASK	0x00080000	/* Маска прерывания TIM */
+#define MC_SWIC_ERR_MASK	0x00100000	/* Маска прерывания ERR */
+
+/* TX_SPEED */
+#define MC_SWIC_TXSPEED		0x000000FF	/* Установка коэффициента умножения TX_PLL */
+#define MC_SWIC_PLL_CTR		0x00000300	/* Разрешение работы TX_PLL */
+
+/* TX_CODE */
+#define MC_SWIC_TXCODE		0x0000001F	/* Управляющий код (содержимое) */
+#define MC_SWIC_CODETYPE	0x000000E0	/* Признак кода управления */
+
+/* Значение поля CODETYPE регистра TX_CODE */
+#define MC_SWIC_CODETYPE_TIME	2
+#define MC_SWIC_CODETYPE_INT	3
+#define MC_SWIC_CODETYPE_POLL	5
+
+
+#define MC_SWIC_STATUS_BITS "\20"\
+"\1DC_ERR\2P_ERR\3ESC_ERR\4CREDIT_ERR\6DS_STATE0\7DS_STATE1\10DS_STATE2"\
+"\11RX_BUF_FULL\12RX_BUF_EMPTY\13TX_BUF_FULL\14TX_BUF_EMPTY\15CONNECTED"\
+"\17GOT_TIME\20GOT_INT\21GOT_POLL\22FL_CONTROL\23IRQ_LINK\24IRQ_TIM\25IRQ_ERR"
+
+#define MC_SWIC_MODE_CR_BITS "\20"\
+"\1LinkDisabled\2AutoStart\3LinkStart\4RX_RST\5TX_RST\6DS_RST\7SWCORE_RST"\
+"\11WORK_TYPE\12TX_single\13RX_single\14LVDS_Loopback\15CODEC_Loopback"\
+"\16DS_Loopback\21LINK_MASK\24TIM_MASK\25ERR_MASK"
+
 #endif
 
 /*
