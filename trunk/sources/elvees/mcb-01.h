@@ -33,8 +33,8 @@
 #define  MCB_PCI_STATUS_DETECTED_PARITY 0x80000000	/* Ошибка четности при приме данных из PCI */
 
 #define MCB_PCI_CLASS_REVISION	MCB_PMSC_REG (0x08)	/* Регистр кода */
-#define MCB_PCI_CACHE_LINE_SIZE	MCB_PMSC_REG (0x0c)	/* Таймер времени передачи (MLT) */
-#define MCB_PCI_BASE_ADDRESS_0	MCB_PMSC_REG (0x10)	/* Базовый адрес */
+#define MCB_PCI_LATENCY_TIMER	MCB_PMSC_REG (0x0c)	/* Таймер времени передачи (MLT) */
+#define MCB_PCI_BAR		MCB_PMSC_REG (0x10)	/* Базовый адрес 0 */
 #define MCB_PCI_SUBSYSTEM_VENDOR_ID MCB_PMSC_REG (0x2c)	/* Идентификация подсистемы */
 #define MCB_PCI_INTERRUPT_LINE	MCB_PMSC_REG (0x3c)	/* Код прерывания */
 #define MCB_PCI_SEM		MCB_PMSC_REG (0x44)	/* Семафор */
