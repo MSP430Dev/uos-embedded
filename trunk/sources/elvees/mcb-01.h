@@ -42,7 +42,7 @@
 
 #define MCB_PCI_CSR_PCI		MCB_PMSC_REG (0x4C)	/* Управление шиной PCI */
 #define  MCB_PCI_CSR_PCI_INTA		0x00000001	/* Формирование прерывания INTA */
-#define  MCB_PCI_CSR_PCI_WN		0x0000003e	/* Уровень FIFO записи в память, исходно 8 */
+#define  MCB_PCI_CSR_PCI_WN(n)		((n) << 1)	/* Уровень FIFO записи в память, исходно 8 */
 #define  MCB_PCI_CSR_PCI_TESTPERR	0x00000040	/* Принудительное формирование сигнала nPERR */
 #define  MCB_PCI_CSR_PCI_TESTPAR	0x00000080	/* Инвертирование сигнала PAR */
 #define  MCB_PCI_CSR_PCI_MLTOVER	0x00010000	/* Признак срабатывания Latency Timer */
@@ -63,7 +63,7 @@
 #define  MCB_PCI_CSR_MASTER_CFGREAD	0x00000014	/* Configuration Read */
 #define  MCB_PCI_CSR_MASTER_CFGWRITE	0x00000016	/* Configuration Write */
 #define  MCB_PCI_CSR_MASTER_DONE	0x00008000	/* Признак завершения передачи */
-#define  MCB_PCI_CSR_MASTER_WC		0xffff0000	/* Счетчик слов DMA обмена */
+#define  MCB_PCI_CSR_MASTER_WC(n)	((n) << 16)	/* Счетчик слов DMA обмена */
 
 #define MCB_PCI_IR_MASTER	MCB_PMSC_REG (0x54)	/* Индексный регистр адреса памяти при обмене в режиме Master */
 #define MCB_PCI_AR_PCI		MCB_PMSC_REG (0x58)	/* Адресный регистр PCI */

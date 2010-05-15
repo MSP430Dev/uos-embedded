@@ -1,21 +1,9 @@
-#include <elvees/mcb-01.h>
-
 /*
  * Обмен данными с шиной PCI в режиме Master
- *
- * В режиме Master на шине PCI могут выполняться команды:
- *	I/O Read,
- *	I/O Write,
- *	Memory Read,
- *	Memory Write,
- *	Configuration Read,
- *	Configuration Write
- * В зависимости от содержимого разрядов AR_PCI[1:0] могут выполняться
- * конфигурационные операции Type 0 и Type 1.
- * Код выполняемой команды определяется полем CMD регистра CSR_Master.
- * Для разрешения режима Master необходимо в регистре Status/Command установить бит
- * Bus Master=1.
  */
+#include <runtime/lib.h>
+#include <elvees/mcb-01.h>
+
 void pci_init ()
 {
 //	device_id = MCB_PCI_DEVICE_VENDOR_ID;		/* Идентификация устройства */
@@ -80,10 +68,10 @@ retry:
 
 	/* После завершения выполнения транзакции необходимо проверить
 	 * состояние битов регистра CSR_PCI. */
-	csr_pci = MCB_PCI_CSR_PCI;
+	unsigned csr_pci = MCB_PCI_CSR_PCI;
 	if (csr_pci & (MCB_PCI_CSR_PCI_NOTRDY |
 	    MCB_PCI_CSR_PCI_NOGNT | MCB_PCI_CSR_PCI_TARGET_ABORT |
-	    MCB_PCI_CSR_PCI_MASTER_ABORT) {
+	    MCB_PCI_CSR_PCI_MASTER_ABORT)) {
 		/* Если хотя бы один бит No Trdy, No Gnt, Target Abort,
 		 * Master Abort не равен нулю, то этот обмен данными
 		 * невозможно выполнить. */
@@ -95,7 +83,6 @@ retry:
 		 * то передача данных завершена нормально. */
 		 return 1;
 	}
-
 	if (csr_pci & MCB_PCI_CSR_PCI_RETRY) {
 		/* Если Retry=1, то необходимо повторить транзакцию,
 		 * восстановив первоначальное содержимое регистров
@@ -147,10 +134,10 @@ wait:
 
 	/* После завершения выполнения транзакции необходимо проверить
 	 * состояние битов регистра CSR_PCI. */
-	csr_pci = MCB_PCI_CSR_PCI;
+	unsigned csr_pci = MCB_PCI_CSR_PCI;
 	if (csr_pci & (MCB_PCI_CSR_PCI_NOTRDY |
 	    MCB_PCI_CSR_PCI_NOGNT | MCB_PCI_CSR_PCI_TARGET_ABORT |
-	    MCB_PCI_CSR_PCI_MASTER_ABORT) {
+	    MCB_PCI_CSR_PCI_MASTER_ABORT)) {
 		/* Если хотя бы один бит No Trdy, No Gnt, Target Abort,
 		 * Master Abort не равен нулю, то этот обмен данными
 		 * невозможно выполнить. */
@@ -162,7 +149,6 @@ wait:
 		 * то передача данных завершена нормально. */
 		 return 1;
 	}
-
 	if (csr_pci & MCB_PCI_CSR_PCI_RETRY) {
 		/* Если Retry=1, то необходимо повторить транзакцию,
 		 * восстановив первоначальное содержимое регистров
