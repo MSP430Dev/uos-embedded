@@ -2,6 +2,7 @@
  * Обмен данными с шиной PCI в режиме Master
  */
 #include <runtime/lib.h>
+#include <elvees/pci.h>
 #include <elvees/mcb-01.h>
 
 void pci_init ()
@@ -30,7 +31,7 @@ void pci_init ()
  * Чтение/запись конфигурационых регистров PCI-устройства.
  * Параметр cmd задаёт тип операции: MCB_PCI_CSR_MASTER_CFGREAD
  * или MCB_PCI_CSR_MASTER_CFGWRITE.
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_cfg_transaction (unsigned cmd, unsigned local_addr,
 	unsigned cfgtype, unsigned funreg, unsigned idsel)
@@ -99,7 +100,7 @@ retry:
  *	MCB_PCI_CSR_MASTER_IOWRITE
  *	MCB_PCI_CSR_MASTER_MEMREAD
  *	MCB_PCI_CSR_MASTER_MEMWRITE
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_data_transaction (unsigned cmd, unsigned local_addr,
 	unsigned pci_addr, unsigned nwords)
@@ -181,7 +182,7 @@ wait:
 
 /*
  * Чтение конфигурационых регистров PCI-устройства.
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_cfg_read (unsigned dev, unsigned function, unsigned reg,
 	unsigned *result)
@@ -197,7 +198,7 @@ int pci_cfg_read (unsigned dev, unsigned function, unsigned reg,
 
 /*
  * Запись конфигурационых регистров PCI-устройства.
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_cfg_write (unsigned dev, unsigned function, unsigned reg,
 	unsigned value)
@@ -213,7 +214,7 @@ int pci_cfg_write (unsigned dev, unsigned function, unsigned reg,
 
 /*
  * Чтение 32-битного слова из i/o-пространства PCI-устройства.
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_io_read (unsigned addr, unsigned *result)
 {
@@ -227,7 +228,7 @@ int pci_io_read (unsigned addr, unsigned *result)
 
 /*
  * Запись 32-битного слова в i/o-пространство PCI-устройства.
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_io_write (unsigned addr, unsigned value)
 {
@@ -241,7 +242,7 @@ int pci_io_write (unsigned addr, unsigned value)
 
 /*
  * Чтение массива 32-битных слов из памяти PCI-устройства.
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_mem_read (unsigned addr, unsigned *data, unsigned nwords)
 {
@@ -255,7 +256,7 @@ int pci_mem_read (unsigned addr, unsigned *data, unsigned nwords)
 
 /*
  * Запись массива 32-битных слов в память PCI-устройства.
- * Вохвращает 0 в случае фатальной ощибки.
+ * Возвращает 0 в случае фатальной ощибки.
  */
 int pci_mem_write (unsigned addr, unsigned *data, unsigned nwords)
 {

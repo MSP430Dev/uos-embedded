@@ -20,6 +20,16 @@ _reset_vector_:	.globl	_reset_vector_
 		j	_init_				# Jump to _init_()
 		lui	$gp, 0xb800			# Set global pointer (delay slot)
 
+#ifdef BOOT_CHECKSUM
+#
+# Длина и контрольная сумма flash-памяти по адресу 0xBFC00020.
+# Заполняется утилитой загрузки mcprog.
+#
+		.org	0x020
+		.word	0				# Длина в байтах
+		.word	0				# Контрольная сумма
+#endif
+
 #---------------------------------------
 # Macro: save all registers in stack
 #

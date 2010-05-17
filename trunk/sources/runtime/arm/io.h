@@ -5,7 +5,10 @@
 #	include <runtime/arm/io-net50.h>
 #endif
 #ifdef ARM_AT91SAM
-#include <runtime/arm/io-at91sam.h>
+#	include <runtime/arm/io-at91sam.h>
+#endif
+#ifdef ARM_1986BE9
+#	include <runtime/arm/io-1896be9x.h>
 #endif
 
 /*
