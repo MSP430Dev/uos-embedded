@@ -183,4 +183,45 @@ mips32_count_leading_zeroes (unsigned x)
 	return n;
 }
 
+/*
+ * Translate virtual address to physical one
+ */
+static unsigned int inline
+mips32_virtual_addr_to_physical (unsigned int virt)
+{
+	unsigned segment_desc = virt >> 28;
+	if (segment_desc <= 0x7) {
+		// kuseg
+		if (mips32_read_c0_register(C0_STATUS) & ST_ERL) {
+			// ERL == 1, адрес не меняется
+			return virt;
+		} else {
+			// ERL == 0, выясняем тип адресации
+			if (MC_CSR & MC_CSR_FM) {
+				// Тип адресации Fixed-mapped
+				return (virt + 0x40000000);
+			} else {
+				// Тип адресации TLB - адрес определяется по TLB
+				return virt;
+			}
+		}
+	} else {
+		// kseg0, или kseg1, или kseg2, или kseg3
+		if (segment_desc <= 0xb) {
+			// kseg0 или kseg1, сбрасываем три старших разряда
+			return (virt & 0x1fffffff);
+		} else {
+			// kseg2 или kseg3, выясняем тип адресации
+			if (MC_CSR & MC_CSR_FM) {
+				// Тип адресации Fixed-mapped - адрес не меняется
+				return virt;
+			} else {
+				// Тип адресации TLB - адрес определяется по TLB
+				return virt;
+			}
+		}
+	}
+}
+
+
 #endif /* __ASSEMBLER__ */

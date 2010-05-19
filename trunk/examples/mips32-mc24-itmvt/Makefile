@@ -9,10 +9,18 @@ TESTS		= test_task.srec test_timer.srec test_uart.srec philosophers.srec
 TESTS		+= test_ram.srec
 #TESTS		+= test_tcp_server.srec test_tcp_client.srec
 
-all:		$(TESTS)
+PROGRAM		= sample_control
+OBJS		= sample_control.o Sample_Control_Law.o
+
+all:		$(PROGRAM) $(TESTS)
 		$(SIZE) --target=srec *.srec
 
 $(TESTS):	startup.o libuos.a
+
+$(PROGRAM):	$(OBJS) startup.o libuos.a
+		$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $(PROGRAM).out
+		$(OBJCOPY) -O srec $(PROGRAM).out $(PROGRAM).srec
+		@chmod -x $(PROGRAM).srec
 
 clean:
 		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)

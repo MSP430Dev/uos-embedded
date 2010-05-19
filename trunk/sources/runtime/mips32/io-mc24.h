@@ -183,30 +183,18 @@
  * Регистры интерфейсов Space Wire, размещенных в контроллере (SWIC0, SWIC1)
  */
 #ifdef MC_HAVE_SWIC
-/* SWIC0 */
-#define MC_SWIC0_HW_VER		MC_R (0x5000)	/* Регистр аппаратной версии контроллера */
-#define MC_SWIC0_STATUS		MC_R (0x5004)	/* Регистр состояния */
-#define MC_SWIC0_RX_CODE	MC_R (0x5008)	/* Регистр принятого управляющего символа */
-#define MC_SWIC0_MODE_CR	MC_R (0x500C)	/* Регистр управления режимом работы */
-#define MC_SWIC0_TX_SPEED	MC_R (0x5010)	/* Регистр управления скоростью передачи */
-#define MC_SWIC0_TX_CODE	MC_R (0x5014)	/* Регистр передаваемого управляющего символа */
-#define MC_SWIC0_RX_SPEED	MC_R (0x5018)	/* Регистр измерителя скорости приема */
-#define MC_SWIC0_CNT_RX_PACK	MC_R (0x501C)	/* Регистр счетчика принятых пакетов ненулевой длины */
-#define MC_SWIC0_CNT_RX0_PACK	MC_R (0x5020)	/* Регистр счетчика принятых пакетов нулевой длины */
-#define MC_SWIC0_ISR_L		MC_R (0x5024)	/* Регистр кодов распределенных прерываний (младшая часть) */
-#define MC_SWIC0_ISR_H		MC_R (0x5028)	/* Регистр кодов распределенных прерываний (старшая часть) */
-/* SWIC1 */
-#define MC_SWIC1_HW_VER		MC_R (0x6000)	/* Регистр аппаратной версии контроллера */
-#define MC_SWIC1_STATUS		MC_R (0x6004)	/* Регистр состояния */
-#define MC_SWIC1_RX_CODE	MC_R (0x6008)	/* Регистр принятого управляющего символа */
-#define MC_SWIC1_MODE_CR	MC_R (0x600C)	/* Регистр управления режимом работы */
-#define MC_SWIC1_TX_SPEED	MC_R (0x6010)	/* Регистр управления скоростью передачи */
-#define MC_SWIC1_TX_CODE	MC_R (0x6014)	/* Регистр передаваемого управляющего символа */
-#define MC_SWIC1_RX_SPEED	MC_R (0x6018)	/* Регистр измерителя скорости приема */
-#define MC_SWIC1_CNT_RX_PACK	MC_R (0x601C)	/* Регистр счетчика принятых пакетов ненулевой длины */
-#define MC_SWIC1_CNT_RX0_PACK	MC_R (0x6020)	/* Регистр счетчика принятых пакетов нулевой длины */
-#define MC_SWIC1_ISR_L		MC_R (0x6024)	/* Регистр кодов распределенных прерываний (младшая часть) */
-#define MC_SWIC1_ISR_H		MC_R (0x6028)	/* Регистр кодов распределенных прерываний (старшая часть) */
+
+#define MC_SWIC_HW_VER(n)	MC_R (0x5000 + (n<<12))	/* Регистр аппаратной версии контроллера */
+#define MC_SWIC_STATUS(n)	MC_R (0x5004 + (n<<12))	/* Регистр состояния */
+#define MC_SWIC_RX_CODE(n)	MC_R (0x5008 + (n<<12))	/* Регистр принятого управляющего символа */
+#define MC_SWIC_MODE_CR(n)	MC_R (0x500C + (n<<12))	/* Регистр управления режимом работы */
+#define MC_SWIC_TX_SPEED(n)	MC_R (0x5010 + (n<<12))	/* Регистр управления скоростью передачи */
+#define MC_SWIC_TX_CODE(n)	MC_R (0x5014 + (n<<12))	/* Регистр передаваемого управляющего символа */
+#define MC_SWIC_RX_SPEED(n)	MC_R (0x5018 + (n<<12))	/* Регистр измерителя скорости приема */
+#define MC_SWIC_CNT_RX_PACK(n)	MC_R (0x501C + (n<<12))	/* Регистр счетчика принятых пакетов ненулевой длины */
+#define MC_SWIC_CNT_RX0_PACK(n)	MC_R (0x5020 + (n<<12))	/* Регистр счетчика принятых пакетов нулевой длины */
+#define MC_SWIC_ISR_L(n)	MC_R (0x5024 + (n<<12))	/* Регистр кодов распределенных прерываний (младшая часть) */
+#define MC_SWIC_ISR_H(n)	MC_R (0x5028 + (n<<12))	/* Регистр кодов распределенных прерываний (старшая часть) */
 
 /* 
  * Маски для установки отдельных полей регистров
@@ -270,6 +258,18 @@
 #define MC_SWIC_CODETYPE_INT	3
 #define MC_SWIC_CODETYPE_POLL	5
 
+/* Прерывания для SWIC */
+#define MC_SWIC0_IRQ		5
+#define MC_SWIC0_TX_DESC_IRQ	0
+#define MC_SWIC0_TX_DATA_IRQ	1
+#define MC_SWIC0_RX_DESC_IRQ	2
+#define MC_SWIC0_RX_DATA_IRQ	3
+#define MC_SWIC1_IRQ		6
+#define MC_SWIC1_TX_DESC_IRQ	15
+#define MC_SWIC1_TX_DATA_IRQ	16
+#define MC_SWIC1_RX_DESC_IRQ	17
+#define MC_SWIC1_RX_DATA_IRQ	18
+
 
 #define MC_SWIC_STATUS_BITS "\20"\
 "\1DC_ERR\2P_ERR\3ESC_ERR\4CREDIT_ERR\6DS_STATE0\7DS_STATE1\10DS_STATE2"\
@@ -286,20 +286,56 @@
 /*
  * Регистры DMA
  */
-/* Каналы SpTx0, SpTx1 */
-#define MC_CSR_SPTX(n)	MC_R (0x0000+(n<<9))	/* Регистр управления и состояния */
-#define MC_CP_SPTX(n)	MC_R (0x0008+(n<<9))	/* Регистр указателя цепочки */
-#define MC_IR_SPTX(n)	MC_R (0x000C+(n<<9))	/* Индексный регистр памяти */
-#define MC_OR_SPTX(n)	MC_R (0x0010+(n<<9))	/* Регистр смещения памяти */
-#define MC_Y_SPTX(n)	MC_R (0x0014+(n<<9))	/* Регистр параметров направления Y при
+
+/* Каналы записи в память дескрипторов принимаемых пакетов SpaceWire */
+#define MC_SWIC_RX_DESC_CSR(n)	MC_R (0x0200 + (n<<8))	/* Регистр управления и состояния */
+#define MC_SWIC_RX_DESC_CP(n)	MC_R (0x0208 + (n<<8))	/* Регистр указателя цепочки */
+#define MC_SWIC_RX_DESC_IR(n)	MC_R (0x020C + (n<<8))	/* Индексный регистр памяти */
+#define MC_SWIC_RX_DESC_OR(n)	MC_R (0x0210 + (n<<8))	/* Регистр смещения памяти */
+#define MC_SWIC_RX_DESC_Y(n)	MC_R (0x0214 + (n<<8))	/* Регистр параметров направления Y при
 							 * двухмерной адресации памяти */
-/* Каналы SpRx0, SpRx1 */
-#define MC_CSR_SPRX(n)	MC_R (0x0100+(n<<9))	/* Регистр управления и состояния */
-#define MC_CP_SPRX(n)	MC_R (0x0108+(n<<9))	/* Регистр указателя цепочки */
-#define MC_IR_SPRX(n)	MC_R (0x010C+(n<<9))	/* Индексный регистр памяти */
-#define MC_OR_SPRX(n)	MC_R (0x0110+(n<<9))	/* Регистр смещения памяти */
-#define MC_Y_SPRX(n)	MC_R (0x0114+(n<<9))	/* Регистр параметров направления Y при
+#define MC_SWIC_RX_DESC_RUN(n)	MC_R (0x0218 + (n<<8))	/* Псевдорегистр управления состоянием бита RUN */
+
+/* Каналы записи в память принимаемых слов данных SpaceWire */
+#define MC_SWIC_RX_DATA_CSR(n)	MC_R (0x0240 + (n<<8))	/* Регистр управления и состояния */
+#define MC_SWIC_RX_DATA_CP(n)	MC_R (0x0248 + (n<<8))	/* Регистр указателя цепочки */
+#define MC_SWIC_RX_DATA_IR(n)	MC_R (0x024C + (n<<8))	/* Индексный регистр памяти */
+#define MC_SWIC_RX_DATA_OR(n)	MC_R (0x0250 + (n<<8))	/* Регистр смещения памяти */
+#define MC_SWIC_RX_DATA_Y(n)	MC_R (0x0254 + (n<<8))	/* Регистр параметров направления Y при
 							 * двухмерной адресации памяти */
+#define MC_SWIC_RX_DATA_RUN(n)	MC_R (0x0258 + (n<<8))	/* Псевдорегистр управления состоянием бита RUN */
+
+/* Каналы чтения из памяти дескрипторов передаваемых пакетов SpaceWire */
+#define MC_SWIC_TX_DESC_CSR(n)	MC_R (0x0280 + (n<<8))	/* Регистр управления и состояния */
+#define MC_SWIC_TX_DESC_CP(n)	MC_R (0x0288 + (n<<8))	/* Регистр указателя цепочки */
+#define MC_SWIC_TX_DESC_IR(n)	MC_R (0x028C + (n<<8))	/* Индексный регистр памяти */
+#define MC_SWIC_TX_DESC_OR(n)	MC_R (0x0290 + (n<<8))	/* Регистр смещения памяти */
+#define MC_SWIC_TX_DESC_Y(n)	MC_R (0x0294 + (n<<8))	/* Регистр параметров направления Y при
+							 * двухмерной адресации памяти */
+#define MC_SWIC_TX_DESC_RUN(n)	MC_R (0x0298 + (n<<8))	/* Псевдорегистр управления состоянием бита RUN */
+
+/* Каналы чтения из памяти передаваемых слов данных SpaceWire */
+#define MC_SWIC_TX_DATA_CSR(n)	MC_R (0x02C0 + (n<<8))	/* Регистр управления и состояния */
+#define MC_SWIC_TX_DATA_CP(n)	MC_R (0x02C8 + (n<<8))	/* Регистр указателя цепочки */
+#define MC_SWIC_TX_DATA_IR(n)	MC_R (0x02CC + (n<<8))	/* Индексный регистр памяти */
+#define MC_SWIC_TX_DATA_OR(n)	MC_R (0x02D0 + (n<<8))	/* Регистр смещения памяти */
+#define MC_SWIC_TX_DATA_Y(n)	MC_R (0x02D4 + (n<<8))	/* Регистр параметров направления Y при
+							 * двухмерной адресации памяти */
+#define MC_SWIC_TX_DATA_RUN(n)	MC_R (0x02D8 + (n<<8))	/* Псевдорегистр управления состоянием бита RUN */
+
+/* Регистр CSR для каналов DMA */
+#define MC_DMA_CSR_RUN		0x00000001	/* Состояние работы канала DMA */
+#define MC_DMA_CSR_2D		0x00000200	/* Режим модификации адреса памяти */
+#define MC_DMA_CSR_CHEN		0x00001000	/* Признак разрешения самоинициализации */
+#define MC_DMA_CSR_IM		0x00002000	/* Маска прерывания при окончании передачи блока */
+#define MC_DMA_CSR_END		0x00004000	/* Признак завершения передачи блока данных */
+#define MC_DMA_CSR_DONE		0x00008000	/* Признак завершения передачи цепочки блоков данных */
+#define MC_DMA_CSR_WCX_MASK	0xffff0000	/* Маска счетчика слов */
+#define MC_DMA_CSR_WCX(n)	(n << 16)	/* Установка счетчика слов */
+
+/* Псевдорегистр управления RUN */
+#define MC_DMA_PSEUDO_RUN_MASK	0x00000001	/* Бит управления битом RUN */
+
 /* Каналы LpCh0...LpCh3 */
 #define MC_CSR_LPCH(n)	MC_R (0x0400+(n<<8))	/* Регистр управления и состояния */
 #define MC_CP_LPCH(n)	MC_R (0x0408+(n<<8))	/* Регистр указателя цепочки */
@@ -351,6 +387,19 @@
 #define MC_MASKR_TIMER		0x20000000	/* timers IT, WDT, RTT */
 #define MC_MASKR_PI		0x40000000	/* DSP software interrupt */
 #define MC_MASKR_SBS		0x80000000	/* DSP status */
+
+/* For MC24RT3 */
+#define MC_MASKR_TxDesCh0	0x00000001	/* TX DESC DMA for SWIC0 */
+#define MC_MASKR_TxDatCh0	0x00000002	/* TX DATA DMA for SWIC0 */
+#define MC_MASKR_RxDesCh0	0x00000004	/* RX DESC DMA for SWIC0 */
+#define MC_MASKR_RxDatCh0	0x00000008	/* RX DATA DMA for SWIC0 */
+#define MC_MASKR_SWIC0		0x00000020	/* SWIC0 */
+#define MC_MASKR_SWIC1		0x00000040	/* SWIC1 */
+#define MC_MASKR_TxDesCh1	0x00008000	/* TX DESC DMA for SWIC1 */
+#define MC_MASKR_TxDatCh1	0x00010000	/* TX DATA DMA for SWIC1 */
+#define MC_MASKR_RxDesCh1	0x00020000	/* RX DESC DMA for SWIC1 */
+#define MC_MASKR_RxDatCh1	0x00040000	/* RX DATA DMA for SWIC1 */
+
 
 /*
  * Регистры порта внешней памяти CSCONi

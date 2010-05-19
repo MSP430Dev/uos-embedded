@@ -1,21 +1,49 @@
 /*
  * Карта памяти микросхемы MCB-01.
  */
-#define MCB_REGISTER(base, reg)	(*(volatile unsigned*) (base | (reg)))
 
-#define MCB_RAM_BASE		0x01000000
-#define MCB_PMSC_REG(r)		MCB_REGISTER (0x01200000, r)
-#define MCB_SWIC_REG(n,r)	MCB_REGISTER (0x01400000 + ((n)<<21), r)
-#define MCB_SWIC_DMA_REG(n,r)	MCB_REGISTER (0x01500000 + ((n)<<21), r)
-#define MCB_MBA_REG(r)		MCB_REGISTER (0x01c00000, r)
+/* 
+ * Чтение/запись памяти и регистров MBA осуществляется с помощью обычного обращения
+ * по адресу, чтение/запись регистров SWIC, PMSC и адресного окна PCI должна
+ * осущестляться только с помощью функций mcb_read_reg/mcb_write_reg.
+ * Для разъяснений см. Руководство пользователя на микросхему 1892ХД1Я, п. 5.3.
+ */
+#define MCB_RAM_BASE			0xaf000000
+#define MCB_MBA_BASE			0xafc00000
+#define MCB_MBA_REG(r)			(*(volatile unsigned*) ((MCB_MBA_BASE) | (r)))
+
+#define MCB_PERIF_REGISTER(base, reg)	((base) | (reg))
+#define MCB_REG_RAM_BASE		0x01000000
+#define MCB_PMSC_REG(r)			MCB_PERIF_REGISTER (0x01200000, r)
+#define MCB_SWIC_REG(n,r)		MCB_PERIF_REGISTER (0x01400000 + ((n)<<21), r)
+#define MCB_SWIC_DMA_REG(n,r)		MCB_PERIF_REGISTER (0x01500000 + ((n)<<21), r)
 
 /*
- * Системные регистры
+ * Регистры MBA
  */
 #define MCB_MBA_QSTR		MCB_MBA_REG (0x0000)	/* Регистр заявок */
 #define MCB_MBA_MASK		MCB_MBA_REG (0x0004)	/* Регистр маски */
 #define MCB_MBA_BDR		MCB_MBA_REG (0x0008)	/* Регистр буферных данных */
 #define MCB_MBA_BUSY		MCB_MBA_REG (0x000c)	/* Регистр признака занятости */
+
+
+inline unsigned 
+mcb_read_reg(unsigned addr)
+{
+	while (MCB_MBA_BUSY);
+	MCB_MBA_BDR = addr;
+	while (MCB_MBA_BUSY);
+	return MCB_MBA_BDR;
+}
+
+inline void
+mcb_write_reg(unsigned addr, unsigned value)
+{
+	volatile unsigned *modif_addr = (unsigned *) (addr | 0xae000000);
+	while (MCB_MBA_BUSY);
+	*modif_addr = value;
+}
+
 
 /*
  * Регистры контроллера PCI
@@ -118,19 +146,27 @@
 /*
  * Регистры Spacewire DMA
  */
-#define MCB_SWIC_OR_RX_DESC(n)	MCB_SWIC_DMA_REG(n,0x10) /* Смещение канала RX_DESC */
-#define MCB_SWIC_IR_RX_DESC(n)	MCB_SWIC_DMA_REG(n,0x0c) /* Индексный регистр канала RX_DESC */
-#define MCB_SWIC_CSR_RX_DESC(n)	MCB_SWIC_DMA_REG(n,0x00) /* Управление и состояние канала RX_DESC */
-#define MCB_SWIC_CP_RX_DESC(n)	MCB_SWIC_DMA_REG(n,0x08) /* Указатель цепочки канала RX_DESC */
-#define MCB_SWIC_OR_RX_DATA(n)	MCB_SWIC_DMA_REG(n,0x30) /* Смещение канала RX_DATA */
-#define MCB_SWIC_IR_RX_DATA(n)	MCB_SWIC_DMA_REG(n,0x2c) /* Индексный регистр канала RX_DATA */
-#define MCB_SWIC_CSR_RX_DATA(n)	MCB_SWIC_DMA_REG(n,0x20) /* Управление и состояние канала RX_DATA */
-#define MCB_SWIC_CP_RX_DATA(n)	MCB_SWIC_DMA_REG(n,0x28) /* Указатель цепочки канала RX_DATA */
-#define MCB_SWIC_OR_TX_DESC(n)	MCB_SWIC_DMA_REG(n,0x50) /* Смещение канала TX_DESC */
-#define MCB_SWIC_IR_TX_DESC(n)	MCB_SWIC_DMA_REG(n,0x4c) /* Индексный регистр канала TX_DESC */
-#define MCB_SWIC_CSR_TX_DESC(n)	MCB_SWIC_DMA_REG(n,0x40) /* Управление и состояние канала TX_DESC */
-#define MCB_SWIC_CP_TX_DESC(n)	MCB_SWIC_DMA_REG(n,0x48) /* Указатель цепочки канала TX_DESC */
-#define MCB_SWIC_OR_TX_DATA(n)	MCB_SWIC_DMA_REG(n,0x70) /* Смещение канала TX_DATA */
-#define MCB_SWIC_IR_TX_DATA(n)	MCB_SWIC_DMA_REG(n,0x6c) /* Индексный регистр канала TX_DATA */
-#define MCB_SWIC_CSR_TX_DATA(n)	MCB_SWIC_DMA_REG(n,0x60) /* Управление и состояние канала TX_DATA */
-#define MCB_SWIC_CP_TX_DATA(n)	MCB_SWIC_DMA_REG(n,0x68) /* Указатель цепочки канала TX_DATA */
+#define MCB_SWIC_RX_DESC_CSR(n)	MCB_SWIC_DMA_REG(n,0x00) /* Управление и состояние канала RX_DESC */
+#define MCB_SWIC_RX_DESC_CP(n)	MCB_SWIC_DMA_REG(n,0x08) /* Указатель цепочки канала RX_DESC */
+#define MCB_SWIC_RX_DESC_IR(n)	MCB_SWIC_DMA_REG(n,0x0c) /* Индексный регистр канала RX_DESC */
+#define MCB_SWIC_RX_DESC_OR(n)	MCB_SWIC_DMA_REG(n,0x10) /* Смещение канала RX_DESC */
+#define MCB_SWIC_RX_DESC_RUN(n)	MCB_SWIC_DMA_REG(n,0x18) /* Псевдорегистр управления битом RUN RX_DESC */
+
+#define MCB_SWIC_RX_DATA_CSR(n)	MCB_SWIC_DMA_REG(n,0x40) /* Управление и состояние канала RX_DATA */
+#define MCB_SWIC_RX_DATA_CP(n)	MCB_SWIC_DMA_REG(n,0x48) /* Указатель цепочки канала RX_DATA */
+#define MCB_SWIC_RX_DATA_IR(n)	MCB_SWIC_DMA_REG(n,0x4c) /* Индексный регистр канала RX_DATA */
+#define MCB_SWIC_RX_DATA_OR(n)	MCB_SWIC_DMA_REG(n,0x50) /* Смещение канала RX_DATA */
+#define MCB_SWIC_RX_DATA_RUN(n)	MCB_SWIC_DMA_REG(n,0x58) /* Псевдорегистр управления битом RUN RX_DATA */
+
+#define MCB_SWIC_TX_DESC_CSR(n)	MCB_SWIC_DMA_REG(n,0x80) /* Управление и состояние канала TX_DESC */
+#define MCB_SWIC_TX_DESC_CP(n)	MCB_SWIC_DMA_REG(n,0x88) /* Указатель цепочки канала TX_DESC */
+#define MCB_SWIC_TX_DESC_IR(n)	MCB_SWIC_DMA_REG(n,0x8c) /* Индексный регистр канала TX_DESC */
+#define MCB_SWIC_TX_DESC_OR(n)	MCB_SWIC_DMA_REG(n,0x90) /* Смещение канала TX_DESC */
+#define MCB_SWIC_TX_DESC_RUN(n)	MCB_SWIC_DMA_REG(n,0x98) /* Псевдорегистр управления битом RUN TX_DESC */
+
+#define MCB_SWIC_TX_DATA_CSR(n)	MCB_SWIC_DMA_REG(n,0xc0) /* Управление и состояние канала TX_DATA */
+#define MCB_SWIC_TX_DATA_CP(n)	MCB_SWIC_DMA_REG(n,0xc8) /* Указатель цепочки канала TX_DATA */
+#define MCB_SWIC_TX_DATA_IR(n)	MCB_SWIC_DMA_REG(n,0xcc) /* Индексный регистр канала TX_DATA */
+#define MCB_SWIC_TX_DATA_OR(n)	MCB_SWIC_DMA_REG(n,0xd0) /* Смещение канала TX_DATA */
+#define MCB_SWIC_TX_DATA_RUN(n)	MCB_SWIC_DMA_REG(n,0xd8) /* Псевдорегистр управления битом RUN TX_DATA */
+

@@ -87,10 +87,14 @@ void __attribute ((noreturn))_init_ (void)
 	MC_ITCSR = 0;
 	MC_RTCSR = 0;
 	MC_WTCSR = 0;
-	MC_CSR_SPTX(0) = 0;
-	MC_CSR_SPTX(1) = 0;
-	MC_CSR_SPRX(0) = 0;
-	MC_CSR_SPRX(1) = 0;
+	MC_SWIC_RX_DESC_CSR(0) = 0;
+	MC_SWIC_RX_DESC_CSR(1) = 0;
+	MC_SWIC_RX_DATA_CSR(0) = 0;
+	MC_SWIC_RX_DATA_CSR(1) = 0;
+	MC_SWIC_TX_DESC_CSR(0) = 0;
+	MC_SWIC_TX_DESC_CSR(1) = 0;
+	MC_SWIC_TX_DATA_CSR(0) = 0;
+	MC_SWIC_TX_DATA_CSR(1) = 0;
 	MC_CSR_LPCH(0) = 0;
 	MC_CSR_LPCH(1) = 0;
 	MC_CSR_LPCH(2) = 0;
@@ -188,6 +192,7 @@ uos_valid_memory_address (void *ptr)
 #endif /* ELVEES_MC24 */
 	return 0;
 }
+
 
 static void dump_of_death (unsigned int context[])
 {
