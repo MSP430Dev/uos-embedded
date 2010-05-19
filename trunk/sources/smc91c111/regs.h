@@ -15,8 +15,8 @@
  * Registers are organized in 4 banks.
  * Most registers are 16 bit wide.
  */
-#define SMC_REG_BASE	0x08000000		/* Using /CS1 */
-#define SMC_DATA_BASE	0x0A000000		/* When A25=1 */
+#define SMC_REG_BASE	0xA8000000		/* Using /CS1 */
+#define SMC_DATA_BASE	0xAA000000		/* When A25=1 */
 
 #define SMC_REG32(x)	(*(unsigned long*)  (SMC_REG_BASE + x))
 #define SMC_REG16(x)	(*(unsigned short*) (SMC_REG_BASE + x))

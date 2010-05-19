@@ -228,10 +228,32 @@ static void dump_of_death (unsigned int context[])
 void _exception_handler_ (unsigned int context[])
 {
 	unsigned int cause, badvaddr, config, prid;
+	const char *code = 0;
 
-	debug_printf ("\n\n*** 0x%08x: exception\n", context [CONTEXT_PC]);
+	debug_printf ("\n\n*** 0x%08x: exception ", context [CONTEXT_PC]);
 
 	cause = mips32_read_c0_register (C0_CAUSE);
+	switch (cause >> 2 & 31) {
+	case 0:	code = "Interrupt"; break;
+	case 1: code = "TLB Modification"; break;
+	case 2: code = "TLB Load"; break;
+	case 3: code = "TLB Save"; break;
+	case 4: code = "Address Load"; break;
+	case 5: code = "Address Save"; break;
+	case 8: code = "System"; break;
+	case 9: code = "BBreakpoint"; break;
+	case 10: code = "Reserved Instruction"; break;
+	case 11: code = "Coprocessor Unavailable"; break;
+	case 12: code = "Integer Overflow"; break;
+	case 13: code = "Trap"; break;
+	case 15: code = "FPU"; break;
+	case 24: code = "MCheck"; break;
+	}
+	if (code)
+		debug_printf ("'%s'\n", code);
+	else
+		debug_printf ("%d\n", cause >> 2 & 31);
+
 	badvaddr = mips32_read_c0_register (C0_BADVADDR);
 	config = mips32_read_c0_register (C0_CONFIG);
 	prid = mips32_read_c0_register (C0_PRID);
