@@ -192,7 +192,7 @@ int pci_cfg_read (unsigned dev, unsigned function, unsigned reg,
 	if (! pci_cfg_transaction (MCB_PCI_CSR_MASTER_CFGREAD,
 	    local_addr, 0, function << 6 | reg, 1 << dev))
 		return 0;
-	*result = MCB_REGISTER (MCB_RAM_BASE, local_addr);
+	*result = *(volatile unsigned*) (MCB_RAM_BASE | local_addr);
 	return 1;
 }
 
@@ -205,7 +205,7 @@ int pci_cfg_write (unsigned dev, unsigned function, unsigned reg,
 {
 	/* Конфигурационная транзакция Type 0. */
 	unsigned local_addr = 0;
-	MCB_REGISTER (MCB_RAM_BASE, local_addr) = value;
+	*(volatile unsigned*) (MCB_RAM_BASE | local_addr) = value;
 	if (! pci_cfg_transaction (MCB_PCI_CSR_MASTER_CFGWRITE,
 	    local_addr, 0, function << 6 | reg, 1 << dev))
 		return 0;
@@ -222,7 +222,7 @@ int pci_io_read (unsigned addr, unsigned *result)
 	if (! pci_data_transaction (MCB_PCI_CSR_MASTER_IOREAD,
 	    local_addr, addr, 1))
 		return 0;
-	*result = MCB_REGISTER (MCB_RAM_BASE, local_addr);
+	*result = *(volatile unsigned*) (MCB_RAM_BASE | local_addr);
 	return 1;
 }
 
@@ -233,7 +233,7 @@ int pci_io_read (unsigned addr, unsigned *result)
 int pci_io_write (unsigned addr, unsigned value)
 {
 	unsigned local_addr = 0;
-	MCB_REGISTER (MCB_RAM_BASE, local_addr) = value;
+	*(volatile unsigned*) (MCB_RAM_BASE | local_addr) = value;
 	if (! pci_data_transaction (MCB_PCI_CSR_MASTER_IOWRITE,
 	    local_addr, addr, 1))
 		return 0;

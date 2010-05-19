@@ -2,7 +2,7 @@
  * Карта памяти микросхемы MCB-01.
  */
 
-/* 
+/*
  * Чтение/запись памяти и регистров MBA осуществляется с помощью обычного обращения
  * по адресу, чтение/запись регистров SWIC, PMSC и адресного окна PCI должна
  * осущестляться только с помощью функций mcb_read_reg/mcb_write_reg.
@@ -12,7 +12,7 @@
 #define MCB_MBA_BASE			0xafc00000
 #define MCB_MBA_REG(r)			(*(volatile unsigned*) ((MCB_MBA_BASE) | (r)))
 
-#define MCB_PERIF_REGISTER(base, reg)	((base) | (reg))
+#define MCB_PERIF_REGISTER(base, reg)	(*(volatile unsigned*) ((base) | (reg)))
 #define MCB_REG_RAM_BASE		0x01000000
 #define MCB_PMSC_REG(r)			MCB_PERIF_REGISTER (0x01200000, r)
 #define MCB_SWIC_REG(n,r)		MCB_PERIF_REGISTER (0x01400000 + ((n)<<21), r)
@@ -27,7 +27,7 @@
 #define MCB_MBA_BUSY		MCB_MBA_REG (0x000c)	/* Регистр признака занятости */
 
 
-inline unsigned 
+inline unsigned
 mcb_read_reg(unsigned addr)
 {
 	while (MCB_MBA_BUSY);
@@ -169,4 +169,3 @@ mcb_write_reg(unsigned addr, unsigned value)
 #define MCB_SWIC_TX_DATA_IR(n)	MCB_SWIC_DMA_REG(n,0xcc) /* Индексный регистр канала TX_DATA */
 #define MCB_SWIC_TX_DATA_OR(n)	MCB_SWIC_DMA_REG(n,0xd0) /* Смещение канала TX_DATA */
 #define MCB_SWIC_TX_DATA_RUN(n)	MCB_SWIC_DMA_REG(n,0xd8) /* Псевдорегистр управления битом RUN TX_DATA */
-
