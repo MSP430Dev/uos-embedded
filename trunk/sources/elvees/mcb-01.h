@@ -12,11 +12,11 @@
 #define MCB_MBA_BASE			0xafc00000
 #define MCB_MBA_REG(r)			(*(volatile unsigned*) ((MCB_MBA_BASE) | (r)))
 
-#define MCB_PERIF_REGISTER(base, reg)	(*(volatile unsigned*) ((base) | (reg)))
+#define MCB_PERIF(base, reg)		((base) | (reg))
 #define MCB_REG_RAM_BASE		0x01000000
-#define MCB_PMSC_REG(r)			MCB_PERIF_REGISTER (0x01200000, r)
-#define MCB_SWIC_REG(n,r)		MCB_PERIF_REGISTER (0x01400000 + ((n)<<21), r)
-#define MCB_SWIC_DMA_REG(n,r)		MCB_PERIF_REGISTER (0x01500000 + ((n)<<21), r)
+#define MCB_PMSC_REG(r)			MCB_PERIF (0x01200000, r)
+#define MCB_SWIC_REG(n,r)		MCB_PERIF (0x01400000 + ((n)<<21), r)
+#define MCB_SWIC_DMA_REG(n,r)		MCB_PERIF (0x01500000 + ((n)<<21), r)
 
 /*
  * Регистры MBA
