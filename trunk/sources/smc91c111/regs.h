@@ -18,11 +18,11 @@
 #define SMC_REG_BASE	0xA8000000		/* Using /CS1 */
 #define SMC_DATA_BASE	0xAA000000		/* When A25=1 */
 
-#define SMC_REG32(x)	(*(unsigned long*)  (SMC_REG_BASE + x))
-#define SMC_REG16(x)	(*(unsigned short*) (SMC_REG_BASE + x))
-#define SMC_REG8(x)	(*(unsigned char*)  (SMC_REG_BASE + x))
-#define SMC_DATA32	(*(unsigned long*)  SMC_DATA_BASE)
-#define SMC_DATA16	(*(unsigned short*) SMC_DATA_BASE)
+#define SMC_REG32(x)	(*(volatile unsigned long*)  (SMC_REG_BASE + x))
+#define SMC_REG16(x)	(*(volatile unsigned short*) (SMC_REG_BASE + x))
+#define SMC_REG8(x)	(*(volatile unsigned char*)  (SMC_REG_BASE + x))
+#define SMC_DATA32	(*(volatile unsigned long*)  SMC_DATA_BASE)
+#define SMC_DATA16	(*(volatile unsigned short*) SMC_DATA_BASE)
 
 /* All-bank register */
 #define BS_REG		SMC_REG16 (0xE)		/* Bank select register */
@@ -56,10 +56,8 @@
 #define IM_REG		SMC_REG8 (0xC + 1)	/* Interrupt mask */
 
 /* Bank 3 registers */
-#define	MCAST_REG1	SMC_REG16 (0x0)		/* Multicast... */
-#define	MCAST_REG2	SMC_REG16 (0x2)		/* ... */
-#define	MCAST_REG3	SMC_REG16 (0x4)		/* ... */
-#define	MCAST_REG4	SMC_REG16 (0x6)		/* ...table */
+#define	MCASTL_REG	SMC_REG32 (0x0)		/* Multicast... */
+#define	MCASTH_REG	SMC_REG32 (0x4)		/* ... */
 #define	MII_REG		SMC_REG16 (0x8)		/* Management interface */
 #define	REV_REG		SMC_REG16 (0xA)		/* Revision */
 #define	ERCV_REG	SMC_REG16 (0xC)		/* Early receive */
