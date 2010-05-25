@@ -39,12 +39,12 @@ void tcl_main (void *arg);
  *	Standard TCL results.
  */
 static int
-loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+loop_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	int result = TCL_OK;
 	int i, first, limit, incr = 1;
-	char *command;
-	char itxt [12];
+	unsigned char *command;
+	unsigned char itxt [12];
 
 	if ((argc < 5) || (argc > 6)) {
 		Tcl_AppendResult (interp, "bad # args: ", argv [0],
@@ -81,7 +81,7 @@ loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 				result = TCL_OK;
 				break;
 			} else if (result == TCL_ERROR) {
-				char buf [64];
+				unsigned char buf [64];
 
 				snprintf (buf, sizeof (buf),
 					"\n    (\"loop\" body line %d)",
@@ -106,7 +106,7 @@ loop_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-echo_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+echo_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	int i;
@@ -124,7 +124,7 @@ echoError:			snprintf (interp->result, TCL_RESULT_SIZE,
 
 		if (i > 1)
 			putchar (stream, ' ');
-		puts (stream, argv[i]);
+		puts (stream, (char*) argv[i]);
 	}
 	putchar (stream, '\n');
 	return TCL_OK;
@@ -132,7 +132,7 @@ echoError:			snprintf (interp->result, TCL_RESULT_SIZE,
 
 	/* ARGSUSED */
 static int
-reboot_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+reboot_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 
@@ -144,7 +144,7 @@ reboot_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-drives_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+drives_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	int drive, heads, sectors, cylinders;
@@ -179,7 +179,7 @@ drives_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-vesa_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+vesa_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	vesa_info_t info;
@@ -279,7 +279,7 @@ display_print_extmode (stream_t *stream, vesa_extmode_t *m)
 
 	/* ARGSUSED */
 static int
-display_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+display_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 	vesa_display_t display;
@@ -399,7 +399,7 @@ display_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-mem_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+mem_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 
@@ -410,12 +410,12 @@ mem_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-tcl_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+tcl_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
-	char *task;
+	array_t *task;
 	int tasksz = 0x10000;
 
-	task = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
 	if (! task) {
 		debug_printf ("tcl: no memory for task\n");
 		task_exit (0);
@@ -427,13 +427,13 @@ tcl_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
         /* ARGSUSED */
 static int
-landmine_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+landmine_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
-        char *task;
+        array_t *task;
         int tasksz = 0x10000;
 	void nxmain_landmine (void *arg);
 
-        task = mem_alloc (uos_memory, tasksz);
+        task = (array_t*) mem_alloc (uos_memory, tasksz);
         if (! task) {
                 debug_printf ("landmine: no memory for task\n");
                 task_exit (0);
@@ -445,13 +445,13 @@ landmine_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-ntetris_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+ntetris_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
-	char *task;
+	array_t *task;
 	int tasksz = 0x10000;
 	void nxmain_ntetris (void *arg);
 
-	task = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
 	if (! task) {
 		debug_printf ("ntetris: no memory for task\n");
 		task_exit (0);
@@ -463,13 +463,13 @@ ntetris_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-nxclock_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+nxclock_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
-	char *task;
+	array_t *task;
 	int tasksz = 0x10000;
 	void nxmain_nxclock (void *arg);
 
-	task = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
 	if (! task) {
 		debug_printf ("nxclock: no memory for task\n");
 		task_exit (0);
@@ -481,13 +481,13 @@ nxclock_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-nxeyes_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+nxeyes_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
-	char *task;
+	array_t *task;
 	int tasksz = 0x10000;
 	void nxmain_nxeyes (void *arg);
 
-	task = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
 	if (! task) {
 		debug_printf ("nxeyes: no memory for task\n");
 		task_exit (0);
@@ -499,13 +499,13 @@ nxeyes_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-tuxchess_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+tuxchess_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
-	char *task;
+	array_t *task;
 	int tasksz = 0x10000;
 	void nxmain_tuxchess (void *arg);
 
-	task = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
 	if (! task) {
 		debug_printf ("tuxchess: no memory for task\n");
 		task_exit (0);
@@ -517,13 +517,13 @@ tuxchess_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-nbreaker_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+nbreaker_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
-	char *task;
+	array_t *task;
 	int tasksz = 0x10000;
 	void nxmain_nbreaker (void *arg);
 
-	task = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
 	if (! task) {
 		debug_printf ("nbreaker: no memory for task\n");
 		task_exit (0);
@@ -535,7 +535,7 @@ nbreaker_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 
 	/* ARGSUSED */
 static int
-help_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
+help_cmd (void *arg, Tcl_Interp *interp, int argc, unsigned char **argv)
 {
 	stream_t *stream = arg;
 
@@ -560,11 +560,11 @@ help_cmd (void *arg, Tcl_Interp *interp, int argc, char **argv)
 /*
  * Read a newline-terminated string from stream.
  */
-static char *
-getline (stream_t *stream, char *buf, int len)
+static unsigned char *
+getline (stream_t *stream, unsigned char *buf, int len)
 {
 	int c;
-	char *s;
+	unsigned char *s;
 
 	s = buf;
         while (--len > 0) {
@@ -603,15 +603,15 @@ void tcl_main (void *arg)
 	char pipe_buf [sizeof(pipe_t) + 400];
 	pipe_t *pipe;
 	task_t *nterm;
-	char *task;
+	array_t *task;
 	int tasksz = 0x10000;
 	stream_t *master, *stream;
 	Tcl_Interp *interp;
 	Tcl_CmdBuf buffer;
-	char line [200], *cmd;
+	unsigned char line [200], *cmd;
 	unsigned char result, got_partial, quit_flag;
 
-	task = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
 	if (! task) {
 		debug_printf ("tcl: no memory for task\n");
 		task_exit (0);
@@ -623,21 +623,21 @@ void tcl_main (void *arg)
 	printf (stream, "Enter \"help\" for a list of commands\n\n");
 
 	interp = Tcl_CreateInterp (uos_memory);
-	Tcl_CreateCommand (interp, "loop", loop_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "echo", echo_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "help", help_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "reboot", reboot_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "drives", drives_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "vesa", vesa_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "display", display_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "mem", mem_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "tcl", tcl_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "landmine", landmine_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "ntetris", ntetris_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "nxclock", nxclock_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "nxeyes", nxeyes_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "tuxchess", tuxchess_cmd, stream, 0);
-	Tcl_CreateCommand (interp, "nbreaker", nbreaker_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "loop", loop_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "echo", echo_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "help", help_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "reboot", reboot_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "drives", drives_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "vesa", vesa_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "display", display_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "mem", mem_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "tcl", tcl_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "landmine", landmine_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "ntetris", ntetris_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "nxclock", nxclock_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "nxeyes", nxeyes_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "tuxchess", tuxchess_cmd, stream, 0);
+	Tcl_CreateCommand (interp, (unsigned char*) "nbreaker", nbreaker_cmd, stream, 0);
 
 	buffer = Tcl_CreateCmdBuf (uos_memory);
 	got_partial = 0;

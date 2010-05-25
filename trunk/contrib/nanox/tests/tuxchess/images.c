@@ -11,7 +11,7 @@
 		sizeof(name##_gif), 0); \
         if (! name##_image_id) { \
                 debug_printf ("Can't load " msg " image file\n"); \
-                abort(); \
+                uos_halt (0); \
         } \
         GrGetImageInfo (name##_image_id, &info); \
         name##_w = info.width; \

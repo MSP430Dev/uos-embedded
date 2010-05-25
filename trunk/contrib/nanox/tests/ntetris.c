@@ -160,7 +160,7 @@ static void draw_well(nstate *state, int forcedraw)
 
 static void draw_score(nstate *state)
 {
-	char buf[32];
+	unsigned char buf[32];
 
 	GrFillRect(state->score_window, state->scoregcb, 0, 0,
 			SCORE_WINDOW_WIDTH, SCORE_WINDOW_HEIGHT);
@@ -635,7 +635,7 @@ static void init_game(nstate *state)
 
 	if (GrOpen() < 0) {
 		debug_puts ("Cannot open graphics\n");
-		abort ();
+		uos_halt (0);
 	}
 	GrGetScreenInfo (&si);
 

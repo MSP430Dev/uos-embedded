@@ -98,7 +98,7 @@ void do_cheat(nbstate *state, GR_KEY key)
 	 * cannot grow to longer than the longest cheat sequence because it
 	 * will either match one of the cheat sequences and get reset, or fail
 	 * to match any of them and also get reset. */
-       	len = strlen(state->cheatstate);
+       	len = strlen ((unsigned char*) state->cheatstate);
 	state->cheatstate[len] = key;
 
 	/* Check for a match against the SolidFloor cheat: */

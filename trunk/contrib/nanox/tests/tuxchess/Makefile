@@ -1,8 +1,8 @@
-TOPDIR		 = $(shell cd ../../..; pwd)
-#TARGET		 = $(TOPDIR)/targets/i386
-TARGET		 = $(TOPDIR)/targets/i386-nanox-dbg
+OS		 = $(shell cd ../../../..; pwd)
+TARGET		 = $(OS)/examples/i386-grub-nanox
+
 include $(TARGET)/target.cfg
-CFLAGS		+= -I$(TOPDIR)/sources/posix -Dnxmain_tuxchess=nxmain
+CFLAGS		+= -I$(OS)/contrib -Dnxmain_tuxchess=nxmain
 vpath %.c . ..
 
 OUTS		 = tuxchess.out
@@ -32,7 +32,7 @@ grub:		$(OUTS)
 clean:
 		rm -f *.out *.[osi] *.lst *.dis *~ mkimages images.h
 
-include $(TOPDIR)/targets/rules.cfg
+include $(OS)/sources/rules.mak
 
 ###
 images.o: images.c images.h

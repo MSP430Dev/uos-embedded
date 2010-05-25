@@ -130,8 +130,8 @@ void set_level_active(nbstate *state)
 		 * filename, the background file has not changed. Otherwise,
 		 * assume that it has. */
 		if(state->background && state->background->fname &&
-				!strcmp(backgroundfile,
-					state->background->fname))
+				!strcmp ((unsigned char*) backgroundfile,
+					(unsigned char*) state->background->fname))
 			bgchanged = 0;
 		else bgchanged = 1;
 	/* No background filename was specified, so assume it has changed (to

@@ -111,7 +111,7 @@ int b_k_w,b_k_h;
 
 extern int load_images(void);
 int start_square = 1;
-char st_sq[3];
+unsigned char st_sq[3];
 int from = 999;
 int to = 999;
 
@@ -124,9 +124,9 @@ int get_ms()
 }
 
 /* ***********************************************************/
-static void gprintf(char s[])
+static void gprintf(unsigned char s[])
 {
-	static char lasttext[128];
+	static unsigned char lasttext[128];
 
         GrSetGCForeground (text_gc, GR_COLOR_BLACK);
         GrFillRect (text, text_gc, 0, 0, 394, 20);
@@ -142,17 +142,17 @@ static void gprintf(char s[])
 /* ***********************************************************/
 static void process_scancode(int scancode)
 {
-	char sq[3];
-	char fin_sq[3];
+	unsigned char sq[3];
+	unsigned char fin_sq[3];
 	int i;
-	char temp[5];
+	unsigned char temp[5];
 
-	strcpy(sq,"");
+	sq[0] = 0;
 	for (i=0;i<SCANCODES;i++)
 	{
 		if (i == scancode)
 		{
-			strcpy(sq,board_position[i]);
+			strcpy(sq, (unsigned char*) board_position[i]);
 			break;
 		}
 	}
@@ -210,11 +210,11 @@ void nxmain_tuxchess (void *arg)
 /*	char s[256];*/
 	int i;
 	BOOL found;
-	char temp[50];
+	unsigned char temp[50];
 
 	if (GrOpen() < 0) {
 		debug_puts ("Cannot open graphics\n");
-		abort ();
+		uos_halt (0);
 	}
 	GrGetScreenInfo (&si);
 
@@ -252,7 +252,7 @@ void nxmain_tuxchess (void *arg)
 		computer_side = side;	/* computer plays white */
 	else {
 		computer_side = EMPTY;	/* human plays white */
-		gprintf("Make a move...");
+		gprintf((unsigned char*) "Make a move...");
 	}
 
         for (;;) {
@@ -260,7 +260,7 @@ void nxmain_tuxchess (void *arg)
 			/* think about the move and make it */
 			think(0);
 			if (!pv[0][0].u) {
-				gprintf("No legal moves");
+				gprintf((unsigned char*) "No legal moves");
 				computer_side = EMPTY;
 				continue;
 			}
@@ -320,7 +320,7 @@ void nxmain_tuxchess (void *arg)
 				} /* if */
 
 			if (!found || !makemove(gen_dat[i].m.b))
-				gprintf("Illegal move.\n");
+				gprintf((unsigned char*) "Illegal move.\n");
 			else {
 				ply = 0;
 				gen();
@@ -335,9 +335,9 @@ void nxmain_tuxchess (void *arg)
 
 /* ***********************************************************/
 /* move_str returns a string with move m in coordinate notation */
-char *move_str(move_bytes m)
+unsigned char *move_str(move_bytes m)
 {
-	static char str[6];
+	static unsigned char str[6];
 	char c;
 
 	if (m.bits & 32) {
@@ -461,15 +461,15 @@ void print_result()
         if (i == first_move[1]) {
                 if (in_check(side)) {
                         if (side == LIGHT)
-                                gprintf("Black mates");
+                                gprintf((unsigned char*) "Black mates");
                         else
-                                gprintf("White mates");
+                                gprintf((unsigned char*) "White mates");
                 }
                 else
-                        gprintf("Stalemate");
+                        gprintf((unsigned char*) "Stalemate");
         }
         else if (reps() == 3)
-                gprintf("Draw by repetition");
+                gprintf((unsigned char*) "Draw by repetition");
         else if (fifty >= 100)
-                gprintf("Draw by fifty move rule");
+                gprintf((unsigned char*) "Draw by fifty move rule");
 }

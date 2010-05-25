@@ -304,12 +304,12 @@ nxmain_landmine (void *arg)
 	if (setsize) {
 		if ((newsize < MINSIZE) || (newsize > MAXSIZE)) {
 			debug_printf ("Illegal board size\n");
-			abort();
+			uos_halt (0);
 		}
 		if (newsize != size) {
 			if (steps && playing) {
 				debug_printf ("Cannot change size while game is in progress\n");
-				abort();
+				uos_halt (0);
 			}
 			playing = GR_FALSE;
 			size = newsize;
@@ -321,12 +321,11 @@ nxmain_landmine (void *arg)
 	if (setmines) {
 		if ((newmines <= 0) || ((newmines > (size * size) / 2))) {
 			debug_printf ("Illegal number of mines\n");
-			abort();
 		}
 		if (newmines != mines) {
 			if (steps && playing) {
 				debug_printf ("Cannot change mines while game is in progress\n");
-				abort();
+				uos_halt (0);
 			}
 			playing = GR_FALSE;
 			mines = newmines;
@@ -344,7 +343,7 @@ nxmain_landmine (void *arg)
 
 	if (GrOpen() < 0) {
 		debug_puts ("Cannot open graphics\n");
-		abort ();
+		uos_halt (0);
 	}
 
 	GrReqShmCmds(655360); /* Test by Morten Rolland for shm support */
@@ -686,8 +685,8 @@ drawbutton(GR_WINDOW_ID window, char *label)
 	GR_SIZE		height;
 	GR_SIZE		base;
 
-	GrGetGCTextSize(buttongc, label, strlen(label), GR_TFASCII, &width,
-		&height, &base);
+	GrGetGCTextSize(buttongc, label, strlen ((unsigned char*) label),
+		GR_TFASCII, &width, &height, &base);
 	GrText(window, buttongc, (BUTTONWIDTH - width) / 2,
 		(BUTTONHEIGHT - height) / 2 + height - 1,
 		label, -1, GR_TFBOTTOM);
@@ -797,8 +796,8 @@ static void printline(GR_COORD row, char * fmt, ...)
 	va_list		ap;
 	GR_COUNT	cc;
 	GR_SIZE		width;
-	char		*cp;
-	char		buf[256];
+	unsigned char	*cp;
+	unsigned char	buf[256];
 
 	va_start (ap, fmt);
 	vsnprintf (buf, sizeof(buf), fmt, ap);

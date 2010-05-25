@@ -1,8 +1,8 @@
-TOPDIR		 = $(shell cd ../../..; pwd)
-#TARGET		 = $(TOPDIR)/targets/i386
-TARGET		 = $(TOPDIR)/targets/i386-nanox-dbg
+OS		 = $(shell cd ../../../..; pwd)
+TARGET		 = $(OS)/examples/i386-grub-nanox
+
 include $(TARGET)/target.cfg
-CFLAGS		+= -I$(TOPDIR)/sources/posix -Dnxmain_nbreaker=nxmain
+CFLAGS		+= -I$(OS)/contrib -I$(OS)/contrib/posix -Dnxmain_nbreaker=nxmain
 vpath %.c . ..
 
 OUTS		 = nbreaker.out
@@ -41,7 +41,7 @@ clean:
 		rm -f *.out *.[osi] *.lst *.dis *~
 		rm -f mkdata gamefile.h mkimages images.h
 
-include $(TOPDIR)/targets/rules.cfg
+include $(OS)/sources/rules.mak
 
 ###
 animate.o: animate.c nbreaker.h

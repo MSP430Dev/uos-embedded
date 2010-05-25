@@ -1,9 +1,10 @@
-TOPDIR		 = $(shell cd ../..; pwd)
-TARGET		 = $(TOPDIR)/targets/i386-nanox-dbg
+OS		 = $(shell cd ../../..; pwd)
+TARGET		 = $(OS)/examples/i386-grub-nanox
+
 include $(TARGET)/target.cfg
 vpath %.c . tuxchess nbreaker
 
-CFLAGS		+= -I$(TOPDIR)/sources/posix
+CFLAGS		+= -I$(OS)/contrib -I$(OS)/contrib/posix
 
 OUTS		+= nxtcl.out
 OUTS		+= nxdemo.out
@@ -85,7 +86,7 @@ nbreaker/images.h:
 nbreaker/gamefile.h:
 		$(MAKE) -Cnbreaker gamefile.h
 
-include $(TOPDIR)/targets/rules.cfg
+include $(OS)/sources/rules.mak
 
 ###
 landmine.o: landmine.c

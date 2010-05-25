@@ -52,7 +52,7 @@ nxmain_nxclock (void *arg)
 
 	if (GrOpen() < 0) {
 		debug_puts ("Cannot open graphics\n");
-		abort ();
+		uos_halt (0);
 	}
 	GrGetScreenInfo (&si);
 
