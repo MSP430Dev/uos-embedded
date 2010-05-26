@@ -51,7 +51,7 @@
 #define FIFO_REG	SMC_REG16 (0x4)		/* FIFO ports, read only */
 #define PTR_REG		SMC_REG16 (0x6)		/* Pointer */
 #define	DATA16_REG	SMC_REG16 (0x8)		/* Data, 16-bit wide */
-#define	DATA_REG	SMC_REG32 (0x8)		/* Data, 32-bit wide */
+#define	DATA32_REG	SMC_REG32 (0x8)		/* Data, 32-bit wide */
 #define	INT_REG		SMC_REG8 (0xC)		/* Interrupt status/acknowledge */
 #define IM_REG		SMC_REG8 (0xC + 1)	/* Interrupt mask */
 
@@ -103,7 +103,7 @@
 #define RCR_RXEN		0x0100	/* IFF this is set, we can receive packets */
 #define	RCR_STRIP_CRC		0x0200	/* When set strips CRC from rx packets */
 #define	RCR_ABORT_ENB		0x0200	/* When set will abort rx on collision */
-#define	RCR_FILT_CAR		0x0400	/* When set filters leading 12 bit s of carrier */
+#define	RCR_FILT_CAR		0x0400	/* When set filters leading 12 bits of carrier */
 #define RCR_SOFTRST		0x8000	/* resets the chip */
 
 /*
