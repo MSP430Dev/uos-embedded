@@ -44,9 +44,9 @@
 /* Returns the string passed to it, or a pointer to the string "<unnamed>" if
  * the passed string is NULL. Used when printing the file names in the state,
  * which may be NULL if they don't have a name. */
-static char *fname(char *f)
+static unsigned char *fname (unsigned char *f)
 {
-	return f ? f : "<unnamed>";
+	return f ? f : (unsigned char*) "<unnamed>";
 }
 
 /* Prints out the contents of the specified brick list. */

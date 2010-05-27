@@ -146,7 +146,7 @@ nxmain (void *arg)
 
 	if (GrOpen() < 0) {
 		debug_puts ("Cannot open graphics\n");
-		abort ();
+		uos_halt (0);
 	}
 
 	/* create window */

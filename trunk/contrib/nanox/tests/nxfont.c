@@ -17,7 +17,7 @@ GR_BOOL aa = GR_TRUE;
 GR_BOOL underline = GR_FALSE;
 int angle = 0;
 int state = GR_TFBOTTOM;
-char buffer[128] = "Hello, World!";
+unsigned char buffer[128] = "Hello, World!";
 int n;
 
 void render (GR_WINDOW_ID window)
@@ -63,7 +63,7 @@ void nxmain (void *arg)
 
 	if (GrOpen () < 0) {
 		debug_puts ("Cannot open graphics\n");
-		abort ();
+		uos_halt (0);
 	}
 	window = GrNewWindowEx (GR_WM_PROPS_APPWINDOW, (unsigned char*) "ftdemo",
 	    GR_ROOT_WINDOW_ID, 0, 0, MAXW, MAXH, GR_COLOR_WHITE);

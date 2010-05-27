@@ -78,7 +78,7 @@ void set_level_active(nbstate *state)
 	sprite *s = 0;
 	power *p, *pnext;
 	GR_DRAW_ID ctmp;
-	char *backgroundfile;
+	unsigned char *backgroundfile;
 
 	/* Destroy the old splash image sprite: */
 	destroy_sprite(state, state->splash);
@@ -92,7 +92,7 @@ void set_level_active(nbstate *state)
 		/* Try to load the title screen splash graphic (if it doesn't
 		 * work nothing bad will happen- load_sprite() will print an
 		 * error message and draw_splash() will not draw anything.) */
-		state->splash = load_sprite(state, state->titlesplash, -1, -1);
+		state->splash = load_sprite (state, state->titlesplash, -1, -1);
 	} else { /* Not on the title screen. */
 		/* Find the level structure for the current level number: */
 		for(lev = state->levels, i = 1; i < state->level;

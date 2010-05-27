@@ -104,13 +104,13 @@ void nxmain ()
 {
 	if (GdOpenKeyboard() < 0) {
 		debug_printf ("Cannot initialise keyboard\n");
-		uos_halt();
+		uos_halt (0);
 	}
 
 	if (GdOpenMouse() < 0) {
 		debug_printf ("Cannot initialise mouse\n");
 		GdCloseKeyboard ();
-		uos_halt();
+		uos_halt (0);
 	}
 
 	for (;;)
@@ -128,7 +128,7 @@ extern unsigned long i386_highmem_len;
 void uos_init (void)
 {
 	static mem_pool_t pool;
-	char *task, *wm;
+	array_t *task, *wm;
 	int tasksz = 0x10000;
 	extern unsigned long _end;
 
@@ -139,17 +139,17 @@ void uos_init (void)
 
 	debug_printf ("Free memory: %ld bytes\n", mem_available (uos_memory));
 
-	task = mem_alloc (uos_memory, tasksz);
-	wm = mem_alloc (uos_memory, tasksz);
+	task = (array_t*) mem_alloc (uos_memory, tasksz);
+	wm = (array_t*) mem_alloc (uos_memory, tasksz);
 	uos_timer = (timer_t*) mem_alloc (uos_memory, sizeof (timer_t));
 	uos_keyboard = (keyboard_t*) mem_alloc (uos_memory, sizeof (keyboard_ps2_t));
 	uos_mouse = (mouse_t*) mem_alloc (uos_memory, sizeof (mouse_ps2_t));
 	if (! task || ! wm || ! uos_timer || ! uos_keyboard || ! uos_mouse) {
 		debug_printf ("No memory for task\n");
-		abort();
+		uos_halt (0);
 	}
 
-	timer_init (uos_timer, 100, 1193182, 10);
+	timer_init (uos_timer, 1193182, 10);
 	debug_puts ("Timer initialized.\n");
 
 	keyboard_ps2_init ((keyboard_ps2_t*) uos_keyboard, 80);

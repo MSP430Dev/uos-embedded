@@ -224,7 +224,7 @@ void nxmain_nbreaker (void *arg)
 
 	state = init (0, 0);		/* Initialise the game. */
 	if (! state)
-		abort();
+		uos_halt (0);
 
 	for (;;)
 		nbreaker (state);	/* The main event loop. */

@@ -48,7 +48,7 @@
  * second string. This latter is used to determine when the current cheat
  * state has no chance of matching any of the cheat sequences so it can throw
  * away the current cheat state and start again. */
-static int cheatcmp(char *a, char *b)
+static int cheatcmp (unsigned char *a, unsigned char *b)
 {
 	int m = 0;
 

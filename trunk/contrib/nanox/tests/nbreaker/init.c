@@ -55,12 +55,14 @@ static int parse_cmd_args(nbstate *state, int argc, char *argv[])
 	for(i = 1; i < argc; i++) {
 		/* If it doesn't start with a dash, assume it's the name of
 		 * the game file: */
-		if(*argv[i] != '-') state->gamefile = argv[i];
-		else if(argv[i][1] == 'd') { /* If the parameter's "-d": */
+		if (*argv[i] != '-')
+			state->gamefile = (unsigned char*) argv[i];
+		else if (argv[i][1] == 'd') { /* If the parameter's "-d": */
 			/* If there's another argument, use it as the game
 			 * directory, otherwise print the usage message and
 			 * return "failure": */
-			if(++i < argc) state->gamedir = argv[i];
+			if (++i < argc)
+				state->gamedir = (unsigned char*) argv[i];
 			else {
 				usage();
 				return 1;
@@ -83,8 +85,8 @@ static void setup_default_state(nbstate *state)
 	GR_FONT_INFO fi;
 
 	state->state = STATE_TITLESCREEN;
-	state->gamedir = DEFAULT_GAME_DIR;
-	state->gamefile = DEFAULT_GAME_FILE;
+	state->gamedir = (unsigned char*) DEFAULT_GAME_DIR;
+	state->gamefile = (unsigned char*) DEFAULT_GAME_FILE;
 	state->titlebackground = 0;
 	state->titlebackgroundtiled = DEFAULT_BACKGROUND_TILED;
 	state->titlesplash = 0;

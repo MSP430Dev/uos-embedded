@@ -55,7 +55,7 @@ int snprintf (char *buf, int size, const char *fmt, ...);
 #undef ferror
 #undef fopen
 #undef fclose
-typedef const char **FILE;
+typedef const unsigned char **FILE;
 
 int ferror (FILE *fp)
 {
@@ -67,15 +67,15 @@ int feof (FILE *fp)
 	return (**fp == 0);
 }
 
-FILE *fopen (char *filename, char *mode)
+FILE *fopen (unsigned char *filename, char *mode)
 {
-	static const char **fp;
+	static const unsigned char **fp;
 
-	fp = gamefile_data;
+	fp = (const unsigned char**) gamefile_data;
 	return &fp;
 }
 
-char *fgets (char *buf, int size, FILE *fp)
+unsigned char *fgets (unsigned char *buf, int size, FILE *fp)
 {
 	if (**fp == 0)
 		return 0;
@@ -92,7 +92,7 @@ int fclose (FILE *fp)
 
 /* Print a warning indicating that a particular parameter has been defined
  * more than once, with the line number of the second definition. */
-static void redefinewarning(char *name, int line, char *gamefile)
+static void redefinewarning(char *name, int line, unsigned char *gamefile)
 {
 	debug_printf ("Warning: redefining %s on line %d of game file "
 					"\"%s\"\n", name, line, gamefile);
@@ -100,7 +100,7 @@ static void redefinewarning(char *name, int line, char *gamefile)
 
 /* Print a warning indicating that some parameter that is only allowed inside
  * a level block was encountered outside a level block. */
-static void notinlevblockerr(char *name, int line, char *gamefile)
+static void notinlevblockerr(char *name, int line, unsigned char *gamefile)
 {
 	debug_printf ("Error: %s while not in a level block on "
 			"line %d of game file \"%s\"\n", name, line, gamefile);
@@ -114,7 +114,7 @@ static int parse_rows(nbstate *state, level *lev, FILE *fp, int *line)
 {
 	brick *b;
 	int x, y;
-	char buf[256], *p;
+	unsigned char buf[256], *p;
 	grid *g = lev->grid;
 	int startline = *line;
 
@@ -219,7 +219,7 @@ static int parse_rows(nbstate *state, level *lev, FILE *fp, int *line)
 static int parse_powers(nbstate *state, level *lev, FILE *fp, int *line)
 {
 	int x, y, i;
-	char buf[256], *p;
+	unsigned char buf[256], *p;
 	grid *g = lev->grid;
 	int startline = *line;
 	char powers[] = " WSTPNF";
@@ -303,10 +303,10 @@ static int parse_powers(nbstate *state, level *lev, FILE *fp, int *line)
 
 /* Parse a brick definition line. */
 static int parse_brick(nbstate *state, int inlevel, level *lev, int line,
-		char *buf)
+	unsigned char *buf)
 {
 	int i;
-	char *flags, f;
+	unsigned char *flags, f;
 	brick *b = 0;
 
 	/* Search for an existing brick with the same identifier in the global
@@ -475,7 +475,7 @@ static grid *newgrid(nbstate *state)
 }
 
 /* Parse a PowerSprite line. */
-static int parse_powersprite(nbstate *state, char *buf, int line)
+static int parse_powersprite(nbstate *state, unsigned char *buf, int line)
 {
 	sprite *s;
 	int power;
@@ -556,14 +556,14 @@ int load_game_file(nbstate *state)
 	FILE *fp;
 	int line = 1;
 	level *l, *lev = 0;
-	char buf[256], *p;
+	unsigned char buf[256], *p;
 	int inlevelblock = 0;
 
 	/* Generate the full game file name including the directory: */
-	snprintf(buf, 256, "%s/%s", state->gamedir, state->gamefile);
+	snprintf ((char*) buf, 256, "%s/%s", state->gamedir, state->gamefile);
 
 	/* Try to open the game file: */
-	if(!(fp = fopen(buf, "r"))) {
+	if(!(fp = fopen (buf, "r"))) {
 		/* It failed, so print an error message and return "failure": */
 		debug_printf ("Failed to open game file \"%s\"\n", buf);
 		return 1;
@@ -599,9 +599,9 @@ int load_game_file(nbstate *state)
 			/* Check whether the parameter to TitleBackgroundTiled
 			 * is "Yes" (1), "No" (0), or something else (parse
 			 * error): */
-			if(!strcmp(buf + 21, "Yes"))
+			if (! strcmp (buf + 21, (unsigned char*) "Yes"))
 				state->backgroundtiled = 1;
-			else if(!strcmp(buf + 21, "No"))
+			else if (! strcmp (buf + 21, (unsigned char*) "No"))
 				state->backgroundtiled = 0;
 			else goto parseerr;
 		} else if(!memcmp(buf, "TitleSplash ", 12)) {
@@ -879,7 +879,7 @@ int load_game_file(nbstate *state)
 						state->gamefile);
 				free(state->cheats[SFCHEAT]);
 			}
-			if(!(state->cheats[SFCHEAT] = strdup(buf + 16))) {
+			if(!(state->cheats[SFCHEAT] = strdup (buf + 16))) {
 				oom();
 				goto err;
 			}
@@ -1014,8 +1014,8 @@ int load_game_file(nbstate *state)
 						state->gamefile);
 				goto err;
 			}
-			if(!strcmp(buf + 21, "Yes")) lev->backgroundtiled = 1;
-			else if(!strcmp(buf + 21, "No"))
+			if (! strcmp (buf + 21, (unsigned char*) "Yes")) lev->backgroundtiled = 1;
+			else if (! strcmp (buf + 21, (unsigned char*) "No"))
 				lev->backgroundtiled = 0;
 			else goto parseerr;
 		} else if(!memcmp(buf, "BeginRows", 9)) {

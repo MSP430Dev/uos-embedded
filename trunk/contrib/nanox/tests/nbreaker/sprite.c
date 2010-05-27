@@ -56,7 +56,7 @@
 /* Create a new sprite structure with the specified file name, dimensions,
  * and pixmap/alpha channel IDs, then set the usage count to 1 and link it
  * into the sprite list. Called by make_empty_sprite() and load_sprite(). */
-static sprite *make_sprite(nbstate *state, char *fname, int w, int h,
+static sprite *make_sprite(nbstate *state, unsigned char *fname, int w, int h,
 		GR_DRAW_ID p, GR_DRAW_ID a)
 {
 	sprite *s;
@@ -68,7 +68,8 @@ static sprite *make_sprite(nbstate *state, char *fname, int w, int h,
 	}
 
 	/* Copy the file name string: */
-	if(!fname) s->fname = 0;
+	if (! fname)
+		s->fname = 0;
 	else {
 		if(!(s->fname = strdup(fname))) {
 			oom();
@@ -97,7 +98,7 @@ static sprite *make_sprite(nbstate *state, char *fname, int w, int h,
  * height. It is expected that you will probably already have tried calling
  * load_sprite() first and it failed, so you want to create the sprite
  * manually. */
-sprite *make_empty_sprite(nbstate *state, char *fname, int width, int height)
+sprite *make_empty_sprite(nbstate *state, unsigned char *fname, int width, int height)
 {
 	sprite *s;
 	GR_DRAW_ID a;
@@ -124,7 +125,7 @@ sprite *make_empty_sprite(nbstate *state, char *fname, int width, int height)
  * the new sprite on success or 0 on failure. If width is -1, the real
  * dimensions of the image file will be used, otherwise the image will be
  * scaled up or down to the specified dimensions. */
-sprite *load_sprite(nbstate *state, char *fname, int width, int height)
+sprite *load_sprite(nbstate *state, unsigned char *fname, int width, int height)
 {
 	sprite *s;
 	GR_DRAW_ID a;
@@ -160,41 +161,41 @@ sprite *load_sprite(nbstate *state, char *fname, int width, int height)
 	img = GrLoadImageFromFile (buf, 0);
 	}
 #else
-	if      (strcmp (fname,    "nbb1.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb1_data, sizeof(   nbb1_data), 0);
-	else if (strcmp (fname,    "nbb2.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb2_data, sizeof(   nbb2_data), 0);
-	else if (strcmp (fname,    "nbb3.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb3_data, sizeof(   nbb3_data), 0);
-	else if (strcmp (fname,    "nbb4.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb4_data, sizeof(   nbb4_data), 0);
-	else if (strcmp (fname,    "nbb5.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb5_data, sizeof(   nbb5_data), 0);
-	else if (strcmp (fname,    "nbb6.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb6_data, sizeof(   nbb6_data), 0);
-	else if (strcmp (fname,    "nbb7.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb7_data, sizeof(   nbb7_data), 0);
-	else if (strcmp (fname,    "nbb8.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb8_data, sizeof(   nbb8_data), 0);
-	else if (strcmp (fname,    "nbb9.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb9_data, sizeof(   nbb9_data), 0);
-	else if (strcmp (fname, "nbball1.gif") == 0) img = GrLoadImageFromBuffer ((char*)nbball1_data, sizeof(nbball1_data), 0);
-	else if (strcmp (fname,  "nbbat1.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbat1_data, sizeof( nbbat1_data), 0);
-	else if (strcmp (fname,  "nbbat2.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbat2_data, sizeof( nbbat2_data), 0);
-	else if (strcmp (fname,  "nbbat3.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbat3_data, sizeof( nbbat3_data), 0);
-	else if (strcmp (fname,  "nbbg10.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbg10_data, sizeof( nbbg10_data), 0);
-	else if (strcmp (fname,   "nbbg1.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg1_data, sizeof(  nbbg1_data), 0);
-	else if (strcmp (fname,   "nbbg2.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg2_data, sizeof(  nbbg2_data), 0);
-	else if (strcmp (fname,   "nbbg3.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg3_data, sizeof(  nbbg3_data), 0);
-	else if (strcmp (fname,   "nbbg4.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg4_data, sizeof(  nbbg4_data), 0);
-	else if (strcmp (fname,   "nbbg5.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg5_data, sizeof(  nbbg5_data), 0);
-	else if (strcmp (fname,   "nbbg6.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg6_data, sizeof(  nbbg6_data), 0);
-	else if (strcmp (fname,   "nbbg7.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg7_data, sizeof(  nbbg7_data), 0);
-	else if (strcmp (fname,   "nbbg8.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg8_data, sizeof(  nbbg8_data), 0);
-	else if (strcmp (fname,   "nbbg9.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg9_data, sizeof(  nbbg9_data), 0);
-	else if (strcmp (fname,    "nbpf.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpf_data, sizeof(   nbpf_data), 0);
-	else if (strcmp (fname,    "nbpn.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpn_data, sizeof(   nbpn_data), 0);
-	else if (strcmp (fname,    "nbpp.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpp_data, sizeof(   nbpp_data), 0);
-	else if (strcmp (fname,    "nbps.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbps_data, sizeof(   nbps_data), 0);
-	else if (strcmp (fname,    "nbpt.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpt_data, sizeof(   nbpt_data), 0);
-	else if (strcmp (fname,    "nbpw.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpw_data, sizeof(   nbpw_data), 0);
-	else if (strcmp (fname,   "nbsp1.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbsp1_data, sizeof(  nbsp1_data), 0);
-	else if (strcmp (fname,   "nbsp2.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbsp2_data, sizeof(  nbsp2_data), 0);
-	else if (strcmp (fname,   "nbsp3.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbsp3_data, sizeof(  nbsp3_data), 0);
+	if      (strcmp (fname, (unsigned char*)   "nbb1.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb1_data, sizeof(   nbb1_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb2.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb2_data, sizeof(   nbb2_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb3.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb3_data, sizeof(   nbb3_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb4.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb4_data, sizeof(   nbb4_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb5.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb5_data, sizeof(   nbb5_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb6.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb6_data, sizeof(   nbb6_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb7.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb7_data, sizeof(   nbb7_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb8.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb8_data, sizeof(   nbb8_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbb9.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbb9_data, sizeof(   nbb9_data), 0);
+	else if (strcmp (fname, (unsigned char*)"nbball1.gif") == 0) img = GrLoadImageFromBuffer ((char*)nbball1_data, sizeof(nbball1_data), 0);
+	else if (strcmp (fname, (unsigned char*) "nbbat1.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbat1_data, sizeof( nbbat1_data), 0);
+	else if (strcmp (fname, (unsigned char*) "nbbat2.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbat2_data, sizeof( nbbat2_data), 0);
+	else if (strcmp (fname, (unsigned char*) "nbbat3.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbat3_data, sizeof( nbbat3_data), 0);
+	else if (strcmp (fname, (unsigned char*) "nbbg10.gif") == 0) img = GrLoadImageFromBuffer ((char*) nbbg10_data, sizeof( nbbg10_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg1.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg1_data, sizeof(  nbbg1_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg2.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg2_data, sizeof(  nbbg2_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg3.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg3_data, sizeof(  nbbg3_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg4.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg4_data, sizeof(  nbbg4_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg5.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg5_data, sizeof(  nbbg5_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg6.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg6_data, sizeof(  nbbg6_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg7.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg7_data, sizeof(  nbbg7_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg8.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg8_data, sizeof(  nbbg8_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbbg9.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbbg9_data, sizeof(  nbbg9_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbpf.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpf_data, sizeof(   nbpf_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbpn.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpn_data, sizeof(   nbpn_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbpp.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpp_data, sizeof(   nbpp_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbps.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbps_data, sizeof(   nbps_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbpt.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpt_data, sizeof(   nbpt_data), 0);
+	else if (strcmp (fname, (unsigned char*)   "nbpw.gif") == 0) img = GrLoadImageFromBuffer ((char*)   nbpw_data, sizeof(   nbpw_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbsp1.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbsp1_data, sizeof(  nbsp1_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbsp2.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbsp2_data, sizeof(  nbsp2_data), 0);
+	else if (strcmp (fname, (unsigned char*)  "nbsp3.gif") == 0) img = GrLoadImageFromBuffer ((char*)  nbsp3_data, sizeof(  nbsp3_data), 0);
 	else {
 		debug_printf ("No such image: \"%s\"\n", fname);
-		abort ();
+		uos_halt (0);
 		return 0;
 	}
 #endif

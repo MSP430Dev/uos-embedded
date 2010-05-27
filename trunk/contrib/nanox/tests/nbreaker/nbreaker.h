@@ -151,7 +151,7 @@ typedef struct {
 struct _sprite {
 	/* The name of the file this sprite was loaded from, or NULL if it was
 	 * drawn manually: */
-	char *fname;
+	unsigned char *fname;
 	/* The width and height of the sprite: */
 	int w;
 	int h;
@@ -212,7 +212,7 @@ struct _level {
 	/* The list of bricks specific to this level: */
 	brick *bricks;
 	/* The name of the file to use as the background image: */
-	char *backgroundname;
+	unsigned char *backgroundname;
 	/* Whether the background image file should be tiled: */
 	int backgroundtiled;
 	/* The number of non-immutable bricks in this level (used to determine
@@ -324,19 +324,19 @@ typedef struct {
 	/* The current game state (TITLESCREEN, RUNNING, etc.): */
 	int state;
 	/* The name of the game directory: */
-	char *gamedir;
+	unsigned char *gamedir;
 	/* The name of the game file: */
-	char *gamefile;
+	unsigned char *gamefile;
 	/* The name of the image to use as the title screen background: */
-	char *titlebackground;
+	unsigned char *titlebackground;
 	/* Whether to tile the title screen background image: */
 	int titlebackgroundtiled;
 	/* The name of the image to use as the title screen splash box: */
-	char *titlesplash;
+	unsigned char *titlesplash;
 	/* The name of the image to use as the game won splash box: */
-	char *gamewonsplash;
+	unsigned char *gamewonsplash;
 	/* The name of the image to use as the game lost splash box: */
-	char *gamelostsplash;
+	unsigned char *gamelostsplash;
 	/* The entire list of sprites: */
 	sprite *spritelist;
 	/* The sprite containing the current background image: */
@@ -401,10 +401,10 @@ typedef struct {
 	/* The time in seconds that power-downs last for: */
 	int powerdowntime;
 	/* The cheat sequences: */
-	char *cheats[NUMCHEATS];
+	unsigned char *cheats[NUMCHEATS];
 	/* The current state of the cheat recogniser engine (see do_cheat()
 	 * for details): */
-	char cheatstate[MAXCHEATLEN + 1];
+	unsigned char cheatstate[MAXCHEATLEN + 1];
 	/* Various boolean flags (see the flags_t definition): */
 	flags_t flags;
 	/* The full list of levels: */
@@ -622,8 +622,8 @@ void load_hiscore(nbstate *state);
 void save_hiscore(nbstate *state);
 
 /* sprite.c */
-sprite *make_empty_sprite(nbstate *state, char *fname, int width, int height);
-sprite *load_sprite(nbstate *state, char *fname, int width, int height);
+sprite *make_empty_sprite(nbstate *state, unsigned char *fname, int width, int height);
+sprite *load_sprite(nbstate *state, unsigned char *fname, int width, int height);
 void destroy_sprite(nbstate *state, sprite *s);
 void destroy_all_sprites(nbstate *state);
 

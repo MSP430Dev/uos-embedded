@@ -24,7 +24,7 @@ OBJS            += animate.o ball.o bat.o brick.o cheat.o draw.o dump.o \
 		   powers.o scores.o sprite.o
 
 all:		$(OUTS) $(TESTS)
-		size $(OUTS)
+		$(SIZE) $(OUTS)
 
 img:		$(OUTS)
 		strip $(OUTS)
