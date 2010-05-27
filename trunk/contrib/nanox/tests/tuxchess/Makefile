@@ -16,7 +16,7 @@ tuxchess.out:	$(OBJS) $(TARGET)/libuos.a
 		$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o tuxchess.out
 
 images.h:	mkimages
-		mkimages > images.h
+		./mkimages > images.h
 
 mkimages:	mkimages.c
 		gcc -Wall -O $< -o mkimages

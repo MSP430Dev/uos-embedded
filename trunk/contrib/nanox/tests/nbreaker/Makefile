@@ -18,10 +18,10 @@ nbreaker.out:	$(OBJS) $(TARGET)/libuos.a
 		$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o nbreaker.out
 
 gamefile.h:	mkdata default.nbk
-		mkdata < default.nbk > gamefile.h
+		./mkdata < default.nbk > gamefile.h
 
 images.h:	mkimages images/*.gif
-		mkimages images/*.gif > images.h
+		./mkimages images/*.gif > images.h
 
 mkdata:		mkdata.c
 		gcc -Wall -O $< -o mkdata
