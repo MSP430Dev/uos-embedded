@@ -55,7 +55,7 @@ GdSetFont(PMWFONT pfont)
  * Select a font, based on various parameters.
  * If plogfont is specified, name and height parms are ignored
  * and instead used from MWLOGFONT.
- * 
+ *
  * If height is 0, match based on passed name, trying
  * builtins first for speed, then other font renderers.
  * If not found, return 0.  If height=0 is used for
@@ -87,9 +87,9 @@ GdCreateFont(PSD psd, const char *name, MWCOORD height,
 	PMWCOREFONT	pf = psd->builtin_fonts;
 	MWFONTINFO	fontinfo;
 	MWSCREENINFO 	scrinfo;
-	const char *	fontname;
+	const unsigned char *fontname;
 #if !FONTMAPPER
-	char 		fontmapper_fontname[MWLF_FACESIZE + 1];
+	unsigned char 	fontmapper_fontname[MWLF_FACESIZE + 1];
 #endif
 
 	GdGetScreenInfo(psd, &scrinfo);
@@ -99,7 +99,7 @@ GdCreateFont(PSD psd, const char *name, MWCOORD height,
 		/* if name not specified, use first builtin*/
 		if (!name || !name[0])
 			name = pf->name;
-		fontname = name;
+		fontname = (unsigned char*) name;
 		fontclass = MWLF_CLASS_ANY;
 	} else {
 		/* otherwise, use MWLOGFONT name, height and class*/
@@ -111,11 +111,11 @@ GdCreateFont(PSD psd, const char *name, MWCOORD height,
 		 * Note that it may not be NUL terminated in the source string,
 		 * so we're careful to NUL terminate it here.
 		 */
-		strncpy(fontmapper_fontname, plogfont->lfFaceName, MWLF_FACESIZE);
+		strncpy(fontmapper_fontname, (unsigned char*) plogfont->lfFaceName, MWLF_FACESIZE);
 		fontmapper_fontname[MWLF_FACESIZE] = '\0';
 		fontname = fontmapper_fontname;
 		if (!fontname[0])	/* if name not specified, use first builtin*/
-			fontname = pf->name;
+			fontname = (unsigned char*) pf->name;
 		fontclass = plogfont->lfClass;
 #endif
 		height = plogfont->lfHeight;
@@ -127,14 +127,14 @@ GdCreateFont(PSD psd, const char *name, MWCOORD height,
 	/* check builtin fonts first for speed*/
  	if (!height && (fontclass == MWLF_CLASS_ANY || fontclass == MWLF_CLASS_BUILTIN)) {
   		for(i = 0; i < scrinfo.fonts; ++i) {
- 			if(!strcmpi(pf[i].name, fontname)) {
+ 			if (! strcmpi ((unsigned char*) pf[i].name, fontname)) {
   				pf[i].fontsize = pf[i].cfont->height;
 				pf[i].fontattr = fontattr;
 DPRINTF("createfont: (height == 0) found builtin font %s (%d)\n", fontname, i);
   				return (PMWFONT)&pf[i];
   			}
   		}
-		/* 
+		/*
 		 * Specified height=0 and no builtin font matched name.
 		 * if not font found with other renderer, no font
 		 * will be loaded, and 0 returned.
@@ -230,7 +230,7 @@ DPRINTF("createfont: (height == 0) found builtin font %s (%d)\n", fontname, i);
 		/* Make sure the library is initialized */
 		if (hzk_init(psd)) {
 			pfont = (PMWFONT)hzk_createfont(fontname, height, fontattr);
-			if(pfont)		
+			if(pfont)
 				return pfont;
 			EPRINTF("hzk_createfont: %s,%d not found\n", fontname, height);
 		}
@@ -260,7 +260,7 @@ DPRINTF("createfont: (height == 0) found builtin font %s (%d)\n", fontname, i);
 		for(i = 0; i < scrinfo.fonts; ++i) {
 			pfont = (PMWFONT)&pf[i];
 			GdGetFontInfo(pfont, &fontinfo);
-			if(fontht > abs(height-fontinfo.height)) { 
+			if(fontht > abs(height-fontinfo.height)) {
 				fontno = i;
 				fontht = abs(height-fontinfo.height);
 			}
@@ -310,7 +310,7 @@ GdSetFontRotation(PMWFONT pfont, int tenthdegrees)
 
 	if (pfont->fontprocs->SetFontRotation)
 	    pfont->fontprocs->SetFontRotation(pfont, tenthdegrees);
-	
+
 	return oldrotation;
 }
 
@@ -333,7 +333,7 @@ GdSetFontAttr(PMWFONT pfont, int setflags, int clrflags)
 
 	if (pfont->fontprocs->SetFontAttr)
 	    pfont->fontprocs->SetFontAttr(pfont, setflags, clrflags);
-	
+
 	return oldattr;
 }
 
@@ -425,7 +425,7 @@ GdText(PSD psd, MWCOORD x, MWCOORD y, const void *str, int cc,MWTEXTFLAGS flags)
 
 	/* use strlen for char count when ascii or dbcs*/
 	if(cc == -1 && (flags & MWTF_PACKMASK) == MWTF_ASCII)
-		cc = strlen((char *)str);
+		cc = strlen(str);
 
 	if(cc <= 0 || !gr_pfont->fontprocs->DrawText)
 		return;
@@ -456,7 +456,7 @@ corefont_drawtext(PMWFONT pfont, PSD psd, MWCOORD x, MWCOORD y,
 	if (flags & MWTF_DBCSMASK)
 		dbcs_gettextsize(pfont, istr, cc, flags, &width, &height, &base);
 	else pfont->fontprocs->GetTextSize(pfont, str, cc, flags, &width, &height, &base);
-	
+
 	if (flags & MWTF_BASELINE)
 		y -= base;
 	else if (flags & MWTF_BOTTOM)
@@ -624,7 +624,7 @@ alphablend(PSD psd, OUTPIXELVAL *out, MWPIXELVAL src, MWPIXELVAL dst,
 		*out++ = dst;
 	    else if(a == 255)
 		*out++ = src;
-	    else 
+	    else
 		switch(psd->pixtype) {
 	        case MWPF_TRUECOLOR0888:
 	        case MWPF_TRUECOLOR888:
@@ -742,7 +742,7 @@ GdConvertEncoding(const void *istr, MWTEXTFLAGS iflags, int cc, void *ostr,
 
 	/* allow -1 for len with ascii or dbcs*/
 	if(cc == -1 && (iflags == MWTF_ASCII))
-		cc = strlen((char *)istr);
+		cc = strlen(istr);
 
 	/* first check for utf8 input encoding*/
 	if(iflags == MWTF_UTF8) {
@@ -906,7 +906,7 @@ GdGetTextSize(PMWFONT pfont, const void *str, int cc, MWCOORD *pwidth,
 
 	/* use strlen for char count when ascii or dbcs*/
 	if(cc == -1 && (flags & MWTF_PACKMASK) == MWTF_ASCII)
-		cc = strlen((char *)str);
+		cc = strlen(str);
 
 	if(cc <= 0 || !pfont->fontprocs->GetTextSize) {
 		*pwidth = *pheight = *pbase = 0;

@@ -1060,7 +1060,7 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 
     if (!*pdb) *pdb = NewDatabase();
     value.addr = (XPointer) str;
-    value.size = strlen(str)+1;
+    value.size = strlen ((unsigned char*) str) + 1;
     _XLockMutex(&(*pdb)->linfo);
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
     _XUnlockMutex(&(*pdb)->linfo);
@@ -1141,7 +1141,7 @@ static void GetDatabase(db, str, filename, doall)
      * name or a rhs value won't be longer than str itself.
      */
 
-    str_len = strlen (str);
+    str_len = strlen ((unsigned char*) str);
     if (DEF_BUFF_SIZE > str_len) lhs = lhs_s;
     else if ((lhs = (char*) Xmalloc (str_len)) == NULL)
 	return;
@@ -1192,7 +1192,7 @@ static void GetDatabase(db, str, filename, doall)
 	    only_pcs = True;
 	    while (is_space(bits = next_char(c, str))) {};
 	    /* only "include" directive is currently defined */
-	    if (!strncmp(str, "include", 7)) {
+	    if (! strncmp ((unsigned char*) str, (unsigned char*) "include", 7)) {
 		str += (7-1);
 		/* remove extra whitespace */
 		while (is_space(bits = next_char(c, str))) {};
@@ -1544,7 +1544,7 @@ void XrmPutStringResource(pdb, specifier, str)
     if (!*pdb) *pdb = NewDatabase();
     XrmStringToBindingQuarkList(specifier, bindings, quarks);
     value.addr = (XPointer) str;
-    value.size = strlen(str)+1;
+    value.size = strlen ((unsigned char*) str) + 1;
     _XLockMutex(&(*pdb)->linfo);
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
     _XUnlockMutex(&(*pdb)->linfo);
@@ -1654,23 +1654,24 @@ GetIncludeFile(db, base, fname, fnamelen)
     int fnamelen;
 {
     int len;
-    char *str;
-    char realfname[BUFSIZ];
+    unsigned char *str;
+    unsigned char realfname[BUFSIZ];
 
     if (fnamelen <= 0 || fnamelen >= BUFSIZ)
 	return;
-    if (*fname != '/' && base && (str = strrchr(base, '/'))) {
-	len = str - base + 1;
+    if (*fname != '/' && base && (str = strrchr ((unsigned char*) base, '/'))) {
+	len = str - (unsigned char*) base + 1;
 	if (len + fnamelen >= BUFSIZ)
 	    return;
-	strncpy(realfname, base, len);
-	strncpy(realfname + len, fname, fnamelen);
+	strncpy(realfname, (unsigned char*) base, len);
+	strncpy(realfname + len, (unsigned char*) fname, fnamelen);
 	realfname[len + fnamelen] = '\0';
     } else {
-	strncpy(realfname, fname, fnamelen);
+	strncpy(realfname, (unsigned char*) fname, fnamelen);
 	realfname[fnamelen] = '\0';
     }
-    if (!(str = ReadInFile(realfname)))
+    str = (unsigned char*) ReadInFile ((char*) realfname);
+    if (! str)
 	return;
     GetDatabase(db, str, realfname, True);
     Xfree(str);

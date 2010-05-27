@@ -138,8 +138,8 @@ XReadBitmapFileData (
     unsigned char *bits = NULL;		/* working variable */
     char line[MAX_SIZE];		/* input line from file */
     int size;				/* number of bytes of data */
-    char name_and_type[MAX_SIZE];	/* an input line */
-    char *type;				/* for parsing */
+    unsigned char name_and_type[MAX_SIZE];	/* an input line */
+    unsigned char *type;		/* for parsing */
     int value;				/* from an input line */
     int version10p;			/* boolean, old format */
     int padding;			/* to handle alignment */
@@ -163,24 +163,24 @@ XReadBitmapFileData (
 { if (bits) Xfree ((char *)bits); fclose (fstream); return code; }
 
     while (fgets(line, MAX_SIZE, fstream)) {
-	if (strlen(line) == MAX_SIZE-1)
+	if (strlen ((unsigned char*) line) == MAX_SIZE-1)
 	    RETURN (BitmapFileInvalid);
-	if (sscanf(line,"#define %s %d",name_and_type,&value) == 2) {
-	    if (!(type = strrchr(name_and_type, '_')))
+	if (sscanf(line, "#define %s %d", name_and_type, &value) == 2) {
+	    if (!(type = strrchr (name_and_type, '_')))
 	      type = name_and_type;
 	    else
 	      type++;
 
-	    if (!strcmp("width", type))
+	    if (! strcmp ((unsigned char*) "width", type))
 	      ww = (unsigned int) value;
-	    if (!strcmp("height", type))
+	    if (! strcmp ((unsigned char*) "height", type))
 	      hh = (unsigned int) value;
-	    if (!strcmp("hot", type)) {
+	    if (! strcmp ((unsigned char*) "hot", type)) {
 		if (type-- == name_and_type || type-- == name_and_type)
 		  continue;
-		if (!strcmp("x_hot", type))
+		if (! strcmp ((unsigned char*) "x_hot", type))
 		  hx = value;
-		if (!strcmp("y_hot", type))
+		if (! strcmp ((unsigned char*) "y_hot", type))
 		  hy = value;
 	    }
 	    continue;
@@ -188,7 +188,7 @@ XReadBitmapFileData (
 
 	if (sscanf(line, "static short %s = {", name_and_type) == 1)
 	  version10p = 1;
-	else if (sscanf(line,"static unsigned char %s = {",name_and_type) == 1)
+	else if (sscanf(line,"static unsigned char %s = {", name_and_type) == 1)
 	  version10p = 0;
 	else if (sscanf(line, "static char %s = {", name_and_type) == 1)
 	  version10p = 0;
@@ -200,7 +200,7 @@ XReadBitmapFileData (
 	else
 	  type++;
 
-	if (strcmp("bits[]", type))
+	if (strcmp ((unsigned char*) "bits[]", type))
 	  continue;
 
 	if (!ww || !hh)

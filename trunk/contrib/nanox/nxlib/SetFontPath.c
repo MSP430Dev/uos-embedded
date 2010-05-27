@@ -17,7 +17,7 @@ _nxGetFontDir(int *count)
 	ret = (char **) Xcalloc(size, sizeof(char *));
 
 	for (i = 0; i < _nxfontcount; i++)
-		ret[i] = strdup(_nxfontlist[i]);
+		ret[i] = (char*) strdup ((unsigned char*) _nxfontlist[i]);
 	ret[_nxfontcount] = 0;
 
 	*count = _nxfontcount;
@@ -37,7 +37,7 @@ _nxSetFontDir(char **directories, int ndirs)
 
 	_nxfontlist = (char **) Xcalloc(ndirs, sizeof(char *));
 	for (i = 0; i < ndirs; i++)
-		_nxfontlist[i] = strdup(directories[i]);
+		_nxfontlist[i] = (char*) strdup ((unsigned char*) directories[i]);
 
 	_nxfontcount = ndirs;
 }

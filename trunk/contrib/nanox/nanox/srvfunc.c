@@ -3550,7 +3550,7 @@ GrSetWMProperties(GR_WINDOW_ID wid, GR_WM_PROPERTIES *props)
 
 		/* Calculate the space needed to store the new title */
 		if(props->title)
-			tl = strlen((const char *)props->title) + 1;
+			tl = strlen(props->title) + 1;
 
 		/* Check for empty title*/
 		if(!props->title || tl == 1) {
@@ -3803,7 +3803,7 @@ GrSetSelectionOwner(GR_WINDOW_ID wid, GR_CHAR *typelist)
 	selection_owner.wid = wid;
 
 	if(wid) {
-		if(!(selection_owner.typelist = (GR_CHAR *)strdup((const char *)typelist))) {
+		if(!(selection_owner.typelist = (GR_CHAR *)strdup(typelist))) {
 			GsError(GR_ERROR_MALLOC_FAILED, wid);
 			selection_owner.wid = 0;
 		}

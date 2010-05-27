@@ -19,7 +19,7 @@ extern keyboard_t *uos_keyboard;
 void
 GsSelect (GR_TIMEOUT timeout)
 {
-	char group [sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t)];
+	ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 	mutex_group_t *g;
 	mutex_t *source;
 	GR_TIMEOUT waittime = 0;

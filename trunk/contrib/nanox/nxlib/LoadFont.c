@@ -6,10 +6,10 @@
 char *
 _nxFindX11Font(const char *xfontname)
 {
-	if (strcmp (xfontname, "fixed") == 0)
-		return strdup (MWFONT_SYSTEM_FIXED);
-	if (strcmp (xfontname, "variable") == 0)
-		return strdup (MWFONT_SYSTEM_VAR);
+	if (strcmp ((unsigned char*) xfontname, (unsigned char*) "fixed") == 0)
+		return (char*) strdup ((unsigned char*) MWFONT_SYSTEM_FIXED);
+	if (strcmp ((unsigned char*) xfontname, (unsigned char*) "variable") == 0)
+		return (char*) strdup ((unsigned char*) MWFONT_SYSTEM_VAR);
 	return 0;
 }
 #else /* UOS */
@@ -140,7 +140,7 @@ XLoadFont(Display * dpy, _Xconst char *name)
 	fontname = _nxFindX11Font(fontname);
 
 	/* if not found, try 6x13 for "fixed"*/
-	if (!fontname && !strcmp(name, "fixed"))
+	if (! fontname && ! strcmp ((unsigned char*) name, (unsigned char*) "fixed"))
 		fontname = _nxFindX11Font("6x13");
 
 	/* found font, load into server*/

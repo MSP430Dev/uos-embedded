@@ -59,13 +59,15 @@ static inline void usleep (unsigned long usec)
 
 static inline char *getcwd (char *buf, size_t size)
 {
-	strcpy (buf, "/");
+	buf[0] = '/';
+	buf[1] = 0;
 	return buf;
 }
 
 static inline char *getwd (char *buf)
 {
-	strcpy (buf, "/");
+	buf[0] = '/';
+	buf[1] = 0;
 	return buf;
 }
 

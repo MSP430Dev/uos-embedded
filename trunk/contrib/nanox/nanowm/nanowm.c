@@ -24,7 +24,7 @@ void Wm_run (void *arg)
 
 	if (GrOpen() < 0) {
 		debug_printf ("Couldn't connect to Nano-X server!\n");
-		abort();
+		uos_halt (0);
 	}
 
 	/* pass errors through main loop, don't exit*/

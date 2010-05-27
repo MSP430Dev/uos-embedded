@@ -98,7 +98,7 @@ GdDecodeGIF(buffer_t *src, PMWIMAGEHDR pimage)
     int useGlobalColormap;
     int bitPixel;
     int imageCount = 0;
-    char version[4];
+    unsigned char version[4];
     int imageNumber = 1;
     int ok = 0;
 
@@ -109,12 +109,14 @@ GdDecodeGIF(buffer_t *src, PMWIMAGEHDR pimage)
 
     if (!ReadOK(src, buf, 6))
         return 0;		/* not gif image*/
-    if (strncmp((char *) buf, "GIF", 3) != 0)
+    if (strncmp(buf, (unsigned char*) "GIF", 3) != 0)
         return 0;
-    strncpy(version, (char *) buf + 3, 3);
+    strncpy(version, buf + 3, 3);
     version[3] = '\0';
 
-    if (strcmp(version, "87a") != 0 && strcmp(version, "89a") != 0) {
+    if (strcmp (version, (unsigned char*) "87a") != 0 && \
+        strcmp (version, (unsigned char*) "89a") != 0)
+    {
 	EPRINTF("GdDecodeGIF: GIF version number not 87a or 89a\n");
         return 2;		/* image loading error*/
     }

@@ -185,7 +185,7 @@ XStringToKeysym(_Xconst char *string)
 	int i;
 
 	for (i=0; i < NX_KEYSYMSTR_COUNT; i++)
-		if (strcmp(nxKeyStrings[i].str, string) == 0)
+		if (strcmp ((unsigned char*) nxKeyStrings[i].str, (unsigned char*) string) == 0)
 			return nxKeyStrings[i].keysym;
 
 	return NoSymbol;

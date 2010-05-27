@@ -4,6 +4,8 @@
 #ifndef _MATH_H
 #define _MATH_H 1
 
+#include <float.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

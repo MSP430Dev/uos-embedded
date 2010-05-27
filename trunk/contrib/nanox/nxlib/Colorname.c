@@ -24,7 +24,8 @@ static int rgbcompare (const void *colorname, const void *elem)
 {
 	int ret;
 
-	ret = strcasecmp (colorname, ((struct rgbname*) elem)->colorname);
+	ret = strcasecmp ((unsigned char*) colorname,
+		(unsigned char*) ((struct rgbname*) elem)->colorname);
 	/* debug_printf ("compare '%s' with '%s' - %d\n", colorname,
 		((struct rgbname*) elem)->colorname, ret); */
 	return ret;

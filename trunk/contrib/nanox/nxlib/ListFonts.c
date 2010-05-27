@@ -106,6 +106,7 @@ dashcount(char *name)
 }
 #endif
 
+#if !UOS
 static int
 patternmatch(char *pat, int patdashes, char *string, int stringdashes)
 {
@@ -166,7 +167,6 @@ patternmatch(char *pat, int patdashes, char *string, int stringdashes)
 	}
 }
 
-#if !UOS
 static int
 match(char *pat, char *string)
 {

@@ -6,12 +6,12 @@
 Status
 XStringListToTextProperty(char **argv, int argc, XTextProperty * ret)
 {
-	char *buffer;
+	unsigned char *buffer;
 	int count = 0, i;
 	XTextProperty proto;
 
 	for (i = 0; i < argc; i++)
-		count += (argv[i] ? strlen(argv[i]) : 0) + 1;
+		count += (argv[i] ? strlen ((unsigned char*) argv[i]) : 0) + 1;
 
 	proto.encoding = XA_STRING;
 	proto.format = 8;
@@ -20,23 +20,23 @@ XStringListToTextProperty(char **argv, int argc, XTextProperty * ret)
 	if (count > 0) {
 		proto.nitems = count - 1;
 
-		buffer = (char *) Xmalloc(count);
-		if (!buffer)
+		buffer = Xmalloc(count);
+		if (! buffer)
 			return 0;
 
-		proto.value = (unsigned char*) buffer;
+		proto.value = buffer;
 
 		for (i = 0; i < argc; i++) {
 			if (argv[i]) {
-				strcpy(buffer, argv[i]);
-				buffer += strlen(argv[i] + 1);
+				strcpy (buffer, (unsigned char*) argv[i]);
+				buffer += strlen ((unsigned char*) argv[i] + 1);
 			} else {
 				*buffer++ = '\0';
 			}
 		}
 	} else {
 		proto.nitems = 0;
-		if (!(proto.value = (unsigned char *) Xmalloc(1)))
+		if (! (proto.value = Xmalloc(1)))
 			return 0;
 
 		*proto.value = '\0';

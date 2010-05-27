@@ -16,7 +16,7 @@ hash_str(_Xconst char *name)
 	unsigned char ch = 0;
 	int i = 0;
 
-	for (i = 0; i < strlen(name); i++)
+	for (i = 0; i < strlen ((unsigned char*) name); i++)
 		ch += name[i];
 
 	return (ch % 64);
@@ -30,7 +30,7 @@ XInternAtom(Display * display, _Xconst char *atom_name, Bool only_if_exists)
 
 /*printf("XInternAtom %s %d\n", atom_name, only_if_exists);*/
 	for (val = hash_list[hash]; val; val = val->next)
-		if (strcmp(val->name, atom_name) == 0)
+		if (strcmp ((unsigned char*) val->name, (unsigned char*) atom_name) == 0)
 			return val->atom;
 
 	if (only_if_exists == True)
@@ -47,7 +47,7 @@ XInternAtom(Display * display, _Xconst char *atom_name, Bool only_if_exists)
 			(struct hash_t *) Xcalloc(1, sizeof(struct hash_t));
 	}
 
-	val->name = strdup(atom_name);
+	val->name = (char*) strdup ((unsigned char*) atom_name);
 	val->atom = atom_id++;
 
 	return val->atom;
@@ -78,7 +78,7 @@ XGetAtomName(Display * display, Atom atom)
 		struct hash_t *val = hash_list[i];
 		for (val = hash_list[i]; val; val = val->next)
 			if (val->atom == atom) {
-				char *foo = strdup(val->name);
+				char *foo = (char*) strdup ((unsigned char*) val->name);
 				return (foo);
 			}
 	}

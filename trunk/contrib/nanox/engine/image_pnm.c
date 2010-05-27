@@ -27,27 +27,27 @@ enum {
 int
 GdDecodePNM(buffer_t *src, PMWIMAGEHDR pimage)
 {
-	char buf[256], *p;
+	unsigned char buf[256], *p;
 	int type = PNM_TYPE_NOTPNM, binary = 0, gothdrs = 0, scale = 0;
 	int ch, x = 0, y = 0, i, n, mask, col1, col2, col3;
 
 	GdImageBufferSeekTo(src, 0UL);
 
-	if(!GdImageBufferGetString(src,buf, 4))
+	if (! GdImageBufferGetString (src, (char*) buf, 4))
 		return 0;
 
-	if(!strcmp("P1\n", buf)) type = PNM_TYPE_PBM;
-	else if(!strcmp("P2\n", buf)) type = PNM_TYPE_PGM;
-	else if(!strcmp("P3\n", buf)) type = PNM_TYPE_PPM;
-	else if(!strcmp("P4\n", buf)) {
+	if (! strcmp ((unsigned char*) "P1\n", buf)) type = PNM_TYPE_PBM;
+	else if (! strcmp ((unsigned char*) "P2\n", buf)) type = PNM_TYPE_PGM;
+	else if (! strcmp ((unsigned char*) "P3\n", buf)) type = PNM_TYPE_PPM;
+	else if (! strcmp ((unsigned char*) "P4\n", buf)) {
 		type = PNM_TYPE_PBM;
 		binary = 1;
 	}
-	else if(!strcmp("P5\n", buf)) {
+	else if (! strcmp ((unsigned char*) "P5\n", buf)) {
 		type = PNM_TYPE_PGM;
 		binary = 1;
 	}
-	else if(!strcmp("P6\n", buf)) {
+	else if (! strcmp ((unsigned char*) "P6\n", buf)) {
 		type = PNM_TYPE_PPM;
 		binary = 1;
 	}
@@ -56,10 +56,10 @@ GdDecodePNM(buffer_t *src, PMWIMAGEHDR pimage)
 		return 0;
 
 	n = 0;
-	while((p = GdImageBufferGetString(src, buf, 256))) {
+	while((p = (unsigned char*) GdImageBufferGetString(src, (char*) buf, 256))) {
 		if(*buf == '#') continue;
 		if(type == PNM_TYPE_PBM) {
-			if(sscanf(buf, "%i %i", &pimage->width,
+			if (sscanf ((char*) buf, "%i %i", &pimage->width,
 					&pimage->height) == 2) {
 				pimage->bpp = 1;
 				gothdrs = 1;
@@ -80,10 +80,10 @@ GdDecodePNM(buffer_t *src, PMWIMAGEHDR pimage)
 		}
 		if((type == PNM_TYPE_PGM) || (type == PNM_TYPE_PPM)) {
 			if(!n++) {
-				if(sscanf(buf, "%i %i", &pimage->width,
+				if (sscanf ((char*) buf, "%i %i", &pimage->width,
 					&pimage->height) != 2) break;
 			} else {
-				if(sscanf(buf, "%i", &i) != 1) break;
+				if (sscanf ((char*) buf, "%i", &i) != 1) break;
 				pimage->bpp = 24;
 				if(i > 255) {
 					EPRINTF("GdDecodePNM: PPM files must be "
@@ -116,7 +116,7 @@ GdDecodePNM(buffer_t *src, PMWIMAGEHDR pimage)
 		return 2;
 	}
 
-	p = (char*) pimage->imagebits;
+	p = pimage->imagebits;
 
 	if(type == PNM_TYPE_PBM) {
 		if(binary) {
@@ -130,7 +130,7 @@ GdDecodePNM(buffer_t *src, PMWIMAGEHDR pimage)
 					if(++x == pimage->width) {
 						if(++y == pimage->height)
 							return 1;
-						p = (char*) pimage->imagebits - 1 +
+						p = pimage->imagebits - 1 +
 							(y * pimage->pitch);
 						x = 0;
 						break;
@@ -153,7 +153,7 @@ GdDecodePNM(buffer_t *src, PMWIMAGEHDR pimage)
 				if(++x == pimage->width) {
 					if(++y == pimage->height)
 						return 1;
-					p = (char*) pimage->imagebits +
+					p = pimage->imagebits +
 						(y * pimage->pitch);
 					n = 0;
 					x = 0;
@@ -189,7 +189,7 @@ GdDecodePNM(buffer_t *src, PMWIMAGEHDR pimage)
 			}
 			if(++x == pimage->width) {
 				if(++y == pimage->height) return 1;
-				p = (char*) pimage->imagebits + (y * pimage->pitch);
+				p = pimage->imagebits + (y * pimage->pitch);
 				x = 0;
 			}
 		}

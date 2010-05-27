@@ -29,24 +29,24 @@ static long
 XPM_parse_color(char *color)
 {
 	if (color[0] != '#') {
-		if (!strcmp(color, "None"))
+		if (! strcmp ((unsigned char*) color, (unsigned char*) "None"))
 			return -1L;	/* Transparent */
 		else
 			return 0;	/* If its an X color, then we bail */
 	} else {
 		/* This is ugly! */
-		char *sptr = color + 1;
-		char rstr[5], gstr[5], bstr[5];
+		unsigned char *sptr = (unsigned char*) color + 1;
+		unsigned char rstr[5], gstr[5], bstr[5];
 		long r, g, b;
 
-		switch (strlen(sptr)) {
+		switch (strlen (sptr)) {
 		case 6:
-			return strtol(sptr, NULL, 16);
+			return strtol (sptr, NULL, 16);
 
 		case 9:	/* RRRGGGBBB */
-			strncpy(rstr, sptr, 3);
-			strncpy(gstr, sptr + 3, 3);
-			strncpy(bstr, sptr + 6, 3);
+			strncpy (rstr, sptr, 3);
+			strncpy (gstr, sptr + 3, 3);
+			strncpy (bstr, sptr + 6, 3);
 
 			rstr[3] = 0;
 			gstr[3] = 0;
@@ -87,7 +87,7 @@ XPM_parse_color(char *color)
 #define LOAD_DONE 5
 
 /* The magic that "should" indicate an XPM (does it really?) */
-#define XPM_MAGIC "/* XPM */"
+#define XPM_MAGIC (unsigned char*) "/* XPM */"
 #define XPM_TRANSCOLOR 0x01000000
 
 int
@@ -97,9 +97,9 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 	struct xpm_cmap *colormap[256];	/* A quick hash of 256 spots for colors */
 	unsigned char *imageptr = 0;
 	MWSCREENINFO sinfo;
-	char xline[300];
-	char dline[300];
-	char *c;
+	unsigned char xline[300];
+	unsigned char dline[300];
+	unsigned char *c;
 	int a;
 	int col, row, colors, cpp;
 	int in_color = 0;
@@ -117,18 +117,18 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 
 	/* Start over at the beginning with the file */
 	GdImageBufferSeekTo(src, 0UL);
-	GdImageBufferGetString(src, xline, 300);
+	GdImageBufferGetString(src, (char*) xline, 300);
 
 	/* Chop the EOL */
 	xline[strlen(xline) - 1] = 0;
 
 	/* Check the magic */
-	if (strncmp(xline, XPM_MAGIC, sizeof(XPM_MAGIC)))
+	if (strncmp (xline, XPM_MAGIC, sizeof(XPM_MAGIC)))
 		return 0;
 
 	while (!GdImageBufferEOF(src)) {
 		/* Get the next line from the file */
-		GdImageBufferGetString(src, xline, 300);
+		GdImageBufferGetString (src, (char*) xline, 300);
 		xline[strlen(xline) - 1] = 0;
 
 		/* Check it out */
@@ -146,7 +146,7 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 
 		/* Is it the header? */
 		if (status == LOAD_HEADER) {
-			sscanf(dline, "%i %i %i %i", &col, &row, &colors, &cpp);
+			sscanf ((char*) dline, "%i %i %i %i", &col, &row, &colors, &cpp);
 
 			pimage->width = col;
 			pimage->height = row;
@@ -190,8 +190,8 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 		/* Are we in load colors? */
 		if (status == LOAD_COLORS) {
 			struct xpm_cmap *n;
-			char tstr[5];
-			char cstr[256];
+			unsigned char tstr[5];
+			unsigned char cstr[256];
 			unsigned char m;
 
 			c = dline;
@@ -229,17 +229,17 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 			n->next = 0;
 
 			/* Record the string */
-			strncpy(n->mapstr, tstr, cpp);
+			strncpy ((unsigned char*) n->mapstr, tstr, cpp);
 			n->mapstr[cpp] = 0;
 
 			/* Now record the palette entry */
 			n->palette_entry = (long) in_color;
 
 			/* This is the color */
-			sscanf(c, "%65535s", cstr);
+			sscanf ((char*) c, "%65535s", cstr);
 
 			/* Turn it into a real value */
-			n->color = XPM_parse_color(cstr);
+			n->color = XPM_parse_color ((char*) cstr);
 
 			/* If we are in palette mode, then we need to */
 			/* load the palette (duh..) */
@@ -274,7 +274,7 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 			int bitcount = 0;
 			long dwordcolor = 0;
 			int i;
-			char pxlstr[3];
+			unsigned char pxlstr[3];
 
 			c = dline;
 
@@ -299,7 +299,7 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 					struct xpm_cmap *n;
 
 					/* We grab the largest possible, and then compare */
-					strncpy(pxlstr, c, cpp);
+					strncpy (pxlstr, c, cpp);
 					z = pxlstr[0];
 
 					if (!colormap[z]) {
@@ -310,8 +310,8 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 					n = colormap[z];
 
 					while (n) {
-						if (!strncmp
-						    (n->mapstr, pxlstr, cpp))
+						if (! strncmp
+						    ((unsigned char*) n->mapstr, pxlstr, cpp))
 							break;
 
 						n = n->next;
@@ -329,7 +329,7 @@ GdDecodeXPM(buffer_t * src, PMWIMAGEHDR pimage, PSD psd)
 					c += cpp;
 				}
 
-				/* 
+				/*
 				 * This ugly thing is needed to ensure that we
 				 * work well in all modes.
 				 */

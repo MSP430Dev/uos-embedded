@@ -8,12 +8,12 @@
 static int
 _parseColorStr(_Xconst char **str, int size)
 {
-	char parse[5];
+	unsigned char parse[5];
 	unsigned long val;
 
-	strncpy(parse, *str, size);
+	strncpy (parse, (unsigned char*) *str, size);
 	parse[size + 1] = '\0';
-	val = strtol(parse, 0, 16);
+	val = strtol (parse, 0, 16);
 	*str += size;
 	return (val);
 }
@@ -25,8 +25,8 @@ XParseColor(Display * display, Colormap colormap, _Xconst char *spec,
 	int r, g, b;
 
 	/* This is the new and preferred way */
-	if (strncmp(spec, "rgb:", 4) == 0) {
-		sscanf(spec + 4, "%x/%x/%x", &r, &g, &b);
+	if (strncmp ((unsigned char*) spec, (unsigned char*) "rgb:", 4) == 0) {
+		sscanf (spec + 4, "%x/%x/%x", &r, &g, &b);
 	} else {
 		if (spec[0] != '#') {
 			/* try to parse the color name */
@@ -38,7 +38,7 @@ XParseColor(Display * display, Colormap colormap, _Xconst char *spec,
 			_Xconst char *p = spec + 1;
 			unsigned long val;
 
-			switch (strlen(p)) {
+			switch (strlen ((unsigned char*) p)) {
 			case 3:
 				r = _parseColorStr(&p, 1);
 				g = _parseColorStr(&p, 1);
@@ -46,7 +46,7 @@ XParseColor(Display * display, Colormap colormap, _Xconst char *spec,
 				break;
 
 			case 6:
-				val = strtol(p, 0, 16);
+				val = strtol ((unsigned char*) p, 0, 16);
 				r = (val >> 16) & 0xFF;
 				g = (val >> 8) & 0xFF;
 				b = (val & 0xFF);
@@ -68,7 +68,7 @@ XParseColor(Display * display, Colormap colormap, _Xconst char *spec,
 
 			default:
 				printf("XParseColor: invalid size %d on %s\n",
-				       strlen(p), p);
+				       strlen ((unsigned char*) p), p);
 				return 0;
 			}
 		}

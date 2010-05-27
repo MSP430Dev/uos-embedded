@@ -98,7 +98,8 @@ void GsError(GR_ERROR code, GR_ID id)
 	ep->type = GR_EVENT_TYPE_ERROR;
 	ep->name[0] = 0;
 	if(curfunc) {
-		strncpy(ep->name, curfunc, sizeof(GR_FUNC_NAME));
+		strncpy ((unsigned char*) ep->name,
+			(unsigned char*) curfunc, sizeof(GR_FUNC_NAME));
 		ep->name[sizeof(GR_FUNC_NAME)-1] = '\0';
 	}
 	ep->code = code;
