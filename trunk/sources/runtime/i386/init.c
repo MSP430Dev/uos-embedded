@@ -316,3 +316,13 @@ void uos_call_global_destructors (void)
 	for (func = __DTOR_LIST__; func < __DTOR_END__; ++func)
 		(*func) ();
 }
+
+/*
+ * Return 1 when the address point to valid data region.
+ */
+bool_t __attribute__((weak))
+uos_valid_memory_address (void *ptr)
+{
+	/* TODO */
+	return 1;
+}

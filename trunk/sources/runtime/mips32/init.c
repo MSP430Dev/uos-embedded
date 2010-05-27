@@ -193,7 +193,6 @@ uos_valid_memory_address (void *ptr)
 	return 0;
 }
 
-
 static void dump_of_death (unsigned int context[])
 {
 	debug_printf ("                t0 = %8x   s0 = %8x   t8 = %8x   lo = %8x\n",
