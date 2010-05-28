@@ -8,7 +8,7 @@ OUTS		+= t_task.out
 OUTS		+= t_pipe.out
 
 all:		$(OUTS) $(TESTS)
-		size $(OUTS)
+		$(SIZE) $(OUTS)
 
 img:		$(OUTS)
 		strip $(OUTS)
