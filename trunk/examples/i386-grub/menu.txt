@@ -1,28 +1,28 @@
 default 0
 timeout 300
-color grey/black black/cyan
+color cyan/black black/cyan
 
 title t_task
-kernel /t_task
+kernel /t_task.out
 
 title t_timer
-kernel /t_timer
+kernel /t_timer.out
 
 title t_kbd
-kernel /t_kbd
+kernel /t_kbd.out
 
 title t_mouse
-kernel /t_mouse
+kernel /t_mouse.out
 
 title t_pipe
-kernel /t_pipe
+kernel /t_pipe.out
 
 #
 # halt/reboot
 #
-title REBOOT
+title <<Reboot>>
 reboot
-title HALT
+title <<Halt>>
 halt
 
 #
