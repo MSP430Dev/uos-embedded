@@ -1,0 +1,53 @@
+default 0
+timeout 300
+color grey/black black/cyan
+
+title t_task
+kernel /t_task
+
+title t_timer
+kernel /t_timer
+
+title t_kbd
+kernel /t_kbd
+
+title t_mouse
+kernel /t_mouse
+
+title t_pipe
+kernel /t_pipe
+
+#
+# halt/reboot
+#
+title REBOOT
+reboot
+title HALT
+halt
+
+#
+# Linux
+#
+#title  Linux (/boot/vmlinuz) /dev/hda1
+#root (hd0,0)
+#kernel /boot/vmlinuz root=/dev/hda1
+
+#title Linux (/boot/vmlinuz) /dev/hda2
+#root (hd0,1)
+#kernel /boot/vmlinuz root=/dev/hda2
+
+#title Linux (/boot/vmlinuz) /dev/hda3
+#root (hd0,2)
+#kernel /boot/vmlinuz root=/dev/hda3
+
+#title Linux (/boot/vmlinuz) /dev/hda4
+#root (hd0,3)
+#kernel /boot/vmlinuz root=/dev/hda4
+
+#
+# Windows
+#
+#title Windows
+#rootnoverify (hd0,0)
+#chainloader +1
+#makeactive
