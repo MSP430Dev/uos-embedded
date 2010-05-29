@@ -61,7 +61,7 @@ void mutex_lock (mutex_t *lock);
 === Параметры ===
   * `lock` --- Мутекс, который требуется захватить.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/ltake.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/mlock_ru.png]
 
 === Пример ===
 {{{
@@ -123,7 +123,7 @@ void mutex_unlock (mutex_t *lock);
 === Параметры ===
   * `lock` --- Мутекс, который требуется освободить.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/lrelease.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/munlock_ru.png]
 
 === Пример ===
 {{{
@@ -186,7 +186,7 @@ int mutex_trylock (mutex_t *lock);
 Возвращает 1 если мутекс успешно захвачен.
 В случае неуспеха возвращается 0.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/ltry.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/mtrylock_ru.png]
 
 === Пример ===
 {{{
@@ -208,7 +208,7 @@ void mutex_signal (mutex_t *lock, void *message);
   * `lock` --- Мутекс, которому посылается сообщение.
   * `message` --- Сообщение -- произвольный указатель.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/lsignal.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/msignal_ru.png]
 
 === Пример ===
 {{{
@@ -286,7 +286,7 @@ void *mutex_wait (mutex_t *lock);
 
 Возвращает указатель-сообщение, посланное вызовом `mutex_signal()`.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/lwait.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/mwait_ru.png]
 
 === Пример ===
 {{{

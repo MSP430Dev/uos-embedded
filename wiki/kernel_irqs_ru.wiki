@@ -108,7 +108,7 @@ void mutex_lock_irq (mutex_t *lock, int irq, handler_t func, void *arg);
  * `func` --- Указатель на функцию -- быстрый обработчик прерывания. Необязательный параметр. Если нет необходимости использовать быстрый обработчик, следует указать параметр `func` равным `0`.
  * `arg` --- Аргумент, передаваемый быстрому обработчику прерывания.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/itake.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/ilock_ru.png]
 
 === Пример ===
 {{{
@@ -132,7 +132,7 @@ void mutex_unlock_irq (mutex_t *lock);
 === Параметры ===
  * `lock` --- Мутекс, который требуется освободить.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/irelease.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/iunlock_ru.png]
 
 === Пример ===
 {{{

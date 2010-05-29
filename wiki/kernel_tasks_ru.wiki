@@ -86,7 +86,7 @@ task_t *task_create (void (*func)(void*), void *arg, char *name,
 Возвращает указатель на структуру `task_t`, расположенную в
 массиве stack.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/tcreate.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/tcreate_ru.png]
 
 === Пример ===
 {{{
@@ -174,7 +174,7 @@ void task_delete (task_t *task, void *status);
   * `task` --- Указатель на структуру данных завершаемой задачи.
   * `status` --- Произвольный указатель, передаваемый в качестве сообщения функции `task_wait()`.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/tdelete.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/tdelete_ru.png]
 
 === Пример ===
 {{{
@@ -237,7 +237,7 @@ void *task_wait (task_t *task);
 Возвращает статус завершения задачи, установленный вызовами `task_exit()`
 или `task_delete()`.
 
-[http://uos-embedded.googlecode.com/svn/wiki/images/twait.png]
+[http://uos-embedded.googlecode.com/svn/wiki/images/twait_ru.png]
 
 === Пример ===
 {{{
