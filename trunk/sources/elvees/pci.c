@@ -7,24 +7,30 @@
 
 void pci_init ()
 {
-//	device_id = MCB_PCI_DEVICE_VENDOR_ID;		/* Идентификация устройства */
-//	subsystem_id = MCB_PCI_SUBSYSTEM_VENDOR_ID;	/* Идентификация подсистемы */
-//	class_revision = MCB_PCI_CLASS_REVISION;	/* Регистр кода */
+#if 0
+	/* Идентификация устройства */
+	device_id = mcb_read_reg (MCB_PCI_DEVICE_VENDOR_ID);
 
-	MCB_PCI_STATUS_COMMAND =			/* Состояние и управление */
-		MCB_PCI_COMMAND_MASTER;			/* Режим задатчика */
+	/* Идентификация подсистемы */
+	subsystem_id = mcb_read_reg (MCB_PCI_SUBSYSTEM_VENDOR_ID);
 
-	MCB_PCI_CSR_PCI =				/* Управление шиной PCI */
-		MCB_PCI_CSR_PCI_WN (8);			/* Уровень FIFO записи в память */
+	/* Регистр кода */
+	class_revision = mcb_read_reg (MCB_PCI_CLASS_REVISION);
+#endif
+	mcb_write_reg (MCB_PCI_STATUS_COMMAND,		/* Состояние и управление */
+		MCB_PCI_COMMAND_MASTER);		/* Режим задатчика */
 
-	MCB_PCI_BAR = 0;				/* Базовый адрес 0 */
-	MCB_PCI_LATENCY_TIMER = 0;			/* Таймер времени передачи (MLT) */
-	MCB_PCI_INTERRUPT_LINE = 0;			/* Код прерывания */
-	MCB_PCI_MASKR_PCI = 0;				/* Маскирование прерываний */
+	mcb_write_reg (MCB_PCI_CSR_PCI,			/* Управление шиной PCI */
+		MCB_PCI_CSR_PCI_WN (8));		/* Уровень FIFO записи в память */
 
-	MCB_PCI_CSR_MASTER = 0;				/* Состояние и управление обменом в режиме Master */
-	MCB_PCI_IR_MASTER = 0;				/* Адрес памяти при обмене в режиме Master */
-	MCB_PCI_AR_PCI = 0;				/* Идентификатор адресуемого устройства */
+	mcb_write_reg (MCB_PCI_BAR, 0);			/* Базовый адрес 0 */
+	mcb_write_reg (MCB_PCI_LATENCY_TIMER, 0);	/* Таймер времени передачи (MLT) */
+	mcb_write_reg (MCB_PCI_INTERRUPT_LINE, 0);	/* Код прерывания */
+	mcb_write_reg (MCB_PCI_MASKR_PCI, 0);		/* Маскирование прерываний */
+
+	mcb_write_reg (MCB_PCI_CSR_MASTER, 0);		/* Состояние и управление обменом в режиме Master */
+	mcb_write_reg (MCB_PCI_IR_MASTER, 0);		/* Адрес памяти при обмене в режиме Master */
+	mcb_write_reg (MCB_PCI_AR_PCI, 0);		/* Идентификатор адресуемого устройства */
 }
 
 /*
@@ -40,27 +46,27 @@ int pci_cfg_transaction (unsigned cmd, unsigned local_addr,
 	 * в режиме Master необходимо убедиться в том, что в настоящий
 	 * момент времени транзакция не выполняется: в регистре
 	 * CSR_Master бит RUN = 0. */
-	if (MCB_PCI_CSR_MASTER & MCB_PCI_CSR_MASTER_RUN)
+	if (mcb_read_reg (MCB_PCI_CSR_MASTER) & MCB_PCI_CSR_MASTER_RUN)
 		return 0;
 retry:
 	/* Затем необходимо записатьадрес слова данных в регистр IR_Master. */
-	MCB_PCI_IR_MASTER = local_addr;
+	mcb_write_reg (MCB_PCI_IR_MASTER, local_addr);
 
 	/* При выполнении конфигурационных операций разряды
 	 * AR_PCI[1:0] определяют тип обмена (Type0 или Type1),
 	 * а унитарный код в разрядах AR_PCI[31:11] указывает IDSEL
 	 * адресуемого устройства. Разряды AR_PCI[10:2] должны
 	 * содержать номер функции и регистра. */
-	MCB_PCI_AR_PCI = cfgtype | funreg << 2 | idsel << 11;
+	mcb_write_reg (MCB_PCI_AR_PCI, cfgtype | funreg << 2 | idsel << 11);
 
 	/* - команду CMD, число слов данных WC и бит RUN=1 в регистр CSR_Master. */
-	MCB_PCI_CSR_MASTER = cmd |
+	mcb_write_reg (MCB_PCI_CSR_MASTER, cmd |
 		MCB_PCI_CSR_MASTER_WC (1) |		/* Счетчик слов DMA обмена */
-		MCB_PCI_CSR_MASTER_RUN;			/* Состояние работы канала DMA */
+		MCB_PCI_CSR_MASTER_RUN);			/* Состояние работы канала DMA */
 
 	/* После завершения выполнения транзакции:
 	 * - в регистре CSR_Master: RUN=0, DONE=1. */
-	while (MCB_PCI_CSR_MASTER & MCB_PCI_CSR_MASTER_RUN)
+	while (mcb_read_reg (MCB_PCI_CSR_MASTER) & MCB_PCI_CSR_MASTER_RUN)
 		continue;
 
 	/* Поле WC может быть или равно 0 или нет.
@@ -69,7 +75,7 @@ retry:
 
 	/* После завершения выполнения транзакции необходимо проверить
 	 * состояние битов регистра CSR_PCI. */
-	unsigned csr_pci = MCB_PCI_CSR_PCI;
+	unsigned csr_pci = mcb_read_reg (MCB_PCI_CSR_PCI);
 	if (csr_pci & (MCB_PCI_CSR_PCI_NOTRDY |
 	    MCB_PCI_CSR_PCI_NOGNT | MCB_PCI_CSR_PCI_TARGET_ABORT |
 	    MCB_PCI_CSR_PCI_MASTER_ABORT)) {
@@ -109,24 +115,24 @@ int pci_data_transaction (unsigned cmd, unsigned local_addr,
 	 * в режиме Master необходимо убедиться в том, что в настоящий
 	 * момент времени транзакция не выполняется: в регистре
 	 * CSR_Master бит RUN = 0. */
-	if (MCB_PCI_CSR_MASTER & MCB_PCI_CSR_MASTER_RUN)
+	if (mcb_read_reg (MCB_PCI_CSR_MASTER) & MCB_PCI_CSR_MASTER_RUN)
 		return 0;
 retry:
 	/* Затем необходимо записать:
 	 * - адрес первого слова данных в регистр IR_Master; */
-	MCB_PCI_IR_MASTER = local_addr;
+	mcb_write_reg (MCB_PCI_IR_MASTER, local_addr);
 
 	/* - начальный адрес устройства на шине PCI в регистр AR_PCI; */
-	MCB_PCI_AR_PCI = pci_addr;
+	mcb_write_reg (MCB_PCI_AR_PCI, pci_addr);
 
 	/* - команду CMD, число слов данных WC и бит RUN=1 в регистр CSR_Master. */
-	MCB_PCI_CSR_MASTER = cmd |
+	mcb_write_reg (MCB_PCI_CSR_MASTER, cmd |
 		MCB_PCI_CSR_MASTER_WC (nwords) |	/* Счетчик слов DMA обмена */
-		MCB_PCI_CSR_MASTER_RUN;			/* Состояние работы канала DMA */
+		MCB_PCI_CSR_MASTER_RUN);		/* Состояние работы канала DMA */
 wait:
 	/* После завершения выполнения транзакции:
 	 * - в регистре CSR_Master: RUN=0, DONE=1. */
-	while (MCB_PCI_CSR_MASTER & MCB_PCI_CSR_MASTER_RUN)
+	while (mcb_read_reg (MCB_PCI_CSR_MASTER) & MCB_PCI_CSR_MASTER_RUN)
 		continue;
 
 	/* Поле WC может быть или равно 0 или нет.
@@ -135,7 +141,7 @@ wait:
 
 	/* После завершения выполнения транзакции необходимо проверить
 	 * состояние битов регистра CSR_PCI. */
-	unsigned csr_pci = MCB_PCI_CSR_PCI;
+	unsigned csr_pci = mcb_read_reg (MCB_PCI_CSR_PCI);
 	if (csr_pci & (MCB_PCI_CSR_PCI_NOTRDY |
 	    MCB_PCI_CSR_PCI_NOGNT | MCB_PCI_CSR_PCI_TARGET_ABORT |
 	    MCB_PCI_CSR_PCI_MASTER_ABORT)) {
@@ -170,13 +176,14 @@ wait:
 	 * где WCbegin – содержимое поля WC регистра CSR_Master перед запуском этой
 	 * операции, а WCend – содержимое поля WC регистра CSR_Master после
 	 * завершения выполнения транзакции. */
-	unsigned residual = MCB_PCI_CSR_MASTER >> 16;
-	MCB_PCI_AR_PCI += (nwords - residual) * 4;
+	unsigned csr_master = mcb_read_reg (MCB_PCI_CSR_MASTER);
+	unsigned ar_pci = mcb_read_reg (MCB_PCI_AR_PCI);
+	mcb_write_reg (MCB_PCI_AR_PCI, ar_pci + ((nwords - (csr_master >> 16)) << 2));
 
 	/* 2) Запустить выполнение транзакции чтения данных. Для этого
 	 * необходимо в регистре CSR_Master установить только бит RUN=1,
 	 * сохранив содержимое полей WC и CMD. */
-	MCB_PCI_CSR_MASTER |= MCB_PCI_CSR_MASTER_RUN;
+	mcb_write_reg (MCB_PCI_CSR_MASTER, csr_master | MCB_PCI_CSR_MASTER_RUN);
 	goto wait;
 }
 

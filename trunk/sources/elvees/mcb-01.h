@@ -1,16 +1,9 @@
 /*
  * Карта памяти микросхемы MCB-01.
  */
-
-/*
- * Чтение/запись памяти и регистров MBA осуществляется с помощью обычного обращения
- * по адресу, чтение/запись регистров SWIC, PMSC и адресного окна PCI должна
- * осущестляться только с помощью функций mcb_read_reg/mcb_write_reg.
- * Для разъяснений см. Руководство пользователя на микросхему 1892ХД1Я, п. 5.3.
- */
 #define MCB_RAM_BASE			0xaf000000
 #define MCB_MBA_BASE			0xafc00000
-#define MCB_MBA_REG(r)			(*(volatile unsigned*) ((MCB_MBA_BASE) | (r)))
+#define MCB_MBA_REG(r)			(*(volatile unsigned*) (MCB_MBA_BASE | (r)))
 
 #define MCB_PERIF(base, reg)		((base) | (reg))
 #define MCB_REG_RAM_BASE		0x01000000
@@ -26,24 +19,14 @@
 #define MCB_MBA_BDR		MCB_MBA_REG (0x0008)	/* Регистр буферных данных */
 #define MCB_MBA_BUSY		MCB_MBA_REG (0x000c)	/* Регистр признака занятости */
 
-
-inline unsigned
-mcb_read_reg(unsigned addr)
-{
-	while (MCB_MBA_BUSY);
-	MCB_MBA_BDR = addr;
-	while (MCB_MBA_BUSY);
-	return MCB_MBA_BDR;
-}
-
-inline void
-mcb_write_reg(unsigned addr, unsigned value)
-{
-	volatile unsigned *modif_addr = (unsigned *) (addr | 0xae000000);
-	while (MCB_MBA_BUSY);
-	*modif_addr = value;
-}
-
+/*
+ * Чтение/запись памяти и регистров MBA осуществляется с помощью обычного обращения
+ * по адресу, чтение/запись регистров SWIC, PMSC и адресного окна PCI должна
+ * осущестляться только с помощью функций mcb_read_reg/mcb_write_reg.
+ * Для разъяснений см. Руководство пользователя на микросхему 1892ХД1Я, п. 5.3.
+ */
+unsigned mcb_read_reg (unsigned addr);
+void mcb_write_reg (unsigned addr, unsigned value);
 
 /*
  * Регистры контроллера PCI
