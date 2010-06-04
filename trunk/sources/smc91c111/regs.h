@@ -251,6 +251,9 @@
 #define PHY_STAT_LINK		0x0004	/* 1=valid link */
 #define PHY_STAT_JAB		0x0002	/* 1=10Mbps jabber condition */
 #define PHY_STAT_EXREG		0x0001	/* 1=extended registers implemented */
+#define PHY_STAT_BITS	\
+"\20\01exreg\02jab\03link\04cap_aneg\05rem_flt\06aneg_ack\07cap_supr" \
+"\14cap_th\15cap_tf\16cap_txh\17cap_txf\20cap_t4"
 
 /*
  * PHY Identifier Registers

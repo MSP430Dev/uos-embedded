@@ -35,10 +35,10 @@ void mcb_write_reg (unsigned addr, unsigned value);
 
 #define MCB_PCI_STATUS_COMMAND	MCB_PMSC_REG (0x04)	/* Состояние и управление */
 #define  MCB_PCI_COMMAND_MEMORY		0x00000002	/* Разрешение выполнения команд обмена данными с памятью */
-#define  MCB_PCI_COMMAND_MASTER		0x00000004	/* Разрешения работы на шине PCI в режиме задатчика */
+#define  MCB_PCI_COMMAND_MASTER		0x00000004	/* Разрешение работы на шине PCI в режиме задатчика */
 #define  MCB_PCI_COMMAND_PARITY		0x00000040	/* Разрешение формирование сигнала PERR */
 #define  MCB_PCI_STATUS_PARITY		0x01000000	/* Признак выдачи или приема сигнала PERR в режиме Master */
-#define  MCB_PCI_STATUS_DEVSEL_MASK	0x06000000	/* DEVSEL timing = 01 (meduim) */
+#define  MCB_PCI_STATUS_DEVSEL_MASK	0x06000000	/* DEVSEL timing = 01 (medium) */
 #define  MCB_PCI_STATUS_TARGET_ABORT	0x10000000	/* Признак завершения обмена по условию Target-abort */
 #define  MCB_PCI_STATUS_MASTER_ABORT	0x20000000	/* Признак завершения обмена по условию Master-abort */
 #define  MCB_PCI_STATUS_DETECTED_PARITY 0x80000000	/* Ошибка четности при приме данных из PCI */

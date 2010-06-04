@@ -53,7 +53,7 @@ struct _stream_t;
 void task_print (struct _stream_t *stream, task_t *t);
 
 #ifndef ARCH_HAVE_FPU
-__attribute__ ((error ("no float point coprocessor: ARCH_HAVE_FPU required")))
+//__attribute__ ((error ("no float point coprocessor: ARCH_HAVE_FPU required")))
 #endif
 unsigned int task_fpu_control (task_t *t, unsigned int mode, unsigned int mask);
 

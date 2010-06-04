@@ -5,32 +5,36 @@
 #include <elvees/pci.h>
 #include <elvees/mcb-01.h>
 
+/*
+ * Инициализация контроллера MCB-01 в режиме master..
+ */
 void pci_init ()
 {
 #if 0
-	/* Идентификация устройства */
+	/* Идентификация устройства: 680C2001 */
 	device_id = mcb_read_reg (MCB_PCI_DEVICE_VENDOR_ID);
 
-	/* Идентификация подсистемы */
+	/* Идентификация подсистемы: 00000000 */
 	subsystem_id = mcb_read_reg (MCB_PCI_SUBSYSTEM_VENDOR_ID);
 
-	/* Регистр кода */
+	/* Регистр кода: 07800001 */
 	class_revision = mcb_read_reg (MCB_PCI_CLASS_REVISION);
 #endif
-	mcb_write_reg (MCB_PCI_STATUS_COMMAND,		/* Состояние и управление */
-		MCB_PCI_COMMAND_MASTER);		/* Режим задатчика */
-
-	mcb_write_reg (MCB_PCI_CSR_PCI,			/* Управление шиной PCI */
-		MCB_PCI_CSR_PCI_WN (8));		/* Уровень FIFO записи в память */
-
 	mcb_write_reg (MCB_PCI_BAR, 0);			/* Базовый адрес 0 */
-	mcb_write_reg (MCB_PCI_LATENCY_TIMER, 0);	/* Таймер времени передачи (MLT) */
+	mcb_write_reg (MCB_PCI_LATENCY_TIMER, 10 << 8);	/* Таймер времени передачи (MLT) */
 	mcb_write_reg (MCB_PCI_INTERRUPT_LINE, 0);	/* Код прерывания */
 	mcb_write_reg (MCB_PCI_MASKR_PCI, 0);		/* Маскирование прерываний */
 
 	mcb_write_reg (MCB_PCI_CSR_MASTER, 0);		/* Состояние и управление обменом в режиме Master */
 	mcb_write_reg (MCB_PCI_IR_MASTER, 0);		/* Адрес памяти при обмене в режиме Master */
 	mcb_write_reg (MCB_PCI_AR_PCI, 0);		/* Идентификатор адресуемого устройства */
+
+	mcb_write_reg (MCB_PCI_CSR_PCI,			/* Управление шиной PCI */
+		MCB_PCI_CSR_PCI_WN (8));		/* Уровень FIFO записи в память */
+
+	mcb_write_reg (MCB_PCI_STATUS_COMMAND,		/* Состояние и управление */
+		MCB_PCI_COMMAND_MASTER |		/* Режим задатчика */
+		MCB_PCI_COMMAND_MEMORY);		/* Разрешение обмена данными с памятью */
 }
 
 /*
@@ -42,6 +46,7 @@ void pci_init ()
 int pci_cfg_transaction (unsigned cmd, unsigned local_addr,
 	unsigned cfgtype, unsigned funreg, unsigned idsel)
 {
+debug_printf ("pci_cfg_transaction (funreg=%X, idsel=%x)\n", funreg, idsel);
 	/* Перед запуском выполнения транзакции передачи данных
 	 * в режиме Master необходимо убедиться в том, что в настоящий
 	 * момент времени транзакция не выполняется: в регистре
@@ -66,8 +71,12 @@ retry:
 
 	/* После завершения выполнения транзакции:
 	 * - в регистре CSR_Master: RUN=0, DONE=1. */
-	while (mcb_read_reg (MCB_PCI_CSR_MASTER) & MCB_PCI_CSR_MASTER_RUN)
-		continue;
+	for (;;) {
+		unsigned csr_master = mcb_read_reg (MCB_PCI_CSR_MASTER);
+debug_printf ("    csr_master = %x\n", csr_master);
+		if (! (csr_master & MCB_PCI_CSR_MASTER_RUN))
+			break;
+	}
 
 	/* Поле WC может быть или равно 0 или нет.
 	 * В регистре IR_Master содержится увеличенный на 4 адрес
@@ -76,18 +85,21 @@ retry:
 	/* После завершения выполнения транзакции необходимо проверить
 	 * состояние битов регистра CSR_PCI. */
 	unsigned csr_pci = mcb_read_reg (MCB_PCI_CSR_PCI);
+debug_printf ("    csr_pci = %x\n", csr_pci);
 	if (csr_pci & (MCB_PCI_CSR_PCI_NOTRDY |
 	    MCB_PCI_CSR_PCI_NOGNT | MCB_PCI_CSR_PCI_TARGET_ABORT |
 	    MCB_PCI_CSR_PCI_MASTER_ABORT)) {
 		/* Если хотя бы один бит No Trdy, No Gnt, Target Abort,
 		 * Master Abort не равен нулю, то этот обмен данными
 		 * невозможно выполнить. */
+debug_printf ("    aborted\n");
 		 return 0;
 	}
 	if (! (csr_pci & (MCB_PCI_CSR_PCI_MLTOVER |
 	    MCB_PCI_CSR_PCI_DISCONNECT | MCB_PCI_CSR_PCI_RETRY))) {
 		/* Если все биты Mlt Over, Disconnect, Retry равны нулю,
 		 * то передача данных завершена нормально. */
+debug_printf ("    succeeded\n");
 		 return 1;
 	}
 	if (csr_pci & MCB_PCI_CSR_PCI_RETRY) {
@@ -96,6 +108,7 @@ retry:
 		 * IR_Master, AR_PCI, CSR_Master. */
 		goto retry;
 	}
+debug_printf ("    failed\n");
 	return 0;
 }
 
@@ -196,10 +209,12 @@ int pci_cfg_read (unsigned dev, unsigned function, unsigned reg,
 {
 	/* Конфигурационная транзакция Type 0. */
 	unsigned local_addr = 0;
+debug_printf ("pci_cfg_read (%d, %d, %02X)\n", dev, function, reg & 077);
 	if (! pci_cfg_transaction (MCB_PCI_CSR_MASTER_CFGREAD,
-	    local_addr, 0, function << 6 | reg, 1 << dev))
+	    local_addr, 0, function << 6 | (reg & 077), 1 << dev))
 		return 0;
 	*result = *(volatile unsigned*) (MCB_RAM_BASE | local_addr);
+debug_printf ("pci_cfg_read returned %08X\n", *result);
 	return 1;
 }
 
@@ -214,7 +229,7 @@ int pci_cfg_write (unsigned dev, unsigned function, unsigned reg,
 	unsigned local_addr = 0;
 	*(volatile unsigned*) (MCB_RAM_BASE | local_addr) = value;
 	if (! pci_cfg_transaction (MCB_PCI_CSR_MASTER_CFGWRITE,
-	    local_addr, 0, function << 6 | reg, 1 << dev))
+	    local_addr, 0, function << 6 | (reg & 077), 1 << dev))
 		return 0;
 	return 1;
 }
