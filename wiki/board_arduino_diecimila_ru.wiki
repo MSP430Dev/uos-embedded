@@ -1,6 +1,6 @@
 #summary Target board: Arduino Diecimila.
 
-[http://www.arduino.cc/en/Main/ArduinoBoardDiecimila http://www.tinker.it/en/uploads/Products/ardu_ng2.jpg]
+[http://www.arduino.cc/en/Main/ArduinoBoardDiecimila http://arduino.cc/en/uploads/Main/ArduinoDiecimilaComponents.jpg]
 
 Плата Arduino Diecimila ([http://arduino.cc/en/uploads/Main/Arduino-Diecimila-schematic.pdf схема]) построена на микроконтроллере ATmega168 ([http://www.atmel.com/dyn/resources/prod_documents/doc2545.pdf спецификация]). Дополнительная информация доступна [http://www.arduino.cc/en/Main/ArduinoBoardDiecimila на сайте производителя].
 
