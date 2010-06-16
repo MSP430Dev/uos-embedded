@@ -62,7 +62,7 @@ void mcb_write_reg (unsigned addr, unsigned value);
 #define  MCB_PCI_CSR_PCI_RETRY		0x00080000	/* Признак требования повтора */
 #define  MCB_PCI_CSR_PCI_NOGNT		0x00100000	/* Признак отсутствия сигнала nGNT */
 #define  MCB_PCI_CSR_PCI_TARGET_ABORT	0x10000000	/* Признак окончания обмена с Target-Abort */
-#define  MCB_PCI_CSR_PCI_MASTER_ABORT	0x10000000	/* Признак окончания обмена с Master-Abort */
+#define  MCB_PCI_CSR_PCI_MASTER_ABORT	0x20000000	/* Признак окончания обмена с Master-Abort */
 
 #define MCB_PCI_CSR_MASTER	MCB_PMSC_REG (0x50)	/* Состояние и управление обменом в режиме Master */
 #define  MCB_PCI_CSR_MASTER_RUN		0x00000001	/* Состояние работы канала DMA */
