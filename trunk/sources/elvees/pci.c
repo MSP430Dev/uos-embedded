@@ -20,6 +20,10 @@ void pci_init ()
 	/* Регистр кода: 07800001 */
 	class_revision = mcb_read_reg (MCB_PCI_CLASS_REVISION);
 #endif
+	mcb_write_reg (MCB_PCI_STATUS_COMMAND,		/* Состояние и управление */
+		MCB_PCI_COMMAND_MEMORY |		/* Разрешение обмена данными с памятью */
+		MCB_PCI_COMMAND_MASTER);		/* Режим задатчика */
+
 	mcb_write_reg (MCB_PCI_BAR, 0);			/* Базовый адрес 0 */
 	mcb_write_reg (MCB_PCI_LATENCY_TIMER, 10 << 8);	/* Таймер времени передачи (MLT) */
 	mcb_write_reg (MCB_PCI_INTERRUPT_LINE, 0);	/* Код прерывания */
@@ -31,10 +35,6 @@ void pci_init ()
 
 	mcb_write_reg (MCB_PCI_CSR_PCI,			/* Управление шиной PCI */
 		MCB_PCI_CSR_PCI_WN (8));		/* Уровень FIFO записи в память */
-
-	mcb_write_reg (MCB_PCI_STATUS_COMMAND,		/* Состояние и управление */
-//		MCB_PCI_COMMAND_MEMORY |		/* Разрешение обмена данными с памятью */
-		MCB_PCI_COMMAND_MASTER);		/* Режим задатчика */
 
 	for (;;) {
 		unsigned csr_master = mcb_read_reg (MCB_PCI_CSR_MASTER);
@@ -53,7 +53,7 @@ debug_printf ("pci_init(): csr_master = %x, MBA_BUSY = %x\n", csr_master, MCB_MB
 int pci_cfg_transaction (unsigned cmd, unsigned local_addr,
 	unsigned cfgtype, unsigned funreg, unsigned dev)
 {
-debug_printf ("pci_cfg_transaction (funreg=%X, dev=%x)\n", funreg, dev);
+debug_printf ("pci_cfg_transaction (funreg=0x%X, dev=%d)\n", funreg, dev);
 	/* Перед запуском выполнения транзакции передачи данных
 	 * в режиме Master необходимо убедиться в том, что в настоящий
 	 * момент времени транзакция не выполняется: в регистре
@@ -69,7 +69,9 @@ retry:
 	 * а унитарный код в разрядах AR_PCI[31:11] указывает IDSEL
 	 * адресуемого устройства. Разряды AR_PCI[10:2] должны
 	 * содержать номер функции и регистра. */
-	mcb_write_reg (MCB_PCI_AR_PCI, cfgtype | funreg << 2 | 0x80000000 >> dev);
+	unsigned ar_pci = cfgtype | funreg << 2 | 0x80000000 >> dev;
+debug_printf ("    ar_pci := %x\n", ar_pci);
+	mcb_write_reg (MCB_PCI_AR_PCI, ar_pci);
 
 	/* - команду CMD, число слов данных WC и бит RUN=1 в регистр CSR_Master. */
 	mcb_write_reg (MCB_PCI_CSR_MASTER, cmd |
