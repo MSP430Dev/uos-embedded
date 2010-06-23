@@ -134,7 +134,7 @@ void __attribute ((noreturn))_init_ (void)
 	 * Compute the divisor for 115.2 kbaud.
 	 * Assume we have 80 MHz cpu clock.
 	 */
-	divisor = MC_DL_BAUD (ELVEES_CLKIN * 1000, 115200);
+	divisor = MC_DL_BAUD (ELVEES_CLKIN /*KHZ*/ * 1000, 115200);
 
 	MC_LCR = MC_LCR_8BITS | MC_LCR_DLAB;
 	MC_DLM = divisor >> 8;

@@ -105,8 +105,9 @@ debug_printf ("    aborted\n");
 		 return 0;
 	}
 	if (! (csr_pci & (MCB_PCI_CSR_PCI_MLTOVER |
-	    MCB_PCI_CSR_PCI_DISCONNECT | MCB_PCI_CSR_PCI_RETRY))) {
-		/* Если все биты Mlt Over, Disconnect, Retry равны нулю,
+	    /*MCB_PCI_CSR_PCI_DISCONNECT |*/ MCB_PCI_CSR_PCI_RETRY)) &&
+		(csr_pci & MCB_PCI_CSR_PCI_DISCONNECT)) {
+		/* Если биты Mlt Over, Retry равны нулю, и установлен признак Disconnect,
 		 * то передача данных завершена нормально. */
 debug_printf ("    succeeded\n");
 		 return 1;

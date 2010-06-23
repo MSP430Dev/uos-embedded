@@ -70,7 +70,7 @@ void mcb_write_reg (unsigned addr, unsigned value);
 #define  MCB_PCI_CSR_MASTER_IOREAD	0x00000004	/* I/O Read */
 #define  MCB_PCI_CSR_MASTER_IOWRITE	0x00000006	/* I/O Write */
 #define  MCB_PCI_CSR_MASTER_MEMREAD	0x0000000c	/* Memory Read */
-#define  MCB_PCI_CSR_MASTER_MEMWRITE	0x0000000d	/* Memory Write */
+#define  MCB_PCI_CSR_MASTER_MEMWRITE	0x0000000e	/* Memory Write */
 #define  MCB_PCI_CSR_MASTER_CFGREAD	0x00000014	/* Configuration Read */
 #define  MCB_PCI_CSR_MASTER_CFGWRITE	0x00000016	/* Configuration Write */
 #define  MCB_PCI_CSR_MASTER_DONE	0x00008000	/* Признак завершения передачи */
@@ -110,6 +110,11 @@ void mcb_write_reg (unsigned addr, unsigned value);
 #define  MCB_PCI_QSTR_SWIC3_TX_DATA	0x08000000	/* SWIC3: Окончание DMA TX_DATA */
 
 #define MCB_PCI_MASKR_PCI	MCB_PMSC_REG (0x60)	/* Маскирование прерываний */
+
+/*
+ * Макрос, возвращающий номер регистра PCI по его адресу (для конфигурационных транзакций PCI)
+ */
+#define MCB_PCI_REG_NUM(reg_addr)	(reg_addr >> 2)
 
 /*
  * Регистры Spacewire
