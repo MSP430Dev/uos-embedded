@@ -18,9 +18,9 @@ stream_gets (stream_t *stream, unsigned char *buf, int len)
 			break;
 		}
 		c = getchar (stream);
-/*debug_printf ("c = `%c'\n", c);*/
+//debug_printf ("c = `%c'\n", c);
 		*s++ = c;
-		if (c == '\n')
+		if (c == /*'\n'*/ 13)
 			break;
 	}
 	*s = '\0';

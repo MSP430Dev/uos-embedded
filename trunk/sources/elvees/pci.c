@@ -38,7 +38,7 @@ void pci_init ()
 
 	for (;;) {
 		unsigned csr_master = mcb_read_reg (MCB_PCI_CSR_MASTER);
-debug_printf ("pci_init(): csr_master = %x, MBA_BUSY = %x\n", csr_master, MCB_MBA_BUSY);
+//debug_printf ("pci_init(): csr_master = %x, MBA_BUSY = %x\n", csr_master, MCB_MBA_BUSY);
 		if (! (csr_master & MCB_PCI_CSR_MASTER_RUN))
 			break;
 	}
@@ -53,7 +53,7 @@ debug_printf ("pci_init(): csr_master = %x, MBA_BUSY = %x\n", csr_master, MCB_MB
 int pci_cfg_transaction (unsigned cmd, unsigned local_addr,
 	unsigned cfgtype, unsigned funreg, unsigned dev)
 {
-debug_printf ("pci_cfg_transaction (funreg=0x%X, dev=%d)\n", funreg, dev);
+//debug_printf ("pci_cfg_transaction (funreg=0x%X, dev=%d)\n", funreg, dev);
 	/* Перед запуском выполнения транзакции передачи данных
 	 * в режиме Master необходимо убедиться в том, что в настоящий
 	 * момент времени транзакция не выполняется: в регистре
@@ -70,7 +70,7 @@ retry:
 	 * адресуемого устройства. Разряды AR_PCI[10:2] должны
 	 * содержать номер функции и регистра. */
 	unsigned ar_pci = cfgtype | funreg << 2 | 0x80000000 >> dev;
-debug_printf ("    ar_pci := %x\n", ar_pci);
+//debug_printf ("    ar_pci := %x\n", ar_pci);
 	mcb_write_reg (MCB_PCI_AR_PCI, ar_pci);
 
 	/* - команду CMD, число слов данных WC и бит RUN=1 в регистр CSR_Master. */
@@ -82,7 +82,7 @@ debug_printf ("    ar_pci := %x\n", ar_pci);
 	 * - в регистре CSR_Master: RUN=0, DONE=1. */
 	for (;;) {
 		unsigned csr_master = mcb_read_reg (MCB_PCI_CSR_MASTER);
-debug_printf ("    csr_master = %x\n", csr_master);
+//debug_printf ("    csr_master = %x\n", csr_master);
 		if (! (csr_master & MCB_PCI_CSR_MASTER_RUN))
 			break;
 	}
@@ -94,14 +94,14 @@ debug_printf ("    csr_master = %x\n", csr_master);
 	/* После завершения выполнения транзакции необходимо проверить
 	 * состояние битов регистра CSR_PCI. */
 	unsigned csr_pci = mcb_read_reg (MCB_PCI_CSR_PCI);
-debug_printf ("    csr_pci = %x\n", csr_pci);
+//debug_printf ("    csr_pci = %x\n", csr_pci);
 	if (csr_pci & (MCB_PCI_CSR_PCI_NOTRDY |
 	    MCB_PCI_CSR_PCI_NOGNT | MCB_PCI_CSR_PCI_TARGET_ABORT |
 	    MCB_PCI_CSR_PCI_MASTER_ABORT)) {
 		/* Если хотя бы один бит No Trdy, No Gnt, Target Abort,
 		 * Master Abort не равен нулю, то этот обмен данными
 		 * невозможно выполнить. */
-debug_printf ("    aborted\n");
+//debug_printf ("    aborted\n");
 		 return 0;
 	}
 	if (! (csr_pci & (MCB_PCI_CSR_PCI_MLTOVER |
@@ -109,7 +109,7 @@ debug_printf ("    aborted\n");
 		(csr_pci & MCB_PCI_CSR_PCI_DISCONNECT)) {
 		/* Если биты Mlt Over, Retry равны нулю, и установлен признак Disconnect,
 		 * то передача данных завершена нормально. */
-debug_printf ("    succeeded\n");
+//debug_printf ("    succeeded\n");
 		 return 1;
 	}
 	if (csr_pci & MCB_PCI_CSR_PCI_RETRY) {
@@ -118,7 +118,7 @@ debug_printf ("    succeeded\n");
 		 * IR_Master, AR_PCI, CSR_Master. */
 		goto retry;
 	}
-debug_printf ("    failed\n");
+//debug_printf ("    failed\n");
 	return 0;
 }
 
@@ -219,12 +219,12 @@ int pci_cfg_read (unsigned dev, unsigned function, unsigned reg,
 {
 	/* Конфигурационная транзакция Type 0. */
 	unsigned local_addr = 0;
-debug_printf ("pci_cfg_read (%d, %d, %02X)\n", dev, function, reg & 077);
+//debug_printf ("pci_cfg_read (%d, %d, %02X)\n", dev, function, reg & 077);
 	if (! pci_cfg_transaction (MCB_PCI_CSR_MASTER_CFGREAD,
 	    local_addr, 0, function << 6 | (reg & 077), dev))
 		return 0;
 	*result = *(volatile unsigned*) (MCB_RAM_BASE | local_addr);
-debug_printf ("pci_cfg_read returned %08X\n", *result);
+//debug_printf ("pci_cfg_read returned %08X\n", *result);
 	return 1;
 }
 
