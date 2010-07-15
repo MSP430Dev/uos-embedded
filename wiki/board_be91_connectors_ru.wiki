@@ -1,0 +1,5 @@
+#summary Connectors of board Milandr 1986VE91.
+
+Расположение элементов на плате Миландр 1986ВЕ91Т:
+
+[http://uos-embedded.googlecode.com/svn/wiki/images/ve91-jumpers.gif]
