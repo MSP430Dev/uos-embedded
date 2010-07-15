@@ -25,7 +25,7 @@
 
 Расположение разъёмов и джамперов показано на рисунке:
 
-[board_be91_connectors http://uos-embedded.googlecode.com/svn/wiki/images/ve91-jumpers-small.gif]
+[http://code.google.com/p/uos-embedded/wiki/board_milandr_be91_ru http://uos-embedded.googlecode.com/svn/wiki/board_be91_connectors_ru]
 
 Режим работы микроконтроллера:
 || *SW1* || *SW2* || *Режим работы* ||
