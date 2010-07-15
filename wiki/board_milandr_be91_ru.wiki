@@ -1,0 +1,35 @@
+#summary Target board: Milandr 1986VE91.
+
+[http://milandr.ru/index.php?mact=Products,cntnt01,details,0&cntnt01productid=67&cntnt01returnid=68 http://uos-embedded.googlecode.com/svn/wiki/images/milandr-ve91-board.jpg]
+
+[http://milandr.ru/index.php?mact=Products,cntnt01,details,0&cntnt01productid=67&cntnt01returnid=68 Отладочный комплект]
+для микроконтроллера [http://milandr.ru/index.php?mact=Products,cntnt01,details,0&cntnt01productid=13&cntnt01returnid=68 1986ВЕ91Т]
+([http://milandr.ru/uploads/Products/product_80/spec_seriya_1986BE.rar спецификация]).
+Архитектура Cortex M3, система команд
+[http://ru.wikipedia.org/wiki/ARM_(%D0%B0%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D0%B0)#Thumb-2 Thumb-2].
+
+Память:
+ * 32 килобайта внутренней памяти данных.
+ * 128 килобайт внутренней flash-памяти команд.
+
+Задающий генератор 8 МГц. Установкой регистра PLL_CONTROL частота может быть умножена до 80 МГц.
+
+Загрузка прошивки производится через порт JTAG A, посредством утилиты
+[http://openocd.berlios.de/ OpenOCD] и адаптера
+[http://www.olimex.com/dev/arm-usb-tiny.html Olimex ARM-USB-Tiny].
+
+Карта памяти:
+|| *Тип*    || *Начало*  || *Конец*   || *Объем* || *Примечания* ||
+|| Flash ROM||`0800 0000`||`0801 ffff`|| 128 kb  ||              ||
+|| RAM      ||`2000 0000`||`2000 7fff`|| 32 Kb   ||              ||
+
+Расположение разъёмов и джамперов показано на рисунке:
+
+[http://uos-embedded.googlecode.com/svn/wiki/images/ve91-jumpers.gif http://uos-embedded.googlecode.com/svn/wiki/images/ve91-jumpers-small.gif]
+
+Режим работы микроконтроллера:
+|| *SW1* || *SW2* || *Режим работы* ||
+||  0    ||  0    || Код исполняется из Flash памяти начиная с адреса 0х0800_0000 ||
+||  1    ||  0    || Код исполняется из Flash памяти начиная с адреса 0х0800_0000, отладка через разъем JTAG_A ||
+||  0    ||  1    || Код исполняется из внешней памяти начиная с адреса 0х1000_0000 ||
+||  1    ||  1    || Код исполняется из внешней памяти начиная с адреса 0х1000_0000, отладка через разъем JTAG_B ||
