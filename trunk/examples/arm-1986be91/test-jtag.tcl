@@ -16,7 +16,7 @@ interface ft2232
 ft2232_device_desc "Olimex OpenOCD JTAG TINY"
 ft2232_vid_pid 0x15ba 0x0004
 ft2232_layout olimex-jtag
-jtag_khz 1000
+jtag_khz 4000
 jtag_nsrst_delay 100
 jtag_ntrst_delay 100
 reset_config trst_and_srst srst_pulls_trst
@@ -36,15 +36,16 @@ init #-----------------
 #targets
 #flash banks
 #poll
-#dump_image memory.bin 0x20000000 0x4000
 
 halt
 #reg
 
-mww 0x20000000 0x12345678
-mdw 0x20000000 8
+#mww 0x20000000 0x12345678
+#mdw 0x20000000 8
 
-#arm disassemble 0x08000000 0x100
+arm disassemble 0x08000000 0x100
+#dump_image memory.bin 0x20000000 0x4000
+#dump_image memory.bin 0x08000000 0x40000
 
 #debug_level 3
 proc ocd_init {} {exit}

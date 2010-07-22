@@ -17,6 +17,39 @@ kernel /t_mouse.out
 title t_pipe
 kernel /t_pipe.out
 
+#title t_tcl
+#kernel /t_tcl.out
+
+#title landmine
+#kernel /landmine.out
+
+#title nterm
+#kernel /nterm.out
+
+#title ntetris
+#kernel /ntetris.out
+
+#title nxclock
+#kernel /nxclock.out
+
+title nxdemo
+kernel /nxdemo.out
+
+#title nxeyes
+#kernel /nxeyes.out
+
+title nxfont
+kernel /nxfont.out
+
+title nxinput
+kernel /nxinput.out
+
+title nxtcl
+kernel /nxtcl.out
+
+title polydemo
+kernel /polydemo.out
+
 #
 # halt/reboot
 #

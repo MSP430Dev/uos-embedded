@@ -17,7 +17,7 @@ uos-i386-grub.iso: $(OUTS) stage2_eltorito menu.txt
 		mkdir -p iso/boot/grub
 		cp stage2_eltorito iso/boot/grub
 		cp menu.txt iso/boot/grub/menu.lst
-		cp $(OUTS) iso/
+		cp *.out iso/
 		genisoimage $(ISOFLAGS) -o $@ iso
 
 $(OUTS) $(TESTS): startup.o libuos.a
