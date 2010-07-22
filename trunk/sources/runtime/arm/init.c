@@ -212,6 +212,50 @@ _init_ (void)
 	*AT91C_AIC_EOICR = 0;
 #endif /* ARM_AT91SAM */
 
+#ifdef ARM_1986BE9
+        /* Set USART0 for debug output.
+	 * RXD0 and TXD0 lines: disable PIO and assign to A function. */
+	ARM_RSTCLK->PER_CLOCK	|= (1 << 29);	// вкл. тактирования PORTF
+
+	GPIOF->FUNC		|= 0x0000000F;	// переопределенная функция для PF0(UART2_RXD) и PF1(UART2_TXD)
+	GPIOF->ANALOG		|= 0x0003;	// цифровые выводы
+	GPIOF->PWR		&= 0xFFFFFFF0;
+	GPIOF->PWR		|= 0x00000005;	// быстрые порты
+
+	*AT91C_PIOA_PDR = 3;
+	*AT91C_PIOA_ASR = 3;
+	*AT91C_PIOA_BSR = 0;
+
+	/* Enable the clock of USART and PIO/ */
+	*AT91C_PMC_PCER = 1 << AT91C_ID_US0;
+	*AT91C_PMC_PCER = 1 << AT91C_ID_PIOA;
+	*AT91C_PMC_PCER = 1 << AT91C_ID_PIOB;
+
+	/* Reset receiver and transmitter */
+	*AT91C_US0_CR = AT91C_US_RSTRX | AT91C_US_RSTTX |
+		AT91C_US_RXDIS | AT91C_US_TXDIS ;
+
+	/* Set baud rate divisor register: baud 115200. */
+	*AT91C_US0_BRGR = (KHZ * 1000 / 115200 + 8) / 16;
+
+	/* Write the Timeguard Register */
+	*AT91C_US0_TTGR = 0;
+
+	/* Set the USART mode */
+	*AT91C_US0_MR = AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE;
+
+	/* Enable the RX and TX PDC transfer requests. */
+	*AT91C_US0_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+
+	/* Enable USART0: RX receiver and TX transmiter. */
+	*AT91C_US0_CR = AT91C_US_TXEN | AT91C_US_RXEN;
+
+	/* Disable and clear all interrupts. */
+	*AT91C_AIC_IDCR = ~0;
+	*AT91C_AIC_ICCR = ~0;
+	*AT91C_AIC_EOICR = 0;
+#endif /* ARM_1986BE9 */
+
 	main ();
 }
 
