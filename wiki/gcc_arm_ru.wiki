@@ -4,10 +4,10 @@
 Описана установка кросс-системы программирования для микроконтроллеров
 семейства [http://arm.com/products/CPUs/index.html ARM].
 Устанавливается поддержка языков Си и Си++.
-Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.3.0].
+Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.4.4].
 
 Готовый бинарный пакет можно скачать здесь:
- * [http://uos-embedded.googlecode.com/files/gcc430-arm.tgz gcc430-arm.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc444-arm.tgz gcc444-arm.tgz] -- для Linux
 
 == Установка под Linux или FreeBSD или Mac OS X ==
 
@@ -22,7 +22,7 @@
 }}}
 
 Устанавливать готовую систему программирования будем в каталог
-/usr/local/arm430 по номеру версии GCC 4.3.0. Это упростит в будущем
+/usr/local/arm444 по номеру версии GCC 4.4.4. Это упростит в будущем
 переход на новые версии компилятора.
 
 Для простоты предположим, что сборка производится в каталоге /src.
@@ -30,18 +30,15 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://sourceware.org/pub/binutils/snapshots/binutils.tar.bz2 binutils.tar.bz2] (16 Мбайт) - самая свежая версия
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-4.3.0.tar.bz2 gcc-4.3.0.tar.bz2] (56 Мбайт)
+  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.20.1.tar.bz2 binutils-2.20.1.tar.bz2] (16 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.4/gcc-4.4.4.tar.bz2 gcc-4.4.4.tar.bz2] (56 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils.tar.bz2
-  tar xvjf gcc-4.3.0.tar.bz2
+  tar xvjf binutils-2.20.1.tar.bz2
+  tar xvjf gcc-4.4.4.tar.bz2
 }}}
-
-Пакет binutils будет распакован в каталоге с номером последней версии,
-например binutils-2.18.50 или выше.
 
 === Сборка binutils ===
 Пакет binutils содержит ассемблер AS, редактор связей LD,
@@ -52,13 +49,13 @@
 {{{
   mkdir /src/binutils-arm
   cd /src/binutils-arm
-  /src/binutils-2.18.50/configure --target=arm-elf --prefix=/usr/local/arm430 --disable-nls
+  /src/binutils-2.20.1/configure --target=arm-elf --prefix=/usr/local/arm444 --disable-nls
   make
 }}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
 {{{
-  mkdir /usr/local/arm430
+  mkdir /usr/local/arm444
 }}}
 
 Установите binutils:
@@ -71,7 +68,7 @@
 Для кросс-компилятора не нужны библиотеки libstdc++ и libmudflap.
 Чтобы они не вызывали ошибок при сборке, удалите их:
 {{{
-  cd /src/gcc-4.3.0
+  cd /src/gcc-4.4.4
   rm -rf libstdc++-v3
   rm -rf libmudflap
 }}}
@@ -81,7 +78,7 @@
 {{{
   mkdir /src/gcc-arm
   cd /src/gcc-arm
-  /src/gcc-4.3.0/configure --target=arm-elf --prefix=/usr/local/arm430 \
+  /src/gcc-4.4.4/configure --target=arm-elf --prefix=/usr/local/arm444 \
     --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}
