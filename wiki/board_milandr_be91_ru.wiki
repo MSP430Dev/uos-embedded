@@ -15,11 +15,11 @@
 Задающий генератор 8 МГц. Установкой регистра PLL_CONTROL частота может быть умножена до 80 МГц.
 
 Загрузка прошивки производится через порт JTAG A, посредством утилиты
-[http://openocd.berlios.de/ OpenOCD] и адаптера
+[http://code.google.com/p/milprog/wiki/milprog_ru milprog] и адаптера
 [http://www.olimex.com/dev/arm-usb-tiny.html Olimex ARM-USB-Tiny].
 
 Карта памяти:
-|| *Тип*     || *Начало*  || *Конец*   || *Объем* || 
+|| *Тип*     || *Начало*  || *Конец*   || *Объем* ||
 || Flash ROM ||`0800 0000`||`0801 ffff`|| 128 kb  ||
 || RAM       ||`2000 0000`||`2000 7fff`|| 32 kb   ||
 
