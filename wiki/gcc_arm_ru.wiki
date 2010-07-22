@@ -7,7 +7,7 @@
 Используется компилятор версии [http://gcc.gnu.org/gcc-4.3/ GCC 4.4.4].
 
 Готовый бинарный пакет можно скачать здесь:
- * [http://uos-embedded.googlecode.com/files/gcc444-arm.tgz gcc444-arm.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc444-arm-linux.tgz gcc444-arm-linux.tgz] -- для Linux
 
 == Установка под Linux или FreeBSD или Mac OS X ==
 
