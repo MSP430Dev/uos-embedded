@@ -41,6 +41,12 @@ void *arm_get_stack_pointer ()
 static void inline __attribute__ ((always_inline))
 arm_intr_disable (int *x)
 {
+#if __thumb2__
+	asm volatile (
+	"mrs	%0, primask \n"		/* Thumb-2 mode */
+"	cpsid	i"
+	: "=r" (*(x)) : : "memory", "cc");
+#else
 	int temp;
 
 	asm volatile (
@@ -51,7 +57,7 @@ arm_intr_disable (int *x)
 "	.code	32 \n"
 #endif
 
-"	mrs	%1, cpsr \n"
+"	mrs	%1, cpsr \n"		/* ARM mode  */
 "	orr	%0, %1, #0x80 \n"
 "	msr	cpsr, %0 \n"
 
@@ -66,11 +72,17 @@ arm_intr_disable (int *x)
 "	.code	16"
 #endif
 	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
+#endif /* __thumb2__ */
 }
 
 static void inline __attribute__ ((always_inline))
 arm_intr_restore (int x)
 {
+#if __thumb2__
+	asm volatile (
+	"msr	primask, %0"		/* Thumb-2 mode */
+	: : "r" (x) : "memory", "cc");
+#else
 	int temp;
 
 	asm volatile (
@@ -88,11 +100,17 @@ arm_intr_restore (int x)
 "	.code	16"
 #endif
 	: "=r" (temp) : "r" (x) : "memory", "cc");
+#endif /* __thumb2__ */
 }
 
 static void inline __attribute__ ((always_inline))
 arm_intr_enable ()
 {
+#if __thumb2__
+	asm volatile (
+	"cpsie	i"			/* Thumb-2 mode */
+	: : : "memory", "cc");
+#else
 	int temp;
 
 	asm volatile (
@@ -112,6 +130,7 @@ arm_intr_enable ()
 "	.code	16"
 #endif
 	: "=r" (temp) : : "memory", "cc");
+#endif /* __thumb2__ */
 }
 
 static void inline __attribute__ ((always_inline))

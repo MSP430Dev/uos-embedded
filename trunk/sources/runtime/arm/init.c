@@ -213,47 +213,26 @@ _init_ (void)
 #endif /* ARM_AT91SAM */
 
 #ifdef ARM_1986BE9
-        /* Set USART0 for debug output.
-	 * RXD0 and TXD0 lines: disable PIO and assign to A function. */
-	ARM_RSTCLK->PER_CLOCK	|= (1 << 29);	// вкл. тактирования PORTF
+        /* Set UART2 for debug output. */
+	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOF;	// вкл. тактирования PORTF
+	ARM_GPIOF->FUNC |= ARM_FUNC_REDEF(0) |		// переопределенная функция для
+			   ARM_FUNC_REDEF(1);		// PF0(UART2_RXD) и PF1(UART2_TXD)
+	ARM_GPIOF->ANALOG |= 3;				// цифровые выводы
+	ARM_GPIOF->PWR &= ~(ARM_PWR_MASK(0) || ARM_PWR_MASK(1));
+	ARM_GPIOF->PWR |= ARM_PWR_SLOW(0) | ARM_PWR_SLOW(1);
 
-	GPIOF->FUNC		|= 0x0000000F;	// переопределенная функция для PF0(UART2_RXD) и PF1(UART2_TXD)
-	GPIOF->ANALOG		|= 0x0003;	// цифровые выводы
-	GPIOF->PWR		&= 0xFFFFFFF0;
-	GPIOF->PWR		|= 0x00000005;	// быстрые порты
+	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART2;	// вкл. тактирования UART2
+	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN2 |	// разрешаем тактирование UART2
+		ARM_UART_CLOCK_BRG2(2);			// HCLK/4 (20 МГц)
 
-	*AT91C_PIOA_PDR = 3;
-	*AT91C_PIOA_ASR = 3;
-	*AT91C_PIOA_BSR = 0;
+	/* Set baud rate divisor: 115200 bit/sec. */
+	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
+	ARM_UART2->FBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
 
-	/* Enable the clock of USART and PIO/ */
-	*AT91C_PMC_PCER = 1 << AT91C_ID_US0;
-	*AT91C_PMC_PCER = 1 << AT91C_ID_PIOA;
-	*AT91C_PMC_PCER = 1 << AT91C_ID_PIOB;
-
-	/* Reset receiver and transmitter */
-	*AT91C_US0_CR = AT91C_US_RSTRX | AT91C_US_RSTTX |
-		AT91C_US_RXDIS | AT91C_US_TXDIS ;
-
-	/* Set baud rate divisor register: baud 115200. */
-	*AT91C_US0_BRGR = (KHZ * 1000 / 115200 + 8) / 16;
-
-	/* Write the Timeguard Register */
-	*AT91C_US0_TTGR = 0;
-
-	/* Set the USART mode */
-	*AT91C_US0_MR = AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE;
-
-	/* Enable the RX and TX PDC transfer requests. */
-	*AT91C_US0_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
-
-	/* Enable USART0: RX receiver and TX transmiter. */
-	*AT91C_US0_CR = AT91C_US_TXEN | AT91C_US_RXEN;
-
-	/* Disable and clear all interrupts. */
-	*AT91C_AIC_IDCR = ~0;
-	*AT91C_AIC_ICCR = ~0;
-	*AT91C_AIC_EOICR = 0;
+	/* Enable UART2, transmiter only. */
+	ARM_UART2->LCR_H = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
+	ARM_UART2->CR = ARM_UART_CR_UARTEN |		// пуск приемопередатчика
+			ARM_UART_CR_TXE;		// передача разрешена
 #endif /* ARM_1986BE9 */
 
 	main ();
@@ -294,6 +273,23 @@ watchdog_alive ()
 #endif
 }
 
+#if __thumb2__
+void _fault_ ()
+{
+	debug_printf ("\n\n*** fault\n\n");
+	/* TODO */
+	debug_printf ("\nReset...\n\n");
+	asm volatile ("ldr r0, =0 \n bx r0");
+}
+
+void _unexpected_interrupt_ ()
+{
+	debug_printf ("\n\n*** unexpected_interrupt\n\n");
+	/* TODO */
+	debug_printf ("\nReset...\n\n");
+	asm volatile ("ldr r0, =0 \n bx r0");
+}
+#else
 unsigned long _dump_stack_ [13];
 
 static void dump_of_death (unsigned long pc, unsigned long cpsr, unsigned long lr)
@@ -339,3 +335,4 @@ void _abort_handler_ (unsigned long pc, unsigned long cpsr, unsigned long lr)
 	debug_printf ("\n\n*** 0x%08x: data access exception\n", pc);
 	dump_of_death (pc, cpsr, lr);
 }
+#endif /*__thumb2__*/

@@ -223,19 +223,16 @@ debug_putchar (void *arg, short c)
 
 	arm_intr_disable (&x);
 
-	/* Enable transmitter. */
-	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_TMODE_MASK) | ARM_UCON_TMODE_IRQ;
-
 	/* Wait for transmitter holding register empty. */
-	while (! (ARM_USTAT(0) & ARM_USTAT_TC))
+	while (! (ARM_UART2->RIS & ARM_UART_RIS_TX))
 		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	ARM_UTXBUF(0) = c;
+	ARM_UART2->DR = c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (ARM_USTAT(0) & ARM_USTAT_TC))
+	while (! (ARM_UART2->RIS & ARM_UART_RIS_TX))
 		continue;
 
 	watchdog_alive ();
@@ -252,7 +249,7 @@ again:
 unsigned short
 debug_getchar (void)
 {
-	unsigned char c;
+	unsigned c;
 	int x;
 
 	if (debug_char >= 0) {
@@ -264,22 +261,16 @@ debug_getchar (void)
 	arm_intr_disable (&x);
 
 	/* Enable receiver. */
-	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_RMODE_MASK) | ARM_UCON_RMODE_IRQ;
+	ARM_UART2->CR |= ARM_UART_CR_RXE;
 
 	/* Wait until receive data available. */
-	while (! (ARM_USTAT(0) & ARM_USTAT_RDV)) {
-		if (ARM_USTAT(0) & (ARM_USTAT_FER | ARM_USTAT_PER |
-		    ARM_USTAT_OER | ARM_USTAT_ROVFF)) {
-/*debug_printf ("ustat 0x%x\n", ARM_USTAT(0));*/
-			ARM_USTAT(0) = ARM_USTAT_FER | ARM_USTAT_PER |
-			    ARM_USTAT_OER | ARM_USTAT_ROVFF;
-		}
+	while (! (ARM_UART2->RIS & ARM_UART_RIS_RX)) {
 		watchdog_alive ();
 		arm_intr_restore (x);
 		arm_intr_disable (&x);
 	}
 	/* TODO: utf8 to unicode conversion. */
-	c = ARM_URXBUF(0);
+	c = ARM_UART2->DR & ARM_UART_DR_DATA;
 
 	arm_intr_restore (x);
 	return c;
@@ -300,19 +291,15 @@ debug_peekchar (void)
 	arm_intr_disable (&x);
 
 	/* Enable receiver. */
-	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_RMODE_MASK) | ARM_UCON_RMODE_IRQ;
+	ARM_UART2->CR |= ARM_UART_CR_RXE;
+
 	/* Wait until receive data available. */
-	if (! (ARM_USTAT(0) & ARM_USTAT_RDV)) {
-		if (ARM_USTAT(0) & (ARM_USTAT_FER | ARM_USTAT_PER |
-		    ARM_USTAT_OER | ARM_USTAT_ROVFF)) {
-			ARM_USTAT(0) = ARM_USTAT_FER | ARM_USTAT_PER |
-			    ARM_USTAT_OER | ARM_USTAT_ROVFF;
-		}
+	if (! (ARM_UART2->RIS & ARM_UART_RIS_RX)) {
 		arm_intr_restore (x);
 		return -1;
 	}
 	/* TODO: utf8 to unicode conversion. */
-	c = ARM_URXBUF(0);
+	c = ARM_UART2->DR & ARM_UART_DR_DATA;
 
 	arm_intr_restore (x);
 	debug_char = c;

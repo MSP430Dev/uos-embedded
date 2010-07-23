@@ -3,10 +3,6 @@
  */
 #include <runtime/lib.h>
 
-void _irq_handler_ ()
-{
-}
-
 int main (void)
 {
 	for (;;) {

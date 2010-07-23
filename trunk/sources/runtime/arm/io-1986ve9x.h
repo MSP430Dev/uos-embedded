@@ -17,6 +17,8 @@ typedef volatile unsigned int arm_reg_t;
 /*
  * Peripheral memory map
  */
+#define ARM_CAN1_BASE		ARM_PERIPH_BASE
+#define ARM_CAN2_BASE		(ARM_PERIPH_BASE + 0x08000)
 #define ARM_USB_BASE		(ARM_PERIPH_BASE + 0x10000)
 #define ARM_EEPROM_BASE		(ARM_PERIPH_BASE + 0x18000)
 #define ARM_RSTCLK_BASE        	(ARM_PERIPH_BASE + 0x20000)
@@ -24,15 +26,23 @@ typedef volatile unsigned int arm_reg_t;
 #define ARM_UART1_BASE		(ARM_PERIPH_BASE + 0x30000)
 #define ARM_UART2_BASE		(ARM_PERIPH_BASE + 0x38000)
 #define ARM_SSP1_BASE		(ARM_PERIPH_BASE + 0x40000)
+#define ARM_I2C1_BASE		(ARM_PERIPH_BASE + 0x50000)
+#define ARM_POWER_BASE		(ARM_PERIPH_BASE + 0x58000)
+#define ARM_WWDT_BASE		(ARM_PERIPH_BASE + 0x60000)
+#define ARM_IWDT_BASE		(ARM_PERIPH_BASE + 0x68000)
 #define ARM_TIMER1_BASE		(ARM_PERIPH_BASE + 0x70000)
 #define ARM_TIMER2_BASE		(ARM_PERIPH_BASE + 0x78000)
 #define ARM_TIMER3_BASE		(ARM_PERIPH_BASE + 0x80000)
+#define ARM_ADC_BASE		(ARM_PERIPH_BASE + 0x88000)
+#define ARM_DAC_BASE		(ARM_PERIPH_BASE + 0x90000)
+#define ARM_COMP_BASE		(ARM_PERIPH_BASE + 0x98000)
 #define ARM_SSP2_BASE		(ARM_PERIPH_BASE + 0xA0000)
 #define ARM_GPIOA_BASE		(ARM_PERIPH_BASE + 0xA8000)
 #define ARM_GPIOB_BASE		(ARM_PERIPH_BASE + 0xB0000)
 #define ARM_GPIOC_BASE		(ARM_PERIPH_BASE + 0xB8000)
 #define ARM_GPIOD_BASE		(ARM_PERIPH_BASE + 0xC0000)
 #define ARM_GPIOE_BASE		(ARM_PERIPH_BASE + 0xC8000)
+#define ARM_BKP_BASE		(ARM_PERIPH_BASE + 0xD8000)
 #define ARM_GPIOF_BASE		(ARM_PERIPH_BASE + 0xE8000)
 #define ARM_EXT_BUS_BASE	(ARM_PERIPH_BASE + 0xF0050)
 
@@ -41,14 +51,16 @@ typedef volatile unsigned int arm_reg_t;
  */
 typedef struct
 {
-	arm_reg_t DATA;
-	arm_reg_t OE;
-	arm_reg_t FUNC;
-	arm_reg_t ANALOG;
-	arm_reg_t PULL;
-	arm_reg_t PD;
-	arm_reg_t PWR;
-	arm_reg_t GFEN;
+	arm_reg_t DATA;		/* Данные для выдачи и чтения */
+	arm_reg_t OE;		/* Направление, 1 - выход */
+	arm_reg_t FUNC;		/* Выбор функции, два бита на порт */
+	arm_reg_t ANALOG;	/* Режим работы, 1 - цифровой */
+	arm_reg_t PULL;		/* Подтяжка вверх [31:16] и
+				 * отключение подтяжки вниз [15:0] */
+	arm_reg_t PD;		/* Триггер Шмидта входа [31:16] или
+				 * открытый сток выхода [15:0]  */
+	arm_reg_t PWR;		/* Скорость фронта выхода, два бита на порт */
+	arm_reg_t GFEN;		/* Фильтрация входа */
 } GPIO_t;
 
 #define ARM_GPIOA		((GPIO_t*) ARM_GPIOA_BASE)
@@ -57,6 +69,23 @@ typedef struct
 #define ARM_GPIOD		((GPIO_t*) ARM_GPIOD_BASE)
 #define ARM_GPIOE		((GPIO_t*) ARM_GPIOE_BASE)
 #define ARM_GPIOF		((GPIO_t*) ARM_GPIOF_BASE)
+
+/*
+ * Регистр GPIO FUNC: выбор функции порта
+ */
+#define ARM_FUNC_MASK(n)	(3 << ((n)*2))
+#define ARM_FUNC_PORT(n)	(0 << ((n)*2))	/* порт */
+#define ARM_FUNC_MAIN(n)	(1 << ((n)*2))	/* основная функция */
+#define ARM_FUNC_ALT(n)		(2 << ((n)*2))	/* альтернативная функция */
+#define ARM_FUNC_REDEF(n)	(3 << ((n)*2))	/* переопределённая функция */
+
+/*
+ * Регистр GPIO PWR: скорость фронта порта вывода
+ */
+#define ARM_PWR_MASK(n)		(3 << ((n)*2))
+#define ARM_PWR_SLOW(n)		(1 << ((n)*2))	/* медленный фронт */
+#define ARM_PWR_FAST(n)		(2 << ((n)*2))	/* быстрый фронт */
+#define ARM_PWR_FASTEST(n)	(3 << ((n)*2))	/* максимально быстрый фронт */
 
 /*------------------------------------------------------
  * External bus
@@ -90,27 +119,73 @@ typedef struct
 
 #define ARM_RSTCLK		((RSTCLK_t*) ARM_RSTCLK_BASE)
 
+/*
+ * Регистр PER_CLOCK: включение тактирования периферийных блоков
+ */
+#define ARM_PER_CLOCK_CAN1	(1 << 0)
+#define ARM_PER_CLOCK_CAN2	(1 << 1)
+#define ARM_PER_CLOCK_USB	(1 << 2)
+#define ARM_PER_CLOCK_EEPROM	(1 << 3)
+#define ARM_PER_CLOCK_RSTCLK	(1 << 4)
+#define ARM_PER_CLOCK_DMA	(1 << 5)
+#define ARM_PER_CLOCK_UART1	(1 << 6)
+#define ARM_PER_CLOCK_UART2	(1 << 7)
+#define ARM_PER_CLOCK_SSP1	(1 << 8)
+#define ARM_PER_CLOCK_I2C1	(1 << 10)
+#define ARM_PER_CLOCK_POWER	(1 << 11)
+#define ARM_PER_CLOCK_WWDT	(1 << 12)
+#define ARM_PER_CLOCK_IWDT	(1 << 13)
+#define ARM_PER_CLOCK_TIMER1	(1 << 14)
+#define ARM_PER_CLOCK_TIMER2	(1 << 15)
+#define ARM_PER_CLOCK_TIMER3	(1 << 16)
+#define ARM_PER_CLOCK_ADC	(1 << 17)
+#define ARM_PER_CLOCK_DAC	(1 << 18)
+#define ARM_PER_CLOCK_COMP	(1 << 19)
+#define ARM_PER_CLOCK_SSP2	(1 << 20)
+#define ARM_PER_CLOCK_GPIOA	(1 << 21)
+#define ARM_PER_CLOCK_GPIOB	(1 << 22)
+#define ARM_PER_CLOCK_GPIOC	(1 << 23)
+#define ARM_PER_CLOCK_GPIOD	(1 << 24)
+#define ARM_PER_CLOCK_GPIOE	(1 << 25)
+#define ARM_PER_CLOCK_BKP	(1 << 27)
+#define ARM_PER_CLOCK_GPIOF	(1 << 29)
+#define ARM_PER_CLOCK_EXT_BUS	(1 << 30)
+
+/*
+ * Регистр UART_CLOCK: управление тактовой частотой UART
+ * Делитель тактовой частоты:
+ *	0 - HCLK
+ *	1 - HCLK/2
+ *	2 - HCLK/4
+ *	...
+ *	7 - HCLK/128
+ */
+#define ARM_UART_CLOCK_EN2	(1 << 25)	/* Разрешение тактовой частоты на UART2 */
+#define ARM_UART_CLOCK_EN1	(1 << 24)	/* Разрешение тактовой частоты на UART1 */
+#define ARM_UART_CLOCK_BRG2(n)	((n) << 8)	/* Делитель тактовой частоты UART2 */
+#define ARM_UART_CLOCK_BRG1(n)	(n)		/* Делитель тактовой частоты UART1 */
+
 /*------------------------------------------------------
  * UART
  */
 typedef struct
 {
-	arm_reg_t DR;
-	arm_reg_t SRCR;
+	arm_reg_t DR;			/* Данные */
+	arm_reg_t SRCR;			/* Состояние и сброс ошибки приёмника */
 	unsigned reserved0 [4];
-	arm_reg_t FR;
+	arm_reg_t FR;			/* Флаги */
 	unsigned reserved1;
-	arm_reg_t ILPR;
-	arm_reg_t IBRD;
-	arm_reg_t FBRD;
-	arm_reg_t LCR_H;
-	arm_reg_t CR;
-	arm_reg_t IFLS;
-	arm_reg_t IMSC;
-	arm_reg_t RIS;
-	arm_reg_t MIS;
-	arm_reg_t ICR;
-	arm_reg_t DMACR;
+	arm_reg_t ILPR;			/* Управление ИК-обменом */
+	arm_reg_t IBRD;			/* Делитель скорости */
+	arm_reg_t FBRD;			/* Дробная часть делителя */
+	arm_reg_t LCR_H;		/* Управление линией */
+	arm_reg_t CR;			/* Управление */
+	arm_reg_t IFLS;			/* Порог прерывания FIFO */
+	arm_reg_t IMSC;			/* Маска прерывания */
+	arm_reg_t RIS;			/* Состояние прерываний */
+	arm_reg_t MIS;			/* Состояние прерываний с маскированием */
+	arm_reg_t ICR;			/* Сброс прерывания */
+	arm_reg_t DMACR;		/* Управление DMA */
 } UART_t;
 
 typedef struct
@@ -129,6 +204,111 @@ typedef struct
 #define ARM_UART2		((UART_t*) ARM_UART2_BASE)
 #define ARM_UART1TEST		((UARTTEST_t*) (ARM_UART1_BASE + 0x0FE0))
 #define ARM_UART2TEST		((UARTTEST_t*) (ARM_UART2_BASE + 0x0FE0))
+
+/*
+ * Регистр UART DR: данные и флаги
+ */
+#define ARM_UART_DR_OE		(1 << 11)	/* Переполнение буфера приемника */
+#define ARM_UART_DR_BE		(1 << 10)	/* Разрыв линии (break) */
+#define ARM_UART_DR_PE		(1 << 9)	/* Ошибка контроля четности */
+#define ARM_UART_DR_FE		(1 << 8)	/* Ошибка в структуре кадра */
+#define ARM_UART_DR_DATA	0xFF		/* Данные */
+
+/*
+ * Регистр UART SRCR: состояние приёмника и сброс ошибки
+ */
+#define ARM_UART_SRCR_OE	(1 << 3)	/* Переполнение буфера приемника */
+#define ARM_UART_SRCR_BE	(1 << 2)	/* Разрыв линии (break) */
+#define ARM_UART_SRCR_PE	(1 << 1)	/* Ошибка контроля четности */
+#define ARM_UART_SRCR_FE	(1 << 0)	/* Ошибка в структуре кадра */
+
+/*
+ * Регистр UART FR: флаги
+ */
+#define ARM_UART_FR_RI		(1 << 8)	/* Инверсия линии /UARTRI */
+#define ARM_UART_FR_TXFE	(1 << 7)	/* Буфер FIFO передатчика пуст */
+#define ARM_UART_FR_RXFF	(1 << 6)	/* Буфер FIFO приемника заполнен */
+#define ARM_UART_FR_TXFF	(1 << 5)	/* Буфер FIFO передатчика заполнен */
+#define ARM_UART_FR_RXFE	(1 << 4)	/* Буфер FIFO приемника пуст */
+#define ARM_UART_FR_BUSY	(1 << 3)	/* UART занят */
+#define ARM_UART_FR_DCD		(1 << 2)	/* Инверсия линии /UARTDCD */
+#define ARM_UART_FR_DSR		(1 << 1)	/* Инверсия линии /UARTDSR */
+#define ARM_UART_FR_CTS		(1 << 0)	/* Инверсия линии /UARTCTS */
+
+/*
+ * Регистры UART IBRD и FBRD: делитель скорости
+ */
+#define ARM_UART_IBRD(mhz,baud)	((mhz) / (baud) / 16)
+#define ARM_UART_FBRD(mhz,baud)	(((mhz) * 4 / (baud)) & 077)
+
+/*
+ * Регистр UART LCR_H: управление линией.
+ */
+#define ARM_UART_LCRH_SPS	(1 << 7)	/* Фиксация значения бита чётности */
+#define ARM_UART_LCRH_WLEN5	(0 << 5)	/* Длина слова 5 бит */
+#define ARM_UART_LCRH_WLEN6	(1 << 5)	/* Длина слова 6 бит */
+#define ARM_UART_LCRH_WLEN7	(2 << 5)	/* Длина слова 7 бит */
+#define ARM_UART_LCRH_WLEN8	(3 << 5)	/* Длина слова 8 бит */
+#define ARM_UART_LCRH_FEN	(1 << 4)	/* Разрешение работы FIFO */
+#define ARM_UART_LCRH_STP2	(1 << 3)	/* Два стоповых бита */
+#define ARM_UART_LCRH_EPS	(1 << 2)	/* Чётность (0) или нечётность (1) */
+#define ARM_UART_LCRH_PEN	(1 << 1)	/* Разрешение чётности */
+#define ARM_UART_LCRH_BRK	(1 << 0)	/* Разрыв линии (break) */
+
+/*
+ * Регистр UART CR: управление.
+ */
+#define ARM_UART_CR_CTSEN	(1 << 15)	/* Управление потоком данных по CTS */
+#define ARM_UART_CR_RTSEN	(1 << 14)	/* Управление потоком данных по RTS */
+#define ARM_UART_CR_OUT2	(1 << 13)	/* Инверсия сигнала /UARTOut2 */
+#define ARM_UART_CR_OUT1	(1 << 12)	/* Инверсия сигнала /UARTOut1 */
+#define ARM_UART_CR_RTS		(1 << 11)	/* Инверсия сигнала /UARTRTS */
+#define ARM_UART_CR_DTR		(1 << 10)	/* Инверсия сигнала /UARTDTR */
+#define ARM_UART_CR_RXE		(1 << 9)	/* Прием разрешен */
+#define ARM_UART_CR_TXE		(1 << 8)	/* Передача разрешена */
+#define ARM_UART_CR_LBE		(1 << 7)	/* Шлейф разрешен */
+#define ARM_UART_CR_SIRLP	(1 << 2)	/* ИК-обмен с пониженным энергопотреблением */
+#define ARM_UART_CR_SIREN	(1 << 1)	/* Разрешение ИК передачи данных IrDA SIR */
+#define ARM_UART_CR_UARTEN	(1 << 0)	/* Разрешение работы приемопередатчика */
+
+/*
+ * Регистр UART IFLS: пороги FIFO.
+ */
+#define ARM_UART_IFLS_RX_1_8	(0 << 3)	/* Приём: 1/8 буфера */
+#define ARM_UART_IFLS_RX_1_4	(1 << 3)	/* Приём: 1/4 буфера */
+#define ARM_UART_IFLS_RX_1_2	(2 << 3)	/* Приём: 1/2 буфера */
+#define ARM_UART_IFLS_RX_3_4	(3 << 3)	/* Приём: 3/4 буфера */
+#define ARM_UART_IFLS_RX_7_8	(4 << 3)	/* Приём: 7/8 буфера */
+#define ARM_UART_IFLS_TX_1_8	(0 << 0)	/* Передача: 1/8 буфера */
+#define ARM_UART_IFLS_TX_1_4	(1 << 0)	/* Передача: 1/4 буфера */
+#define ARM_UART_IFLS_TX_1_2	(2 << 0)	/* Передача: 1/2 буфера */
+#define ARM_UART_IFLS_TX_3_4	(3 << 0)	/* Передача: 3/4 буфера */
+#define ARM_UART_IFLS_TX_7_8	(4 << 0)	/* Передача: 7/8 буфера */
+
+/*
+ * Регистр UART RIS: состояние прерываний.
+ * Регистр UART IMSC: маска прерывания.
+ * Регистр UART MIS: состояние прерываний с маскированием.
+ * Регистр UART ICR: cброс прерывания.
+ */
+#define ARM_UART_RIS_OE		(1 << 10)	/* Переполнение буфера */
+#define ARM_UART_RIS_BE		(1 << 9)	/* Разрыв линии */
+#define ARM_UART_RIS_PE		(1 << 8)	/* Ошибка контроля четности */
+#define ARM_UART_RIS_FE		(1 << 7)	/* Ошибка в структуре кадра */
+#define ARM_UART_RIS_RT		(1 << 6)	/* Таймаут приема данных */
+#define ARM_UART_RIS_TX		(1 << 5)	/* Прерывание от передатчика */
+#define ARM_UART_RIS_RX		(1 << 4)	/* Прерывание от приемника */
+#define ARM_UART_RIS_DSRM	(1 << 3)	/* Изменение состояния /UARTDSR */
+#define ARM_UART_RIS_DCDM	(1 << 2)	/* Изменение состояния /UARTDCD */
+#define ARM_UART_RIS_CTSM	(1 << 1)	/* Изменение состояния /UARTCTS */
+#define ARM_UART_RIS_RIM	(1 << 0)	/* Изменение состояния /UARTRI */
+
+/*
+ * Регистр UART DMACR: управление DMA.
+ */
+#define ARM_UART_DMACR_ONERR	(1 << 2)	/* Блокирование при ошибке */
+#define ARM_UART_DMACR_TXE	(1 << 1)	/* Использование ПДП при передаче */
+#define ARM_UART_DMACR_RXE	(1 << 0)	/* Использование ПДП при приеме */
 
 /*------------------------------------------------------
  * Synchronous serial port
@@ -689,7 +869,7 @@ typedef struct
 #define ARM_EEPROM		((EEPROM_t*) ARM_EEPROM_BASE)
 
 /*
- * Регистр EEPROM_CMD
+ * Регистр EEPROM CMD
  */
 #define ARM_EEPROM_CMD_CON	0x00000001
 				/*
