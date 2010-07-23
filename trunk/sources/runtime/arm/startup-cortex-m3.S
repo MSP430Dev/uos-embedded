@@ -5,6 +5,7 @@
 @
 		.section .text
 		.thumb
+		.thumb_func
 _reset_:
 		@ Jump to _init_.
 		ldr	lr, =_init_

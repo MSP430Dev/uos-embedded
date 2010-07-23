@@ -1,8 +1,7 @@
 # Daemon configuration
 #~~~~~~~~~~~~~~~~~~~~~
-#telnet_port 2001
-#gdb_port 2000
-debug_level 0
+telnet_port 2001
+gdb_port 2000
 
 # Interface
 #~~~~~~~~~~
@@ -16,7 +15,7 @@ interface ft2232
 ft2232_device_desc "Olimex OpenOCD JTAG TINY"
 ft2232_vid_pid 0x15ba 0x0004
 ft2232_layout olimex-jtag
-jtag_khz 4000
+jtag_khz 1000
 jtag_nsrst_delay 100
 jtag_ntrst_delay 100
 reset_config trst_and_srst srst_pulls_trst
@@ -48,5 +47,5 @@ arm disassemble 0x08000000 0x100
 #dump_image memory.bin 0x08000000 0x40000
 
 #debug_level 3
-proc ocd_init {} {exit}
+#proc ocd_init {} {exit}
 #echo {*** exit}

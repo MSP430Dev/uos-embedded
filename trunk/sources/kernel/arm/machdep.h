@@ -29,6 +29,9 @@
 #ifdef ARM_AT91SAM
 #   define ARCH_INTERRUPTS		32
 #endif
+#ifdef ARM_CORTEX_M3
+#   define ARCH_INTERRUPTS		33
+#endif
 
 /*
  * Type for saving task stack context.
