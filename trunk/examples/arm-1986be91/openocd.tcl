@@ -28,21 +28,21 @@ jtag newtap board cpu -irlen 4 -ircapture 0x1 -irmask 0xf -expected-id 0x4ba0047
 target create board.cpu cortex_m3 -endian little -chain-position board.cpu
 board.cpu configure -work-area-phys 0x20000000 -work-area-size 0x4000 -work-area-backup 0
 
-flash bank board.flash stm32x 0 0 0 0 board.cpu
+#flash bank board.flash stm32x 0 0 0 0 board.cpu
 
-init #-----------------
+#init #-----------------
 #scan_chain
 #targets
 #flash banks
 #poll
 
-halt
+#halt
 #reg
 
 #mww 0x20000000 0x12345678
 #mdw 0x20000000 8
 
-arm disassemble 0x08000000 0x100
+#arm disassemble 0x08000000 0x100
 #dump_image memory.bin 0x20000000 0x4000
 #dump_image memory.bin 0x08000000 0x40000
 

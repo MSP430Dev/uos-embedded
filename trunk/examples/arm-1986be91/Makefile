@@ -8,7 +8,7 @@ OUTS		= $(TESTS:%.srec=%.out)
 # Using MILPROG utility.
 PROG            = milprog
 
-all:		$(OUTS) $(TESTS)
+all:		$(OUTS) $(TESTS) test_debug.dis
 		$(SIZE) $(OUTS)
 
 $(OUTS) $(TESTS): startup.o libuos.a
@@ -19,7 +19,7 @@ clean:
 probe:
 		$(PROG)
 
-load:		test_debug.bin
+load:		test_debug.srec
 		$(PROG) $<
 
 include $(OS)/sources/rules.mak

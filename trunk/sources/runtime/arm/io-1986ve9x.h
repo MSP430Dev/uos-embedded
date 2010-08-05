@@ -120,7 +120,24 @@ typedef struct
 #define ARM_RSTCLK		((RSTCLK_t*) ARM_RSTCLK_BASE)
 
 /*
- * Регистр PER_CLOCK: включение тактирования периферийных блоков
+ * Регистр CLOCK_STATUS: состояние блока управления тактовой частотой.
+ */
+#define ARM_CLOCK_STATUS_PLL_USB_RDY	(1 << 0) /* USB PLL запущена и стабильна */
+#define ARM_CLOCK_STATUS_PLL_CPU_RDY	(1 << 1) /* CPU PLL запущена и стабильна */
+#define ARM_CLOCK_STATUS_HSE_RDY	(1 << 2) /* осциллятор HSE запущен и стабилен */
+
+/*
+ * Регистр PLL_CONTROL: управление блоками умножения частоты.
+ */
+#define ARM_PLL_CONTROL_USB_ON		(1 << 0)	/* USB PLL включена */
+#define ARM_PLL_CONTROL_USB_RLD		(1 << 1)	/* Перезапуск USB PLL */
+#define ARM_PLL_CONTROL_CPU_ON		(1 << 2)	/* CPU PLL включена */
+#define ARM_PLL_CONTROL_CPU_RLD		(1 << 3)	/* Перезапуск CPU PLL */
+#define ARM_PLL_CONTROL_USB_MUL(n)	(((n)-1) << 4)	/* Коэффициент умножения для USB PLL */
+#define ARM_PLL_CONTROL_CPU_MUL(n)	(((n)-1) << 8)	/* Коэффициент умножения для CPU PLL */
+
+/*
+ * Регистр PER_CLOCK: включение тактирования периферийных блоков.
  */
 #define ARM_PER_CLOCK_CAN1	(1 << 0)
 #define ARM_PER_CLOCK_CAN2	(1 << 1)
@@ -150,6 +167,34 @@ typedef struct
 #define ARM_PER_CLOCK_BKP	(1 << 27)
 #define ARM_PER_CLOCK_GPIOF	(1 << 29)
 #define ARM_PER_CLOCK_EXT_BUS	(1 << 30)
+
+/*
+ * Регистр HS_CONTROL: управление высокочастотным генератором и осциллятором.
+ */
+#define ARM_HS_CONTROL_HSE_ON	(1 << 0)	/* Осциллятор HSE включён */
+#define ARM_HS_CONTROL_HSE_BYP	(1 << 1)	/* Режим внешнего генератора */
+
+/*
+ * Регистр CPU_CLOCK: управление тактовой частотой.
+ */
+#define ARM_CPU_CLOCK_C1_HSI		(0 << 0) /* Выбор источника для CPU C1: HSI */
+#define ARM_CPU_CLOCK_C1_HSI_DIV2	(1 << 0) /* HSI/2 */
+#define ARM_CPU_CLOCK_C1_HSE		(2 << 0) /* HSE */
+#define ARM_CPU_CLOCK_C1_HSE_DIV2	(3 << 0) /* HSE/2 */
+#define ARM_CPU_CLOCK_C2_PLLCPUO	(1 << 2) /* Выбор источника для CPU C2: PLLCPUo */
+#define ARM_CPU_CLOCK_C3_C2		(0 << 4) /* Выбор источника для CPU C3: CPU C2 */
+#define ARM_CPU_CLOCK_C3_C2_DIV2	(8 << 4) /* CPU C2 / 2 */
+#define ARM_CPU_CLOCK_C3_C2_DIV4	(8 << 4) /* CPU C2 / 4 */
+#define ARM_CPU_CLOCK_C3_C2_DIV8	(8 << 4) /* CPU C2 / 8 */
+#define ARM_CPU_CLOCK_C3_C2_DIV16	(8 << 4) /* CPU C2 / 16 */
+#define ARM_CPU_CLOCK_C3_C2_DIV32	(8 << 4) /* CPU C2 / 32 */
+#define ARM_CPU_CLOCK_C3_C2_DIV64	(8 << 4) /* CPU C2 / 64 */
+#define ARM_CPU_CLOCK_C3_C2_DIV128	(8 << 4) /* CPU C2 / 128 */
+#define ARM_CPU_CLOCK_C3_C2_DIV256	(8 << 4) /* CPU C2 / 256 */
+#define ARM_CPU_CLOCK_HCLK_HSI		(0 << 8) /* Выбор источника для HCLK: HSI */
+#define ARM_CPU_CLOCK_HCLK_C3		(1 << 8) /* CPU C3 */
+#define ARM_CPU_CLOCK_HCLK_LSE		(2 << 8) /* LSE */
+#define ARM_CPU_CLOCK_HCLK_LSI		(3 << 8) /* LSI */
 
 /*
  * Регистр UART_CLOCK: управление тактовой частотой UART
@@ -386,6 +431,43 @@ typedef struct
 #define ARM_TIMER1		((TIMER_t*) ARM_TIMER1_BASE)
 #define ARM_TIMER2		((TIMER_t*) ARM_TIMER2_BASE)
 #define ARM_TIMER3		((TIMER_t*) ARM_TIMER3_BASE)
+
+/*------------------------------------------------------
+ * Battery backup
+ */
+typedef struct
+{
+	arm_reg_t BKP_REG_00;		/* Регистр аварийного сохранения 0 */
+	unsigned reserved1 [13];
+	arm_reg_t BKP_REG_0E;		/* Регистр аварийного сохранения 14 */
+	arm_reg_t BKP_REG_0F;		/* Регистр аварийного сохранения 15 и
+					 * управления блоками RTC, LSE, LSI и HSI*/
+	arm_reg_t RTC_CNT;		/* Регистр основного счетчика часов
+					 * реального времени */
+	arm_reg_t RTC_DIV;		/* Регистр предварительного делителя
+					 * основного счетчика */
+	arm_reg_t RTC_PRL;		/* Регистр основания счета
+					 * предварительного делителя */
+	arm_reg_t RTC_ALRM;		/* Регистр значения для сравнения
+					 * основного счетчика и выработки сигнала ALRF */
+	arm_reg_t RTC_CS;		/* Регистр управления и состояния
+					 * флагов часов реального времени */
+} BACKUP_t;
+
+#define ARM_BACKUP		((BACKUP_t*) ARM_BKP_BASE)
+
+/*
+ * Регистр BKP_REG_0E.
+ */
+#define ARM_BKP_REG_0E_LOW		(7 << 0)	/* Выбор режима работы
+							 * регулятора 1.8В */
+#define ARM_BKP_REG_0E_SELECT_RI	(7 << 3)	/* Выбор дополнительной
+							 *  нагрузки для регулятора 1.8В */
+#define ARM_BKP_REG_0E_JTAG_A		(1 << 6)	/* Разрешение работы порта JTAG A */
+#define ARM_BKP_REG_0E_JTAG_B		(1 << 7)	/* Разрешение работы порта JTAG B */
+#define ARM_BKP_REG_0E_TRIM		(7 << 8)	/* Коэффициент настройки опорного
+							 * напряжения регулятора */
+#define ARM_BKP_REG_0E_FPOR		(1 << 11)	/* Флаг срабатывания POR */
 
 /*------------------------------------------------------
  * Universal Serial Bus

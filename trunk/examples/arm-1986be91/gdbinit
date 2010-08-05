@@ -1,5 +1,5 @@
-#file test1.out
-target remote localhost:2000
+file test_debug.out
+target extended-remote localhost:2000
 set remote hardware-breakpoint-limit 6
 set remote hardware-watchpoint-limit 4
 

@@ -224,8 +224,8 @@ debug_putchar (void *arg, short c)
 	arm_intr_disable (&x);
 
 	/* Wait for transmitter holding register empty. */
-	while (! (ARM_UART2->RIS & ARM_UART_RIS_TX))
-		continue;
+//	while (! (ARM_UART2->RIS & ARM_UART_RIS_TX))
+//		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */

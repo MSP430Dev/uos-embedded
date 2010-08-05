@@ -8,7 +8,7 @@
 		.thumb_func
 _reset_:
 		@ Jump to _init_.
-		ldr	lr, =_init_
+		ldr	lr, =_init_+1
 		bx	lr
 
 @---------------------------------------
@@ -18,7 +18,7 @@ _reset_:
 		.macro	HANDLER name
 		.weak	\name
 		.set	\name, _unexpected_interrupt_
-		.word	\name
+		.word	\name+1
 		.endm
 
 		.extern	_unexpected_interrupt_
