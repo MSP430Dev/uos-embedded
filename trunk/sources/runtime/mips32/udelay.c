@@ -1,45 +1,18 @@
 #include <runtime/lib.h>
 
 /*
- * Microsecond delay.
+ * Microsecond delay for MIPS.
  */
-
-#ifdef ELVEES_MC24
-
-/* Specialization for Elvees MC-24 */
-
-#define TIME_BEFORE(unknown, known) ((long)(unknown) - (long)(known) < 0)
-
 void udelay (unsigned usec)
 {
-	unsigned timeout = mips32_read_c0_register(C0_COUNT) + usec * (KHZ / 1000);
-	while ( TIME_BEFORE( mips32_read_c0_register(C0_COUNT), timeout ) ) {
-		asm volatile ("nop");
-	};
+	unsigned now = mips32_read_c0_register (C0_COUNT);
+	unsigned final = now + usec * (KHZ / 1000);
+
+	for (;;) {
+		now = mips32_read_c0_register (C0_COUNT);
+
+		/* This comparison is valid only when using a signed type. */
+		if ((int) (now - final) >= 0)
+			break;
+	}
 }
-
-#else
-
-/* Generic delay function (has to be calibrated for each CPU type) */
-
-void udelay (unsigned usec)
-{
-	unsigned nloops;
-
-	if (! usec)
-		return;
-	nloops = (usec * (KHZ / 1000) + 7) >> 3;
-#ifdef BOOT_FLASH_8BIT
-	/* 8-bit flash memory is slower. */
-	nloops = (nloops + 31) >> 5;
-#endif
-	do {
-		asm volatile ("nop");
-		asm volatile ("nop");
-		asm volatile ("nop");
-		asm volatile ("nop");
-		asm volatile ("nop");
-	} while (--nloops);
-}
-
-#endif

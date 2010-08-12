@@ -22,10 +22,23 @@
 
 /*
  * The total number of different hardware interrupts.
+ */
+#ifdef ELVEES_MC24
+/*
  * 32 interrupts linked to MASKR[31:0] register.
  * 8 interrupts linked to IP[7:0] bits of CP0_CAUSE register.
  */
 #define ARCH_INTERRUPTS		(32+8)
+#endif
+
+#ifdef ELVEES_NVCOM01
+/*
+ * 32 interrupts linked to MASKR0[31:0] register.
+ * 4 interrupts linked to MASKR1[3:0] register.
+ * 16 interrupts linked to MASKR2[15:0] register.
+ */
+#define ARCH_INTERRUPTS		(32+4+16)
+#endif
 
 /*
  * Type for saving task stack context.

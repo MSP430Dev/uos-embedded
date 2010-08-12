@@ -46,6 +46,10 @@
 #   define TIMER_IRQ		29	/* Interval Timer interrupt */
 #endif
 
+#if ELVEES_NVCOM01
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
 #if MSP430
 #   ifdef TIMERA0_VECTOR
 #      define TIMER_IRQ		(TIMERA0_VECTOR / 2)

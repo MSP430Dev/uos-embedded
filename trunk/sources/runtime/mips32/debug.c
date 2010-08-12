@@ -2,7 +2,7 @@
 
 static int debug_char = -1;
 
-#ifdef ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 /*
  * Send a byte to the UART transmitter, with interrupts disabled.
  */

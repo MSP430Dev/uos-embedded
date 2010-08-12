@@ -3,6 +3,11 @@
  */
 #ifdef ELVEES_MC24
 #   include <runtime/mips32/io-mc24.h>
+#   include <runtime/mips32/io-elvees.h>
+#endif
+#ifdef ELVEES_NVCOM01
+#   include <runtime/mips32/io-nvcom01.h>
+#   include <runtime/mips32/io-elvees.h>
 #endif
 
 /*

@@ -240,6 +240,33 @@ _arch_interrupt_ (void)
 			mips32_write_c0_register (C0_STATUS, status);
 		}
 #endif
+#ifdef ELVEES_NVCOM01
+		/* QSTR0 interrupt: 0..31. */
+		irq = 31 - mips32_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+/*debug_printf ("<%d>", irq);*/
+		if (irq >= 0) {
+			/* Disable the internal irq, to avoid loops */
+			MC_MASKR0 &= ~(1 << irq);
+		} else {
+			/* QSTR1 interrupt: 32..35. */
+			irq = 32 + 31 - mips32_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+/*debug_printf ("<%d>", irq);*/
+			if (irq >= 32) {
+				/* Disable the internal irq, to avoid loops */
+				MC_MASKR1 &= ~(1 << irq);
+			} else {
+				/* QSTR2 interrupt: 36..51. */
+				irq = 36 + 31 - mips32_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+/*debug_printf ("<%d>", irq);*/
+				if (irq >= 36) {
+					/* Disable the internal irq, to avoid loops */
+					MC_MASKR2 &= ~(1 << irq);
+				} else {
+					break;
+				}
+			}
+		}
+#endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
 
@@ -309,6 +336,21 @@ arch_intr_allow (int irq)
 		unsigned status = mips32_read_c0_register (C0_STATUS);
 		status |= 0x100 << (irq & 7);
 		mips32_write_c0_register (C0_STATUS, status);
+	}
+#endif
+#ifdef ELVEES_NVCOM01
+	if (irq < 32) {
+		/* QSTR0 interrupt: 0..31. */
+		MC_MASKR0 |= 1 << irq;
+/*debug_printf ("enable irq %d, MASKR0=%#x\n", irq, MC_MASKR0);*/
+	} else if (irq < 32+4) {
+		/* QSTR1 interrupt: 32..35. */
+		MC_MASKR1 |= 1 << (irq-32);
+/*debug_printf ("enable irq %d, MASKR1=%#x\n", irq, MC_MASKR1);*/
+	} else {
+		/* QSTR2 interrupt: 36..51. */
+		MC_MASKR2 |= 1 << (irq-36);
+/*debug_printf ("enable irq %d, MASKR2=%#x\n", irq, MC_MASKR2);*/
 	}
 #endif
 }

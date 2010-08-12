@@ -16,7 +16,7 @@
 #   include "at91sam.h"
 #endif
 
-#if ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 #   include "elvees.h"
 #endif
 

@@ -14,7 +14,7 @@ void __attribute ((noreturn))_init_ (void)
 {
 	unsigned *src, *dest, *limit;
 
-#ifdef ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 	unsigned int divisor;
 
 	/* Clear CAUSE register. Use special irq vector. */
@@ -81,12 +81,36 @@ void __attribute ((noreturn))_init_ (void)
 	/*
 	 * Setup all essential system registers.
 	 */
+#ifdef ELVEES_NVCOM01
+	/* Clock: enable only core. */
+	MC_CLKEN = MC_CLKEN_CORE;
+
+	/* Clock multiply from CLKIN to KHZ. */
+	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
+		   MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
+
+	/* Fixed mapping. */
+	MC_CSR = MC_CSR_FM;
+
+	MC_MASKR0 = 0;
+	MC_MASKR1 = 0;
+	MC_MASKR2 = 0;
+#endif
+
+#ifdef ELVEES_MC24
 	/* Fixed mapping, clock multiply from CLKIN to KHZ. */
 	MC_CSR = MC_CSR_FM | MC_CSR_CLK(KHZ/ELVEES_CLKIN) | MC_CSR_CLKEN;
 	MC_MASKR = 0;
+#endif
 	MC_ITCSR = 0;
+#ifdef MC_ITCSR1
+	MC_ITCSR1 = 0;
+#endif
+#ifdef MC_RTCSR
 	MC_RTCSR = 0;
+#endif
 	MC_WTCSR = 0;
+#ifdef MC_HAVE_SWIC
 	MC_SWIC_RX_DESC_CSR(0) = 0;
 	MC_SWIC_RX_DESC_CSR(1) = 0;
 	MC_SWIC_RX_DATA_CSR(0) = 0;
@@ -95,18 +119,26 @@ void __attribute ((noreturn))_init_ (void)
 	MC_SWIC_TX_DESC_CSR(1) = 0;
 	MC_SWIC_TX_DATA_CSR(0) = 0;
 	MC_SWIC_TX_DATA_CSR(1) = 0;
+#endif
+#ifdef MC_CSR_LPCH
 	MC_CSR_LPCH(0) = 0;
 	MC_CSR_LPCH(1) = 0;
 	MC_CSR_LPCH(2) = 0;
 	MC_CSR_LPCH(3) = 0;
+#endif
+#ifdef MC_CSR_MEMCH
 	MC_CSR_MEMCH(0) = 0;
 	MC_CSR_MEMCH(1) = 0;
 	MC_CSR_MEMCH(2) = 0;
 	MC_CSR_MEMCH(3) = 0;
+#endif
+#ifdef MC_HAVE_SPORT
 	MC_STCTL(0) = 0;
 	MC_STCTL(1) = 0;
 	MC_SRCTL(0) = 0;
 	MC_SRCTL(1) = 0;
+#endif
+#ifdef MC_HAVE_LPORT
 	MC_LCSR(0) = 0;
 	MC_LCSR(1) = 0;
 	MC_LCSR(2) = 0;
@@ -115,6 +147,7 @@ void __attribute ((noreturn))_init_ (void)
 	MC_LDIR(1) = 0;
 	MC_LDIR(2) = 0;
 	MC_LDIR(3) = 0;
+#endif
 
 	/* Disable all external memory except nCS3.
 	 * Set to default values. */
@@ -153,7 +186,7 @@ void __attribute ((noreturn))_init_ (void)
 	(void) MC_RBR;
 	(void) MC_IIR;
 
-#endif /* ELVEES_MC24 */
+#endif /* ELVEES_MC24 or ELVEES_NVCOM01 */
 
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
@@ -178,7 +211,7 @@ uos_valid_memory_address (void *ptr)
 {
 	unsigned address = (unsigned) ptr;
 
-#ifdef ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 	/* Internal SRAM. */
 	if (address >= 0xb8000000 && address < 0xb8008000)
 		return 1;
@@ -189,7 +222,7 @@ uos_valid_memory_address (void *ptr)
 		return 1;
 #endif /* BOOT_SRAM_SIZE */
 
-#endif /* ELVEES_MC24 */
+#endif /* ELVEES_MC24 or ELVEES_NVCOM01 */
 	return 0;
 }
 
