@@ -345,6 +345,8 @@
 #define MC_SDRCON_PS_1024	(1 << 0)	/* Page size 1024 */
 #define MC_SDRCON_PS_2048	(2 << 0)	/* Page size 2048 */
 #define MC_SDRCON_PS_4096	(3 << 0)	/* Page size 4096 */
+
+#ifdef ELVEES_MC24
 #define MC_SDRCON_RFR(nsec,khz)	(((nsec*khz+999999)/1000000) << 4)
 						/* Refresh period */
 #define MC_SDRCON_BL_1		(0 << 16)	/* Bursh length 1 */
@@ -356,7 +358,25 @@
 #define MC_SDRCON_WBM		(1 << 19)	/* Write burst mode - single write */
 #define MC_SDRCON_CL		(1 << 20)	/* CAS latency: 0 - 2, 1 - 3 cycles */
 #define MC_SDRCON_INIT		(1 << 31)	/* Initialize SDRAM, 2 usec */
+#endif
 
+#ifdef ELVEES_NVCOM01
+#define MC_SDRCON_RFR(nsec,khz)	(((nsec*khz+999999)/1000000) << 16)
+						/* Refresh period */
+#define MC_SDRCON_CL_2		(2 << 4)	/* CAS latency 2 cycles */
+#define MC_SDRCON_CL_3		(3 << 4)	/* CAS latency 3 cycles */
+#endif
+
+/*
+ * Регистр параметров синхронной динамической памяти SDRTMR
+ */
+#define MC_SDRTMR_TWR(n)	((n) << 0)	/* Write recovery delay */
+#define MC_SDRTMR_TRP(n)	((n) << 4)	/* Минимальный период Precharge */
+#define MC_SDRTMR_TRCD(n)	((n) << 8)	/* Минимальная задержка между
+						 * Active и Read/Write */
+#define MC_SDRTMR_TRAS(n)	((n) << 16)	/* Минимальная задержка между
+						 * Active и Precharge */
+#define MC_SDRTMR_TRFC(n)	((n) << 20)	/* Минимальный интервал между Refresh */
 
 /*--------------------------------------
  * Интервальный таймер, регистр управления ITCSR
