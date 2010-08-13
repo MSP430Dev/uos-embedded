@@ -201,6 +201,7 @@
 /*
  * Системный регистр MASKR
  */
+#ifdef ELVEES_MC24
 #define MC_MASKR_SRX0		0x00000001	/* SPORT0 receive */
 #define MC_MASKR_STX0		0x00000002	/* SPORT0 transmit */
 #define MC_MASKR_SRX1		0x00000004	/* SPORT0 receive */
@@ -234,6 +235,7 @@
 #define MC_MASKR_TxDatCh1	0x00010000	/* TX DATA DMA for SWIC1 */
 #define MC_MASKR_RxDesCh1	0x00020000	/* RX DESC DMA for SWIC1 */
 #define MC_MASKR_RxDatCh1	0x00040000	/* RX DATA DMA for SWIC1 */
+#endif
 
 /*
  * Системный регистр CLKEN
