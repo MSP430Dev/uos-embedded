@@ -92,7 +92,7 @@ static bool_t
 timer_handler (timer_t *t)
 {
 /*debug_printf ("<ms=%ld> ", t->milliseconds);*/
-#if ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 	/* Clear interrupt. */
 	MC_ITCSR &= ~MC_ITCSR_INT;
 #endif
@@ -257,7 +257,7 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	*AT91C_PITC_PIMR = (((t->khz * t->msec_per_tick + 8) >> 4) - 1) |
 		AT91C_PITC_PITEN | AT91C_PITC_PITIEN;
 #endif
-#if ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 	/* Use interval timer with prescale 1:1. */
 	MC_ITCSR = 0;
 	MC_ITSCALE = 0;

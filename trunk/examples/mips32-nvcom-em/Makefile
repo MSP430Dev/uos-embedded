@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test_debug
+TEST		= test_timer
 TESTS		= $(TEST).srec
 TESTS		+= test_debug.srec test_task.srec test_timer.srec test_uart.srec
 #TESTS		+= test_ram.srec test_tcl.srec philosophers.srec test_lport.srec

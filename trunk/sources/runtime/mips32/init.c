@@ -22,9 +22,15 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Initialize STATUS register: CP0 usable, ROM vectors used,
 	 * internal interrupts enabled, master interrupt disable. */
-	mips32_write_c0_register (C0_STATUS, ST_BEV | ST_IM_MCU | ST_CU0
+	mips32_write_c0_register (C0_STATUS, ST_BEV | ST_CU0
 #ifdef ARCH_HAVE_FPU
-		 | ST_CU1
+		| ST_CU1
+#endif
+#ifdef ELVEES_MC24
+		| ST_IM_MCU
+#endif
+#ifdef ELVEES_NVCOM01
+		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2
 #endif
 		);
 
