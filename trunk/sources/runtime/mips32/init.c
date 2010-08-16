@@ -1,7 +1,7 @@
 #include <runtime/lib.h>
 
 extern void _etext();
-extern unsigned __data_start, _edata, _end;
+extern unsigned __data_start, _edata, _end, _estack[];
 extern int main ();
 
 /*
@@ -224,7 +224,8 @@ uos_valid_memory_address (void *ptr)
 
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 	/* Internal SRAM. */
-	if (address >= 0xb8000000 && address < 0xb8008000)
+	if (address >= (unsigned) &__data_start &&
+	    address < (unsigned) _estack)
 		return 1;
 
 #ifdef BOOT_SRAM_SIZE

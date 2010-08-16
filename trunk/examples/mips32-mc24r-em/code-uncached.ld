@@ -11,6 +11,10 @@ MEMORY
   flash  (rx)   : ORIGIN = 0xbfc00000,	LENGTH = 1M
   cram   (rw!x) : ORIGIN = 0xb8000000,	LENGTH = 32K
 }
+
+/* higher address of the user mode stack */
+_estack = ORIGIN(cram) + LENGTH(cram);
+
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */

@@ -4,7 +4,11 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 
-#define SDRAM_START	0xA0000000
+#ifdef ENABLE_DCACHE
+#   define SDRAM_START	0x00000000
+#else
+#   define SDRAM_START	0xA0000000
+#endif
 #define SDRAM_SIZE	(64*1024*1024)
 
 ARRAY (stack_console, 1000);	/* Task: menu on console */
@@ -199,6 +203,11 @@ void uos_init (void)
 	debug_printf ("Instruction cache enabled\n");
 #else
 	debug_printf ("Instruction cache disabled\n");
+#endif
+#ifdef ENABLE_DCACHE
+	debug_printf ("Data cache enabled\n");
+#else
+	debug_printf ("Data cache disabled\n");
 #endif
 
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */

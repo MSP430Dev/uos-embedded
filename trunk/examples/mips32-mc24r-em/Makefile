@@ -10,12 +10,6 @@ TESTS		+= test-fpu.srec
 TESTS		+= $(CURRENT).srec
 OUTS		= $(TESTS:%.srec=%.out)
 
-# No caches
-#LDFLAGS	+= -T $(TARGET)/code-in-flash.ld
-
-# Enable instruction cache
-LDFLAGS		+= -T $(TARGET)/code-in-kseg0.ld
-
 all:		$(OUTS) $(TESTS) $(CURRENT).dis
 		$(SIZE) *.out
 

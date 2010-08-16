@@ -2,10 +2,10 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test_tcl
+TEST		= test-tcl
 TESTS		= $(TEST).srec
-TESTS		+= test_debug.srec test_task.srec test_timer.srec test_uart.srec
-TESTS		+= philosophers.srec test_ram.srec test_tcl.srec
+TESTS		+= test-debug.srec test-task.srec test-timer.srec test-uart.srec
+TESTS		+= philosophers.srec test-ram.srec test-tcl.srec
 TESTS           += test-latency.srec test-tswitch.srec test-fpu.srec
 OUTS		= $(TESTS:%.srec=%.out)
 

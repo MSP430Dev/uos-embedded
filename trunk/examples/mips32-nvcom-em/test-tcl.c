@@ -16,6 +16,13 @@
 #define PRIO_CONSOLE	20
 #define PRIO_UART	90
 
+#ifdef ENABLE_DCACHE
+#   define SDRAM_START	0x00000000
+#else
+#   define SDRAM_START	0xA0000000
+#endif
+#define SDRAM_SIZE	(64*1024*1024)
+
 uart_t uart;				/* Console driver */
 timer_t timer;				/* Timer driver */
 mem_pool_t pool;			/* Dynamic memory pool */
@@ -259,17 +266,15 @@ main_console (void *data)
 bool_t uos_valid_memory_address (void *ptr)
 {
         unsigned address = (unsigned) ptr;
+	extern unsigned __data_start[], _estack[];
 
 	/* Internal SRAM. */
-	if (address >= 0xb8000000 && address < 0xb8008000)
-		return 1;
-
-	/* Boot SRAM. */
-	if (address >= 0xbfc00000 && address < 0xbfc00000 + 1024*1024)
+	if (address >= (unsigned) __data_start &&
+	    address < (unsigned) _estack)
 		return 1;
 
 	/* SDRAM. */
-	if (address >= 0xA0000000 && address < 0xA0000000 + 128*1024*1024)
+	if (address >= SDRAM_START && address < SDRAM_START + SDRAM_SIZE)
 		return 1;
         return 0;
 }
@@ -298,7 +303,7 @@ void uos_init (void)
 	MC_SDRCSR = 1;				/* Initialize SDRAM */
         udelay (2);
 
-	mem_init (&pool, 0xA0000000, 0xA0000000 + 64*1024*1024);
+	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 
 	/* Baud 115200. */
 	uart_init (&uart, 0, PRIO_UART, KHZ, 115200);

@@ -8,9 +8,13 @@ OUTPUT_ARCH(mips)
 /* ENTRY(_start_) */
 MEMORY
 {
-  flash  (rx)   : ORIGIN = 0xbfc00000,	LENGTH = 1M
+  flash  (rx)   : ORIGIN = 0x9fc00000,	LENGTH = 1M
   cram   (rw!x) : ORIGIN = 0xb8000000,	LENGTH = 32K
 }
+
+/* higher address of the user mode stack */
+_estack = ORIGIN(cram) + LENGTH(cram);
+
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */
@@ -64,7 +68,7 @@ SECTIONS
     /* Align here to ensure that the .text section ends on word boundary. */
     . = ALIGN (32 / 8);
     _etext = .;
-  } > cram
+  } > flash
 
   /* Start data (internal SRAM).  */
   .data		  : AT (ADDR (.text) + SIZEOF (.text))

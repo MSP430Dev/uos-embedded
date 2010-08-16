@@ -15,7 +15,7 @@
 _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
-		la	$sp, 0xb8008000-16		# Stack at end of internal SRAM
+		la	$sp, _estack-16			# Stack at end of internal SRAM
 
 		j	_init_				# Jump to _init_()
 		lui	$gp, 0xb800			# Set global pointer (delay slot)

@@ -215,10 +215,16 @@ void console (void *arg)
 		debug_printf ("  SDRAM clock: %u MHz\n", MPORT_KHZ / 1000);
 		debug_printf ("   Reg.CSCON3: %08x  \n", MC_CSCON3);
 #ifdef ENABLE_ICACHE
-		debug_printf ("  Instr.cache: enabled  \n\n");
+		debug_printf ("  Instr.cache: enabled  \n");
 #else
-		debug_printf ("  Instr.cache: disabled  \n\n");
+		debug_printf ("  Instr.cache: disabled  \n");
 #endif
+#ifdef ENABLE_DCACHE
+		debug_printf ("   Data cache: enabled  \n");
+#else
+		debug_printf ("   Data cache: disabled  \n");
+#endif
+		debug_printf ("\n");
 		debug_printf ("---------Value-----------------Loops-------Errors----\n");
 		debug_printf ("     e:  %-20.15f  %-10u  %u \n", e, count_e_loops, count_e_errors);
 		debug_printf ("Machin:  %-20.15f  %-10u  %u \n", pi_machin, count_machin_loops, count_machin_errors);

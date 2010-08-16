@@ -389,6 +389,10 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 #ifdef ARCH_HAVE_FPU
 	t->fpu_state = ARCH_FPU_STATE;	/* FPU disabled */
 #endif
+#ifdef ENABLE_DCACHE
+	/* Flush data cache. */
+        MC_CSR |= MC_CSR_FLUSH_D;
+#endif
 }
 
 #ifdef ARCH_HAVE_FPU
