@@ -15,6 +15,10 @@ MEMORY
   xyram1 (rw!x) : ORIGIN = 0xb8800000,	LENGTH = 128K
   pram1  (rw!x) : ORIGIN = 0xb8840000,	LENGTH = 32K
 }
+
+/* higher address of the user mode stack */
+_estack = ORIGIN(cram) + LENGTH(cram);
+
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */

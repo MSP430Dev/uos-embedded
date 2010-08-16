@@ -9,12 +9,16 @@ OUTPUT_ARCH(mips)
 MEMORY
 {
   flash  (rx)   : ORIGIN = 0x9fc00000,	LENGTH = 16M
-  cram   (rw!x) : ORIGIN = 0xb8000000,	LENGTH = 128K
-  xyram0 (rw!x) : ORIGIN = 0xb8400000,	LENGTH = 128K
-  pram0  (rw!x) : ORIGIN = 0xb8440000,	LENGTH = 32K
-  xyram1 (rw!x) : ORIGIN = 0xb8800000,	LENGTH = 128K
-  pram1  (rw!x) : ORIGIN = 0xb8840000,	LENGTH = 32K
+  cram   (rw!x) : ORIGIN = 0x18000000,	LENGTH = 128K
+  xyram0 (rw!x) : ORIGIN = 0x18400000,	LENGTH = 128K
+  pram0  (rw!x) : ORIGIN = 0x18440000,	LENGTH = 32K
+  xyram1 (rw!x) : ORIGIN = 0x18800000,	LENGTH = 128K
+  pram1  (rw!x) : ORIGIN = 0x18840000,	LENGTH = 32K
 }
+
+/* higher address of the user mode stack */
+_estack = ORIGIN(cram) + LENGTH(cram);
+
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */

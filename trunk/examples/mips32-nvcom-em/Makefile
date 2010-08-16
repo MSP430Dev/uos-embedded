@@ -6,13 +6,8 @@ TEST		= test_tcl
 TESTS		= $(TEST).srec
 TESTS		+= test_debug.srec test_task.srec test_timer.srec test_uart.srec
 TESTS		+= philosophers.srec test_ram.srec test_tcl.srec
+TESTS           += test-latency.srec test-tswitch.srec test-fpu.srec
 OUTS		= $(TESTS:%.srec=%.out)
-
-# No caches
-#LDFLAGS        += -T $(TARGET)/code-in-flash.ld
-
-# Enable instruction cache
-LDFLAGS         += -T $(TARGET)/code-in-kseg0.ld
 
 all:		$(OUTS) $(TESTS) $(TEST).dis
 		$(SIZE) *.out
