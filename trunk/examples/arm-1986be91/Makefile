@@ -14,7 +14,7 @@ all:		$(OUTS) $(TESTS) test_debug.dis
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.srec *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.out *.lst *.dis .deps $(TESTS) $(MODULES)
 
 probe:
 		$(PROG)

@@ -119,8 +119,9 @@ _init_ (void)
 #endif /* ARM_AT91SAM && !AT91BOOTSTRAP */
 
 #ifdef ARM_1986BE9
-	/* Enable JTAG B debug port. */
-	ARM_BACKUP->BKP_REG_0E |= ARM_BKP_REG_0E_JTAG_B;
+	/* Enable JTAG A and B debug ports. */
+//	ARM_BACKUP->BKP_REG_0E |= ARM_BKP_REG_0E_JTAG_A | ARM_BKP_REG_0E_JTAG_B;
+//	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOB;
 
 	/* Enable HSE generator. */
 	ARM_RSTCLK->HS_CONTROL = ARM_HS_CONTROL_HSE_ON;
