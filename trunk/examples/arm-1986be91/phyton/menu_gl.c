@@ -88,7 +88,7 @@ void ElementsFunc(void) {
     /* Выводим заголовок */
     LCD_CLS();
     CurrentMethod = MET_OR;
-    DisplayMenuTitle("Примитивы");
+    DisplayMenuTitle("Graphics Elements");
 
     /* Строим примитивы и ждем key up */
     DisplayTriangle (base_x, base_y, side);
@@ -115,7 +115,7 @@ void IndicatorsFunc(void) {
     /* Выводим заголовок и ждем key up */
     LCD_CLS();
     CurrentMethod = MET_OR;
-    DisplayMenuTitle("Индикаторы");
+    DisplayMenuTitle("Indicators");
     WAIT_UNTIL_KEY_RELEASED(SEL);
 
     /* Выводим progress bar */

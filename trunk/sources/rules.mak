@@ -14,7 +14,7 @@ libuos.a:	always
 
 always:
 
-.SUFFIXES:	.i .srec .hex .dis .cpp .cxx .fl .bin
+.SUFFIXES:	.i .srec .hex .dis .cpp .cxx .fl .bin .elf
 
 .PHONY:		$(MODULES) depend
 
@@ -40,29 +40,29 @@ always:
 .c.i:
 		$(CC) $(CFLAGS) -E $< > $@
 
-.c.out:
+.c.elf:
 		@[ -d .deps ] || mkdir .deps
 		$(CC) $(LDFLAGS) $(CFLAGS) $(DEPFLAGS) $< $(LIBS) -o $@
 
-.o.out:
+.o.elf:
 		$(CC) $(LDFLAGS) $< $(LIBS) -o $@
 
 .fl.cxx .fl.h:
 		fluid -c $<
 
-.out.srec:
+.elf.srec:
 		$(OBJCOPY) -O srec $< $@
 		@chmod -x $@
 
-.out.hex:
+.elf.hex:
 		$(OBJCOPY) -O ihex $< $@
 		@chmod -x $@
 
-.out.bin:
+.elf.bin:
 		$(OBJCOPY) -O binary $< $@
 		@chmod -x $@
 
-.out.dis:
+.elf.dis:
 		$(OBJDUMP) -d -z -S $< > $@
 
 ifeq (.deps, $(wildcard .deps))

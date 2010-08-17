@@ -18,12 +18,12 @@ all:		$(PROGRAM) $(TESTS)
 $(TESTS):	startup.o libuos.a
 
 $(PROGRAM):	$(OBJS) startup.o libuos.a
-		$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $(PROGRAM).out
-		$(OBJCOPY) -O srec $(PROGRAM).out $(PROGRAM).srec
+		$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $(PROGRAM).elf
+		$(OBJCOPY) -O srec $(PROGRAM).elf $(PROGRAM).srec
 		@chmod -x $(PROGRAM).srec
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
 
 include $(OS)/sources/rules.mak
 

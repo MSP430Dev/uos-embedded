@@ -6,7 +6,7 @@ TESTS		= test_debug.srec test_task.srec test_timer.srec \
 		  test_uart.srec test_t-uart.srec test_ram.srec \
 		  test_hdlc.srec test_eth.srec test_ip.srec \
 		  test_tcl.srec test_telnetd.srec
-OUTS		= $(TESTS:%.srec=%.out)
+OUTS		= $(TESTS:%.srec=%.elf)
 
 # Using Cronyx armprog utility.
 PROG            = ./armprog -f /dev/ttyS0
@@ -17,7 +17,7 @@ all:		$(OUTS) $(TESTS)
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
 
 probe:		flashid
 		./flashid

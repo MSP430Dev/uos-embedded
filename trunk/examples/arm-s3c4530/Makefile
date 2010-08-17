@@ -3,7 +3,7 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 TESTS		= test_task.srec
-OUTS		= $(TESTS:%.srec=%.out)
+OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS)
 		$(SIZE) $(OUTS)
@@ -11,6 +11,6 @@ all:		$(OUTS) $(TESTS)
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.srec *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
 
 include $(OS)/sources/rules.mak

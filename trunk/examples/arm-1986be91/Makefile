@@ -3,7 +3,7 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 TESTS		= test_debug.srec test_task.srec #test_timer.srec test_uart.srec
-OUTS		= $(TESTS:%.srec=%.out)
+OUTS		= $(TESTS:%.srec=%.elf)
 
 # Using MILPROG utility.
 PROG            = milprog
@@ -14,7 +14,7 @@ all:		$(OUTS) $(TESTS) test_debug.dis
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.lst *.dis .deps $(TESTS) $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.lst *.dis .deps $(TESTS) $(MODULES)
 
 probe:
 		$(PROG)

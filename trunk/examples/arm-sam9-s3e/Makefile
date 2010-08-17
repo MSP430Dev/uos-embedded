@@ -4,7 +4,7 @@ include target.cfg
 
 TESTS		= test_debug.bin test_task.bin test_timer.bin test_uart.bin \
 		  test_fpga.bin
-OUTS		= $(TESTS:%.bin=%.out)
+OUTS		= $(TESTS:%.bin=%.elf)
 
 # Using SAM-BA utility.
 PROG            = sam-ba /dev/ttyUSB? AT91SAM9260-SK load-flash.tcl
@@ -15,7 +15,7 @@ all:		$(OUTS) $(TESTS)
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.hex *.bin *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.hex *.bin *.lst *.dis .deps $(MODULES)
 
 probe:
 		$(PROG)

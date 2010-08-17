@@ -5,7 +5,7 @@ include target.cfg
 CFLAGS		+= -DKHZ=16000
 TESTS		= test_debug.srec test_task.srec test_timer.srec \
 		  test_uart.srec test_nvram.srec
-OUTS		= $(TESTS:%.srec=%.out)
+OUTS		= $(TESTS:%.srec=%.elf)
 
 # Using avrdude programmer with STK200 LPT adapter.
 #PROG		= avrdude -cstk200 -Enoreset -patmega168
@@ -24,7 +24,7 @@ all:		$(OUTS) $(TESTS)
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *.[oasi] *~ $(MODULES) *.out *.srec *.lst *.dis .deps
+		rm -rf *.[oasi] *~ $(MODULES) *.elf *.srec *.lst *.dis .deps
 
 probe:
 		$(PROG) -v

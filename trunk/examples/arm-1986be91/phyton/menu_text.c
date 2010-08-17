@@ -28,20 +28,20 @@ void FontFunc(void) {
     LCD_CLS();
     CurrentMethod = MET_AND;
     CurrentFont = &Font_6x8;
-    DisplayMenuTitle("Примеры шрифтов");
+    DisplayMenuTitle("Font Examples");
     WAIT_UNTIL_KEY_RELEASED(SEL);
 
     /* Примеры шрифтов */
-    LCD_PUTS(0, 12, "Шрифт6X8");
+    LCD_PUTS(0, 12, "Font6X8");
 
     CurrentFont = &Font_12x16;
-    LCD_PUTS(0, 22, "Шрифт12X16");
+    LCD_PUTS(0, 22, "Font12X16");
 
     CurrentFont = &Font_7x10_thin;
-    LCD_PUTS(0, 40, "Шрифт7X10");
+    LCD_PUTS(0, 40, "Font7X10");
 
     CurrentFont = &Font_7x10_bold;
-    LCD_PUTS(0, 52, "Шрифт7X10 жирный");
+    LCD_PUTS(0, 52, "Font7X10 bold");
 
     /* Ждем нажатия SEL и возвращаемся в главное меню */
     CurrentFont = OldFont;
@@ -56,16 +56,16 @@ void StyleFunc(void) {
     LCD_CLS();
     CurrentMethod = MET_AND;
     CurrentFont = &Font_6x8;
-    DisplayMenuTitle("Примеры стилей");
+    DisplayMenuTitle("Style Examples");
     WAIT_UNTIL_KEY_RELEASED(SEL);
 
     /* Примеры стилей */
     do {
-        LCD_PUTS_Ex(0, 12, "Мерцающий", StyleBlink);
+        LCD_PUTS_Ex(0, 12, "Blinking", StyleBlink);
         if (KEY_PRESSED(SEL)) break;
-        LCD_PUTS_Ex(0, 32, "Переменный", StyleFlipFlop);
+        LCD_PUTS_Ex(0, 32, "Flip-Flop", StyleFlipFlop);
         if (KEY_PRESSED(SEL)) break;
-        LCD_PUTS_Ex(0, 52, "Дрожащий", StyleVibratory);
+        LCD_PUTS_Ex(0, 52, "Vibrating", StyleVibratory);
     } while (!KEY_PRESSED(SEL));
 
     /* Нажата SEL - возвращаемся в главное меню */
@@ -81,7 +81,7 @@ void ShiftFunc(void) {
     LCD_CLS();
     CurrentMethod = MET_AND;
     CurrentFont = &Font_6x8;
-    DisplayMenuTitle("Бегущая строка");
+    DisplayMenuTitle("Running message");
     WAIT_UNTIL_KEY_RELEASED(SEL);
 
     /* TODO - бегущая строка */
@@ -96,21 +96,22 @@ void ShiftFunc(void) {
 
 /* Текст для демонстрации "электронной книги" */
 static const char *Book[16] = {
-        "Микроконтроллеры се- ",
-        "рии 1986ВЕ91 являются",
-        "микроконтроллерами со",
-        "встроенной Flash па- ",
-        "мятью программ и     ",
-        "построены на базе    ",
-        "высокопроизводитель- ",
-        "ного процессорного   ",
-        "RISC ядра Cortex-M3. ",
-        "Микроконтроллер рабо-",
-        "тает на тактовой час-",
-        "тоте до 80 МГц и со- ",
-        "держит 128 Кб Flash  ",
-        "памяти программ и 32 ",
-        "Кб ОЗУ.              ",
+        "The Cortex-M3 proces-",
+        "sor specifically tar-",
+        "gets the low cost re-",
+        "quirements of a broad",
+        "range of markets and ",
+        "applications, where  ",
+        "memory and processor ",
+        "size significantly   ",
+        "impact device costs. ",
+        "With multiple techno-",
+        "logies to reduce me- ",
+        "mory use, including  ",
+        "the Thumb-2 instruc- ",
+        "tion set, the proces-",
+        "sor delivers an ideal",
+        "32-bit platform.     ",
 };
 
 void BookFunc(void){
@@ -138,7 +139,7 @@ void BookFunc(void){
                 break;
             /* Скроллирование вниз */
             case DOWN:
-                if (top_ind < 7)
+                if (top_ind < 8)
                     top_ind++;
                 break;
     }
@@ -157,7 +158,7 @@ void AboutFunc(void) {
     CurrentMethod = MET_AND;
 
     LCD_PUTS(0, 0, " Milandr 1986BE91T1 ");
-    LCD_PUTS(0, CurrentFont->Height + 1, "   Testing-board    ");
+    LCD_PUTS(0,  CurrentFont->Height      + 1, "   Testing-board    ");
     LCD_PUTS(0, (CurrentFont->Height) * 2 + 2, "                    ");
     LCD_PUTS(0, (CurrentFont->Height) * 3 + 2, "                    ");
     LCD_PUTS(0, (CurrentFont->Height) * 4 + 3, "Appl. example v.1.0 ");

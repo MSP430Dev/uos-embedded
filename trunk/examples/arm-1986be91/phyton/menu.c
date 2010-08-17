@@ -64,7 +64,7 @@ struct sMenu {
 struct sMenuItem TextMenuItems[] = {
     {"Fonts", FontFunc, 0},
     {"Style", StyleFunc, 0},
-    {"Boot", BookFunc, 0},
+    {"Book", BookFunc, 0},
     {"Return", ReturnFunc, 0},
 };
 struct sMenu TextMenu = {"Text", TextMenuItems, countof(TextMenuItems)};

@@ -7,7 +7,7 @@ TESTS		= test_debug.hex test_task.hex test_timer.hex test_lcd.hex \
 		  test_uart.hex test_olimex.hex philosophers.hex test_eth.hex
 # TODO: test_nvram.hex
 
-OUTS            = $(TESTS:%.srec=%.out)
+OUTS            = $(TESTS:%.srec=%.elf)
 
 # Using msp430-jtag programmer with JTAG LPT adapter.
 #PROG            = env LIBMSPGCC_PATH=/usr/local/lib msp430-jtag
@@ -16,12 +16,12 @@ OUTS            = $(TESTS:%.srec=%.out)
 PROG            = env LIBMSPGCC_PATH=/usr/local/lib msp430-jtag --spy-bi-wire --lpt=/dev/ttyUSB0
 
 all:		$(OUTS) $(TESTS)
-		for f in *.out; do $(SIZE) *.out; break; done
+		for f in *.elf; do $(SIZE) *.elf; break; done
 
 $(TESTS):	startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.out *.srec *.lst *.dis .deps $(MODULES) $(TESTS)
+		rm -rf *~ *.[oasi] *.elf *.srec *.lst *.dis .deps $(MODULES) $(TESTS)
 
 probe:
 		$(PROG) -D
