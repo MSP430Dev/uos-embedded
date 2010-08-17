@@ -1,0 +1,31 @@
+#summary Target board: Evodbg EVB-9B95.
+
+[http://www.evodbg.com/index2.php?option=com_content&task=view&id=85&pop=1&page=0&Itemid=38 http://uos-embedded.googlecode.com/svn/wiki/images/evodbg-evb95.jpg]
+
+Фирма Evodbg.com предлагает отладочную плату
+[http://www.evodbg.com/index2.php?option=com_content&task=view&id=85&pop=1&page=0&Itemid=38 EVB-9B95]
+с процессором Texas Instruments [http://www.luminarymicro.com/products/lm3s9b95.html LM3S9B95]
+(бывший Limunary Micro).
+На плате имеется:
+  * 96 килобайт внутренней памяти данных
+  * 256 килобайт внутренней flash-памяти команд
+  * 8 мегабайт внешней памяти данных (SDRAM Micron MT48LC4M16)
+  * 8 килобайт внешней последовательной памяти данных (SPI Flash AT25640)
+  * 2 килобайт внешней последовательной памяти данных (I2C Flash AT24C16)
+  * Порт Ethernet 100Base-T
+  * Порт CAN (PHY SN74HVD232)
+  * Порт USB 2.0 хост (12 Мбит/сек)
+  * Порт USB 2.0 устройство (12 Мбит/сек)
+  * Слот для карты микро-SD
+  * Отладочный порт RS-232 (сигналы TXD, RXD)
+  * Отладочный порт JTAG
+  * 2 светодиода пользователя
+  * 24-контактный разъем расширения
+
+Документация:
+  * Плата EVB-9B95: [http://uos-embedded.googlecode.com/svn/trunk/examples/arm-evb9b95/evb95-sch.pdf схема электрическая принципиальная], [http://www.evodbg.com/doc/EVB9B95.pdf руководство пользователя].
+  * Микроконтроллер [http://www.keil.com/dd/docs/datashts/luminary/lm3s9b95.pdf LM3S9B95 - полное описание].
+  * [http://focus.ti.com/lit/er/spmz445e/spmz445e.pdf Errata sheet] для ревизии C1.
+
+Программное обеспечение:
+  * [http://www.evodbg.com/index.php?option=com_content&task=view&id=102&Itemid=60 Примеры] для платы EVB-9B95: [http://www.rusar.net/doc/evb9x_display.rar].
