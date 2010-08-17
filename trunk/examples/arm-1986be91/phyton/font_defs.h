@@ -22,9 +22,9 @@
 /* Структура описания шрифта.                                                                 */
 
 typedef struct tag_FONT {
-    unsigned  Height;           /* Высота символа в пикселях. */
-    unsigned  Width;            /* Ширина символа в пикселях. */
-    unsigned  Count;            /* Число символов в шрифте минус один. */
+    unsigned Height;            /* Высота символа в пикселях. */
+    unsigned Width;             /* Ширина символа в пикселях. */
+    unsigned Count;             /* Число символов в шрифте минус один. */
     const unsigned char *pData; /* Адрес таблицы с описанием символов шрифта. */
 } FONT;
 

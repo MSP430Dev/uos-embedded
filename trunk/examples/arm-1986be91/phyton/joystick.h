@@ -34,9 +34,9 @@ typedef enum {
 KeyCode GetKey(void);
 
 #define KEY_PRESSED(x)		    (GetKey() == x)
-#define WAIT_UNTIL_KEY_PRESSED(x)   while(!KEY_PRESSED(x)){}
-#define WAIT_UNTIL_KEY_RELEASED(x)  while(KEY_PRESSED(x)){}
-#define WAIT_UNTIL_ANY_KEY          while(GetKey() == NOKEY){}
+#define WAIT_UNTIL_KEY_PRESSED(x)   while (! KEY_PRESSED(x)) {}
+#define WAIT_UNTIL_KEY_RELEASED(x)  while (KEY_PRESSED(x)) {}
+#define WAIT_UNTIL_ANY_KEY          while (GetKey() == NOKEY) {}
 
 #endif /* __JOYSTICK_H */
 

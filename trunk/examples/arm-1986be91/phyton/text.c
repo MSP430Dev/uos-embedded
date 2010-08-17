@@ -20,17 +20,17 @@
 #include "lcd.h"
 #include "text.h"
 #include "joystick.h"
-#include "systick.h"
 #include "menu.h"
 
 /* Выбранный шрифт для отрисовки текста */
 FONT *CurrentFont;
 
 /* Вывод байта на экран */
-void LCD_PUT_BYTE(unsigned char x, unsigned char y, unsigned char data) {
+void LCD_PUT_BYTE(unsigned x, unsigned y, unsigned data) {
     unsigned tmp_data, page, shift_num, shift_num_ex;
 
-    if ((x>MAX_X)|(y>MAX_Y)) return;
+    if (x > MAX_X || y > MAX_Y)
+        return;
 
     /* Выбор кристалла и смещение по х */
     SetCrystal((LCD_Crystal)(x/64));
@@ -98,11 +98,17 @@ void LCD_PUT_BYTE(unsigned char x, unsigned char y, unsigned char data) {
 
 /* Вывод символов и строк текущим шрифтом */
 
-void LCD_PUTC(unsigned char x, unsigned char y, unsigned char ch) {
+void LCD_PUTC(unsigned x, unsigned y, unsigned ch) {
     unsigned i, j, line;
     const unsigned char *sym;
 
-    sym = Get_Char_Data_Addr(ch);
+    /* Вычисление начала размещения описания символа в таблице описания символов. */
+    ch = (unsigned char) ch;
+    sym = CurrentFont->pData + ch * CurrentFont->Width *
+        ((CurrentFont->Height % 8 != 0) ?
+            (1 + CurrentFont->Height / 8) :
+            (CurrentFont->Height / 8));
+
     line = CurrentFont->Height / 8;
     if (CurrentFont->Height % 8)
         line++;
@@ -113,14 +119,14 @@ void LCD_PUTC(unsigned char x, unsigned char y, unsigned char ch) {
 }
 
 
-void LCD_PUTS(unsigned char x, unsigned char y, const char* str) {
+void LCD_PUTS(unsigned x, unsigned y, const char* str) {
     unsigned i;
     for (i=0; str[i]; i++)
         LCD_PUTC(x + i*CurrentFont->Width, y, str[i]);
 }
 
 
-void LCD_PUTS_Ex(unsigned char x, unsigned char y, const char* str, unsigned char style) {
+void LCD_PUTS_Ex(unsigned x, unsigned y, const char* str, unsigned style) {
     unsigned i;
     LCD_Method OldMethod = CurrentMethod;
 

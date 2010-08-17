@@ -32,16 +32,11 @@ typedef enum {
 extern FONT *CurrentFont;
 
 /* Вывод байта на экран */
-void LCD_PUT_BYTE(unsigned char x, unsigned char y, unsigned char data);
+void LCD_PUT_BYTE(unsigned x, unsigned y, unsigned data);
 /* Вывод символов и строк текущим шрифтом */
-void LCD_PUTC(unsigned char x, unsigned char y, unsigned char ch);
-void LCD_PUTS(unsigned char x, unsigned char y, const char* str);
-void LCD_PUTS_Ex(unsigned char x, unsigned char y, const char* str, unsigned char style);
-
-/* Макрокоманда вычисления начала размещения описания символа в таблице описания символов.    			*/
-/* Принимает код символа, адрес структуры описания шрифта. Возвращает адрес начала описания символа. 	*/
-#define Get_Char_Data_Addr(ch)    \
-  (CurrentFont)->pData + (ch) * (CurrentFont)->Width * ((((CurrentFont)->Height % 8) != 0) ? (1 + (CurrentFont)->Height / 8) : ((CurrentFont)->Height / 8))
+void LCD_PUTC(unsigned x, unsigned y, unsigned ch);
+void LCD_PUTS(unsigned x, unsigned y, const char *str);
+void LCD_PUTS_Ex(unsigned x, unsigned y, const char *str, unsigned style);
 
 #endif /*__TEXT_H*/
 

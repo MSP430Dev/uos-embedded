@@ -22,7 +22,6 @@
 #include "gl.h"
 #include "lcd.h"
 #include "joystick.h"
-#include "systick.h"
 #include "text.h"
 
 /* Служебные функции - рисование графических примитивов */

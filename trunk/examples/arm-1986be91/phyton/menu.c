@@ -58,33 +58,44 @@ struct sMenu {
   unsigned nItems;
 };
 
-/* Меню второго уровеня */
-struct sMenuItem TextMenuItems[] = {{"Шрифты", FontFunc, 0},
-                                    {"Стиль", StyleFunc, 0},
-                                    {"Книжка", BookFunc, 0},
-                                    {"Возврат", ReturnFunc, 0}};
-struct sMenu TextMenu = {"Текст", TextMenuItems, countof(TextMenuItems)};
+/*
+ * Меню второго уровеня
+ */
+struct sMenuItem TextMenuItems[] = {
+    {"Fonts", FontFunc, 0},
+    {"Style", StyleFunc, 0},
+    {"Boot", BookFunc, 0},
+    {"Return", ReturnFunc, 0},
+};
+struct sMenu TextMenu = {"Text", TextMenuItems, countof(TextMenuItems)};
 
-struct sMenuItem GraphicMenuItems[] = {{"Примитивы", ElementsFunc, 0},
-                                       {"Индикаторы", IndicatorsFunc, 0},
-                                       {"Возврат", ReturnFunc, 0}};
-struct sMenu GraphicMenu = {"Графика", GraphicMenuItems, countof(GraphicMenuItems)};
+struct sMenuItem GraphicMenuItems[] = {
+    {"Elements", ElementsFunc, 0},
+    {"Indicators", IndicatorsFunc, 0},
+    {"Return", ReturnFunc, 0},
+};
+struct sMenu GraphicMenu = {"Graphics", GraphicMenuItems, countof(GraphicMenuItems)};
 
-struct sMenuItem LEDsMenuItems[] = {{"Включить", LightsOnFunc, 0},
-                                    {"Возврат", ReturnFunc, 0}};
-struct sMenu LEDsMenu = {"Светодиоды", LEDsMenuItems, countof(LEDsMenuItems)};
+struct sMenuItem LEDsMenuItems[] = {
+    {"Turn on", LightsOnFunc, 0},
+    {"Return", ReturnFunc, 0},
+};
+struct sMenu LEDsMenu = {"LEDs", LEDsMenuItems, countof(LEDsMenuItems)};
 
-/* Главное меню */
+/*
+ * Главное меню
+ */
 struct sMenuItem MainMenuItems[] = {
-  {"Текст", IdleFunc, &TextMenu},
-  {"Графика", IdleFunc, &GraphicMenu},
-  {"Светодиоды", IdleFunc, &LEDsMenu},
-  {"О программе", AboutFunc, 0}};
-struct sMenu MainMenu = {"Главное меню", MainMenuItems, countof(MainMenuItems)};
+    {"Text", IdleFunc, &TextMenu},
+    {"Graphics", IdleFunc, &GraphicMenu},
+    {"LEDs", IdleFunc, &LEDsMenu},
+    {"About program", AboutFunc, 0},
+};
+struct sMenu MainMenu = {"Top menu", MainMenuItems, countof(MainMenuItems)};
 
-
-/* Служебные функции отрисовки меню */
-
+/*
+ * Служебные функции отрисовки меню
+ */
 void DisplayMenuItemString(unsigned y, const char *ptr) {
     unsigned x;
 
@@ -93,14 +104,15 @@ void DisplayMenuItemString(unsigned y, const char *ptr) {
     LCD_PUTS(x, y, ptr);
 }
 
-
-/* Служебные обработчики */
-
+/*
+ * Служебные обработчики
+ */
 void IdleFunc(void) {
 }
 
-
-/* SEL - переход на подменю и/или вызов соответствующего обработчика */
+/*
+ * SEL - переход на подменю и/или вызов соответствующего обработчика
+ */
 void SelFunc(void) {
     psCurrentMenuItem = psMenuItem;
 
@@ -115,8 +127,9 @@ void SelFunc(void) {
     psCurrentMenuItem->pfMenuFunc();
 }
 
-
-/* UP - переход на один пункт вверх */
+/*
+ * UP - переход на один пункт вверх
+ */
 void UpFunc(void) {
     /* Отображение текущего пункта меню как невыбранного */
     psMenuItem = &psCurrentMenu->psItems[MenuItemIndex];
@@ -138,8 +151,9 @@ void UpFunc(void) {
     ItemNumb[nMenuLevel] = MenuItemIndex;
 }
 
-
-/* DOWN - переход на один пункт вниз */
+/*
+ * DOWN - переход на один пункт вниз
+ */
 void DownFunc(void) {
     /* Отображение текущего пункта меню как невыбранного */
     psMenuItem = &psCurrentMenu->psItems[MenuItemIndex];
@@ -161,8 +175,9 @@ void DownFunc(void) {
     ItemNumb[nMenuLevel] = MenuItemIndex;
 }
 
-
-/* Возврат в главное меню */
+/*
+ * Возврат в главное меню
+ */
 void ReturnFunc(void) {
     if(nMenuLevel == 0)
         nMenuLevel++;
@@ -176,9 +191,9 @@ void ReturnFunc(void) {
     DisplayMenu();
 }
 
-
-/* Интерфейсные функции */
-
+/*
+ * Интерфейсные функции
+ */
 void DisplayMenuTitle(const char *ptr) {
     unsigned x, y;
 
@@ -190,14 +205,12 @@ void DisplayMenuTitle(const char *ptr) {
     LCD_Line(0, y, MAX_X, y);
 }
 
-
 void Menu_Init(void) {
     psCurrentMenu = &MainMenu;
     psPrevMenu[nMenuLevel] = psCurrentMenu;
     psMenuItem = MainMenuItems;
     CurrentFont = &Font_6x8;
 }
-
 
 void DisplayMenu(void) {
     unsigned y, index;
@@ -222,15 +235,17 @@ void DisplayMenu(void) {
     LCD_PUTS(0, (MenuItemIndex * (CurrentFont->Height + 2) + CurrentFont->Height + 4), "                                        ");
 }
 
-
-/* Ждет нажатия SEL и возвращаемся в главное меню */
+/*
+ * Ждет нажатия SEL и возвращаемся в главное меню
+ */
 void BackToMenuOnSel(void) {
   WAIT_UNTIL_KEY_PRESSED(SEL);
   DisplayMenu();
 }
 
-
-/* Функция-диспетчер */
+/*
+ * Функция-диспетчер
+ */
 void ReadKey(void) {
     unsigned key;
 

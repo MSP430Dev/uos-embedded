@@ -41,7 +41,6 @@ static void Pause(void);
 #define WAIT_RESET  WaitStatus(RESET)
 #define WAIT_ON     WaitStatus(ONOFF)
 
-
 /* Утилиты работы с LCD */
 
 void ResetLCD(void) {
@@ -53,7 +52,6 @@ void ResetLCD(void) {
       ARM_GPIOC->DATA = 0x00000000;
     ARM_GPIOC->DATA = 0x00000200;
 }
-
 
 void InitPortLCD(void) {
     ARM_GPIOA->FUNC = 0x00005555;   /* Main Function для DATA[7:0] */
@@ -69,11 +67,9 @@ void InitPortLCD(void) {
     ARM_GPIOC->PWR = 0x0008C010;    /* Fast */
 }
 
-
 void InitExtBus(void) {
     ARM_EXTBUS->CONTROL = 0x0000A001;
 }
-
 
 void SetCrystal(LCD_Crystal num) {
    ARM_GPIOE->DATA = ((num + 1) << 4);
@@ -82,25 +78,21 @@ void SetCrystal(LCD_Crystal num) {
    CurrentCrystal = num;
 }
 
-
 void WriteLCD_Cmd(unsigned val) {
     LCD_CMD(CurrentCrystal) = val;
     Pause();
 }
-
 
 void WriteLCD_Data(unsigned val) {
     LCD_DATA(CurrentCrystal) = val;
     Pause();
 }
 
-
 unsigned ReadLCD_Cmd(void) {
     unsigned ret = LCD_CMD(CurrentCrystal);
     Pause();
     return ret;
 }
-
 
 unsigned ReadLCD_Data() {
     unsigned ret;
@@ -110,7 +102,6 @@ unsigned ReadLCD_Data() {
     Pause();
     return ret;
 }
-
 
 void LCD_INIT(void) {
     unsigned crystal;
@@ -131,7 +122,6 @@ void LCD_INIT(void) {
     }
 }
 
-
 void LCD_CLS(void) {
     unsigned i, j, crystal;
 
@@ -150,7 +140,6 @@ void LCD_CLS(void) {
     }
 }
 
-
 /* Служебные функции */
 
 static unsigned GetStatus(void) {
@@ -162,17 +151,21 @@ static unsigned GetStatus(void) {
     return ret;
 }
 
-
 static void WaitStatus(LCD_Status status) {
     unsigned stat;
-    for (stat = GetStatus(); stat == (1 << status); stat = GetStatus());
+    for (stat = GetStatus(); stat == (1 << status); stat = GetStatus())
+        continue;
 }
-
 
 /* Задержка ~ на 15*3 тактов */
 static void Pause(void) {
+#if 0
     unsigned i;
-    for (i = 15; i > 0; i--);
+    for (i = 15; i > 0; i--)
+        continue;
+#else
+    udelay (10);
+#endif
 }
 
 /*============================================================================================
