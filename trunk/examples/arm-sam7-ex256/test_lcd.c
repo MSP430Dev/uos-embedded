@@ -6,72 +6,72 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <stream/stream.h>
-#include <gpanel/lcd.h>
+#include <gpanel/gpanel.h>
 #include <random/rand15.h>
 #include "sam7-ex256.h"
 
 #include "image_frog.c"
 
 ARRAY (task, 400);
-lcd_t display;
+gpanel_t display;
 
 void draw (unsigned page)
 {
-	lcd_clear (&display, LCD_BLACK);
+	gpanel_clear (&display, GPANEL_BLACK);
 	switch (page % 5) {
 	case 0:
 		/* Color test - show boxes of different colors. */
-		lcd_rect_filled (&display, 0, 0, 129, 15, LCD_RED);
-		lcd_move (&display, 0, 0);
-		lcd_color (&display, LCD_WHITE, LCD_RED);
+		gpanel_rect_filled (&display, 0, 0, 129, 15, GPANEL_RED);
+		gpanel_move (&display, 0, 0);
+		gpanel_color (&display, GPANEL_WHITE, GPANEL_RED);
 		puts (&display, "Красный");
 
-		lcd_rect_filled (&display, 0, 16, 129, 16+15, LCD_GREEN);
-		lcd_move (&display, 0, 16);
-		lcd_color (&display, LCD_WHITE, LCD_GREEN);
+		gpanel_rect_filled (&display, 0, 16, 129, 16+15, GPANEL_GREEN);
+		gpanel_move (&display, 0, 16);
+		gpanel_color (&display, GPANEL_WHITE, GPANEL_GREEN);
 		puts (&display, "Зелёный");
 
-		lcd_rect_filled (&display, 0, 2*16, 129, 2*16+15, LCD_BLUE);
-		lcd_move (&display, 0, 2*16);
-		lcd_color (&display, LCD_WHITE, LCD_BLUE);
+		gpanel_rect_filled (&display, 0, 2*16, 129, 2*16+15, GPANEL_BLUE);
+		gpanel_move (&display, 0, 2*16);
+		gpanel_color (&display, GPANEL_WHITE, GPANEL_BLUE);
 		puts (&display, "Синий");
 
-		lcd_rect_filled (&display, 0, 3*16, 129, 3*16+15, LCD_MAGENTA);
-		lcd_move (&display, 0, 3*16);
-		lcd_color (&display, LCD_WHITE, LCD_MAGENTA);
+		gpanel_rect_filled (&display, 0, 3*16, 129, 3*16+15, GPANEL_MAGENTA);
+		gpanel_move (&display, 0, 3*16);
+		gpanel_color (&display, GPANEL_WHITE, GPANEL_MAGENTA);
 		puts (&display, "Лиловый");
 
-		lcd_rect_filled (&display, 0, 4*16, 129, 4*16+15, LCD_CYAN);
-		lcd_move (&display, 0, 4*16);
-		lcd_color (&display, LCD_BLACK, LCD_CYAN);
+		gpanel_rect_filled (&display, 0, 4*16, 129, 4*16+15, GPANEL_CYAN);
+		gpanel_move (&display, 0, 4*16);
+		gpanel_color (&display, GPANEL_BLACK, GPANEL_CYAN);
 		puts (&display, "Бирюзовый");
 
-		lcd_rect_filled (&display, 0, 5*16, 129, 5*16+15, LCD_YELLOW);
-		lcd_move (&display, 0, 5*16);
-		lcd_color (&display, LCD_BLACK, LCD_YELLOW);
+		gpanel_rect_filled (&display, 0, 5*16, 129, 5*16+15, GPANEL_YELLOW);
+		gpanel_move (&display, 0, 5*16);
+		gpanel_color (&display, GPANEL_BLACK, GPANEL_YELLOW);
 		puts (&display, "Жёлтый");
 
-		lcd_rect_filled (&display, 0, 6*16, 129, 6*16+15, LCD_WHITE);
-		lcd_move (&display, 0, 6*16);
-		lcd_color (&display, LCD_BLACK, LCD_WHITE);
+		gpanel_rect_filled (&display, 0, 6*16, 129, 6*16+15, GPANEL_WHITE);
+		gpanel_move (&display, 0, 6*16);
+		gpanel_color (&display, GPANEL_BLACK, GPANEL_WHITE);
 		puts (&display, "Белый");
 
-		lcd_move (&display, 0, 7*16);
-		lcd_color (&display, LCD_WHITE, LCD_BLACK);
+		gpanel_move (&display, 0, 7*16);
+		gpanel_color (&display, GPANEL_WHITE, GPANEL_BLACK);
 		puts (&display, "Чёрный");
 		break;
 	case 1:
 		/* Boxes. */
-		lcd_rect (&display,    0,    0, LCD_NCOL-1,      LCD_NROW-1,      LCD_CYAN);
-		lcd_rect (&display,   11,   11, LCD_NCOL-1-11,   LCD_NROW-1-11,   LCD_GREEN);
-		lcd_rect (&display, 2*11, 2*11, LCD_NCOL-1-2*11, LCD_NROW-1-2*11, LCD_YELLOW);
-		lcd_rect (&display, 3*11, 3*11, LCD_NCOL-1-3*11, LCD_NROW-1-3*11, LCD_RED);
-		lcd_rect (&display, 4*11, 4*11, LCD_NCOL-1-4*11, LCD_NROW-1-4*11, LCD_MAGENTA);
-		lcd_rect (&display, 5*11, 5*11, LCD_NCOL-1-5*11, LCD_NROW-1-5*11, LCD_BLUE);
+		gpanel_rect (&display,    0,    0, display.ncol-1,      display.nrow-1,      GPANEL_CYAN);
+		gpanel_rect (&display,   11,   11, display.ncol-1-11,   display.nrow-1-11,   GPANEL_GREEN);
+		gpanel_rect (&display, 2*11, 2*11, display.ncol-1-2*11, display.nrow-1-2*11, GPANEL_YELLOW);
+		gpanel_rect (&display, 3*11, 3*11, display.ncol-1-3*11, display.nrow-1-3*11, GPANEL_RED);
+		gpanel_rect (&display, 4*11, 4*11, display.ncol-1-4*11, display.nrow-1-4*11, GPANEL_MAGENTA);
+		gpanel_rect (&display, 5*11, 5*11, display.ncol-1-5*11, display.nrow-1-5*11, GPANEL_BLUE);
 		break;
 	case 4:
 		/* Image. */
-		lcd_image (&display, 0, 0, LCD_NROW, LCD_NCOL, image_frog);
+		gpanel_image (&display, 0, 0, display.nrow, display.ncol, image_frog);
 		break;
 	}
 }
@@ -86,32 +86,32 @@ void draw_next (unsigned page)
 		/* Rain. */
 		if (radius == 0) {
 			/* Generate next circle. */
-			x0 = 10 + rand15() % (LCD_NCOL - 20);
-			y0 = 10 + rand15() % (LCD_NROW - 20);
+			x0 = 10 + rand15() % (display.ncol - 20);
+			y0 = 10 + rand15() % (display.nrow - 20);
 		} else {
 			/* Clear previous circle. */
-			lcd_circle (&display, x0, y0, radius, LCD_BLACK);
-			lcd_circle (&display, x0, y0, radius-1, LCD_BLACK);
+			gpanel_circle (&display, x0, y0, radius, GPANEL_BLACK);
+			gpanel_circle (&display, x0, y0, radius-1, GPANEL_BLACK);
 		}
 		radius += 2;
 		if (radius > 10)
 			radius = 0;
 		else {
 			/* Draw next circle. */
-			lcd_circle (&display, x0, y0, radius, LCD_WHITE);
-			lcd_circle (&display, x0, y0, radius-1, LCD_WHITE);
+			gpanel_circle (&display, x0, y0, radius, GPANEL_WHITE);
+			gpanel_circle (&display, x0, y0, radius-1, GPANEL_WHITE);
 			mdelay (20);
 		}
 		break;
 	case 3:
 		/* Rectangles. */
 		do {
-			x0 = rand15() % LCD_NCOL;
-			y0 = rand15() % LCD_NROW;
-			x1 = rand15() % LCD_NCOL;
-			y1 = rand15() % LCD_NROW;
+			x0 = rand15() % display.ncol;
+			y0 = rand15() % display.nrow;
+			x1 = rand15() % display.ncol;
+			y1 = rand15() % display.nrow;
 		} while (abs (x0-x1) < 2 || abs (y0-y1) < 2);
-		lcd_rect_filled (&display, x0, y0, x1, y1, rand15());
+		gpanel_rect_filled (&display, x0, y0, x1, y1, rand15());
 		break;
 	}
 }
@@ -136,9 +136,9 @@ void poll_buttons (void *arg)
 			up_pressed = 1;
 
 			/* Up: increase contrast. */
-			lcd_contrast (&display, display.contrast + 1);
-			lcd_move (&display, 10, 130-17);
-			lcd_color (&display, LCD_WHITE, LCD_BLACK);
+			gpanel_contrast (&display, display.contrast + 1);
+			gpanel_move (&display, 10, 130-17);
+			gpanel_color (&display, GPANEL_WHITE, GPANEL_BLACK);
 			printf (&display, "Contrast = %02x", display.contrast);
 		}
 
@@ -148,9 +148,9 @@ void poll_buttons (void *arg)
 			down_pressed = 1;
 
 			/* Up: decrease contrast. */
-			lcd_contrast (&display, display.contrast - 1);
-			lcd_move (&display, 10, 130-17);
-			lcd_color (&display, LCD_WHITE, LCD_BLACK);
+			gpanel_contrast (&display, display.contrast - 1);
+			gpanel_move (&display, 10, 130-17);
+			gpanel_color (&display, GPANEL_WHITE, GPANEL_BLACK);
 			printf (&display, "Contrast = %02x", display.contrast);
 		}
 
@@ -177,6 +177,6 @@ void poll_buttons (void *arg)
 void uos_init (void)
 {
 	/*debug_puts ("\nTesting LCD.\n");*/
-	lcd_init (&display);
+	gpanel_init (&display);
 	task_create (poll_buttons, 0, "poll", 1, task, sizeof (task));
 }
