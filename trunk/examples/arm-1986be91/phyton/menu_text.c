@@ -15,6 +15,9 @@
  *
  *============================================================================================*/
 
+#include <runtime/lib.h>
+#include <stream/stream.h>
+
 #include "lcd.h"
 #include "menu.h"
 #include "menu_items.h"
@@ -151,13 +154,16 @@ void BookFunc(void){
 }
 
 void AboutFunc(void) {
+    unsigned char buf [21];
+
     /* Выводим текст About */
     LCD_CLS();
     CurrentMethod = MET_AND;
 
     LCD_PUTS(0, 0, " Milandr 1986BE91T1 ");
-    LCD_PUTS(0,  CurrentFont->Height      + 1, "   Testing-board    ");
-    LCD_PUTS(0, (CurrentFont->Height) * 2 + 2, "  and uOS runtime   ");
+    snprintf (buf, sizeof(buf), " CPU speed %d MHz   ", KHZ/1000);
+    LCD_PUTS(0,  CurrentFont->Height      + 1, (char*) buf);
+    LCD_PUTS(0, (CurrentFont->Height) * 2 + 2, "Testing uOS runtime ");
     LCD_PUTS(0, (CurrentFont->Height) * 3 + 2, "                    ");
     LCD_PUTS(0, (CurrentFont->Height) * 4 + 3, "Appl. example v.1.0 ");
     LCD_PUTS(0, (CurrentFont->Height) * 5 + 4, "    Phyton 2010     ");

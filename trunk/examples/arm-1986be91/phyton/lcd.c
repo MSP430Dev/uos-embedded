@@ -33,7 +33,11 @@ const LCD_Ports CrystalPorts[NUM_LCD_CRYSTALS] = {
 
 static unsigned GetStatus(void);
 static void WaitStatus(LCD_Status status);
-static void Pause(void);
+
+/* Задержка на 8 микросекунд */
+static inline void Pause(void) {
+    udelay (8);
+}
 
 #define WAIT_BUSY   WaitStatus(BUSY)
 #define WAIT_RESET  WaitStatus(RESET)
@@ -66,7 +70,7 @@ void InitPortLCD(void) {
 }
 
 void InitExtBus(void) {
-    ARM_EXTBUS->CONTROL = 0x0000A001;
+    ARM_EXTBUS->CONTROL = 0x0000F001;
 }
 
 void SetCrystal(LCD_Crystal num) {
@@ -153,11 +157,6 @@ static void WaitStatus(LCD_Status status) {
     unsigned stat;
     for (stat = GetStatus(); stat == (1 << status); stat = GetStatus())
         continue;
-}
-
-/* Задержка ~ на 15*3 тактов */
-static void Pause(void) {
-    udelay (6);
 }
 
 /*============================================================================================

@@ -47,6 +47,27 @@ typedef volatile unsigned int arm_reg_t;
 #define ARM_EXT_BUS_BASE	(ARM_PERIPH_BASE + 0xF0050)
 
 /*------------------------------------------------------
+ * SysTick timer
+ */
+typedef struct
+{
+	arm_reg_t CTRL;		/* Управление и статус */
+	arm_reg_t LOAD;		/* Загружаемое значение */
+	arm_reg_t VAL;		/* Текущее состояние */
+	arm_reg_t CALIB;	/* Подстройка */
+} SYSTICK_t;
+
+#define ARM_SYSTICK		((SYSTICK_t*) (ARM_SYSTEM_BASE + 0xE010))
+
+/*
+ * Регистр SYSTICK CTRL: управление и статус системного таймера.
+ */
+#define ARM_SYSTICK_CTRL_COUNTFLAG	(1 << 16) /* досчитал ли таймер до 0 */
+#define ARM_SYSTICK_CTRL_HCLK		(1 << 2)  /* источник 0-LSI, 1-HCLK */
+#define ARM_SYSTICK_CTRL_TICKINT	(1 << 1)  /* разрешение прерывания */
+#define ARM_SYSTICK_CTRL_ENABLE		(1 << 0)  /* пуск таймера */
+
+/*------------------------------------------------------
  * General purpose I/O
  */
 typedef struct

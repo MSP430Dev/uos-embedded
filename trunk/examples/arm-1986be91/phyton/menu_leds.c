@@ -15,6 +15,8 @@
  *
  *============================================================================================*/
 
+#include <runtime/lib.h>
+
 #include "menu.h"
 #include "menu_items.h"
 #include "leds.h"
