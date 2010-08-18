@@ -59,3 +59,4 @@ void gpanel_color (gpanel_t *lcd, int fg, int bg);
 int gpanel_text_width (gpanel_t *lcd, const unsigned char *text);
 
 extern gpanel_font_t font_lucidasans11;
+extern gpanel_font_t font_lucidasans7;
