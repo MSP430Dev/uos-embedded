@@ -22,10 +22,10 @@
 
 /* Стили */
 typedef enum {
-	StyleSimple,
-	StyleBlink,
-	StyleFlipFlop,
-	StyleVibratory
+    StyleSimple,
+    StyleBlink,
+    StyleFlipFlop,
+    StyleVibratory
 } TextStyle;
 
 /* Выбранный шрифт для отрисовки текста */

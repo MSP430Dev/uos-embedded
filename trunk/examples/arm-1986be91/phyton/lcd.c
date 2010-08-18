@@ -25,10 +25,8 @@ LCD_Method CurrentMethod;                   /* Текущий метод отр�
 
 /* Порты LCD-кристаллов */
 const LCD_Ports CrystalPorts[NUM_LCD_CRYSTALS] = {
-    /* Кристалл #1 */
-                { /* LCD_DATA1 */ 0x18100000, /* LCD_CMD1 */ 0x10100000 },
-    /* Кристалл #2 */
-                { /* LCD_DATA2 */ 0x18200000, /* LCD_CMD2 */ 0x10200000 },
+    /*Кристалл #1*/ { /*LCD_DATA1*/ 0x18100000, /*LCD_CMD1*/ 0x10100000 },
+    /*Кристалл #2*/ { /*LCD_DATA2*/ 0x18200000, /*LCD_CMD2*/ 0x10200000 },
 };
 
 /* Служебные прототипы и макросы */
@@ -49,7 +47,7 @@ void ResetLCD(void) {
     ARM_GPIOC->DATA = 0x00000200;
     ARM_GPIOC->OE = 0x00000200;
     for (i = 0; i < 255; i++)
-      ARM_GPIOC->DATA = 0x00000000;
+        ARM_GPIOC->DATA = 0x00000000;
     ARM_GPIOC->DATA = 0x00000200;
 }
 
@@ -72,10 +70,10 @@ void InitExtBus(void) {
 }
 
 void SetCrystal(LCD_Crystal num) {
-   ARM_GPIOE->DATA = ((num + 1) << 4);
-   ARM_GPIOE->OE = 0x30;
-   Pause();
-   CurrentCrystal = num;
+    ARM_GPIOE->DATA = ((num + 1) << 4);
+    ARM_GPIOE->OE = 0x30;
+    Pause();
+    CurrentCrystal = num;
 }
 
 void WriteLCD_Cmd(unsigned val) {
@@ -114,11 +112,11 @@ void LCD_INIT(void) {
 
     /* Инициализация всех кристаллов */
     for (crystal = LCD_CRYSTAL1; crystal < NUM_LCD_CRYSTALS; crystal++) {
-      SetCrystal((LCD_Crystal)crystal);
-      WAIT_BUSY;
-      LCD_ON;
-      WAIT_ON;
-      LCD_START_LINE(0);
+        SetCrystal((LCD_Crystal)crystal);
+        WAIT_BUSY;
+        LCD_ON;
+        WAIT_ON;
+        LCD_START_LINE(0);
     }
 }
 
@@ -127,16 +125,16 @@ void LCD_CLS(void) {
 
     /* Очистка данных для всех кристаллов */
     for (crystal = LCD_CRYSTAL1; crystal < NUM_LCD_CRYSTALS; crystal++) {
-      SetCrystal((LCD_Crystal)crystal);
-      WAIT_BUSY;
-      LCD_OFF;
-      LCD_SET_ADDRESS(0);
-      for (i = 0; i < 8; i++) {
-        LCD_SET_PAGE(i);
-        for (j = 0; j < 64; j++)
-            WriteLCD_Data(0x00);
-      }
-      LCD_ON;
+        SetCrystal((LCD_Crystal)crystal);
+        WAIT_BUSY;
+        LCD_OFF;
+        LCD_SET_ADDRESS(0);
+        for (i = 0; i < 8; i++) {
+            LCD_SET_PAGE(i);
+            for (j = 0; j < 64; j++)
+                WriteLCD_Data(0x00);
+        }
+        LCD_ON;
     }
 }
 
@@ -159,13 +157,7 @@ static void WaitStatus(LCD_Status status) {
 
 /* Задержка ~ на 15*3 тактов */
 static void Pause(void) {
-#if 0
-    unsigned i;
-    for (i = 15; i > 0; i--)
-        continue;
-#else
-    udelay (10);
-#endif
+    udelay (6);
 }
 
 /*============================================================================================

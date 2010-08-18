@@ -43,67 +43,66 @@ void LCD_PutPixel(unsigned x, unsigned y) {
 }
 
 void LCD_Line(unsigned x1, unsigned y1, unsigned x2, unsigned y2) {
-        int dx, dy, i1, i2, i, kx, ky;
-        int d;
-        int x, y;
-        int flag;
+    int dx, dy, i1, i2, i, kx, ky;
+    int d;
+    int x, y;
+    int flag;
 
-        dy = y2 - y1;
-        dx = x2 - x1;
-        if (dx == 0 && dy == 0) {
-                LCD_PutPixel(x1, y1);
-                return;
-        }
+    dy = y2 - y1;
+    dx = x2 - x1;
+    if (dx == 0 && dy == 0) {
+        LCD_PutPixel(x1, y1);
+        return;
+    }
 
-        flag = kx = ky = 1;
+    flag = kx = ky = 1;
 
-        if (dx < 0) {
-            dx = -dx;
-            kx = -1;
-        }
-        else if (dx == 0)
-            kx = 0;
+    if (dx < 0) {
+        dx = -dx;
+        kx = -1;
+    }
+    else if (dx == 0)
+        kx = 0;
 
-        if (dy < 0) {
-            dy = -dy;
-            ky = -1;
-        }
+    if (dy < 0) {
+        dy = -dy;
+        ky = -1;
+    }
 
-        if (dx < dy) {
-            flag = 0;
-            d = dx;
-            dx = dy;
-            dy = d;
-        }
+    if (dx < dy) {
+        flag = 0;
+        d = dx;
+        dx = dy;
+        dy = d;
+    }
 
-        i1 = dy + dy;
-        d = i1 - dx;
-        i2 = d - dx;
-        x = x1;
-        y = y1;
+    i1 = dy + dy;
+    d = i1 - dx;
+    i2 = d - dx;
+    x = x1;
+    y = y1;
 
-        for (i=0; ; i++){
-            LCD_PutPixel(x,y);
-            if (i >= dx)
-                break;
+    for (i=0; ; i++){
+        LCD_PutPixel(x,y);
+        if (i >= dx)
+            break;
 
+        if (flag)
+            x += kx;
+        else
+            y += ky;
+
+        if (d < 0)
+            d += i1;
+        else {
+            d += i2;
             if (flag)
-                x += kx;
-            else
                 y += ky;
-
-            if (d < 0)
-                d += i1;
-            else {
-                d += i2;
-                if (flag)
-                    y += ky;
-                else
-                    x += kx;
-            }
+            else
+                x += kx;
         }
+    }
 }
-
 
 void LCD_Circle(unsigned xc, unsigned yc, unsigned r) {
     int d, x, y;

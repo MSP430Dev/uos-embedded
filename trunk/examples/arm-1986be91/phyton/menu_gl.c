@@ -140,17 +140,17 @@ void IndicatorsFunc(void) {
             sign = -sign;
         else
             i = ni;
-        udelay(300);
+        udelay(40);
 
         /* Рисуем стрелку */
         LCD_Line(86, 46, 63, 63);
-        udelay(150);
+        udelay(20);
         LCD_Line(86, 46, 63, 63);
-        udelay(150);
+        udelay(20);
         LCD_Line(84, 44, 63, 63);
-        udelay(150);
+        udelay(20);
         LCD_Line(84, 44, 63, 63);
-        udelay(150);
+        udelay(20);
     }
 
     /* Нажата SEL - возвращаемся в главное меню */

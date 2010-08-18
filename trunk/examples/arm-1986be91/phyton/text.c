@@ -139,29 +139,30 @@ void LCD_PUTS_Ex(unsigned x, unsigned y, const char* str, unsigned style) {
         /* Мерцающая строка */
         case StyleBlink:
             CurrentMethod = MET_AND;
-            LCD_PUTS(x, y, str);
-            udelay(600);
             for (i = 0; i < strlen((unsigned char*)str); i++)
                 LCD_PUTC(x + ((CurrentFont->Width) * i), y, 0x20);
+            udelay(30000);
+            LCD_PUTS(x, y, str);
             break;
         /* Строка с изменением фона */
         case StyleFlipFlop:
             CurrentMethod = MET_AND;
             LCD_PUTS(x, y, str);
+            udelay(10000);
             CurrentMethod = MET_XOR;
             LCD_PUTS(x, y, str);
+            udelay(10000);
             CurrentMethod = MET_NOT_XOR;
             LCD_PUTS(x, y, str);
-            udelay(1200);
+            udelay(10000);
             CurrentMethod = MET_AND;
             LCD_PUTS(x, y, str);
-            udelay(150);
             break;
         /* Дрожащая строка */
         case StyleVibratory:
             CurrentMethod = MET_AND;
             LCD_PUTS(x, y, str);
-            udelay(600);
+            udelay(30000);
             LCD_PUTS(x+1, y+1, str);
             break;
     }

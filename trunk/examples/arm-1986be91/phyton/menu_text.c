@@ -96,22 +96,22 @@ void ShiftFunc(void) {
 
 /* Текст для демонстрации "электронной книги" */
 static const char *Book[16] = {
-        "The Cortex-M3 proces-",
-        "sor specifically tar-",
-        "gets the low cost re-",
-        "quirements of a broad",
-        "range of markets and ",
-        "applications, where  ",
-        "memory and processor ",
-        "size significantly   ",
-        "impact device costs. ",
-        "With multiple techno-",
-        "logies to reduce me- ",
-        "mory use, including  ",
-        "the Thumb-2 instruc- ",
-        "tion set, the proces-",
-        "sor delivers an ideal",
-        "32-bit platform.     ",
+    "The Cortex-M3 proces-",
+    "sor specifically tar-",
+    "gets the low cost re-",
+    "quirements of a broad",
+    "range of markets and ",
+    "applications, where  ",
+    "memory and processor ",
+    "size significantly   ",
+    "impact device costs. ",
+    "With multiple techno-",
+    "logies to reduce me- ",
+    "mory use, including  ",
+    "the Thumb-2 instruc- ",
+    "tion set, the proces-",
+    "sor delivers an ideal",
+    "32-bit platform.     ",
 };
 
 void BookFunc(void){
@@ -123,7 +123,7 @@ void BookFunc(void){
     WAIT_UNTIL_KEY_RELEASED(SEL);
 
     /* Цикл обработки нажатий кнопок */
-    for (top_ind = 0, key = NOKEY; key != SEL; ){
+    for (top_ind = 0, key = NOKEY; key != SEL; ) {
         /* Выводим текст и ждем нажатия кнопки */
         for (i = 0; i < 8; i++)
             LCD_PUTS(0, (CurrentFont->Height) * i, Book[top_ind + i]);
@@ -142,28 +142,26 @@ void BookFunc(void){
                 if (top_ind < 8)
                     top_ind++;
                 break;
+        }
     }
-  }
 
-  /* Нажата SEL - возвращаемся в главное меню */
-  WAIT_UNTIL_KEY_RELEASED(key);
-  DisplayMenu();
+    /* Нажата SEL - возвращаемся в главное меню */
+    WAIT_UNTIL_KEY_RELEASED(key);
+    DisplayMenu();
 }
 
-
 void AboutFunc(void) {
-
     /* Выводим текст About */
     LCD_CLS();
     CurrentMethod = MET_AND;
 
     LCD_PUTS(0, 0, " Milandr 1986BE91T1 ");
     LCD_PUTS(0,  CurrentFont->Height      + 1, "   Testing-board    ");
-    LCD_PUTS(0, (CurrentFont->Height) * 2 + 2, "                    ");
+    LCD_PUTS(0, (CurrentFont->Height) * 2 + 2, "  and uOS runtime   ");
     LCD_PUTS(0, (CurrentFont->Height) * 3 + 2, "                    ");
     LCD_PUTS(0, (CurrentFont->Height) * 4 + 3, "Appl. example v.1.0 ");
     LCD_PUTS(0, (CurrentFont->Height) * 5 + 4, "    Phyton 2010     ");
-    LCD_PUTS(0, (CurrentFont->Height) * 6 + 5, "   www.phyton.ru    ");
+    LCD_PUTS(0, (CurrentFont->Height) * 6 + 5, " http://uos.vak.ru  ");
 
     /* Ждем нажатия SEL и возвращаемся в главное меню */
     BackToMenuOnSel();

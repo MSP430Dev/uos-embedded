@@ -47,15 +47,15 @@ static tMenu psPrevMenu[MAX_MENU_LEVELS];
 static tMenu psCurrentMenu;
 
 struct sMenuItem {
-  const char* psTitle;
-  tMenuFunc pfMenuFunc;
-  tMenu psSubMenu;
+    const char* psTitle;
+    tMenuFunc pfMenuFunc;
+    tMenu psSubMenu;
 };
 
 struct sMenu {
-  const char* psTitle;
-  tMenuItem psItems;
-  unsigned nItems;
+    const char* psTitle;
+    tMenuItem psItems;
+    unsigned nItems;
 };
 
 /*
@@ -239,8 +239,8 @@ void DisplayMenu(void) {
  * Ждет нажатия SEL и возвращаемся в главное меню
  */
 void BackToMenuOnSel(void) {
-  WAIT_UNTIL_KEY_PRESSED(SEL);
-  DisplayMenu();
+    WAIT_UNTIL_KEY_PRESSED(SEL);
+    DisplayMenu();
 }
 
 /*

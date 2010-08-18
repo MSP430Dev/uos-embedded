@@ -23,28 +23,29 @@
 #include "joystick.h"
 
 void LightsOnFunc(void) {
-  unsigned tck, tck_led;
+    unsigned tck, tck_led;
 
-  /* Выводим подсказку на экран и ждем key up */
-  LCD_CLS();
-  CurrentMethod = MET_AND;
-  CurrentFont = &Font_6x8;
-  LCD_PUTS(0, 0,                       "   Для возврата   ");
-  LCD_PUTS(0, CurrentFont->Height + 2, "   нажмите SEL    ");
-  WAIT_UNTIL_KEY_RELEASED(SEL);
+    /* Выводим подсказку на экран и ждем key up */
+    LCD_CLS();
+    CurrentMethod = MET_AND;
+    CurrentFont = &Font_6x8;
+    LCD_PUTS(0, 0,                       "     Press SEL    ");
+    LCD_PUTS(0, CurrentFont->Height + 2, "     to return    ");
+    WAIT_UNTIL_KEY_RELEASED(SEL);
 
-  /* Запускаем "спецэффект" */
-  CurrentLights = __SHLC(0xFDF05380, LED0_OFS);
-  for (tck = 0, tck_led = 0; !KEY_PRESSED(SEL); tck++) {
-    if (tck == tck_led) {
-      tck_led += 35000;
-      ShiftLights();
+    /* Запускаем "спецэффект" */
+    CurrentLights = __SHLC(0xFDF05380, LED0_OFS);
+    for (tck = 0, tck_led = 0; !KEY_PRESSED(SEL); tck++) {
+        if (tck == tck_led) {
+            tck_led += 100;
+            ShiftLights();
+        }
+        udelay (1000);
     }
-  }
-  /* Нажата SEL - выключаем светодиоды и возвращаемся в главное меню */
-  CurrentLights = 0x0;
-  ShiftLights();
-  DisplayMenu();
+    /* Нажата SEL - выключаем светодиоды и возвращаемся в главное меню */
+    CurrentLights = 0x0;
+    ShiftLights();
+    DisplayMenu();
 }
 
 /*============================================================================================
