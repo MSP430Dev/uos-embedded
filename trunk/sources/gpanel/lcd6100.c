@@ -5,7 +5,7 @@
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>
-#include <lcd6100/lcd.h>
+#include <gpanel/lcd.h>
 
 /*
  * Commands for Philips PCF8833 LCD controller.

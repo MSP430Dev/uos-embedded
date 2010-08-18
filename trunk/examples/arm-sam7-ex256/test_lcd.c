@@ -6,7 +6,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <stream/stream.h>
-#include <lcd6100/lcd.h>
+#include <gpanel/lcd.h>
 #include <random/rand15.h>
 #include "sam7-ex256.h"
 
