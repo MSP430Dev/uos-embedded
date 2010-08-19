@@ -50,12 +50,12 @@ void draw (unsigned page)
 		break;
 	case 1:
 		/* Boxes. */
-		gpanel_rect (&display,    0,    0, display.ncol-1,      display.nrow-1,      GPANEL_CYAN);
-		gpanel_rect (&display,   11,   11, display.ncol-1-11,   display.nrow-1-11,   GPANEL_GREEN);
-		gpanel_rect (&display, 2*11, 2*11, display.ncol-1-2*11, display.nrow-1-2*11, GPANEL_YELLOW);
-		gpanel_rect (&display, 3*11, 3*11, display.ncol-1-3*11, display.nrow-1-3*11, GPANEL_RED);
-		gpanel_rect (&display, 4*11, 4*11, display.ncol-1-4*11, display.nrow-1-4*11, GPANEL_MAGENTA);
-		gpanel_rect (&display, 5*11, 5*11, display.ncol-1-5*11, display.nrow-1-5*11, GPANEL_BLUE);
+		gpanel_rect (&display,    0,    0, display.ncol-1,      display.nrow-1,      GPANEL_WHITE);
+		gpanel_rect (&display,   11,   11, display.ncol-1-11,   display.nrow-1-11,   GPANEL_WHITE);
+		gpanel_rect (&display, 2*11, 2*11, display.ncol-1-2*11, display.nrow-1-2*11, GPANEL_WHITE);
+		gpanel_rect (&display, 3*11, 3*11, display.ncol-1-3*11, display.nrow-1-3*11, GPANEL_WHITE);
+		gpanel_rect (&display, 4*11, 4*11, display.ncol-1-4*11, display.nrow-1-4*11, GPANEL_WHITE);
+		gpanel_rect (&display, 5*11, 5*11, display.ncol-1-5*11, display.nrow-1-5*11, GPANEL_WHITE);
 		break;
 	}
 }

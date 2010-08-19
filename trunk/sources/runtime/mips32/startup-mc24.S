@@ -16,7 +16,11 @@ _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
 		la	$sp, _estack-16			# Stack at end of internal SRAM
-
+#if 1
+		lui	$gp, 0xb840			# Set global pointer
+		mfc0	$a0, $C0_COUNT			# Get CPU tick counter
+		sw	$a0, ($gp)			# Store start time to XYRAM0
+#endif
 		j	_init_				# Jump to _init_()
 		lui	$gp, 0xb800			# Set global pointer (delay slot)
 

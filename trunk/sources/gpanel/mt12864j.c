@@ -5,27 +5,20 @@
 #include <stream/stream.h>
 #include <gpanel/gpanel.h>
 
-/*
- * Write 9-bit command to LCD display via SPI interface.
- */
-static void write_command (unsigned data)
+static void set_crystal (gpanel_t *gp, int num)
 {
-#if 0
-	/* Wait for the transfer to complete. */
-	while (! (*AT91C_SPI0_SR & AT91C_SPI_TXEMPTY))
-		continue;
-
-	*AT91C_SPI0_TDR = (unsigned short) data;
-#endif
-}
-
-/*
- * Write data to LCD display.
- * Data differ from commands by 9 bit set to 1.
- */
-static inline void write_data (unsigned data)
-{
-	write_command (data | 0x0100);
+	ARM_GPIOE->DATA = ((num + 1) << 4);
+	ARM_GPIOE->OE = 0x30;
+	udelay (8);
+	if (num) {
+		/* Кристалл #2. */
+		gp->DATA = (unsigned*) 0x18200000;
+		gp->CMD  = (unsigned*) 0x10200000;
+	} else {
+		/* Кристалл #1. */
+		gp->DATA = (unsigned*) 0x18100000;
+		gp->CMD  = (unsigned*) 0x10100000;
+	}
 }
 
 /*
@@ -48,76 +41,31 @@ void gpanel_init (gpanel_t *gp)
 	gp->col = 0;
 	gp->c1 = 0;
 	gp->c2 = 0;
-#if 0
-	/* Backlight is controlled by pin PB20. */
-	*AT91C_PIOB_SODR = AT91C_PIO_PB20;	/* Set high: enable backlight */
-	*AT91C_PIOB_OER	 = AT91C_PIO_PB20;	/* Configure PB20 as output */
 
-	/* LCD reset is connected to pin PA2. */
-	*AT91C_PIOA_SODR = AT91C_PIO_PA2;	/* Set high: disable reset */
-	*AT91C_PIOA_OER	 = AT91C_PIO_PA2;	/* Configure PA2 as output */
+	ARM_RSTCLK->PER_CLOCK = 0xFFFFFFFF;
 
-	/* Init SPI0:
-	 * PA12 -> NPCS0
-	 * PA16 -> MISO
-	 * PA17 -> MOSI
-	 * PA18 -> SPCK */
-	*AT91C_PIOA_PDR = AT91C_PA12_SPI0_NPCS0 | AT91C_PA16_SPI0_MISO |
-			  AT91C_PA17_SPI0_MOSI  | AT91C_PA18_SPI0_SPCK;
-	*AT91C_PIOA_ASR = AT91C_PA12_SPI0_NPCS0 | AT91C_PA16_SPI0_MISO |
-			  AT91C_PA17_SPI0_MOSI  | AT91C_PA18_SPI0_SPCK;
-	*AT91C_PIOA_BSR = 0;
-	*AT91C_PMC_PCER = 1 << AT91C_ID_SPI0;	/* Enable SPI clock. */
-	*AT91C_SPI0_CR	= AT91C_SPI_SPIEN | AT91C_SPI_SWRST;
-	*AT91C_SPI0_CR	= AT91C_SPI_SPIEN;	/* Fixed mode */
+	/* Программный сброс экрана. */
+	ARM_GPIOC->DATA = 0x00000200;
+	ARM_GPIOC->OE = 0x00000200;
+	for (i=0; i<255; i++)
+		ARM_GPIOC->DATA = 0;
+	ARM_GPIOC->DATA = 0x00000200;
 
-	*AT91C_SPI0_MR = AT91C_SPI_MSTR |	/* Master mode */
-		AT91C_SPI_MODFDIS |		/* Fault detection disabled */
-		(AT91C_SPI_PCS & (0xE << 16));	/* Chip select NPCS0 (PA12) */
-
-	AT91C_SPI0_CSR[0] = AT91C_SPI_CPOL |	/* Clock inactive high */
-		AT91C_SPI_BITS_9 |		/* 9 bits per transfer */
-		(AT91C_SPI_SCBR & (8 << 8)) |	/* 48MHz/8 = 6 MHz */
-		(AT91C_SPI_DLYBS & (1 << 16)) |	/* Delay Before SPCK */
-		(AT91C_SPI_DLYBCT & (1 << 24));	/* Delay between transfers */
-
-	/* Software Reset. */
-	write_command (PHILIPS_NOP);
-	write_command (PHILIPS_SWRESET);
-
-	/* Normal display mode. */
-	write_command (PHILIPS_NORON);
-
-	/* Display data access modes: horizontal, mirror X. */
-	write_command (PHILIPS_MADCTL);
-	write_data (0x48);
-
-	/* Sleep out. */
-	write_command (PHILIPS_SLEEPOUT);
-
-	/* Set contrast. */
-	write_command (PHILIPS_SETCON);
-	write_data (gp->contrast);
-
-	/* Booster voltage on. */
-	write_command (PHILIPS_BSTRON);
-
-	/* Display on. */
-	write_command (PHILIPS_DISPON);
-#endif
+	/* Инициализация всех кристаллов. */
+	for (crystal=0; crystal<2; crystal++) {
+		set_crystal (gp, crystal);
+		wait_status (gp, BUSY);
+		write_cmd (gp, 0x3F);		// LCD on
+		wait_status (gp, ONOFF);
+		write_cmd (gp, 0xC0);		// start line 0
+	}
 }
 
 /*
- * Turn the backlight on and off.
+ * No backlight control.
  */
 void gpanel_backlight (gpanel_t *gp, int on)
 {
-#if 0
-	if (on)
-		*AT91C_PIOB_SODR = AT91C_PIO_PB20;	/* Set to HIGH */
-	else
-		*AT91C_PIOB_CODR = AT91C_PIO_PB20;	/* Set to LOW */
-#endif
 }
 
 /*
