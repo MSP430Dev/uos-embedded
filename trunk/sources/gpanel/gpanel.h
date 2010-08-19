@@ -26,12 +26,14 @@ typedef struct {
 	unsigned row;			/* current row */
 	unsigned col;			/* current column */
 	unsigned c1, c2;		/* utf8 decoder */
+	volatile unsigned *volatile CMD;		/* command register */
+	volatile unsigned *volatile DATA;	/* data register */
 } gpanel_t;
 
 /* 12-bit color definitions */
 #define GPANEL_WHITE	0xFFF
 #define GPANEL_BLACK	0x000
-#define GPANEL_RED		0xF00
+#define GPANEL_RED	0xF00
 #define GPANEL_GREEN	0x0F0
 #define GPANEL_BLUE	0x00F
 #define GPANEL_CYAN	0x0FF

@@ -28,17 +28,10 @@ inline int joystick_pressed (void)
 
 inline void buttons_init (void)
 {
-        ARM_GPIOA->FUNC = 0x00005555;   /* Main Function для DATA[7:0] */
-        ARM_GPIOA->ANALOG = 0xFFFF;     /* Digital */
-        ARM_GPIOA->PWR = 0x00005555;    /* Fast */
+	/* Enable clock for PORTC. */
+	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOC;
 
-        ARM_GPIOE->FUNC = 0x00400500;   /* Main Function для ADDR[20,21,27] */
-        ARM_GPIOE->ANALOG = 0xFFFF;     /* Digital */
-        ARM_GPIOE->PWR = 0x00400500;    /* Fast */
-
-        ARM_GPIOC->FUNC = 0x15504010;   /* Main Function для RESET WE & CLOCK & KEYS*/
+        ARM_GPIOC->FUNC = 0x15504010;   /* Main Function для RESET WE & CLOCK & KEYS */
         ARM_GPIOC->ANALOG = 0xFFFF;     /* Digital */
         ARM_GPIOC->PWR = 0x0008C010;    /* Fast */
-
-        ARM_EXTBUS->CONTROL = 0x0000F001;
 }

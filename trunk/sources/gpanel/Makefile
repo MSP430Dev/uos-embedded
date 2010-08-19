@@ -22,5 +22,16 @@ lucidasans7.c:	convbdf ../../contrib/nanox/fonts/Lucida_Sans_Unicode.ttf
 		./convbdf -c -u164 -a2 -d3 lucidasans7.bdf
 		rm -f lucidasans7.bdf
 
+verdana7.c:	convbdf
+		-otf2bdf -p 7 -l "20_126 164 1025 1105 1040_1103" /usr/share/fonts/truetype/msttcorefonts/Verdana.ttf > verdana7.bdf
+		./convbdf -c -a2 verdana7.bdf
+		rm -f verdana7.bdf
+
+5x7.c:		convbdf
+		./convbdf -c -u0 -l0x44f -x0xa0-0x40f /home/vak/Qt/qt/src/3rdparty/fonts/5x7.bdf
+
+6x9.c:		convbdf
+		./convbdf -c -u0 -l0x44f -x0xa0-0x40f 6x9.bdf
+
 clean:
 		-rm -f *~ png2rgb convbdf lucidasans11.bdf

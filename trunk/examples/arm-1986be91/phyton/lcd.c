@@ -45,34 +45,6 @@ static inline void Pause(void) {
 
 /* Утилиты работы с LCD */
 
-void ResetLCD(void) {
-    unsigned i;
-
-    ARM_GPIOC->DATA = 0x00000200;
-    ARM_GPIOC->OE = 0x00000200;
-    for (i = 0; i < 255; i++)
-        ARM_GPIOC->DATA = 0x00000000;
-    ARM_GPIOC->DATA = 0x00000200;
-}
-
-void InitPortLCD(void) {
-    ARM_GPIOA->FUNC = 0x00005555;   /* Main Function для DATA[7:0] */
-    ARM_GPIOA->ANALOG = 0xFFFF;     /* Digital */
-    ARM_GPIOA->PWR = 0x00005555;    /* Fast */
-
-    ARM_GPIOE->FUNC = 0x00400500;   /* Main Function для ADDR[20,21,27] */
-    ARM_GPIOE->ANALOG = 0xFFFF;     /* Digital */
-    ARM_GPIOE->PWR = 0x00400500;    /* Fast */
-
-    ARM_GPIOC->FUNC = 0x15504010;   /* Main Function для RESET WE & CLOCK & KEYS*/
-    ARM_GPIOC->ANALOG = 0xFFFF;     /* Digital */
-    ARM_GPIOC->PWR = 0x0008C010;    /* Fast */
-}
-
-void InitExtBus(void) {
-    ARM_EXTBUS->CONTROL = 0x0000F001;
-}
-
 void SetCrystal(LCD_Crystal num) {
     ARM_GPIOE->DATA = ((num + 1) << 4);
     ARM_GPIOE->OE = 0x30;
@@ -110,9 +82,29 @@ void LCD_INIT(void) {
 
     ARM_RSTCLK->PER_CLOCK = 0xFFFFFFFF;
 
-    InitPortLCD();      /* Инициализация портов внешней шины и выводов для работы с экраном */
-    InitExtBus();       /* Инициализация внешней шины */
-    ResetLCD();         /* Прошраммный сброс экрана */
+    /* Инициализация портов внешней шины и выводов для работы с экраном */
+    ARM_GPIOA->FUNC = 0x00005555;   /* Main Function для DATA[7:0] */
+    ARM_GPIOA->ANALOG = 0xFFFF;     /* Digital */
+    ARM_GPIOA->PWR = 0x00005555;    /* Fast */
+
+    ARM_GPIOE->FUNC = 0x00400500;   /* Main Function для ADDR[20,21,27] */
+    ARM_GPIOE->ANALOG = 0xFFFF;     /* Digital */
+    ARM_GPIOE->PWR = 0x00400500;    /* Fast */
+
+    ARM_GPIOC->FUNC = 0x15504010;   /* Main Function для RESET WE & CLOCK & KEYS*/
+    ARM_GPIOC->ANALOG = 0xFFFF;     /* Digital */
+    ARM_GPIOC->PWR = 0x0008C010;    /* Fast */
+
+    /* Инициализация внешней шины */
+    ARM_EXTBUS->CONTROL = 0x0000F001;
+
+    /* Программный сброс экрана */
+    ARM_GPIOC->DATA = 0x00000200;
+    ARM_GPIOC->OE = 0x00000200;
+    unsigned i;
+    for (i = 0; i < 255; i++)
+        ARM_GPIOC->DATA = 0x00000000;
+    ARM_GPIOC->DATA = 0x00000200;
 
     /* Инициализация всех кристаллов */
     for (crystal = LCD_CRYSTAL1; crystal < NUM_LCD_CRYSTALS; crystal++) {

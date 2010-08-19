@@ -161,8 +161,8 @@ _init_ (void)
 		ARM_UART_CLOCK_BRG2(2);			// HCLK/4 (20 МГц)
 
 	/* Set baud rate divisor: 115200 bit/sec. */
-	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
-	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/4, 115200);
+	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/8, 115200);
+	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/8, 115200);
 
 	/* Enable UART2, transmiter only. */
 	ARM_UART2->LCR_H = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит

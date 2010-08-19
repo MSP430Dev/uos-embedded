@@ -210,12 +210,11 @@ static void gpanel_putchar (gpanel_t *gp, short c)
 	if (gp->font->width) {
 		/* Proportional font. */
 		width = gp->font->width [cindex];
-		bits = gp->font->bits + gp->font->offset [cindex];
 	} else {
 		/* Fixed width font. */
 		width = gp->font->maxwidth;
-		bits = gp->font->bits + (gp->font->height * cindex);
 	}
+	bits = gp->font->bits + gp->font->offset [cindex];
 
 	/* Scrolling. */
 	if (gp->col > gp->ncol - width) {

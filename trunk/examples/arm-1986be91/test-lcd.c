@@ -12,50 +12,32 @@ gpanel_t display;
 
 void draw (unsigned page)
 {
-	gpanel_clear (&display, GPANEL_BLACK);
-	switch (page % 5) {
+	unsigned y;
+
+	gpanel_clear (&display, 0);
+	switch (page) {
 	case 0:
 		/* Show text. */
-		gpanel_move (&display, 0, 0);
-		gpanel_color (&display, GPANEL_WHITE, GPANEL_BLACK);
+		y = 0;
+		gpanel_move (&display, 0, y);
 		puts (&display, "Альфа");
-
-		gpanel_move (&display, 0, 16);
-		gpanel_color (&display, GPANEL_BLACK, GPANEL_WHITE);
+		gpanel_move (&display, 0, y += display.font->height);
 		puts (&display, "Бета");
-
-		gpanel_move (&display, 0, 2*16);
-		gpanel_color (&display, GPANEL_WHITE, GPANEL_BLACK);
+		gpanel_move (&display, 0, y += display.font->height);
 		puts (&display, "Гамма");
-
-		gpanel_move (&display, 0, 3*16);
-		gpanel_color (&display, GPANEL_BLACK, GPANEL_WHITE);
+		gpanel_move (&display, 0, y += display.font->height);
 		puts (&display, "Дельта");
-
-		gpanel_move (&display, 0, 4*16);
-		gpanel_color (&display, GPANEL_WHITE, GPANEL_BLACK);
+		gpanel_move (&display, 0, y += display.font->height);
 		puts (&display, "Эпсилон");
-
-		gpanel_move (&display, 0, 5*16);
-		gpanel_color (&display, GPANEL_BLACK, GPANEL_WHITE);
+		gpanel_move (&display, 0, y += display.font->height);
 		puts (&display, "Дзета");
-
-		gpanel_move (&display, 0, 6*16);
-		gpanel_color (&display, GPANEL_WHITE, GPANEL_BLACK);
+		gpanel_move (&display, 0, y += display.font->height);
 		puts (&display, "Эта");
-
-		gpanel_move (&display, 0, 7*16);
-		gpanel_color (&display, GPANEL_BLACK, GPANEL_WHITE);
-		puts (&display, "Тета");
 		break;
 	case 1:
 		/* Boxes. */
-		gpanel_rect (&display,    0,    0, display.ncol-1,      display.nrow-1,      GPANEL_WHITE);
-		gpanel_rect (&display,   11,   11, display.ncol-1-11,   display.nrow-1-11,   GPANEL_WHITE);
-		gpanel_rect (&display, 2*11, 2*11, display.ncol-1-2*11, display.nrow-1-2*11, GPANEL_WHITE);
-		gpanel_rect (&display, 3*11, 3*11, display.ncol-1-3*11, display.nrow-1-3*11, GPANEL_WHITE);
-		gpanel_rect (&display, 4*11, 4*11, display.ncol-1-4*11, display.nrow-1-4*11, GPANEL_WHITE);
-		gpanel_rect (&display, 5*11, 5*11, display.ncol-1-5*11, display.nrow-1-5*11, GPANEL_WHITE);
+		for (y=0; y<32; y+=5)
+			gpanel_rect (&display, y+y, y, display.ncol-1-y-y, display.nrow-1-y, 1);
 		break;
 	}
 }
@@ -65,7 +47,7 @@ void draw_next (unsigned page)
 	static int x0, y0, radius;
 	int x1, y1;
 
-	switch (page % 4) {
+	switch (page) {
 	case 2:
 		/* Rain. */
 		if (radius == 0) {
@@ -74,16 +56,16 @@ void draw_next (unsigned page)
 			y0 = 10 + rand15() % (display.nrow - 20);
 		} else {
 			/* Clear previous circle. */
-			gpanel_circle (&display, x0, y0, radius, GPANEL_BLACK);
-			gpanel_circle (&display, x0, y0, radius-1, GPANEL_BLACK);
+			gpanel_circle (&display, x0, y0, radius, 0);
+			gpanel_circle (&display, x0, y0, radius-1, 0);
 		}
 		radius += 2;
 		if (radius > 10)
 			radius = 0;
 		else {
 			/* Draw next circle. */
-			gpanel_circle (&display, x0, y0, radius, GPANEL_WHITE);
-			gpanel_circle (&display, x0, y0, radius-1, GPANEL_WHITE);
+			gpanel_circle (&display, x0, y0, radius, 1);
+			gpanel_circle (&display, x0, y0, radius-1, 1);
 			mdelay (20);
 		}
 		break;
@@ -95,7 +77,7 @@ void draw_next (unsigned page)
 			x1 = rand15() % display.ncol;
 			y1 = rand15() % display.nrow;
 		} while (abs (x0-x1) < 2 || abs (y0-y1) < 2);
-		gpanel_rect_filled (&display, x0, y0, x1, y1, rand15());
+		gpanel_rect (&display, x0, y0, x1, y1, 1);
 		break;
 	}
 }
@@ -109,6 +91,7 @@ int main (void)
 	debug_puts ("\nTesting LCD.\n");
 	buttons_init ();
 	gpanel_init (&display);
+
 	draw (pagenum);
 
 	/*
@@ -140,7 +123,8 @@ int main (void)
 			left_pressed = 1;
 
 			/* Left button: show previous page of symbols. */
-			draw (--pagenum);
+			pagenum = (pagenum - 1) % 4;
+			draw (pagenum);
 		}
 
 		if (! joystick_right ())
@@ -149,7 +133,8 @@ int main (void)
 			right_pressed = 1;
 
 			/* Right button: show next page of symbols. */
-			draw (++pagenum);
+			pagenum = (pagenum + 1) % 4;
+			draw (pagenum);
 		}
 	}
 }

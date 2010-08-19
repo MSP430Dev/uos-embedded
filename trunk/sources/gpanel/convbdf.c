@@ -57,6 +57,8 @@ int gen_fnt = 0;
 int gen_map = 1;
 int start_char = 0;
 int default_char = 0;
+int exclude_start = 0;
+int exclude_end = 0;
 int limit_char = 65535;
 int ascent_correction = 0;
 int descent_correction = 0;
@@ -88,6 +90,7 @@ usage(void)
 	"    -f     Convert .bdf to .fnt font file\n"
 	"    -s N   Start output at character encodings >= N\n"
 	"    -l N   Limit output to character encodings <= N\n"
+	"    -x N-M Exclude character range N...M\n"
 	"    -u N   Use code N as default char \n"
 	"    -a N   Decrease ascent by N\n"
 	"    -d N   Decrease descent by N\n"
@@ -136,7 +139,7 @@ getopts(int *pac, char ***pav)
 					strcpy(outfile, av[0]);
 			}
 			break;
-		case 'l':			/* set encoding limit*/
+		case 'l':			/* set encoding limit */
 			if (*p) {
 				limit_char = strtol (p, 0, 0);
 				while (*p && *p != ' ')
@@ -147,7 +150,33 @@ getopts(int *pac, char ***pav)
 					limit_char = strtol (av[0], 0, 0);
 			}
 			break;
-		case 's':			/* set encoding start*/
+		case 'x':			/* exclude encoding range */
+			if (*p) {
+				char *e;
+				exclude_start = strtol (p, &e, 0);
+				if (*e != '-') {
+					fprintf(stderr, "Invalud option ignored: %s\r\n", p);
+					exclude_start = 0;
+					break;
+				}
+				exclude_end = strtol (e+1, 0, 0);
+				while (*p && *p != ' ')
+					p++;
+			} else {
+				av++; ac--;
+				if (ac > 0) {
+					char *e;
+					exclude_start = strtol (av[0], &e, 0);
+					if (*e != '-') {
+						fprintf(stderr, "Invalud option ignored: %s\r\n", av[0]);
+						exclude_start = 0;
+						break;
+					}
+					exclude_end = strtol (e+1, 0, 0);
+				}
+			}
+			break;
+		case 's':			/* set encoding start */
 			if (*p) {
 				start_char = strtol (p, 0, 0);
 				while (*p && *p != ' ')
@@ -422,6 +451,8 @@ bdf_read_header(FILE *fp, font_t *pf)
 				return 0;
 			}
 			if (encoding >= 0 && encoding <= limit_char && encoding >= start_char) {
+				if (exclude_start && encoding >= exclude_start && encoding <= exclude_end)
+					continue;
 				if (firstchar > encoding)
 					firstchar = encoding;
 				if (lastchar < encoding)
@@ -506,6 +537,8 @@ bdf_read_bitmaps(FILE *fp, font_t *pf)
 				return 0;
 			}
 			if (encoding < start_char || encoding > limit_char)
+				encoding = -1;
+			if (exclude_start && encoding >= exclude_start && encoding <= exclude_end)
 				encoding = -1;
 			continue;
 		}

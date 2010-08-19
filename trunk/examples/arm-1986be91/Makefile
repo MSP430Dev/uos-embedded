@@ -19,7 +19,7 @@ clean:
 probe:
 		$(PROG)
 
-load:		test-debug.srec
+load:		test-lcd.srec
 		$(PROG) $<
 
 include $(OS)/sources/rules.mak
