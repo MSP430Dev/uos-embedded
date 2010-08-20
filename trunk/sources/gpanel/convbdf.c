@@ -801,7 +801,7 @@ gen_c_source(font_t *pf, char *path)
 		int bitcount = 0;
  		int width = pf->width ? pf->width[i] : pf->maxwidth;
 		int height = pf->height - ascent_correction - descent_correction;
-		unsigned short *bits = pf->bits + (pf->offset? pf->offset[i]: (height * i));
+		unsigned short *bits = pf->bits + (pf->offset? pf->offset[i]: (pf->height * i));
 		unsigned short bitvalue = 0;
 
 		/*
@@ -869,7 +869,7 @@ gen_c_source(font_t *pf, char *path)
 
 		/* output offset table*/
 		fprintf(ofp, "/* Character->glyph mapping. */\n"
-			"static const unsigned long %s_offset[] = {\n",
+			"static const unsigned short %s_offset[] = {\n",
 			pf->name);
 		offset = 0;
 		did_defaultchar = 0;

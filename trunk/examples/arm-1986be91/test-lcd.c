@@ -20,19 +20,19 @@ void draw (unsigned page)
 		/* Show text. */
 		y = 0;
 		gpanel_move (&display, 0, y);
-		puts (&display, "Альфа");
+		puts (&display, "Десять негритят");
 		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Бета");
+		puts (&display, "отправились обедать,");
 		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Гамма");
+		puts (&display, "Один поперхнулся,");
 		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Дельта");
+		puts (&display, "их осталось девять.");
 		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Эпсилон");
+		puts (&display, "Девять негритят,");
 		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Дзета");
+		puts (&display, "поев, клевали носом,");
 		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Эта");
+		puts (&display, "Один не смог проснуться,");
 		break;
 	case 1:
 		/* Boxes. */
@@ -87,10 +87,11 @@ int main (void)
 	unsigned pagenum = 0;
 	unsigned up_pressed = 0, left_pressed = 0;
 	unsigned right_pressed = 0, down_pressed = 0;
+	extern gpanel_font_t font_cronyxcourier9;
 
 	debug_puts ("\nTesting LCD.\n");
 	buttons_init ();
-	gpanel_init (&display);
+	gpanel_init (&display, &font_cronyxcourier9);
 
 	draw (pagenum);
 

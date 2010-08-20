@@ -3746,7 +3746,7 @@ static const unsigned short lucidasans7_bits[] = {
 };
 
 /* Character->glyph mapping. */
-static const unsigned long lucidasans7_offset[] = {
+static const unsigned short lucidasans7_offset[] = {
   0,	/* (0x20) */
   9,	/* (0x21) */
   18,	/* (0x22) */

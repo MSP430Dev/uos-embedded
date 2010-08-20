@@ -33,5 +33,30 @@ verdana7.c:	convbdf
 6x9.c:		convbdf
 		./convbdf -c -u0 -l0x44f -x0xa0-0x40f 6x9.bdf
 
+cronyxcourier9.c: convbdf
+		perl bdfrecode.pl -table=koi8-unicode.txt < crox1c.bdf > cronyxcourier9.bdf
+		./convbdf -c -u1 -a1 cronyxcourier9.bdf
+		rm -f cronyxcourier9.bdf
+
+cronyxhelvetica9.c: convbdf
+		perl bdfrecode.pl -table=koi8-unicode.txt < crox1h.bdf > cronyxhelvetica9.bdf
+		./convbdf -c -u1 -a1 cronyxhelvetica9.bdf
+		rm -f cronyxhelvetica9.bdf
+
+cronyxtimes9.c:	convbdf crox1t.bdf
+		perl bdfrecode.pl -table=koi8-unicode.txt < crox1t.bdf > cronyxtimes9.bdf
+		./convbdf -c -u1 -a1 cronyxtimes9.bdf
+		rm -f cronyxtimes9.bdf
+
+font7x9.c:	convbdf bdfrecode.pl full-table.txt koi6x10.bdf
+		perl bdfrecode.pl -table=koi8-unicode.txt < koi6x10.bdf > font6x10.bdf
+		./convbdf -c -a1 -o $@ font6x10.bdf
+		rm -f font6x10.bdf
+
+font6x9.c:	convbdf bdfrecode.pl full-table.txt koi6x10.bdf
+		perl bdfrecode.pl -table=koi8-unicode.txt < koi6x10.bdf > font6x10.bdf
+		./convbdf -c -a1 -o $@ font6x10.bdf
+		rm -f font6x10.bdf
+
 clean:
 		-rm -f *~ png2rgb convbdf lucidasans11.bdf

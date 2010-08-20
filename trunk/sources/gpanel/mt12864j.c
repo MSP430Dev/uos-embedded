@@ -61,7 +61,7 @@ void gpanel_contrast (gpanel_t *gp, int contrast)
  * Internally, the controller has 132x132 pixels.
  * But visible area is only 130x130.
  */
-void gpanel_init (gpanel_t *gp)
+void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 {
 	extern stream_interface_t gpanel_interface;
 	int x;
@@ -69,7 +69,7 @@ void gpanel_init (gpanel_t *gp)
 	gp->interface = &gpanel_interface;
 	gp->nrow = 63;
 	gp->ncol = 127;
-	gp->font = &font_lucidasans7;
+	gp->font = font;
 	gp->foreground = GPANEL_WHITE;
 	gp->background = GPANEL_BLACK;
 	gp->contrast = 0x38;

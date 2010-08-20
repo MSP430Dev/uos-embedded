@@ -85,14 +85,14 @@ static inline void write_data (unsigned data)
  * Internally, the controller has 132x132 pixels.
  * But visible area is only 130x130.
  */
-void gpanel_init (gpanel_t *gp)
+void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 {
 	extern stream_interface_t gpanel_interface;
 
 	gp->interface = &gpanel_interface;
 	gp->nrow = 130;
 	gp->ncol = 130;
-	gp->font = &font_lucidasans11;
+	gp->font = font;
 	gp->foreground = GPANEL_WHITE;
 	gp->background = GPANEL_BLACK;
 	gp->contrast = 0x38;

@@ -9,7 +9,7 @@ typedef struct {
         int             firstchar;	/* first character in bitmap*/
         int             size;		/* font size in characters*/
         const unsigned short *bits;	/* 16-bit right-padded bitmap data*/
-        const unsigned long *offset;	/* offsets into bitmap data*/
+        const unsigned short *offset;	/* offsets into bitmap data*/
         const unsigned char *width;	/* character widths or 0 if fixed*/
         int             defaultchar;	/* default char (not glyph index)*/
         long            bits_size;	/* # words of bits*/
@@ -43,7 +43,7 @@ typedef struct {
 #define GPANEL_ORANGE	0xFA0
 #define GPANEL_PINK	0xF6A
 
-void gpanel_init (gpanel_t *lcd);
+void gpanel_init (gpanel_t *lcd, gpanel_font_t *font);
 void gpanel_backlight (gpanel_t *lcd, int on);
 void gpanel_contrast (gpanel_t *lcd, int contrast);
 void gpanel_pixel (gpanel_t *lcd, int x, int y, int color);
@@ -59,6 +59,3 @@ void gpanel_clear (gpanel_t *lcd, unsigned color);
 void gpanel_move (gpanel_t *lcd, int x, int y);
 void gpanel_color (gpanel_t *lcd, int fg, int bg);
 int gpanel_text_width (gpanel_t *lcd, const unsigned char *text);
-
-extern gpanel_font_t font_lucidasans11;
-extern gpanel_font_t font_lucidasans7;
