@@ -20,19 +20,14 @@ void draw (unsigned page)
 		/* Show text. */
 		y = 0;
 		gpanel_move (&display, 0, y);
-		puts (&display, "Десять негритят");
-		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "отправились обедать,");
-		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Один поперхнулся,");
-		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "их осталось девять.");
-		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Девять негритят,");
-		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "поев, клевали носом,");
-		gpanel_move (&display, 0, y += display.font->height);
-		puts (&display, "Один не смог проснуться,");
+		puts (&display, "Десять негритят\r\n");
+		puts (&display, "отправились обедать,\r\n");
+		puts (&display, "Один поперхнулся,\r\n");
+		puts (&display, "их осталось девять.\r\n");
+		puts (&display, "Девять негритят,\r\n");
+		puts (&display, "поев, клевали носом,\r\n");
+		puts (&display, "Один не проснулся,\r\n");
+		puts (&display, "их осталось восемь.");
 		break;
 	case 1:
 		/* Boxes. */
@@ -87,11 +82,11 @@ int main (void)
 	unsigned pagenum = 0;
 	unsigned up_pressed = 0, left_pressed = 0;
 	unsigned right_pressed = 0, down_pressed = 0;
-	extern gpanel_font_t font_cronyxcourier9;
+	extern gpanel_font_t font_fixed6x8;
 
 	debug_puts ("\nTesting LCD.\n");
 	buttons_init ();
-	gpanel_init (&display, &font_cronyxcourier9);
+	gpanel_init (&display, &font_fixed6x8);
 
 	draw (pagenum);
 

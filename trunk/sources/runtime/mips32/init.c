@@ -174,7 +174,8 @@ void __attribute ((noreturn))_init_ (void)
 	 * Assume we have 80 MHz cpu clock.
 	 */
 #ifdef ELVEES_MC24
-	divisor = MC_DL_BAUD (ELVEES_CLKIN * 1000, 115200);
+/*	divisor = MC_DL_BAUD (ELVEES_CLKIN * 1000, 115200);*/
+	divisor = MC_DL_BAUD (KHZ * 1000, 115200);
 #endif
 #ifdef ELVEES_NVCOM01
 	divisor = MC_DL_BAUD (KHZ * 1000, 115200);

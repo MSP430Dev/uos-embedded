@@ -214,7 +214,11 @@ static void gpanel_putchar (gpanel_t *gp, short c)
 		/* Fixed width font. */
 		width = gp->font->maxwidth;
 	}
-	bits = gp->font->bits + gp->font->offset [cindex];
+	if (gp->font->offset) {
+		bits = gp->font->bits + gp->font->offset [cindex];
+	} else {
+		bits = gp->font->bits + cindex * gp->font->height;
+	}
 
 	/* Scrolling. */
 	if (gp->col > gp->ncol - width) {

@@ -58,5 +58,8 @@ font6x9.c:	convbdf bdfrecode.pl full-table.txt koi6x10.bdf
 		./convbdf -c -a1 -o $@ font6x10.bdf
 		rm -f font6x10.bdf
 
+convfont:	convfont.c phyton_6x8.c
+		$(CC) $(CFLAGS) -DFONTNAME=Font_6x8 -DFONTFILE=\"phyton_6x8.c\" convfont.c -o $@
+
 clean:
-		-rm -f *~ png2rgb convbdf lucidasans11.bdf
+		-rm -f *~ png2rgb convbdf convfont lucidasans11.bdf

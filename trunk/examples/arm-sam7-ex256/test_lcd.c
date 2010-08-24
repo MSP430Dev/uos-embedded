@@ -176,7 +176,9 @@ void poll_buttons (void *arg)
 
 void uos_init (void)
 {
+	extern gpanel_font_t font_lucidasans11;
+
 	/*debug_puts ("\nTesting LCD.\n");*/
-	gpanel_init (&display);
+	gpanel_init (&display, &font_lucidasans11);
 	task_create (poll_buttons, 0, "poll", 1, task, sizeof (task));
 }
