@@ -1,13 +1,20 @@
-file test-debug.out
+file test-task.elf
 target extended-remote localhost:2000
 set remote hardware-breakpoint-limit 6
 set remote hardware-watchpoint-limit 4
 
-#b os_halt
+monitor soft_reset_halt
+#monitor reg sp 0x20008000
+#monitor reg pc 0x080000c0
+#si
+
+hbreak arch_task_switch
+c
 
 define as
-set $old = $pc*2
+set $old = $pc
 si
-x/3i ($old+2==$pc*2 || $old+4==$pc*2) ? $old : $pc*2-2
-regs
+x/i $old
+x/i $pc
+i reg
 end

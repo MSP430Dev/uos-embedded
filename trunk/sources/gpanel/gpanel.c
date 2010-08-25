@@ -164,8 +164,9 @@ static void gpanel_putchar (gpanel_t *gp, short c)
 	const unsigned short *bits;
 
 	switch (c) {
-	case '\n':		/* ignore line feeds */
+	case '\n':		/* goto next line */
 		gp->row += gp->font->height;
+		gp->col = 0;
 		return;
 	case '\t':		/* tab replaced by space */
 		c = ' ';

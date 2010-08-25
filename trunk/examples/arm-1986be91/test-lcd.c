@@ -110,7 +110,7 @@ int main (void)
 		else if (! down_pressed) {
 			down_pressed = 1;
 
-			/* Up: ??? */
+			/* Down: ??? */
 		}
 
 		if (! joystick_left ())

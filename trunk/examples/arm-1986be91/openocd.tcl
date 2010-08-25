@@ -30,14 +30,26 @@ board.cpu configure -work-area-phys 0x20000000 -work-area-size 0x4000 -work-area
 
 #flash bank board.flash stm32x 0 0 0 0 board.cpu
 
-#init #-----------------
+init #-----------------
 #scan_chain
 #targets
 #flash banks
 #poll
 
-#halt
-#reg
+#soft_reset_halt
+#reset halt
+#reg pc 0x080000c1
+#arm disassemble 0x080000c0 1
+
+#step
+#reg pc
+#arm disassemble 0x080000c4 1
+
+#step
+#reg pc
+
+#step
+#reg pc
 
 #mww 0x20000000 0x12345678
 #mdw 0x20000000 8
@@ -49,3 +61,5 @@ board.cpu configure -work-area-phys 0x20000000 -work-area-size 0x4000 -work-area
 #debug_level 3
 #proc ocd_init {} {exit}
 #echo {*** exit}
+
+#exit

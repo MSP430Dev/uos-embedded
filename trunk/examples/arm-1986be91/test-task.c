@@ -3,22 +3,36 @@
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
+#include <stream/stream.h>
+#include <gpanel/gpanel.h>
+#include "board-1986be91.h"
 
-ARRAY (task, 400);
+ARRAY (task, 1000);
+gpanel_t display;
+
+extern gpanel_font_t font_fixed6x8;
 
 void hello (void *arg)
 {
 	for (;;) {
-		debug_printf ("Hello from `%s'!\n", arg);
-		debug_printf ("Task space %d bytes, free %d bytes\n",
-			sizeof (task), task_stack_avail ((task_t*) task));
-		debug_printf ("(Press Enter)\n");
-		debug_getchar ();
+		printf (&display, "Hello from `%s'!\n", arg);
+		printf (&display, "Task space %d bytes.\n",
+			sizeof (task));
+		printf (&display, "Free %d bytes.\n",
+			task_stack_avail ((task_t*) task));
+		printf (&display, "(Press DOWN)\n");
+
+		while (! joystick_down ())
+			mdelay (20);
 	}
 }
 
 void uos_init (void)
 {
-	debug_puts ("\nTesting task.\n");
+	buttons_init ();
+	gpanel_init (&display, &font_fixed6x8);
+	gpanel_clear (&display, 0);
+	puts (&display, "Testing task.\r\n");
+
 	task_create (hello, "task", "hello", 1, task, sizeof (task));
 }

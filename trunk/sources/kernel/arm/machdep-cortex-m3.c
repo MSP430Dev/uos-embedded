@@ -1,7 +1,7 @@
 /*
- * Machine-dependent part of uOS for: ARM7TDMI (Samsung S3C4530A), GCC.
+ * Machine-dependent part of uOS for: ARM Cortex-M3, GCC.
  *
- * Copyright (C) 2000-2005 Serge Vakulenko, <vak@cronyx.ru>
+ * Copyright (C) 2010 Serge Vakulenko, <vak@cronyx.ru>
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -25,27 +25,13 @@
  */
 void arch_task_switch (task_t *target)
 {
-	/* Save all registers in stack. */ \
+	/* Save all registers in stack. */
 	asm volatile (
-#if __thumb__
-	".balignw 4, 0x46c0 \n"
-"	bx	pc \n"			/* switch to ARM mode */
-"	nop \n"
-"	.code	32 \n\t"
-#endif
-	"push	{lr} \n"		/* pc */
-"	mrs	lr, cpsr \n"
-#if __thumb__
-"	orr	lr, lr, #0x20 \n"	/* thumb mode */
-#endif
-"	push	{lr} \n"		/* cpsr (from lr) */
-"	push	{r0-r12,lr}"		/* save r0-r12,lr */
-#if __thumb__
-"\n	ldr	lr, [pc] \n"		/* switch back to Thumb mode */
-"	bx	lr \n"
-"	.word	.+5 \n"
-"	.code	16"
-#endif
+	"mrs	r12, apsr \n"
+"	push	{r12} \n"		/* psr (from r12) */
+"	push	{lr} \n"		/* pc */
+"	push	{r0-r3,r12,lr} \n"	/* save r0-r3,r12,lr */
+"	push	{r4-r11}"		/* save r4-r11 */
 	);
 
 	/* Save current task stack. */
@@ -56,29 +42,22 @@ void arch_task_switch (task_t *target)
 	/* Switch to the new task. */
 	arm_set_stack_pointer (task_current->stack_context);
 
-	/* Restore registers. */
-	asm volatile (
-#if __thumb__
-	".balignw 4, 0x46c0 \n"
-"	bx	pc \n"			/* switch to ARM mode */
-"	nop \n"
-"	.code	32 \n"
-#endif
-"	.globl	restore_regs \n"
-"restore_regs: \n"
-"	pop	{r0-r2} \n"	/* load r0-r2 */
-"	ldr	lr, =_irq_stack_+12 \n"
-"	stmdb	lr, {r0-r2} \n"		/* save r0-r2 to irq stack */
-"	pop	{r3-r12, lr} \n"	/* load r3-r12, lr */
-"	pop	{r0,r1} \n"		/* load saved cpsr,pc to r0,r1 */
-"	mrs	r2, cpsr \n"		/* move cpsr to r0 */
-"	bic	r2, r2, #1 \n"
-"	msr	cpsr, r2 \n"		/* switch to irq mode */
-"	msr	spsr, r0 \n"		/* restore spsr */
-"	mov	lr, r1 \n"		/* restore lr */
-"	ldmdb	sp, {r0-r2} \n"		/* load saved r0,r1 */
-"	movs	pc, lr"			/* changes mode and branches */
-	);
+	if (arm_get_ipsr() != 0) {
+		/* Return from exception. */
+		asm volatile (
+	"	pop	{r4-r11} \n"		/* load r4-r11 */
+	"	mov	lr, #0xFFFFFFF9 \n"	/* thread mode, main stack */
+	"	bx	lr"			/* return from exception */
+		);
+	} else {
+		/* Enter task. */
+		asm volatile (
+	"	pop	{r4-r11} \n"		/* load r4-r11 */
+	"	pop	{r0-r3,r12,lr} \n"	/* load r0-r3,r12,lr */
+	"	pop	{r0-r1} \n"		/* load pc, psr */
+	"	bx	r0"			/* return from function */
+		);
+	}
 }
 
 /*
@@ -94,24 +73,13 @@ _irq_handler_ (void)
 
 	for (;;) {
 		/* Get the current irq number */
-#ifdef ARM_S3C4530
-		irq = ARM_INTOFFSET_IRQ >> 2;
-#endif
-#ifdef ARM_AT91SAM
-		irq = *AT91C_AIC_IVR;		/* get most priority irq */
-		*AT91C_AIC_EOICR = 0;		/* clear it */
-#endif
+//		irq = ???;
 		if (irq >= ARCH_INTERRUPTS)
 			break;
 
 		/* Disable the irq, to avoid loops */
-#ifdef ARM_S3C4530
-		ARM_INTPND = 1 << irq;		/* clear pending irq */
-		ARM_INTMSK |= 1 << irq;		/* disable */
-#endif
-#ifdef ARM_AT91SAM
-		*AT91C_AIC_IDCR = 1 << irq;	/* disable */
-#endif
+//		ARM_INTPND = 1 << irq;		/* clear pending irq */
+
 /*debug_printf ("<%d> ", irq);*/
 		h = &mutex_irq [irq];
 		if (! h->lock)
@@ -131,11 +99,11 @@ _irq_handler_ (void)
 				 * there is no need to wake up the interrupt
 				 * servicing task, stopped on mutex_wait.
 				 * Task switching is not performed. */
-#ifdef ARM_S3C4530
-				if (irq == 4 || irq == 6) {
-					/* Enable UART transmit irq. */
-					ARM_INTMSK &= ~(1 << irq);
-				}
+#ifdef ARM_1986BE9
+//				if (irq == 4 || irq == 6) {
+//					/* Enable UART transmit irq. */
+//					ARM_INTMSK &= ~(1 << irq);
+//				}
 #endif
 				continue;
 			}
@@ -160,18 +128,10 @@ _irq_handler_ (void)
 	}
 
 	/* Restore registers. */
-#if __thumb__
 	asm volatile (
-	".globl restore_regs \n"
-"	ldr	r0, =restore_regs \n"
-"	bx	r0"
-	);
-#else
-	asm volatile (
-	".globl	restore_regs \n"
-"	b	restore_regs"
-	);
-#endif
+	"pop	{r4-r11} \n"		/* load r4-r11 */
+"	mov	lr, #0xFFFFFFF9 \n"	/* thread mode, main stack */
+"	bx	lr");			/* return from exception */
 }
 
 /*
@@ -180,15 +140,8 @@ _irq_handler_ (void)
  */
 void arch_intr_allow (int irq)
 {
-#ifdef ARM_S3C4530
-	if (irq == 4 || irq == 6) {
-		/* Do not enable UART transmit interrupt here. */
-		return;
-	}
-	ARM_INTMSK &= ~(1 << irq);
-#endif
-#ifdef ARM_AT91SAM
-	*AT91C_AIC_IECR = 1 << irq;
+#ifdef ARM_1986BE9
+//	*AT91C_AIC_IECR = 1 << irq;
 /*debug_printf ("<IECR:=%x> ", 1 << irq);*/
 #endif
 }
@@ -207,14 +160,14 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 {
 	unsigned *sp = (unsigned*) ((char*) t + stacksz);
 
+	*--sp = 0;			/* psr */
 	*--sp = (unsigned) func;	/* pc - callee address */
-#if __thumb__
-	*--sp = 0x73;			/* cpsr - thumb, enable interrupts, svc mode */
-#else
-	*--sp = 0x53;			/* cpsr - enable interrupts, svc mode */
-#endif
 	*--sp = 0;			/* lr */
 	*--sp = 0;			/* r12 */
+	*--sp = 0;			/* r3 */
+	*--sp = 0;			/* r2 */
+	*--sp = 0;			/* r1 */
+	*--sp = (unsigned) arg;		/* r0 - task argument */
 	*--sp = 0;			/* r11 */
 	*--sp = 0;			/* r10 */
 	*--sp = 0;			/* r9 */
@@ -223,10 +176,31 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* r6 */
 	*--sp = 0;			/* r5 */
 	*--sp = 0;			/* r4 */
-	*--sp = 0;			/* r3 */
-	*--sp = 0;			/* r2 */
-	*--sp = 0;			/* r1 */
-	*--sp = (unsigned) arg;		/* r0 - task argument */
 
 	t->stack_context = (void*) sp;
 }
+
+/*
+  Integrity checks are provided to check the following conditions on an exception return:
+
+  * The Exception Number being returned from (as held in the IPSR at
+    the start of the return) must be listed in the SCB as being active.
+
+  * If no exceptions other than the returning exception are active,
+    the mode being returned to must be Thread mode. This checks for
+    a mismatch of the number of exception returns.
+
+  * If at least one exception other than the returning exception is active,
+    under normal circumstances the mode being returned to must be Handler mode.
+    This checks for a mismatch of the number of exception returns.
+    This check can be disabled using the NONBASETHRDENA control bit in the SCB.
+
+  * On return to Thread mode, the Exception Number restored into the IPSR must be 0.
+
+  * On return to Handler mode, the Exception Number restored into the IPSR must not be 0.
+
+  * The EXC_RETURN[3:0] must not be listed as reserved in Table B1-8 on page B1-26.
+
+  An exception return error causes an INVPC UsageFault, with the illegal
+  EXC_RETURN value in the link register (LR).
+ */

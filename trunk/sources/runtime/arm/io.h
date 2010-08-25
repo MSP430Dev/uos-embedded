@@ -150,3 +150,17 @@ arm_bus_yield ()
 #endif
 	: "=r" (tmp1), "=r" (tmp2) : : "cc");
 }
+
+/*
+ * Read IPSR register.
+ */
+static inline __attribute__ ((always_inline))
+unsigned arm_get_ipsr ()
+{
+	unsigned x;
+
+	asm volatile (
+	"mrs	%0, ipsr"
+	: "=r" (x));
+	return x;
+}
