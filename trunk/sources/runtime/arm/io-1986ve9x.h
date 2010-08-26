@@ -68,6 +68,66 @@ typedef struct
 #define ARM_SYSTICK_CTRL_ENABLE		(1 << 0)  /* пуск таймера */
 
 /*------------------------------------------------------
+ * NVIC interrupt controller
+ */
+typedef struct
+{
+	arm_reg_t CPUID;	/* Идентификация процессора */
+	arm_reg_t ICSR;		/* Управление прерываниями */
+	arm_reg_t VTOR;		/* Смещение таблицы векторов прерываний */
+	arm_reg_t AIRCR;	/* Управление прерываниями и программного сброса */
+	arm_reg_t SCR;		/* Управление системой */
+	arm_reg_t CCR;		/* Конфигурация и управление */
+	arm_reg_t SHPR1;	/* Приоритет №1 системных обработчиков */
+	arm_reg_t SHPR2;	/* Приоритет №2 системных обработчиков */
+	arm_reg_t SHPR3;	/* Приоритет №3 системных обработчиков */
+	arm_reg_t SHCRS;	/* Управление и состояние системных обработчиков */
+	arm_reg_t CFSR;		/* Состояние отказов с конфигурируемым приоритетом */
+	arm_reg_t HFSR;		/* Состояние тяжелого отказа */
+	arm_reg_t UNUSED;	/* DFSR */
+	arm_reg_t MMAR;		/* Адрес отказа доступа к памяти */
+	arm_reg_t BFAR;		/* Адрес отказа доступа к шине */
+} NVIC_t;
+
+#define ARM_NVIC		((NVIC_t*) (ARM_SYSTEM_BASE + 0xED00))
+
+/*
+ * Регистр NVIC AIRCR: управление прерываниями и программный сброс.
+ */
+#define ARM_AIRCR_VECTKEY	(0x05FA << 16)	/* ключ доступа к регистру */
+#define ARM_AIRCR_ENDIANESS	(1 << 15)	/* старший байт идет первым */
+#define ARM_AIRCR_PRIGROUP(n)	((n) << 8)	/* группировка приоритетов исключений */
+#define ARM_AIRCR_SYSRESETREQ	(1 << 2)	/* запрос сброса системы */
+
+/*
+ * Регистр NVIC SHCSR: управление и состояние системных обработчиков.
+ */
+#define ARM_SHCSR_USGFAULTENA	(1 << 18)  /* разрешение обработки отказов,
+					    * вызванных ошибками программирования */
+#define ARM_SHCSR_BUSFAULTENA	(1 << 17)  /* разрешение обработки отказа доступа к шине */
+#define ARM_SHCSR_MEMFAULTENA	(1 << 16)  /* разрешение обработки отказа доступа к памяти */
+#define ARM_SHCSR_SVCALLPENDED	(1 << 15)  /* признак ожидания обработки вызова SVC */
+#define ARM_SHCSR_BUSFAULTPENDED (1 << 14) /* признак ожидания обработки отказа
+					    * доступа к шине */
+#define ARM_SHCSR_MEMFAULTPENDED (1 << 13) /* признак ожидания обработки отказа
+					    * доступа к памяти */
+#define ARM_SHCSR_USGFAULTPENDED (1 << 12) /* признак ожидания обработки отказа,
+					    * вызванного ошибками программирования */
+#define ARM_SHCSR_SYSTICKACT	(1 << 11)  /* признак активности обработчика
+					    * исключения SysTick */
+#define ARM_SHCSR_PENDSVACT	(1 << 10)  /* признак активности обработчика
+					    * исключения PendSV */
+#define ARM_SHCSR_MONITORACT	(1 << 8)   /* признак активности монитора отладчика */
+#define ARM_SHCSR_SVCALLACT	(1 << 7)   /* признак активности обработчика
+					    * вызова SVC */
+#define ARM_SHCSR_USGFAULTACT	(1 << 3)   /* признак активности обработчика
+					    * отказа, вызванного ошибкой программирования */
+#define ARM_SHCSR_BUSFAULTACT	(1 << 1)   /* признак активности обработчика
+					    * отказа доступа к шине */
+#define ARM_SHCSR_MEMFAULTACT	(1 << 0)   /* признак активности обработчика
+					    * отказа доступа к памяти */
+
+/*------------------------------------------------------
  * General purpose I/O
  */
 typedef struct

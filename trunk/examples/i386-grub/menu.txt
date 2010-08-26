@@ -3,52 +3,52 @@ timeout 300
 color cyan/black black/cyan
 
 title t_task
-kernel /t_task.out
+kernel /t_task.elf
 
 title t_timer
-kernel /t_timer.out
+kernel /t_timer.elf
 
 title t_kbd
-kernel /t_kbd.out
+kernel /t_kbd.elf
 
 title t_mouse
-kernel /t_mouse.out
+kernel /t_mouse.elf
 
 title t_pipe
-kernel /t_pipe.out
+kernel /t_pipe.elf
 
 #title t_tcl
-#kernel /t_tcl.out
+#kernel /t_tcl.elf
 
 #title landmine
-#kernel /landmine.out
+#kernel /landmine.elf
 
 #title nterm
-#kernel /nterm.out
+#kernel /nterm.elf
 
 #title ntetris
-#kernel /ntetris.out
+#kernel /ntetris.elf
 
 #title nxclock
-#kernel /nxclock.out
+#kernel /nxclock.elf
 
 title nxdemo
-kernel /nxdemo.out
+kernel /nxdemo.elf
 
 #title nxeyes
-#kernel /nxeyes.out
+#kernel /nxeyes.elf
 
 title nxfont
-kernel /nxfont.out
+kernel /nxfont.elf
 
 title nxinput
-kernel /nxinput.out
+kernel /nxinput.elf
 
 title nxtcl
-kernel /nxtcl.out
+kernel /nxtcl.elf
 
 title polydemo
-kernel /polydemo.out
+kernel /polydemo.elf
 
 #
 # halt/reboot

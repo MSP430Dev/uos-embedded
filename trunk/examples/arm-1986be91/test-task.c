@@ -21,7 +21,7 @@ void hello (void *arg)
 		printf (&display, "Free %d bytes\n",
 			task_stack_avail ((task_t*) task));
 		printf (&display, "(Press DOWN)\n");
-
+//asm volatile (".inst.w 0xe81c0c20");
 		while (! joystick_down ())
 			mdelay (20);
 	}

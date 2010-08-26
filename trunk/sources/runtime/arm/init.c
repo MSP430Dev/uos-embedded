@@ -118,58 +118,6 @@ _init_ (void)
 		continue;
 #endif /* ARM_AT91SAM && !AT91BOOTSTRAP */
 
-#ifdef ARM_1986BE9
-	/* Enable JTAG A and B debug ports. */
-//	ARM_BACKUP->BKP_REG_0E |= ARM_BKP_REG_0E_JTAG_A | ARM_BKP_REG_0E_JTAG_B;
-//	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOB;
-
-	/* Enable HSE generator. */
-	ARM_RSTCLK->HS_CONTROL = ARM_HS_CONTROL_HSE_ON;
-	while (! (ARM_RSTCLK->CLOCK_STATUS & ARM_CLOCK_STATUS_HSE_RDY))
-		continue;
-
-	/* Use HSE for CPU_C1 clock. */
-	ARM_RSTCLK->CPU_CLOCK = ARM_CPU_CLOCK_C1_HSE;
-
-	/* Setup PLL for CPU. */
-	ARM_RSTCLK->PLL_CONTROL = ARM_PLL_CONTROL_CPU_MUL (KHZ / KHZ_CLKIN);
-	ARM_RSTCLK->PLL_CONTROL = ARM_PLL_CONTROL_CPU_MUL (KHZ / KHZ_CLKIN) |
-		ARM_PLL_CONTROL_CPU_ON;
-	ARM_RSTCLK->PLL_CONTROL = ARM_PLL_CONTROL_CPU_MUL (KHZ / KHZ_CLKIN) |
-		ARM_PLL_CONTROL_CPU_ON | ARM_PLL_CONTROL_CPU_RLD;
-	ARM_RSTCLK->PLL_CONTROL = ARM_PLL_CONTROL_CPU_MUL (KHZ / KHZ_CLKIN) |
-		ARM_PLL_CONTROL_CPU_ON;
-	while (! (ARM_RSTCLK->CLOCK_STATUS & ARM_CLOCK_STATUS_PLL_CPU_RDY))
-		continue;
-
-	/* Use PLLCPUo for CPU_C2, CPU_C3 and HCLK. */
-	ARM_RSTCLK->CPU_CLOCK = ARM_CPU_CLOCK_HCLK_C3 |
-				ARM_CPU_CLOCK_C3_C2 |
-				ARM_CPU_CLOCK_C2_PLLCPUO |
-				ARM_CPU_CLOCK_C1_HSE;
-
-        /* Set UART2 for debug output. */
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOF;	// вкл. тактирования PORTF
-	ARM_GPIOF->FUNC |= ARM_FUNC_REDEF(0) |		// переопределенная функция для
-			   ARM_FUNC_REDEF(1);		// PF0(UART2_RXD) и PF1(UART2_TXD)
-	ARM_GPIOF->ANALOG |= 3;				// цифровые выводы
-	ARM_GPIOF->PWR &= ~(ARM_PWR_MASK(0) || ARM_PWR_MASK(1));
-	ARM_GPIOF->PWR |= ARM_PWR_SLOW(0) | ARM_PWR_SLOW(1);
-
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART2;	// вкл. тактирования UART2
-	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN2 |	// разрешаем тактирование UART2
-		ARM_UART_CLOCK_BRG2(2);			// HCLK/4 (20 МГц)
-
-	/* Set baud rate divisor: 115200 bit/sec. */
-	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/8, 115200);
-	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/8, 115200);
-
-	/* Enable UART2, transmiter only. */
-	ARM_UART2->LCR_H = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
-	ARM_UART2->CR = ARM_UART_CR_UARTEN |		// пуск приемопередатчика
-			ARM_UART_CR_TXE;		// передача разрешена
-#endif /* ARM_1986BE9 */
-
 #ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
@@ -302,28 +250,6 @@ watchdog_alive ()
 #endif
 }
 
-#if __thumb2__
-void _fault_ ()
-{
-	debug_printf ("\n\n*** fault\n\n");
-	/* TODO */
-	debug_printf ("\nReset...\n\n");
-	asm volatile ("ldr r0, =0 \n bx r0");
-}
-
-void _unexpected_interrupt_ ()
-{
-	debug_printf ("\n\n*** unexpected_interrupt\n\n");
-	/* TODO */
-	debug_printf ("\nReset...\n\n");
-	asm volatile ("ldr r0, =0 \n bx r0");
-}
-
-void __attribute ((weak))
-_svc_ ()
-{
-}
-#else
 unsigned long _dump_stack_ [13];
 
 static void dump_of_death (unsigned long pc, unsigned long cpsr, unsigned long lr)
@@ -369,4 +295,3 @@ void _abort_handler_ (unsigned long pc, unsigned long cpsr, unsigned long lr)
 	debug_printf ("\n\n*** 0x%08x: data access exception\n", pc);
 	dump_of_death (pc, cpsr, lr);
 }
-#endif /*__thumb2__*/

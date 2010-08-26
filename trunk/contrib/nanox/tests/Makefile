@@ -6,15 +6,15 @@ vpath %.c . tuxchess nbreaker
 
 CFLAGS		+= -I$(OS)/contrib -I$(OS)/contrib/posix
 
-OUTS		+= nxtcl.out
-OUTS		+= nxdemo.out
-OUTS		+= polydemo.out
-OUTS		+= nxfont.out
-OUTS		+= nxinput.out
-#OUTS		+= nxclock.out
-#OUTS		+= landmine.out
-#OUTS		+= ntetris.out
-#OUTS		+= nxeyes.out
+OUTS		+= nxtcl.elf
+OUTS		+= nxdemo.elf
+OUTS		+= polydemo.elf
+OUTS		+= nxfont.elf
+OUTS		+= nxinput.elf
+#OUTS		+= nxclock.elf
+#OUTS		+= landmine.elf
+#OUTS		+= ntetris.elf
+#OUTS		+= nxeyes.elf
 
 OBJS		 = nterm.o tcl.o uos.o
 OBJS		+= landmine.o ntetris.o nxclock.o nxeyes.o
@@ -28,49 +28,49 @@ all:		$(OUTS) $(TESTS)
 
 img:		$(OUTS)
 		strip $(OUTS)
-		mcopy -Do -ia.img nxtcl.out ::nxtcl
-#		mcopy -Do -ia.img nxdemo.out ::nxdemo
-#		mcopy -Do -ia.img nxinput.out ::nxdemo
-#		mcopy -Do -ia.img nxclock.out ::nxclock
-#		mcopy -Do -ia.img landmine.out ::landmine
-#		mcopy -Do -ia.img ntetris.out ::ntetris
+		mcopy -Do -ia.img nxtcl.elf ::nxtcl
+#		mcopy -Do -ia.img nxdemo.elf ::nxdemo
+#		mcopy -Do -ia.img nxinput.elf ::nxdemo
+#		mcopy -Do -ia.img nxclock.elf ::nxclock
+#		mcopy -Do -ia.img landmine.elf ::landmine
+#		mcopy -Do -ia.img ntetris.elf ::ntetris
 
 grub:		$(OUTS)
 		strip $(OUTS)
-		mv nxclock.out nxclock
-		mv nxdemo.out nxdemo
-#		mv nxfont.out nxfont
+		mv nxclock.elf nxclock
+		mv nxdemo.elf nxdemo
+#		mv nxfont.elf nxfont
 
 clean:
-		rm -f *.out *.[osi] *.lst *.dis *~
+		rm -f *.elf *.[osi] *.lst *.dis *~
 		$(MAKE) -Cnbreaker clean
 		$(MAKE) -Ctuxchess clean
 
-nxtcl.out:	$(OBJS)
+nxtcl.elf:	$(OBJS)
 		$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
 
-landmine.out:	landmine.o uos.o
+landmine.elf:	landmine.o uos.o
 		$(CC) $(LDFLAGS) $*.o uos.o $(LIBS) -o $@
 
-ntetris.out:	ntetris.o uos.o
+ntetris.elf:	ntetris.o uos.o
 		$(CC) $(LDFLAGS) $*.o uos.o $(LIBS) -o $@
 
-nxclock.out:	nxclock.o uos.o
+nxclock.elf:	nxclock.o uos.o
 		$(CC) $(LDFLAGS) $*.o uos.o $(LIBS) -o $@
 
-nxeyes.out:	nxeyes.o uos.o
+nxeyes.elf:	nxeyes.o uos.o
 		$(CC) $(LDFLAGS) $*.o uos.o $(LIBS) -o $@
 
-nxfont.out:	nxfont.o uos.o
+nxfont.elf:	nxfont.o uos.o
 		$(CC) $(LDFLAGS) $*.o uos.o $(LIBS) -o $@
 
-polydemo.out:	polydemo.o uos.o
+polydemo.elf:	polydemo.o uos.o
 		$(CC) $(LDFLAGS) $*.o uos.o $(LIBS) -o $@
 
-nxinput.out:	nxinput.o
+nxinput.elf:	nxinput.o
 		$(CC) $(LDFLAGS) $*.o $(LIBS) -o $@
 
-nxdemo.out:	nxdemo.o
+nxdemo.elf:	nxdemo.o
 		$(CC) $(LDFLAGS) $*.o $(LIBS) -o $@
 
 images.o:	tuxchess/images.c tuxchess/images.h
