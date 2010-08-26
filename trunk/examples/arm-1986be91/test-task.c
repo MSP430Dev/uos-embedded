@@ -16,9 +16,9 @@ void hello (void *arg)
 {
 	for (;;) {
 		printf (&display, "Hello from `%s'!\n", arg);
-		printf (&display, "Task space %d bytes.\n",
+		printf (&display, "Task space %d bytes\n",
 			sizeof (task));
-		printf (&display, "Free %d bytes.\n",
+		printf (&display, "Free %d bytes\n",
 			task_stack_avail ((task_t*) task));
 		printf (&display, "(Press DOWN)\n");
 

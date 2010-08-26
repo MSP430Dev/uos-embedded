@@ -21,18 +21,13 @@
 #include "kernel/internal.h"
 
 /*
- * Perform the task switch.
+ * Supervisor call exception handler: do the task switch.
  */
-void arch_task_switch (task_t *target)
+void __attribute__ ((naked))
+_svc_ (task_t *target)
 {
-	/* Save all registers in stack. */
-	asm volatile (
-	"mrs	r12, apsr \n"
-"	push	{r12} \n"		/* psr (from r12) */
-"	push	{lr} \n"		/* pc */
-"	push	{r0-r3,r12,lr} \n"	/* save r0-r3,r12,lr */
-"	push	{r4-r11}"		/* save r4-r11 */
-	);
+	/* Save registers R4-R11 in stack. */
+	asm volatile ("push	{r4-r11}");
 
 	/* Save current task stack. */
 	task_current->stack_context = arm_get_stack_pointer ();
@@ -42,22 +37,8 @@ void arch_task_switch (task_t *target)
 	/* Switch to the new task. */
 	arm_set_stack_pointer (task_current->stack_context);
 
-	if (arm_get_ipsr() != 0) {
-		/* Return from exception. */
-		asm volatile (
-	"	pop	{r4-r11} \n"		/* load r4-r11 */
-	"	mov	lr, #0xFFFFFFF9 \n"	/* thread mode, main stack */
-	"	bx	lr"			/* return from exception */
-		);
-	} else {
-		/* Enter task. */
-		asm volatile (
-	"	pop	{r4-r11} \n"		/* load r4-r11 */
-	"	pop	{r0-r3,r12,lr} \n"	/* load r0-r3,r12,lr */
-	"	pop	{r0-r1} \n"		/* load pc, psr */
-	"	bx	r0"			/* return from function */
-		);
-	}
+	/* Load registers R4-R11 and return from exception. */
+	asm volatile ("pop	{r4-r11}");
 }
 
 /*
@@ -73,7 +54,7 @@ _irq_handler_ (void)
 
 	for (;;) {
 		/* Get the current irq number */
-//		irq = ???;
+		irq = 0; // ???
 		if (irq >= ARCH_INTERRUPTS)
 			break;
 
@@ -127,11 +108,8 @@ _irq_handler_ (void)
 		}
 	}
 
-	/* Restore registers. */
-	asm volatile (
-	"pop	{r4-r11} \n"		/* load r4-r11 */
-"	mov	lr, #0xFFFFFFF9 \n"	/* thread mode, main stack */
-"	bx	lr");			/* return from exception */
+	/* Load registers R4-R11 and return from exception. */
+	asm volatile ("pop	{r4-r11}");
 }
 
 /*
@@ -160,7 +138,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 {
 	unsigned *sp = (unsigned*) ((char*) t + stacksz);
 
-	*--sp = 0;			/* psr */
+	*--sp = 0x01000000;		/* psr - must set Thumb bit */
 	*--sp = (unsigned) func;	/* pc - callee address */
 	*--sp = 0;			/* lr */
 	*--sp = 0;			/* r12 */
@@ -179,28 +157,3 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 
 	t->stack_context = (void*) sp;
 }
-
-/*
-  Integrity checks are provided to check the following conditions on an exception return:
-
-  * The Exception Number being returned from (as held in the IPSR at
-    the start of the return) must be listed in the SCB as being active.
-
-  * If no exceptions other than the returning exception are active,
-    the mode being returned to must be Thread mode. This checks for
-    a mismatch of the number of exception returns.
-
-  * If at least one exception other than the returning exception is active,
-    under normal circumstances the mode being returned to must be Handler mode.
-    This checks for a mismatch of the number of exception returns.
-    This check can be disabled using the NONBASETHRDENA control bit in the SCB.
-
-  * On return to Thread mode, the Exception Number restored into the IPSR must be 0.
-
-  * On return to Handler mode, the Exception Number restored into the IPSR must not be 0.
-
-  * The EXC_RETURN[3:0] must not be listed as reserved in Table B1-8 on page B1-26.
-
-  An exception return error causes an INVPC UsageFault, with the illegal
-  EXC_RETURN value in the link register (LR).
- */

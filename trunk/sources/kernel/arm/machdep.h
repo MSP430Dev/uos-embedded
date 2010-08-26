@@ -57,7 +57,19 @@ void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 /*
  * Perform the task switch.
  */
+#ifdef ARM_CORTEX_M3
+static inline void
+arch_task_switch (task_t *target)
+{
+	/* Use supervisor call for task switching. */
+	asm volatile (
+	"mov	r0, %0 \n\t"
+	"svc	#0"
+	: : "r" (target) : "r0", "memory", "cc");
+}
+#else
 void arch_task_switch (task_t *target);
+#endif
 
 /*
  * The global interrupt control.

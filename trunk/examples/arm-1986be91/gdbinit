@@ -8,7 +8,9 @@ monitor soft_reset_halt
 #monitor reg pc 0x080000c0
 #si
 
-hbreak arch_task_switch
+#hbreak arch_task_switch
+#hbreak uos_init
+hbreak task_schedule
 c
 
 define as

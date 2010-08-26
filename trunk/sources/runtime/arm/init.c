@@ -318,6 +318,11 @@ void _unexpected_interrupt_ ()
 	debug_printf ("\nReset...\n\n");
 	asm volatile ("ldr r0, =0 \n bx r0");
 }
+
+void __attribute ((weak))
+_svc_ ()
+{
+}
 #else
 unsigned long _dump_stack_ [13];
 

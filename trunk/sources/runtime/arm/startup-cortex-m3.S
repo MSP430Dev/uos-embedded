@@ -23,6 +23,7 @@ _reset_:
 
 		.extern	_unexpected_interrupt_
 		.extern	_fault_
+		.extern	_svc_
 
 @---------------------------------------
 @ Vector table for Cortex M3.
@@ -49,7 +50,7 @@ _start_:	.global	_start_
 		.word	0			@ 8 - reserved
 		.word	0			@ 9 - reserved
 		.word	0			@ 10 - reserved
-		.word	_fault_			@ 11 - supervisor call
+		.word	_svc_			@ 11 - supervisor call
 		.word	0			@ 12 - reserved
 		.word	0			@ 13 - reserved
 		.word	_fault_			@ 14 - software interrupt
