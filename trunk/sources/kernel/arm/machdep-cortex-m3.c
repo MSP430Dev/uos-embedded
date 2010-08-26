@@ -37,8 +37,11 @@ _svc_ (task_t *target)
 	/* Switch to the new task. */
 	arm_set_stack_pointer (task_current->stack_context);
 
-	/* Load registers R4-R11 and return from exception. */
+	/* Load registers R4-R11. */
 	asm volatile ("pop	{r4-r11}");
+
+	/* Return from exception. */
+	asm volatile ("bx	lr");
 }
 
 /*
@@ -49,50 +52,61 @@ _svc_ (task_t *target)
 void __attribute__ ((naked))
 _irq_handler_ (void)
 {
-	mutex_irq_t *h;
+	/* Save registers R4-R11 in stack. */
+	asm volatile ("push	{r4-r11}");
+
+	/* Get the current irq number */
 	int irq;
+	unsigned ipsr = arm_get_ipsr ();
+	if (ipsr == 15) {
+		/* Systick interrupt. */
+		irq = 32;
+//		ARM_SYSTICK->CTRL &= ~ARM_SYSTICK_CTRL_TICKINT;
+//		ARM_SCB->ICSR = 1 << 25; // PENDSTCLR
 
-	for (;;) {
-		/* Get the current irq number */
-		irq = 0; // ???
-		if (irq >= ARCH_INTERRUPTS)
-			break;
+	} else if (ipsr >= 16 && ipsr < 48) {
+		irq = ipsr - 16;
+		ARM_NVIC_ICER0 = 1 << irq;	/* clear pending irq */
+	} else {
+		/* Cannot happen. */
+debug_printf ("<interrupt with ipsr==0> ");
+		goto done;
+	}
 
-		/* Disable the irq, to avoid loops */
-//		ARM_INTPND = 1 << irq;		/* clear pending irq */
+debug_printf ("<%d> ", irq);
+	mutex_irq_t *h = &mutex_irq [irq];
+	if (! h->lock) {
+		/* Cannot happen. */
+debug_printf ("<unexpected interrupt> ");
+		goto done;
+	}
 
-/*debug_printf ("<%d> ", irq);*/
-		h = &mutex_irq [irq];
-		if (! h->lock)
-			continue;
-
-		if (h->handler) {
-			/* If the lock is free -- call fast handler. */
-			if (h->lock->master) {
-				/* Lock is busy -- remember pending irq.
-				 * Call fast handler later, in mutex_unlock(). */
-				h->pending = 1;
-				continue;
-			}
-			if ((h->handler) (h->arg) != 0) {
-				/* The fast handler returns 1 when it fully
-				 * serviced an interrupt. In this case
-				 * there is no need to wake up the interrupt
-				 * servicing task, stopped on mutex_wait.
-				 * Task switching is not performed. */
+	if (h->handler) {
+		/* If the lock is free -- call fast handler. */
+		if (h->lock->master) {
+			/* Lock is busy -- remember pending irq.
+			 * Call fast handler later, in mutex_unlock(). */
+			h->pending = 1;
+			goto done;
+		}
+		if ((h->handler) (h->arg) != 0) {
+			/* The fast handler returns 1 when it fully
+			 * serviced an interrupt. In this case
+			 * there is no need to wake up the interrupt
+			 * servicing task, stopped on mutex_wait.
+			 * Task switching is not performed. */
 #ifdef ARM_1986BE9
-//				if (irq == 4 || irq == 6) {
+//				if (irq == 6 || irq == 7) {
 //					/* Enable UART transmit irq. */
-//					ARM_INTMSK &= ~(1 << irq);
+//					ARM_NVIC_ISER0 = 1 << irq;
 //				}
 #endif
-				continue;
-			}
+			goto done;
 		}
-
-		/* Signal the interrupt handler, if any. */
-		mutex_activate (h->lock, 0);
 	}
+
+	/* Signal the interrupt handler, if any. */
+	mutex_activate (h->lock, 0);
 
 	/* LY: copy few lines of code from task_schedule() here. */
 	if (task_need_schedule)	{
@@ -107,9 +121,12 @@ _irq_handler_ (void)
 			arm_set_stack_pointer (task_current->stack_context);
 		}
 	}
-
-	/* Load registers R4-R11 and return from exception. */
+done:
+	/* Load registers R4-R11. */
 	asm volatile ("pop	{r4-r11}");
+
+	/* Return from exception. */
+	asm volatile ("bx	lr");
 }
 
 /*
@@ -118,10 +135,14 @@ _irq_handler_ (void)
  */
 void arch_intr_allow (int irq)
 {
-#ifdef ARM_1986BE9
-//	*AT91C_AIC_IECR = 1 << irq;
-/*debug_printf ("<IECR:=%x> ", 1 << irq);*/
-#endif
+	if (irq == 32) {
+		/* Systick interrupt. */
+//		ARM_SYSTICK->CTRL |= ARM_SYSTICK_CTRL_TICKINT;
+//debug_printf ("<allow SYSTICK> ");
+	} else {
+		ARM_NVIC_ISER0 = 1 << irq;
+debug_printf ("<ISER0:=%x> ", 1 << irq);
+	}
 }
 
 /*
@@ -138,7 +159,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 {
 	unsigned *sp = (unsigned*) ((char*) t + stacksz);
 
-	*--sp = 0x01000000;		/* psr - must set Thumb bit */
+	*--sp = 0x01000000;		/* xpsr - must set Thumb bit */
 	*--sp = (unsigned) func;	/* pc - callee address */
 	*--sp = 0;			/* lr */
 	*--sp = 0;			/* r12 */

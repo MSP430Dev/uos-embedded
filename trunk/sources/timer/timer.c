@@ -50,6 +50,10 @@
 #   define TIMER_IRQ		22	/* Interval Timer interrupt */
 #endif
 
+#if ARM_1986BE9
+#   define TIMER_IRQ		32	/* Systick */
+#endif
+
 #if MSP430
 #   ifdef TIMERA0_VECTOR
 #      define TIMER_IRQ		(TIMERA0_VECTOR / 2)
@@ -88,10 +92,11 @@ interval_greater_or_equal (long interval, long msec)
 /*
  * Timer interrupt handler.
  */
-static bool_t
+bool_t
 timer_handler (timer_t *t)
 {
 /*debug_printf ("<ms=%ld> ", t->milliseconds);*/
+debug_printf ("<ms=%ld,VAL=%d,ICSR=%08x> ", t->milliseconds, ARM_SYSTICK->VAL, ARM_SCB->ICSR);
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 	/* Clear interrupt. */
 	MC_ITCSR &= ~MC_ITCSR_INT;
@@ -263,6 +268,13 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	MC_ITSCALE = 0;
 	MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
 	MC_ITCSR = MC_ITCSR_EN;
+#endif
+#if ARM_1986BE9
+	/* Max 213 msec/tick at 80 MHz. */
+	ARM_SYSTICK->LOAD = t->khz * t->msec_per_tick - 1;
+	ARM_SYSTICK->CTRL = ARM_SYSTICK_CTRL_ENABLE |
+			    ARM_SYSTICK_CTRL_TICKINT |
+			    ARM_SYSTICK_CTRL_HCLK;
 #endif
 #if MSP430
 	{

@@ -1,4 +1,4 @@
-file test-task.elf
+#file test-task.elf
 target extended-remote localhost:2000
 set remote hardware-breakpoint-limit 6
 set remote hardware-watchpoint-limit 4
@@ -11,6 +11,8 @@ monitor soft_reset_halt
 #hbreak arch_task_switch
 #hbreak uos_init
 hbreak task_schedule
+hbreak arch_intr_allow
+hbreak timer_handler
 c
 
 define as

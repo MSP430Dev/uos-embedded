@@ -63,6 +63,7 @@ arch_task_switch (task_t *target)
 {
 	/* Use supervisor call for task switching. */
 	asm volatile (
+	"cpsie	i \n\t"
 	"mov	r0, %0 \n\t"
 	"svc	#0"
 	: : "r" (target) : "r0", "memory", "cc");
@@ -122,6 +123,7 @@ arch_idle ()
 {
 	arm_intr_enable ();
 	for (;;) {
+debug_printf ("~");
 		arm_bus_yield ();
 	}
 }

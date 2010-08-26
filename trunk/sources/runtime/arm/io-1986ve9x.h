@@ -70,6 +70,33 @@ typedef struct
 /*------------------------------------------------------
  * NVIC interrupt controller
  */
+#define ARM_NVIC_ISER0	(*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE100))
+					/* Разрешение прерываний */
+#define ARM_NVIC_ICER0	(*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE180))
+					/* Запрет прерывания */
+#define ARM_NVIC_ISPR0	(*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE200))
+					/* Перевод прерывания в состояние
+					 * ожидания обслуживания */
+#define ARM_NVIC_ICPR0	(*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE280))
+					/* Сброс состояния ожидания обслуживания */
+#define ARM_NVIC_IABR0	(*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE300))
+					/* Активные прерывания */
+#define ARM_NVIC_IPR(n)	((arm_reg_t*) (ARM_SYSTEM_BASE + 0xE400 + ((n) << 2)))
+					/* Приоритет прерываний */
+#define ARM_NVIC_STIR 	(*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xEF00))
+					/* Программное формирование прерывания */
+
+/*
+ * Регистр NVIC AIRCR: управление прерываниями и программный сброс.
+ */
+#define ARM_AIRCR_VECTKEY	(0x05FA << 16)	/* ключ доступа к регистру */
+#define ARM_AIRCR_ENDIANESS	(1 << 15)	/* старший байт идет первым */
+#define ARM_AIRCR_PRIGROUP(n)	((n) << 8)	/* группировка приоритетов исключений */
+#define ARM_AIRCR_SYSRESETREQ	(1 << 2)	/* запрос сброса системы */
+
+/*------------------------------------------------------
+ * SCB system control block
+ */
 typedef struct
 {
 	arm_reg_t CPUID;	/* Идентификация процессора */
@@ -87,12 +114,12 @@ typedef struct
 	arm_reg_t UNUSED;	/* DFSR */
 	arm_reg_t MMAR;		/* Адрес отказа доступа к памяти */
 	arm_reg_t BFAR;		/* Адрес отказа доступа к шине */
-} NVIC_t;
+} SCB_t;
 
-#define ARM_NVIC		((NVIC_t*) (ARM_SYSTEM_BASE + 0xED00))
+#define ARM_SCB		((SCB_t*) (ARM_SYSTEM_BASE + 0xED00))
 
 /*
- * Регистр NVIC AIRCR: управление прерываниями и программный сброс.
+ * Регистр SCB AIRCR: управление прерываниями и программный сброс.
  */
 #define ARM_AIRCR_VECTKEY	(0x05FA << 16)	/* ключ доступа к регистру */
 #define ARM_AIRCR_ENDIANESS	(1 << 15)	/* старший байт идет первым */
@@ -100,7 +127,7 @@ typedef struct
 #define ARM_AIRCR_SYSRESETREQ	(1 << 2)	/* запрос сброса системы */
 
 /*
- * Регистр NVIC SHCSR: управление и состояние системных обработчиков.
+ * Регистр SCB SHCSR: управление и состояние системных обработчиков.
  */
 #define ARM_SHCSR_USGFAULTENA	(1 << 18)  /* разрешение обработки отказов,
 					    * вызванных ошибками программирования */

@@ -139,14 +139,16 @@ arm_bus_yield ()
 	unsigned tmp1, tmp2;
 
 	asm volatile (
-#if __thumb__
-		"mul %1, %0 \n\t"
-	"	mul %1, %0 \n\t"
-	"	mul %1, %0"
+#if __thumb2__
+	"wfi"
+#elif __thumb__
+	"mul %1, %0 \n\t"
+"	mul %1, %0 \n\t"
+"	mul %1, %0"
 #else
-		"mul %1, %0, %0 \n\t"
-	"	mul %1, %0, %0 \n\t"
-	"	mul %1, %0, %0"
+	"mul %1, %0, %0 \n\t"
+"	mul %1, %0, %0 \n\t"
+"	mul %1, %0, %0"
 #endif
 	: "=r" (tmp1), "=r" (tmp2) : : "cc");
 }

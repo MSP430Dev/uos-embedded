@@ -2,8 +2,9 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-task
-TESTS		= test-debug.srec test-task.srec test-lcd.srec #test-timer.srec test-uart.srec
+TEST		= test-timer
+TESTS		= test-debug.srec test-task.srec test-lcd.srec
+TESTS		+= test-timer.srec #test-uart.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 # Using MILPROG utility.

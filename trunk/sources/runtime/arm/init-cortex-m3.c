@@ -14,6 +14,9 @@ _init_ (void)
 {
 	unsigned long *src, *dest, *limit;
 
+	/* Disable interrupts. */
+	asm volatile ("cpsid i");
+
 #ifdef ARM_1986BE9
 	/* Enable JTAG A and B debug ports. */
 //	ARM_BACKUP->BKP_REG_0E |= ARM_BKP_REG_0E_JTAG_A | ARM_BKP_REG_0E_JTAG_B;
@@ -57,8 +60,8 @@ _init_ (void)
 		ARM_UART_CLOCK_BRG2(2);			// HCLK/4 (20 МГц)
 
 	/* Set baud rate divisor: 115200 bit/sec. */
-	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/8, 115200);
-	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/8, 115200);
+	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
+	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/4, 115200);
 
 	/* Enable UART2, transmiter only. */
 	ARM_UART2->LCR_H = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
@@ -130,13 +133,13 @@ static void dump_of_death (unsigned *frame, unsigned ipsr)
 
 	/* This does not work as expected. */
 	ARM_RSTCLK->CPU_CLOCK = 0;
-	ARM_NVIC->AIRCR = ARM_AIRCR_VECTKEY | ARM_AIRCR_SYSRESETREQ;
+	ARM_SCB->AIRCR = ARM_AIRCR_VECTKEY | ARM_AIRCR_SYSRESETREQ;
 	for (;;)
 		asm volatile ("dmb");
 }
 
 void __attribute__ ((naked))
- _fault_ ()
+_fault_ ()
 {
 	/* Save registers R4-R11 in stack. */
 	asm volatile ("push	{r4-r11}");
@@ -145,6 +148,7 @@ void __attribute__ ((naked))
 	unsigned ipsr = arm_get_ipsr ();
 	char *message = "fault";
 	switch (ipsr) {
+	case 2:  message = "non-maskable interrupt"; break;
 	case 3:  message = "hard fault"; break;
         case 4:  message = "memory management fault"; break;
         case 5:  message = "bus fault"; break;
@@ -173,4 +177,11 @@ _unexpected_interrupt_ ()
 void __attribute__ ((naked, weak))
 _svc_ ()
 {
+	/* This is needed when no kernel is present. */
+}
+
+void __attribute__ ((naked, weak))
+_irq_handler_ ()
+{
+	/* This is needed when no kernel is present. */
 }
