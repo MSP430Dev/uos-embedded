@@ -1,5 +1,6 @@
 /*
- * Testing timer.
+ * Проверка драйвера таймера.
+ * Вывод на UART2 на скорости 115200 бод.
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
@@ -11,7 +12,7 @@ timer_t timer;
 void hello (void *arg)
 {
 	for (;;) {
-		debug_printf ("Hello from `%s'! msec = %d\n",
+		debug_printf ("%s: msec = %d\n",
 			arg, timer_milliseconds (&timer));
 		mutex_wait (&timer.decisec);
 	}
@@ -21,5 +22,5 @@ void uos_init (void)
 {
 	debug_puts ("\nTesting timer.\n");
 	timer_init (&timer, KHZ, 10);
-	task_create (hello, "task", "hello", 1, task, sizeof (task));
+	task_create (hello, "Timer", "hello", 1, task, sizeof (task));
 }

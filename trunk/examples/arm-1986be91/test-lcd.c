@@ -1,6 +1,5 @@
 /*
- * Testing MT-12864J LCD (Samsung KS0108B) on
- * Milandr 1986BE91 evaluation board.
+ * Проверка LCD-индикатора MT-12864J на отладочной плате Миландр 1986BE91.
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>

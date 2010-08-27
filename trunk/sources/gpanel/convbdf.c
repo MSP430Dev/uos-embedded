@@ -371,7 +371,7 @@ int
 bdf_read_header(FILE *fp, font_t *pf)
 {
 	int encoding;
-	int nchars, maxwidth;
+	int nchars, maxwidth = 0;
 	int firstchar = 65535;
 	int lastchar = -1;
 	char buf[256];
@@ -450,14 +450,26 @@ bdf_read_header(FILE *fp, font_t *pf)
 				fprintf(stderr, "Error: bad 'ENCODING'\n");
 				return 0;
 			}
-			if (encoding >= 0 && encoding <= limit_char && encoding >= start_char) {
-				if (exclude_start && encoding >= exclude_start && encoding <= exclude_end)
-					continue;
-				if (firstchar > encoding)
-					firstchar = encoding;
-				if (lastchar < encoding)
-					lastchar = encoding;
+//fprintf(stderr, "Got encoding %d\n", encoding);
+			if (encoding > limit_char || encoding < start_char)
+				continue;
+			if (exclude_start && encoding >= exclude_start && encoding <= exclude_end)
+				continue;
+			if (firstchar > encoding)
+				firstchar = encoding;
+			if (lastchar < encoding)
+				lastchar = encoding;
+			continue;
+		}
+		if (isprefix(buf, "DWIDTH ")) {
+			int width;
+			if (sscanf(buf, "DWIDTH %d", &width) != 1) {
+				fprintf(stderr, "Error: bad 'DWIDTH' for encoding %d\n",
+					encoding);
+				return 0;
 			}
+			if (maxwidth < width)
+				maxwidth = width;
 			continue;
 		}
 		if (strequal(buf, "ENDFONT"))
@@ -481,10 +493,6 @@ bdf_read_header(FILE *fp, font_t *pf)
 	/* calc font size (offset/width entries)*/
 	pf->firstchar = firstchar;
 	pf->size = lastchar - firstchar + 1;
-
-	/* use the font boundingbox to get initial maxwidth*/
-	/*maxwidth = pf->fbbw - pf->fbbx;*/
-	maxwidth = pf->fbbw;
 
 	/* initially use font maxwidth * height for bits allocation*/
 	pf->bits_size = nchars * WORDS(maxwidth) * pf->height;
@@ -745,9 +753,7 @@ gen_c_source(font_t *pf, char *path)
 	FILE *ofp;
 	int i;
 	int did_defaultchar = 0;
-	int did_syncmsg = 0;
 	time_t t = time(0);
-	unsigned short *ofs = pf->bits;
 	char buf[256];
 	char obuf[256];
 	char hdr1[] = {
@@ -852,14 +858,12 @@ gen_c_source(font_t *pf, char *path)
 
 		bits = pf->bits + (pf->offset? pf->offset[i]: (pf->height * i));
 		bits += WORDS(width) * ascent_correction;
-		x = WORDS(width) * (pf->height -
-			ascent_correction - descent_correction);
-		for (; x>0; --x) {
-			fprintf(ofp, "0x%04x,\n", *bits);
-			if (*bits++ != *ofs++ && !did_syncmsg) {
-				fprintf(stderr, "Warning: found encoding values in non-sorted order (not an error).\n");
-				did_syncmsg = 1;
+		height = pf->height - ascent_correction - descent_correction;
+		for (; height>0; --height) {
+			for (x=WORDS(width); x>0; --x) {
+				fprintf(ofp, "0x%04x,", *bits++);
 			}
+			fprintf(ofp, "\n");
 		}
 	}
 	fprintf(ofp, 	"};\n\n");
@@ -875,6 +879,7 @@ gen_c_source(font_t *pf, char *path)
 		did_defaultchar = 0;
 		default_offset = 0;
 		for (i=0; i<pf->size; ++i) {
+			int width = pf->width ? pf->width[i] : pf->maxwidth;
 			if (pf->offset && (pf->offset[i] ==
 			    pf->offset[pf->defaultchar-pf->firstchar])) {
 				if (did_defaultchar) {
@@ -888,8 +893,8 @@ gen_c_source(font_t *pf, char *path)
 			}
 			fprintf(ofp, "  %ld,\t/* (0x%02x) */\n", offset,
 				i + pf->firstchar);
-			offset += pf->height - ascent_correction -
-				descent_correction;
+			offset += WORDS(width) * (pf->height - ascent_correction -
+				descent_correction);
 		}
 		fprintf(ofp, "};\n\n");
 	}
@@ -901,7 +906,8 @@ gen_c_source(font_t *pf, char *path)
 			pf->name);
 
 		for (i=0; i<pf->size; ++i)
-			fprintf(ofp, "  %d,\t/* (0x%02x) */\n", pf->width[i], i+pf->firstchar);
+			fprintf(ofp, "  %d,\t/* (0x%02x) */\n",
+				pf->width[i], i+pf->firstchar);
 		fprintf(ofp, "};\n\n");
 	}
 

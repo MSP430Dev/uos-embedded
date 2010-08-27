@@ -195,16 +195,19 @@ void gpanel_pixel (gpanel_t *gp, int x, int y, int color)
 	udelay (8);
 }
 
+/*
+ * Draw a part of glyph, up to 8 pixels in height.
+ */
 static void graw_glyph8 (gpanel_t *gp, unsigned width, unsigned height,
 	const unsigned short *bits, unsigned ypage, unsigned yoffset)
 {
-	unsigned char data [16];
+	unsigned char data [32];
 	unsigned i, k, x, crystal = -1;
 
 	if (height > 8 - yoffset)
 		height = 8 - yoffset;
-	if (width > 16)
-		width = 16;
+	if (width > sizeof(data))
+		width = sizeof(data);
 	/*debug_printf ("glyph8 %ux%u at %u-%u offset %u-%u\n", width, height, gp->col, gp->row, ypage, yoffset);*/
 
 	/* Read graphics memory. */
@@ -237,9 +240,10 @@ static void graw_glyph8 (gpanel_t *gp, unsigned width, unsigned height,
 		memset (data, 0, width);
 
 	/* Place glyph image. */
+	unsigned words_per_row = (width + 15) / 16;
 	for (i=0; i<width; i++) {
 		for (k=0; k<height; k++) {
-			if (bits[k] & (0x8000 >> i)) {
+			if (bits [k*words_per_row + i/16] & (0x8000 >> (i & 15))) {
 				data[i] |= 1 << (k + yoffset);
 			}
 		}
@@ -269,13 +273,13 @@ static void graw_glyph8 (gpanel_t *gp, unsigned width, unsigned height,
 }
 
 /*
- * Print one symbol. Decode from UTF8.
- * Some characters are handled specially.
+ * Draw a glyph of one symbol.
  */
 void gpanel_glyph (gpanel_t *gp, unsigned width, const unsigned short *bits)
 {
 	unsigned ypage = gp->row >> 3;
 	unsigned yoffset = gp->row & 7;
+	unsigned words_per_row = (width + 15) / 16;
 	int height = gp->font->height;
 
 	/*debug_printf ("<glyph %d at %d-%d>", width, gp->col, gp->row);*/
@@ -287,7 +291,7 @@ void gpanel_glyph (gpanel_t *gp, unsigned width, const unsigned short *bits)
 		ypage++;
 		if (ypage >= 8)
 			break;
-		bits += 8 - yoffset;
+		bits += (8 - yoffset) * words_per_row;
 		yoffset = 0;
 	}
 }
