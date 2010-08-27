@@ -96,7 +96,6 @@ bool_t
 timer_handler (timer_t *t)
 {
 /*debug_printf ("<ms=%ld> ", t->milliseconds);*/
-debug_printf ("<ms=%ld,VAL=%d,ICSR=%08x> ", t->milliseconds, ARM_SYSTICK->VAL, ARM_SCB->ICSR);
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
 	/* Clear interrupt. */
 	MC_ITCSR &= ~MC_ITCSR_INT;

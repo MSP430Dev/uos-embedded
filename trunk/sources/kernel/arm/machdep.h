@@ -123,7 +123,6 @@ arch_idle ()
 {
 	arm_intr_enable ();
 	for (;;) {
-debug_printf ("~");
 		arm_bus_yield ();
 	}
 }

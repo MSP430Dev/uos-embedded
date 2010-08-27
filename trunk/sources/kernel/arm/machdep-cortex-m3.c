@@ -55,6 +55,9 @@ _irq_handler_ (void)
 	/* Save registers R4-R11 in stack. */
 	asm volatile ("push	{r4-r11}");
 
+	/* Save return address. */
+	unsigned lr = arm_get_register (14);
+
 	/* Get the current irq number */
 	int irq;
 	unsigned ipsr = arm_get_ipsr ();
@@ -73,7 +76,7 @@ debug_printf ("<interrupt with ipsr==0> ");
 		goto done;
 	}
 
-debug_printf ("<%d> ", irq);
+//debug_printf ("<%d> ", irq);
 	mutex_irq_t *h = &mutex_irq [irq];
 	if (! h->lock) {
 		/* Cannot happen. */
@@ -122,6 +125,9 @@ debug_printf ("<unexpected interrupt> ");
 		}
 	}
 done:
+	/* Restore return address. */
+	arm_set_register (14, lr);
+
 	/* Load registers R4-R11. */
 	asm volatile ("pop	{r4-r11}");
 

@@ -22,7 +22,6 @@ void arm_set_stack_pointer (void *x)
 	: : "r" (x));
 }
 
-/* Save current task stack. */
 static inline __attribute__ ((always_inline))
 void *arm_get_stack_pointer ()
 {
@@ -32,6 +31,28 @@ void *arm_get_stack_pointer ()
 	"mov	%0, sp"
 	: "=r" (x));
 	return x;
+}
+
+/*
+ * Handle any register R0-R14.
+ */
+static inline __attribute__ ((always_inline))
+void arm_set_register (int reg, unsigned val)
+{
+	asm volatile (
+	"mov	r%c1, %0"
+	: : "r" (val), "i" (reg));
+}
+
+static inline __attribute__ ((always_inline))
+unsigned arm_get_register (int reg)
+{
+	unsigned val;
+
+	asm volatile (
+	"mov	%0, r%c1"
+	: "=r" (val) : "i" (reg));
+	return val;
 }
 
 /*
