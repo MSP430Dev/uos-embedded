@@ -269,8 +269,15 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	MC_ITCSR = MC_ITCSR_EN;
 #endif
 #if ARM_1986BE9
+	ARM_SYSTICK->CTRL = 0;
+	ARM_SYSTICK->VAL = 0;
+#ifdef SETUP_HCLK_HSI
+	/* Max 2130 msec/tick at 8 MHz. */
+	ARM_SYSTICK->LOAD = 8000 * t->msec_per_tick - 1;
+#else
 	/* Max 213 msec/tick at 80 MHz. */
 	ARM_SYSTICK->LOAD = t->khz * t->msec_per_tick - 1;
+#endif
 	ARM_SYSTICK->CTRL = ARM_SYSTICK_CTRL_ENABLE |
 			    ARM_SYSTICK_CTRL_TICKINT |
 			    ARM_SYSTICK_CTRL_HCLK;

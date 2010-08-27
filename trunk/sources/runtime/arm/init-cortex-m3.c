@@ -42,11 +42,14 @@ _init_ (void)
 		continue;
 
 	/* Use PLLCPUo for CPU_C2, CPU_C3 and HCLK. */
-	ARM_RSTCLK->CPU_CLOCK = ARM_CPU_CLOCK_HCLK_C3 |
-				ARM_CPU_CLOCK_C3_C2 |
+	ARM_RSTCLK->CPU_CLOCK = ARM_CPU_CLOCK_C3_C2 |
 				ARM_CPU_CLOCK_C2_PLLCPUO |
-				ARM_CPU_CLOCK_C1_HSE;
-
+				ARM_CPU_CLOCK_C1_HSE |
+#ifdef SETUP_HCLK_HSI
+				ARM_CPU_CLOCK_HCLK_HSI;
+#else
+				ARM_CPU_CLOCK_HCLK_C3;
+#endif
         /* Set UART2 for debug output. */
 	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOF;	// вкл. тактирования PORTF
 	ARM_GPIOF->FUNC |= ARM_FUNC_REDEF(0) |		// переопределенная функция для
@@ -56,13 +59,19 @@ _init_ (void)
 	ARM_GPIOF->PWR |= ARM_PWR_SLOW(0) | ARM_PWR_SLOW(1);
 
 	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART2;	// вкл. тактирования UART2
-	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN2 |	// разрешаем тактирование UART2
-		ARM_UART_CLOCK_BRG2(2);			// HCLK/4 (20 МГц)
 
 	/* Set baud rate divisor: 115200 bit/sec. */
+#ifdef SETUP_HCLK_HSI
+	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN2 |	// разрешаем тактирование UART2
+		ARM_UART_CLOCK_BRG2(0);			// HCLK (8 МГц)
+	ARM_UART2->IBRD = ARM_UART_IBRD (8000000, 115200);
+	ARM_UART2->FBRD = ARM_UART_FBRD (8000000, 115200);
+#else
+	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN2 |	// разрешаем тактирование UART2
+		ARM_UART_CLOCK_BRG2(2);			// HCLK/4 (KHZ/4)
 	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
 	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/4, 115200);
-
+#endif
 	/* Enable UART2, transmiter only. */
 	ARM_UART2->LCR_H = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
 	ARM_UART2->CR = ARM_UART_CR_UARTEN |		// пуск приемопередатчика
