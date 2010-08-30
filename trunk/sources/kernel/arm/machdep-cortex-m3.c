@@ -26,8 +26,11 @@
 void __attribute__ ((naked))
 _svc_ (task_t *target)
 {
-	/* Save registers R4-R11 in stack. */
-	asm volatile ("push	{r4-r11}");
+	/* Save registers R4-R11 and BASEPRI in stack. */
+	asm volatile (
+	"mrs	r12, basepri \n\t"
+	"push	{r4-r12}"
+	);
 
 	/* Save current task stack. */
 	task_current->stack_context = arm_get_stack_pointer ();
@@ -37,8 +40,11 @@ _svc_ (task_t *target)
 	/* Switch to the new task. */
 	arm_set_stack_pointer (task_current->stack_context);
 
-	/* Load registers R4-R11. */
-	asm volatile ("pop	{r4-r11}");
+	/* Load registers R4-R11 and BASEPRI. */
+	asm volatile (
+	"pop	{r4-r12} \n\t"
+	"msr	basepri, r12"
+	);
 
 	/* Return from exception. */
 	asm volatile ("bx	lr");
@@ -52,8 +58,11 @@ _svc_ (task_t *target)
 void __attribute__ ((naked))
 _irq_handler_ (void)
 {
-	/* Save registers R4-R11 in stack. */
-	asm volatile ("push	{r4-r11}");
+	/* Save registers R4-R11 and BASEPRI in stack. */
+	asm volatile (
+	"mrs	r12, basepri \n\t"
+	"push	{r4-r12}"
+	);
 
 	/* Save return address. */
 	unsigned lr = arm_get_register (14);
@@ -64,8 +73,6 @@ _irq_handler_ (void)
 	if (ipsr == 15) {
 		/* Systick interrupt. */
 		irq = 32;
-//		ARM_SYSTICK->CTRL &= ~ARM_SYSTICK_CTRL_TICKINT;
-//		ARM_SCB->ICSR = 1 << 25; // PENDSTCLR
 
 	} else if (ipsr >= 16 && ipsr < 48) {
 		irq = ipsr - 16;
@@ -128,8 +135,11 @@ done:
 	/* Restore return address. */
 	arm_set_register (14, lr);
 
-	/* Load registers R4-R11. */
-	asm volatile ("pop	{r4-r11}");
+	/* Load registers R4-R11 and BASEPRI. */
+	asm volatile (
+	"pop	{r4-r12} \n\t"
+	"msr	basepri, r12"
+	);
 
 	/* Return from exception. */
 	asm volatile ("bx	lr");
@@ -142,9 +152,7 @@ done:
 void arch_intr_allow (int irq)
 {
 	if (irq == 32) {
-		/* Systick interrupt. */
-//		ARM_SYSTICK->CTRL |= ARM_SYSTICK_CTRL_TICKINT;
-//debug_printf ("<allow SYSTICK> ");
+		/* Systick interrupt: nothing to do. */
 	} else {
 		ARM_NVIC_ISER0 = 1 << irq;
 debug_printf ("<ISER0:=%x> ", 1 << irq);
@@ -173,6 +181,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* r2 */
 	*--sp = 0;			/* r1 */
 	*--sp = (unsigned) arg;		/* r0 - task argument */
+	*--sp = 0;			/* basepri */
 	*--sp = 0;			/* r11 */
 	*--sp = 0;			/* r10 */
 	*--sp = 0;			/* r9 */

@@ -62,14 +62,15 @@ unsigned arm_get_register (int reg)
 static void inline __attribute__ ((always_inline))
 arm_intr_disable (int *x)
 {
-#if __thumb2__
-	asm volatile (
-	"mrs	%0, primask \n"		/* Thumb-2 mode */
-"	cpsid	i"
-	: "=r" (*(x)) : : "memory", "cc");
-#else
 	int temp;
 
+#if __thumb2__
+	asm volatile (
+	"mrs	%1, basepri \n"		/* Cortex-M3 mode */
+"	mov	%0, #16 \n"		/* basepri := 16 */
+"	msr	basepri, %0"
+	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
+#else
 	asm volatile (
 #if __thumb__
 	".balignw 4, 0x46c0 \n"
@@ -101,7 +102,7 @@ arm_intr_restore (int x)
 {
 #if __thumb2__
 	asm volatile (
-	"msr	primask, %0"		/* Thumb-2 mode */
+	"msr	basepri, %0"		/* Cortex-M3 mode */
 	: : "r" (x) : "memory", "cc");
 #else
 	int temp;
@@ -129,8 +130,8 @@ arm_intr_enable ()
 {
 #if __thumb2__
 	asm volatile (
-	"cpsie	i"			/* Thumb-2 mode */
-	: : : "memory", "cc");
+	"msr	basepri, %0"		/* Cortex-M3 mode */
+	: : "r" (0) : "memory", "cc");
 #else
 	int temp;
 

@@ -14,9 +14,6 @@ _init_ (void)
 {
 	unsigned long *src, *dest, *limit;
 
-	/* Disable interrupts. */
-	asm volatile ("cpsid i");
-
 #ifdef ARM_1986BE9
 	/* Enable JTAG A and B debug ports. */
 //	ARM_BACKUP->BKP_REG_0E |= ARM_BKP_REG_0E_JTAG_A | ARM_BKP_REG_0E_JTAG_B;
@@ -95,6 +92,23 @@ _init_ (void)
 
 	/* Set stack to end of internal SRAM. */
 	arm_set_stack_pointer ((void*) (ARM_SRAM_BASE + ARM_SRAM_SIZE));
+
+	/* Initialize priority of exceptions. */
+	ARM_SCB->SHPR1 = ARM_SHPR1_UFAULT(0) |	/* usage fault */
+			 ARM_SHPR1_BFAULT(0) |	/* bus fault */
+			 ARM_SHPR1_MMFAULT(0);	/* memory management fault */
+        ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
+        ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(16) | /* SysTick */
+			 ARM_SHPR3_PENDSV(16);	/* PendSV */
+
+	ARM_NVIC_IPR(0) = 0x10101010;		/* CAN1, CAN2, USB */
+	ARM_NVIC_IPR(1) = 0x10101010;		/* DMA, UART1, UART2 */
+	ARM_NVIC_IPR(2) = 0x10101010;		/* SSP1, I2C, POWER */
+	ARM_NVIC_IPR(3) = 0x10101010;		/* WWDG, Timer1, Timer2 */
+	ARM_NVIC_IPR(4) = 0x10101010;		/* Timer3, ADC, COMPARATOR */
+	ARM_NVIC_IPR(5) = 0x10101010;		/* SSP2 */
+	ARM_NVIC_IPR(6) = 0x10101010;		/* BACKUP */
+	ARM_NVIC_IPR(7) = 0x10101010;		/* external INT[1:4] */
 
 	main ();
 }

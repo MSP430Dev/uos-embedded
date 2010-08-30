@@ -63,7 +63,6 @@ arch_task_switch (task_t *target)
 {
 	/* Use supervisor call for task switching. */
 	asm volatile (
-	"cpsie	i \n\t"
 	"mov	r0, %0 \n\t"
 	"svc	#0"
 	: : "r" (target) : "r0", "memory", "cc");
