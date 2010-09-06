@@ -1,5 +1,5 @@
 /*
- * Testing RAM on Elvees MC-24EM board.
+ * Testing SDRAM.
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>

@@ -1,5 +1,5 @@
 /*
- * Embedded TCL on Elvees MC-24EM board.
+ * Embedded TCL.
  *
  * Copyright (C) 2009 Serge Vakulenko, <vak@cronyx.ru>
  */

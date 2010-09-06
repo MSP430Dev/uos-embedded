@@ -29,6 +29,8 @@ void show (int i, state_t state)
 {
 	static const int xpos [] = { 46, 85, 70, 14,  0 };
 	static const int ypos [] = {  0, 28, 56, 56, 28 };
+//	static const int xpos [] = { 30, 85, 85, 30,  0 };
+//	static const int ypos [] = {  0, 19, 38, 56, 28 };
 	static int initialized = 0;
 
 	mutex_lock (&screen);

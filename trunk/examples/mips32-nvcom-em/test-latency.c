@@ -1,5 +1,5 @@
 /*
- * Testing timer.
+ * Measuring interrupt latency.
  */
 #include "runtime/lib.h"
 #include "kernel/uos.h"

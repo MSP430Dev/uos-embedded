@@ -1,5 +1,5 @@
 /*
- * Testing timer.
+ * Measuring task switch time.
  */
 #include "runtime/lib.h"
 #include "kernel/uos.h"
