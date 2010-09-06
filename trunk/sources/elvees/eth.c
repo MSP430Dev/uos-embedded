@@ -19,49 +19,6 @@
 #define ETH_MTU		1518		/* maximum ethernet frame length */
 
 /*
- * Set default values to Ethernet controller registers.
- */
-static void chip_init ()
-{
-	/* Включение тактовой частоты EMAC */
-	MC_CLKEN |= MC_CLKEN_EMAC;
-	udelay (10);
-
-	/* Reset TX and RX blocks and pointers */
-	MC_MAC_CONTROL = MAC_CONTROL_CP_TX | MAC_CONTROL_RST_TX |
-			 MAC_CONTROL_CP_RX | MAC_CONTROL_RST_RX;
-	udelay (10);
-	debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);
-
-	/* Общие режимы. */
-	MC_MAC_CONTROL =
-		MAC_CONTROL_FULLD |		/* дуплексный режим */
-		MAC_CONTROL_EN_TX |		/* разрешение передачи */
-		MAC_CONTROL_EN_TX_DMA |		/* разрешение передающего DMА */
-		MAC_CONTROL_EN_RX |		/* разрешение приема */
-		MAC_CONTROL_IRQ_RX_DONE | 	/* прерывание по приёму */
-		MAC_CONTROL_IRQ_RX_OVF; 	/* прерывание по переполнению */
-	debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);
-
-	/* Режимы приёма. */
-	MC_MAC_RX_FRAME_CONTROL =
-		RX_FRAME_CONTROL_DIS_RCV_FCS | 	/* не сохранять контрольную сумму */
-		RX_FRAME_CONTROL_ACC_TOOSHORT |	/* прием коротких кадров */
-		RX_FRAME_CONTROL_DIS_TOOLONG | 	/* отбрасывание слишком длинных кадров */
-		RX_FRAME_CONTROL_DIS_FCSCHERR |	/* отбрасывание кадров с ошибкой контрольной суммы */
-		RX_FRAME_CONTROL_DIS_LENGTHERR;	/* отбрасывание кадров с ошибкой длины */
-	debug_printf ("RX_FRAME_CONTROL: 0x%08x\n", MC_MAC_RX_FRAME_CONTROL);
-
-	/* Режимы передачи:
-	 * запрет формирования кадра в блоке передачи. */
-	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR;
-	debug_printf ("TX_FRAME_CONTROL: 0x%08x\n", MC_MAC_TX_FRAME_CONTROL);
-
-	/* Тактовый сигнал MDC не должен превышать 2.5 МГц. */
-	MC_MAC_MD_MODE = MD_MODE_DIVIDER (KHZ / 2000);
-}
-
-/*
  * PHY register write
  */
 static void
@@ -104,6 +61,55 @@ phy_read (eth_t *u, unsigned address)
 	}
 	data &= MD_STATUS_DATA;
 	return data;
+}
+
+/*
+ * Set default values to Ethernet controller registers.
+ */
+static void chip_init (eth_t *u)
+{
+	/* Reset transceiver. */
+	phy_write (u, PHY_CTL, PHY_CTL_RST);
+	while (phy_read (u, PHY_CTL) & PHY_CTL_RST)
+		continue;
+
+	/* Perform auto-negotiation. */
+	phy_write (u, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
+		PHY_ADVRT_10_FDX | PHY_ADVRT_100_HDX | PHY_ADVRT_100_FDX);
+	phy_write (u, PHY_CTL, PHY_CTL_ANEG_EN | PHY_CTL_ANEG_RST);
+
+	/* Reset TX and RX blocks and pointers */
+	MC_MAC_CONTROL = MAC_CONTROL_CP_TX | MAC_CONTROL_RST_TX |
+			 MAC_CONTROL_CP_RX | MAC_CONTROL_RST_RX;
+	udelay (10);
+	debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);
+
+	/* Общие режимы. */
+	MC_MAC_CONTROL =
+		MAC_CONTROL_FULLD |		/* дуплексный режим */
+		MAC_CONTROL_EN_TX |		/* разрешение передачи */
+		MAC_CONTROL_EN_TX_DMA |		/* разрешение передающего DMА */
+		MAC_CONTROL_EN_RX |		/* разрешение приема */
+		MAC_CONTROL_IRQ_RX_DONE | 	/* прерывание по приёму */
+		MAC_CONTROL_IRQ_RX_OVF; 	/* прерывание по переполнению */
+	debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);
+
+	/* Режимы приёма. */
+	MC_MAC_RX_FRAME_CONTROL =
+		RX_FRAME_CONTROL_DIS_RCV_FCS | 	/* не сохранять контрольную сумму */
+		RX_FRAME_CONTROL_ACC_TOOSHORT |	/* прием коротких кадров */
+		RX_FRAME_CONTROL_DIS_TOOLONG | 	/* отбрасывание слишком длинных кадров */
+		RX_FRAME_CONTROL_DIS_FCSCHERR |	/* отбрасывание кадров с ошибкой контрольной суммы */
+		RX_FRAME_CONTROL_DIS_LENGTHERR;	/* отбрасывание кадров с ошибкой длины */
+	debug_printf ("RX_FRAME_CONTROL: 0x%08x\n", MC_MAC_RX_FRAME_CONTROL);
+
+	/* Режимы передачи:
+	 * запрет формирования кадра в блоке передачи. */
+	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR;
+	debug_printf ("TX_FRAME_CONTROL: 0x%08x\n", MC_MAC_TX_FRAME_CONTROL);
+
+	/* Тактовый сигнал MDC не должен превышать 2.5 МГц. */
+	MC_MAC_MD_MODE = MD_MODE_DIVIDER (KHZ / 2000);
 }
 
 void
@@ -512,7 +518,10 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 
 	/* Initialize hardware. */
 	mutex_lock (&u->netif.lock);
-	chip_init ();
+
+	/* Включение тактовой частоты EMAC */
+	MC_CLKEN |= MC_CLKEN_EMAC;
+	udelay (10);
 
 	/* Find a device address of PHY transceiver. */
 	for (u->phy=0; u->phy<32; u->phy++) {
@@ -530,6 +539,8 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 		((id & PHY_ID_MASK) == PHY_ID_KS8721BL) ? "KS8721" : "Unknown",
 		u->phy);
 #endif
+	chip_init (u);
+
 	mutex_unlock (&u->netif.lock);
 
 	/* Create receive task. */
@@ -538,12 +549,6 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 }
 
 #if 0
-/*
- * Define MAC_PHY ID.
- * Micrel KS8721BL PHY, see datasheet.
- */
-#define PHY_ID_KS8721BL		0x00221619
-
 /*
 * Define Ethernet controller registers
 */
