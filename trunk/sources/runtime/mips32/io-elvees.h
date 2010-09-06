@@ -536,4 +536,90 @@
 #define	FCSR_COND_6	0x40000000	/* condition code 6 */
 #define	FCSR_COND_7	0x80000000	/* condition code 7 */
 
+/*--------------------------------------
+ * Регистры контроллера Ethernet
+ */
+/*
+ * MAC_CONTROL - управление MAC
+ */
+#define MAC_CONTROL_FULLD		(1 << 0) 	/* дуплексный режим */
+#define MAC_CONTROL_EN_TX_DMA		(1 << 1) 	/* разрешение передающего TX DMА */
+#define MAC_CONTROL_EN_TX		(1 << 2) 	/* разрешение передачи */
+#define MAC_CONTROL_IRQ_TX_DONE		(1 << 3) 	/* прерывание от передачи */
+#define MAC_CONTROL_EN_RX		(1 << 4) 	/* разрешение приема */
+#define MAC_CONTROL_LOOPBACK		(1 << 5) 	/* режим зацикливания */
+#define MAC_CONTROL_FULLD_RX		(1 << 6) 	/* тестовый режим приема */
+#define MAC_CONTROL_IRQ_RX_DONE		(1 << 7) 	/* прерывание по приёму */
+#define MAC_CONTROL_IRQ_RX_OVF		(1 << 8) 	/* прерывание по переполнению */
+#define MAC_CONTROL_CP_TX		(1 << 9) 	/* сброс передающего TX_FIFO */
+#define MAC_CONTROL_RST_TX		(1 << 10) 	/* сброс блока передачи */
+#define MAC_CONTROL_CP_RX		(1 << 11) 	/* сброс принимающего RX_FIFO */
+#define MAC_CONTROL_RST_RX		(1 << 12) 	/* сброс блока приема */
+
+/*
+ * TX_FRAME_CONTROL - управление передачей кадра
+ */
+#define TX_FRAME_CONTROL_LENGTH(n)	((n) & 0xfff)	/* число байт данных */
+#define TX_FRAME_CONTROL_TYPE_EN	(1 << 12) 	/* поле длины задаёт тип */
+#define TX_FRAME_CONTROL_FCS_CLT_EN	(1 << 13) 	/* контрольная сумма из регистра */
+#define TX_FRAME_CONTROL_DISENCAPFR	(1 << 14) 	/* запрет формирования кадра в блоке передачи */
+#define TX_FRAME_CONTROL_DISPAD		(1 << 15) 	/* запрет заполнителей */
+#define TX_FRAME_CONTROL_TX_REQ		(1 << 16) 	/* передача кадра */
+
+/*
+ * RX_FRAME_CONTROL - управление приемом кадра
+ */
+#define RX_FRAME_CONTROL_DIS_RCV_FCS	(1 << 0) 	/* Отключение сохранения контрольной суммы */
+#define RX_FRAME_CONTROL_DIS_PAD_DEL	(1 << 1) 	/* Отключение удаления заполнителей */
+#define RX_FRAME_CONTROL_ACC_TOOSHORT	(1 << 2) 	/* Прием коротких кадров */
+#define RX_FRAME_CONTROL_DIS_TOOLONG	(1 << 3) 	/* Отбрасывание слишком длинных кадров */
+#define RX_FRAME_CONTROL_DIS_FCSCHERR	(1 << 4) 	/* Отбрасывание кадров с ошибкой контрольной суммы */
+#define RX_FRAME_CONTROL_DIS_LENGTHERR	(1 << 5) 	/* Отбрасывание кадров с ошибкой длины */
+#define RX_FRAME_CONTROL_DIS_BC		(1 << 6) 	/* Запрещение приема кадров с широковещательным адресом */
+#define RX_FRAME_CONTROL_EN_MCM		(1 << 7) 	/* Разрешение приема кадров с групповым адресом по маске */
+#define RX_FRAME_CONTROL_EN_MCHT	(1 << 8) 	/* Разрешение приема кадров с групповым адресом по хеш-таблице */
+#define RX_FRAME_CONTROL_EN_ALL		(1 << 9) 	/* Разрешение приема кадров с любым адресом */
+
+/*
+ * STATUS_RX - статус приема кадра
+ */
+#define STATUS_RX_DONE_SHFT		3
+#define STATUS_RX_NUM_FR_SHFT		4
+#define STATUS_RX_NUM_FR_MASK		0x7f
+#define STATUS_RXW_SHFT			12
+#define STATUS_RXW_MASK			0x3ff
+#define STATUS_RX_DONE_BIT		(1 << STATUS_RX_DONE_SHFT)
+
+/*
+ * RX_FRAME_STATUS_FIFO - FIFO статусов принятых кадров
+ */
+#define RX_FRAME_STATUS_LEN_SHFT	0
+#define RX_FRAME_STATUS_LEN_MASK	0xfff
+#define RX_FRAME_STATUS_OK_SHFT		12
+#define RX_FRAME_STATUS_OK_BIT		(1 << RX_FRAME_STATUS_OK_SHFT)
+
+/*
+ * MD_MODE - режим работы порта MD
+ */
+#define MD_MODE_DIVIDER(n)		((n) & 0xff)	/* делитель для частоты MDC */
+#define MD_MODE_RST			(1 << 8)	/* сброс порта PHY */
+
+/*
+ * MD_CONTROL - управление порта MD
+ */
+#define MD_CONTROL_DATA(n)		((n) & 0xffff)		/* данные для записи */
+#define MD_CONTROL_REG(n)		(((n) & 0x1f) << 16)	/* адрес регистра PHY */
+#define MD_CONTROL_PHY(n)		(((n) & 0x1f) << 24)	/* адрес PHY */
+#define MD_CONTROL_IRQ(n)		(1 << 29)		/* нужно прерывание */
+#define MD_CONTROL_OP_READ		(1 << 30)		/* операция чтения */
+#define MD_CONTROL_OP_WRITE		(2 << 30)		/* операция записи */
+
+/*
+ * MD_STATUS - статус порта MD
+ */
+#define MD_STATUS_DATA			0xffff		/* прочитанные данные */
+#define MD_STATUS_BUSY			(1 << 29)	/* порт занят */
+#define MD_STATUS_END_READ		(1 << 30)	/* завершилась операция чтения */
+#define MD_STATUS_END_WRITE		(1 << 31)	/* завершилась операция записи */
+
 #endif /* _IO_ELVEES_H */

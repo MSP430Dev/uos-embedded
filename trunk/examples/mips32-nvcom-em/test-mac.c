@@ -8,6 +8,13 @@
 #include <buf/buf.h>
 #include <elvees/eth.h>
 
+#ifdef ENABLE_DCACHE
+#   define SDRAM_START	0x00000000
+#else
+#   define SDRAM_START	0xA0000000
+#endif
+#define SDRAM_SIZE	(64*1024*1024)
+
 ARRAY (stack_poll, 230);	/* Task: polling */
 mem_pool_t pool;
 eth_t eth;

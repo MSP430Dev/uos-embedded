@@ -44,9 +44,7 @@
 #define MC_CSR_EMAC(n)	MC_R (0xE800+(n<<6))	/* Управление и состояние */
 #define MC_CP_EMAC(n)	MC_R (0xE804+(n<<6))	/* Указатель цепочки */
 #define MC_IR_EMAC(n)	MC_R (0xE808+(n<<6))	/* Индекс */
-#define MC_OR_EMAC(n)	MC_R (0xE80C+(n<<6))	/* Смещение */
-#define MC_Y_EMAC(n)	MC_R (0xE810+(n<<6))	/* Параметры направления Y при двухмерной адресации */
-#define MC_RUN_EMAC(n)	MC_R (0xE814+(n<<6))	/* Управление состоянием бита RUN */
+#define MC_RUN_EMAC(n)	MC_R (0xE80C+(n<<6))	/* Управление состоянием бита RUN */
 
 /*
  * Регистры DMA USB(0-3)
