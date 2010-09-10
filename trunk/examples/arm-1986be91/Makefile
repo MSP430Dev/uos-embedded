@@ -3,9 +3,9 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 TEST		= tetris
-TESTS		= test-debug.srec test-lcd.srec test-task-lcd.srec
-TESTS		+= test-timer.srec test-timer-lcd.srec #test-uart.srec
-TESTS		+= test-latency.srec test-tswitch.srec philosophers.srec
+#TESTS		= test-debug.srec test-lcd.srec test-task-lcd.srec
+#TESTS		+= test-timer.srec test-timer-lcd.srec #test-uart.srec
+#TESTS		+= test-latency.srec test-tswitch.srec philosophers.srec
 TESTS		+= tetris.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 

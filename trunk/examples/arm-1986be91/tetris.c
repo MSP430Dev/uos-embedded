@@ -11,9 +11,9 @@
 #define PITDEPTH	24
 
 #define NTYPES		7
-#define NPIECES		6
+#define NPIECES		5
 
-#define END		127
+#define END		999
 
 typedef struct {
 	int     x, y;
@@ -45,7 +45,6 @@ int pit [PITDEPTH+1] [PITWIDTH];
 int pitcnt [PITDEPTH];
 coord_t old [NPIECES], new [NPIECES], chk [NPIECES];
 
-ARRAY (task_space, 1000);
 gpanel_t display;
 
 /*
@@ -117,7 +116,7 @@ void draw (coord_t *p)
 		if (p->x < 0)
 			continue;
 		gpanel_rect_filled (&display,
-			p->y*5, p->x*5, p->y*5 + 5, p->x*5 + 5, 1);
+			p->x*5, p->y*5, p->x*5 + 4, p->y*5 + 4, 1);
 	}
 }
 
@@ -144,8 +143,8 @@ void move (coord_t *old, coord_t *new)
 		}
 clear:          if (old->x >= 0) {
 			gpanel_rect_filled (&display,
-				old->y*5, old->x*5, old->y*5 + 5, old->x*5 + 5, 0);
-			gpanel_pixel (&display, old->y*5 + 2, old->x*5 + 2, 1);
+				old->x*5, old->y*5, old->x*5 + 4, old->y*5 + 4, 0);
+			gpanel_pixel (&display, old->x*5 + 2, old->y*5 + 2, 1);
 		}
 		old++;
 		continue;
@@ -154,7 +153,7 @@ draw:           if (new->x == END)
 			break;
 		if (new->x >= 0) {
 			gpanel_rect_filled (&display,
-				new->y*5, new->x*5, new->y*5 + 5, new->x*5 + 5, 1);
+				new->x*5, new->y*5, new->x*5 + 4, new->y*5 + 4, 1);
 		}
 		new++;
 	}
@@ -165,18 +164,18 @@ draw:           if (new->x == END)
  */
 void clear ()
 {
-	int i, j;
+	int y, x;
 
 	gpanel_clear (&display, 0);
-	for (i=0; i<PITDEPTH; i++) {
-		for (j=0; j<PITWIDTH; j++) {
-			gpanel_pixel (&display, i*5+2, j*5+2, 1);
-			pit[i][j] = 0;
+	for (y=0; y<PITDEPTH; y++) {
+		for (x=0; x<PITWIDTH; x++) {
+			gpanel_pixel (&display, y*5 + 2, x*5 + 2, 1);
+			pit[y][x] = 0;
 		}
-		pitcnt[i] = 0;
+		pitcnt[y] = 0;
 	}
-	for (j=0; j<PITWIDTH; j++)
-		pit[PITDEPTH][j] = 1;
+	for (x=0; x<PITWIDTH; x++)
+		pit[PITDEPTH][x] = 1;
 }
 
 /*
@@ -184,7 +183,7 @@ void clear ()
  */
 void scarp (coord_t *c)
 {
-	int i, nfull, j, k;
+	int y, nfull, x, k;
 
 	/* Count the full lines */
 	nfull = 0;
@@ -195,54 +194,55 @@ void scarp (coord_t *c)
 			return;
 		}
 		pit[c->x][c->y] = 1;
-		if (++pitcnt[c->x] == PITWIDTH)
+		++pitcnt[c->x];
+		if (pitcnt[c->x] == PITWIDTH)
 			nfull++;
 	}
 	if (! nfull)
 		return;
 
 	/* Clear upper nfull lines */
-	for (i=0; i<nfull; i++) {
-		for (j=0; j<PITWIDTH; j++) {
-			if (pit[i][j]) {
+	for (y=0; y<nfull; y++) {
+		for (x=0; x<PITWIDTH; x++) {
+			if (pit[y][x]) {
 				gpanel_rect_filled (&display,
-					j*5, i*5, j*5 + 5, i*5 + 5, 0);
-				gpanel_pixel (&display, j*5 + 2, i*5 + 2, 1);
+					x*5, y*5, x*5 + 4, y*5 + 4, 0);
+				gpanel_pixel (&display, x*5 + 2, y*5 + 2, 1);
 			}
 		}
 	}
 
 	/* Move lines down */
 	k = nfull;
-	for (i=nfull; i<PITDEPTH && k>0; i++) {
-		if (pitcnt[i-k] == PITWIDTH) {
+	for (y=nfull; y<PITDEPTH && k>0; y++) {
+		if (pitcnt[y-k] == PITWIDTH) {
 			k--;
-			i--;
+			y--;
 			continue;
 		}
-		for (j=0; j<PITWIDTH; j++) {
-			if (pit[i][j] != pit[i-k][j]) {
-				if (pit[i-k][j]) {
+		for (x=0; x<PITWIDTH; x++) {
+			if (pit[y][x] != pit[y-k][x]) {
+				if (pit[y-k][x]) {
 					gpanel_rect_filled (&display,
-						j*5, i*5, j*5 + 5, i*5 + 5, 1);
+						x*5, y*5, x*5 + 4, y*5 + 4, 1);
 				} else {
 					gpanel_rect_filled (&display,
-						j*5, i*5, j*5 + 5, i*5 + 5, 0);
-					gpanel_pixel (&display, j*5 + 2, i*5 + 2, 1);
+						x*5, y*5, x*5 + 4, y*5 + 4, 0);
+					gpanel_pixel (&display, x*5 + 2, y*5 + 2, 1);
 				}
 			}
 		}
 	}
 
 	/* Now fix the pit contents */
-	for (i=PITDEPTH-1; i>0; i--) {
-		if (pitcnt[i] != PITWIDTH)
+	for (y=PITDEPTH-1; y>0; y--) {
+		if (pitcnt[y] != PITWIDTH)
 			continue;
-		memmove (pit[0]+PITWIDTH, pit[0], i * sizeof(pit[0]));
+		memmove (pit[0]+PITWIDTH, pit[0], y * sizeof(pit[0]));
 		memset (pit[0], 0, sizeof(pit[0]));
-		memmove (pitcnt+1, pitcnt, i * sizeof(pitcnt[0]));
+		memmove (pitcnt+1, pitcnt, y * sizeof(pitcnt[0]));
 		pitcnt[0] = 0;
-		i++;
+		y++;
 	}
 }
 
@@ -316,10 +316,10 @@ ok:
 		else if (! up_pressed) {
 			up_pressed = 1;
 
-			/* Up: move right. */
-			if (cnew.y >= PITWIDTH-1)
+			/* Up: move left. */
+			if (cnew.y <= 0)
 				goto out;
-			cnew.y++;
+			cnew.y--;
 			pdots (&shape[ptype], cnew, anew, chk);
 			goto check;
 		}
@@ -329,10 +329,10 @@ ok:
 		else if (! down_pressed) {
 			down_pressed = 1;
 
-			/* Down: move left */
-			if (cnew.y <= 0)
+			/* Down: move right */
+			if (cnew.y >= PITWIDTH-1)
 				goto out;
-			cnew.y--;
+			cnew.y++;
 			pdots (&shape[ptype], cnew, anew, chk);
 			goto check;
 		}
