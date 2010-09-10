@@ -2,10 +2,11 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= philosophers
+TEST		= tetris
 TESTS		= test-debug.srec test-lcd.srec test-task-lcd.srec
 TESTS		+= test-timer.srec test-timer-lcd.srec #test-uart.srec
 TESTS		+= test-latency.srec test-tswitch.srec philosophers.srec
+TESTS		+= tetris.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 # Using MILPROG utility.
