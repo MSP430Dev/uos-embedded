@@ -10,10 +10,10 @@
 #define PITWIDTH	12
 #define PITDEPTH	24
 
-#define NTYPES		7
-#define NPIECES		5
+#define NSHAPES		7
+#define NBLOCKS		5
 
-#define END		999
+#define FIN		999
 
 typedef struct {
 	int     x, y;
@@ -21,36 +21,41 @@ typedef struct {
 
 typedef struct {
 	int	dx, dy;
-	coord_t p [NPIECES];
+	coord_t p [NBLOCKS];
 } shape_t;
 
-const shape_t shape [NTYPES] = {
-	/* OOOO */
-	{ 0, 3, { {0,0}, {0,1}, {0,2}, {0,3}, {END,END} } },
+const shape_t shape [NSHAPES] = {
+/* OOOO */	{ 0, 3, { {0,0}, {0,1}, {0,2}, {0,3}, {FIN,FIN} } },
 
-	/* O    O    O  OO OO */
-	/* OOO OOO OOO OO   OO */
-	{ 1, 2, { {0,0}, {1,0}, {1,1}, {1,2}, {END,END} } },
-	{ 1, 2, { {0,1}, {1,0}, {1,1}, {1,2}, {END,END} } },
-	{ 1, 2, { {0,2}, {1,0}, {1,1}, {1,2}, {END,END} } },
-	{ 1, 2, { {0,0}, {0,1}, {1,1}, {1,2}, {END,END} } },
-	{ 1, 2, { {0,1}, {0,2}, {1,0}, {1,1}, {END,END} } },
+/* O   */	{ 1, 2, { {0,0}, {1,0}, {1,1}, {1,2}, {FIN,FIN} } },
+/* OOO */
 
-	/* OO */
-	/* OO */
-	{ 1, 1, { {0,0}, {0,1}, {1,0}, {1,1}, {END,END} } },
+/*  O  */	{ 1, 2, { {0,1}, {1,0}, {1,1}, {1,2}, {FIN,FIN} } },
+/* OOO */
+
+/*   O */	{ 1, 2, { {0,2}, {1,0}, {1,1}, {1,2}, {FIN,FIN} } },
+/* OOO */
+
+/*  OO */	{ 1, 2, { {0,0}, {0,1}, {1,1}, {1,2}, {FIN,FIN} } },
+/* OO  */
+
+/* OO  */	{ 1, 2, { {0,1}, {0,2}, {1,0}, {1,1}, {FIN,FIN} } },
+/*  OO */
+
+/* OO */	{ 1, 1, { {0,0}, {0,1}, {1,0}, {1,1}, {FIN,FIN} } },
+/* OO */
 };
 
 int pit [PITDEPTH+1] [PITWIDTH];
 int pitcnt [PITDEPTH];
-coord_t old [NPIECES], new [NPIECES], chk [NPIECES];
+coord_t old [NBLOCKS], new [NBLOCKS], chk [NBLOCKS];
 
 gpanel_t display;
 
 /*
  * Output piece coordinates given its center and angle
  */
-void pdots (const shape_t *t, coord_t c, int a, coord_t *res)
+void translate (const shape_t *t, coord_t c, int a, coord_t *res)
 {
 	coord_t org, tmp;
 	int yw, xw, i;
@@ -69,7 +74,7 @@ void pdots (const shape_t *t, coord_t c, int a, coord_t *res)
 		org.y = 0;
 	if (org.y + yw >= PITWIDTH && c.y <= PITWIDTH)
 		org.y = PITWIDTH-1 - yw;
-	for (i=0; t->p[i].x!=END; i++) {
+	for (i=0; t->p[i].x!=FIN; i++) {
 		switch (a) {
 		case 0:
 			res[i].x = t->p[i].x;
@@ -90,11 +95,11 @@ void pdots (const shape_t *t, coord_t c, int a, coord_t *res)
 		res[i].x += org.x;
 		res[i].y += org.y;
 	}
-	res[i].x = res[i].y = END;
+	res[i].x = res[i].y = FIN;
 
 	do {
 		xw = 0;
-		for (i=0; res[i+1].x!=END; i++) {
+		for (i=0; res[i+1].x!=FIN; i++) {
 			if (res[i].x < res[i+1].x)
 				continue;
 			if (res[i].x == res[i+1].x && res[i].y <= res[i+1].y)
@@ -108,15 +113,18 @@ void pdots (const shape_t *t, coord_t c, int a, coord_t *res)
 }
 
 /*
- * Draw the piece
+ * Draw the block
  */
-void draw (coord_t *p)
+void draw_block (int h, int w, int visible)
 {
-	for (; p->x!=END; p++) {
-		if (p->x < 0)
-			continue;
-		gpanel_rect_filled (&display,
-			p->x*5, p->y*5, p->x*5 + 4, p->y*5 + 4, 1);
+	h *= 5;
+	w *= 5;
+	if (visible) {
+		gpanel_rect_filled (&display, h, w, h + 4, w + 4, 1);
+	} else {
+		gpanel_rect_filled (&display, h, w, h + 4, w + 4, 0);
+		if (w % 15 == 0)
+			gpanel_pixel (&display, h + 2, w, 1);
 	}
 }
 
@@ -126,9 +134,9 @@ void draw (coord_t *p)
 void move (coord_t *old, coord_t *new)
 {
 	for (;;) {
-		if (old->x == END)
+		if (old->x == FIN)
 			goto draw;
-		if (new->x == END)
+		if (new->x == FIN)
 			goto clear;
 		if (old->x > new->x)
 			goto draw;
@@ -141,20 +149,15 @@ void move (coord_t *old, coord_t *new)
 			new++;
 			continue;       /* old & new at the same place */
 		}
-clear:          if (old->x >= 0) {
-			gpanel_rect_filled (&display,
-				old->x*5, old->y*5, old->x*5 + 4, old->y*5 + 4, 0);
-			gpanel_pixel (&display, old->x*5 + 2, old->y*5 + 2, 1);
-		}
+clear:          if (old->x >= 0)
+			draw_block (old->x, old->y, 0);
 		old++;
 		continue;
 
-draw:           if (new->x == END)
+draw:           if (new->x == FIN)
 			break;
-		if (new->x >= 0) {
-			gpanel_rect_filled (&display,
-				new->x*5, new->y*5, new->x*5 + 4, new->y*5 + 4, 1);
-		}
+		if (new->x >= 0)
+			draw_block (new->x, new->y, 1);
 		new++;
 	}
 }
@@ -164,30 +167,32 @@ draw:           if (new->x == END)
  */
 void clear ()
 {
-	int y, x;
+	int h, w;
 
 	gpanel_clear (&display, 0);
-	for (y=0; y<PITDEPTH; y++) {
-		for (x=0; x<PITWIDTH; x++) {
-			gpanel_pixel (&display, y*5 + 2, x*5 + 2, 1);
-			pit[y][x] = 0;
+	for (h=0; h<PITDEPTH; h++) {
+		for (w=0; w<PITWIDTH; w++) {
+			if (w % 3 == 0)
+				gpanel_pixel (&display, h*5 + 2, w*5, 1);
+			pit[h][w] = 0;
 		}
-		pitcnt[y] = 0;
+		gpanel_pixel (&display, h*5 + 2, PITWIDTH*5, 1);
+		pitcnt[h] = 0;
 	}
-	for (x=0; x<PITWIDTH; x++)
-		pit[PITDEPTH][x] = 1;
+	for (w=0; w<PITWIDTH; w++)
+		pit[PITDEPTH][w] = 1;
 }
 
 /*
  * The piece reached the bottom
  */
-void scarp (coord_t *c)
+void stopped (coord_t *c)
 {
-	int y, nfull, x, k;
+	int h, nfull, w, k;
 
 	/* Count the full lines */
 	nfull = 0;
-	for (; c->x!=END; c++) {
+	for (; c->x!=FIN; c++) {
 		if (c->x <= 0) {
 			/* Game over. */
 			clear();
@@ -202,47 +207,38 @@ void scarp (coord_t *c)
 		return;
 
 	/* Clear upper nfull lines */
-	for (y=0; y<nfull; y++) {
-		for (x=0; x<PITWIDTH; x++) {
-			if (pit[y][x]) {
-				gpanel_rect_filled (&display,
-					x*5, y*5, x*5 + 4, y*5 + 4, 0);
-				gpanel_pixel (&display, x*5 + 2, y*5 + 2, 1);
+	for (h=0; h<nfull; h++) {
+		for (w=0; w<PITWIDTH; w++) {
+			if (pit[h][w]) {
+				draw_block (h, w, 0);
 			}
 		}
 	}
 
 	/* Move lines down */
 	k = nfull;
-	for (y=nfull; y<PITDEPTH && k>0; y++) {
-		if (pitcnt[y-k] == PITWIDTH) {
+	for (h=nfull; h<PITDEPTH && k>0; h++) {
+		if (pitcnt[h-k] == PITWIDTH) {
 			k--;
-			y--;
+			h--;
 			continue;
 		}
-		for (x=0; x<PITWIDTH; x++) {
-			if (pit[y][x] != pit[y-k][x]) {
-				if (pit[y-k][x]) {
-					gpanel_rect_filled (&display,
-						x*5, y*5, x*5 + 4, y*5 + 4, 1);
-				} else {
-					gpanel_rect_filled (&display,
-						x*5, y*5, x*5 + 4, y*5 + 4, 0);
-					gpanel_pixel (&display, x*5 + 2, y*5 + 2, 1);
-				}
+		for (w=0; w<PITWIDTH; w++) {
+			if (pit[h][w] != pit[h-k][w]) {
+				draw_block (h, w, pit[h-k][w]);
 			}
 		}
 	}
 
 	/* Now fix the pit contents */
-	for (y=PITDEPTH-1; y>0; y--) {
-		if (pitcnt[y] != PITWIDTH)
+	for (h=PITDEPTH-1; h>0; h--) {
+		if (pitcnt[h] != PITWIDTH)
 			continue;
-		memmove (pit[0]+PITWIDTH, pit[0], y * sizeof(pit[0]));
+		memmove (pit[0]+PITWIDTH, pit[0], h * sizeof(pit[0]));
 		memset (pit[0], 0, sizeof(pit[0]));
-		memmove (pitcnt+1, pitcnt, y * sizeof(pitcnt[0]));
+		memmove (pitcnt+1, pitcnt, h * sizeof(pitcnt[0]));
 		pitcnt[0] = 0;
-		y++;
+		h++;
 	}
 }
 
@@ -263,19 +259,24 @@ int main ()
 	clear();
 
 newpiece:
-	ptype = rand15() % NTYPES;
+	ptype = rand15() % NSHAPES;
 	angle = rand15() % 3;
 
 	c.y = PITWIDTH/2 - 1;
 	for (c.x= -2; ; c.x++) {
-		pdots (&shape[ptype], c, angle, new);
-		for (cp=new; cp->x!=END; cp++) {
+		translate (&shape[ptype], c, angle, new);
+		for (cp=new; cp->x!=FIN; cp++) {
 			if (cp->x >= 0)
 				goto ok;
 		}
 	}
 ok:
-	draw (new);
+	/* Draw new piece */
+	for (cp=new; cp->x!=FIN; cp++) {
+		if (cp->x >= 0) {
+			draw_block (cp->x, cp->y, 1);
+		}
+	}
 	memcpy (old, new, sizeof old);
 
 	msec = 500;
@@ -287,12 +288,10 @@ ok:
 			/* Timeout: move down */
 			msec = 500;
 			cnew.x++;
-			pdots (&shape[ptype], cnew, anew, chk);
-			for (cp=chk; cp->x!=END; cp++) {
-				if (cp->x < 0)
-					continue;
-				if (pit[cp->x][cp->y]) {
-					scarp (new);
+			translate (&shape[ptype], cnew, anew, chk);
+			for (cp=chk; cp->x!=FIN; cp++) {
+				if (cp->x >= 0 && pit[cp->x][cp->y]) {
+					stopped (new);
 					goto newpiece;
 				}
 			}
@@ -307,7 +306,7 @@ ok:
 			/* Left: rotate */
 			if (--anew < 0)
 				anew = 3;
-			pdots (&shape[ptype], cnew, anew, chk);
+			translate (&shape[ptype], cnew, anew, chk);
 			goto check;
 		}
 
@@ -320,7 +319,7 @@ ok:
 			if (cnew.y <= 0)
 				goto out;
 			cnew.y--;
-			pdots (&shape[ptype], cnew, anew, chk);
+			translate (&shape[ptype], cnew, anew, chk);
 			goto check;
 		}
 
@@ -333,7 +332,7 @@ ok:
 			if (cnew.y >= PITWIDTH-1)
 				goto out;
 			cnew.y++;
-			pdots (&shape[ptype], cnew, anew, chk);
+			translate (&shape[ptype], cnew, anew, chk);
 			goto check;
 		}
 
@@ -345,15 +344,13 @@ ok:
 			/* Right: drop */
 			for (;;) {
 				cnew.x++;
-				pdots (&shape[ptype], cnew, anew, chk);
-				for (cp=chk; cp->x!=END; cp++) {
-					if (cp->x < 0)
-						continue;
-					if (pit[cp->x][cp->y]) {
+				translate (&shape[ptype], cnew, anew, chk);
+				for (cp=chk; cp->x!=FIN; cp++) {
+					if (cp->x >= 0 && pit[cp->x][cp->y]) {
 						cnew.x--;
-						pdots (&shape[ptype], cnew, anew, chk);
+						translate (&shape[ptype], cnew, anew, chk);
 						move (new, chk);
-						scarp (chk);
+						stopped (chk);
 						goto newpiece;
 					}
 				}
@@ -364,14 +361,12 @@ ok:
 		msec -= 10;
 		continue;
 
-check:		for (cp=chk; cp->x!=END; cp++) {
+check:		for (cp=chk; cp->x!=FIN; cp++) {
 			if (cp->y < 0 || cp->y >= PITWIDTH)
 				goto out;
 		}
-		for (cp=chk; cp->x!=END; cp++) {
-			if (cp->x < 0)
-				continue;
-			if (pit[cp->x][cp->y])
+		for (cp=chk; cp->x!=FIN; cp++) {
+			if (cp->x >= 0 && pit[cp->x][cp->y])
 				goto out;
 		}
 		c = cnew;
