@@ -16,7 +16,7 @@
 #define FIN		999
 
 typedef struct {
-	int     x, y;
+	int	x, y;
 } coord_t;
 
 typedef struct {
@@ -123,7 +123,9 @@ void draw_block (int h, int w, int visible)
 		gpanel_rect_filled (&display, h, w, h + 4, w + 4, 1);
 	} else {
 		gpanel_rect_filled (&display, h, w, h + 4, w + 4, 0);
-		if (w % 15 == 0)
+		if (w == (PITWIDTH-1)*5)
+			gpanel_pixel (&display, h + 2, w - 1, 1);
+		else if (w % 15 == 0)
 			gpanel_pixel (&display, h + 2, w, 1);
 	}
 }
@@ -134,10 +136,20 @@ void draw_block (int h, int w, int visible)
 void move (coord_t *old, coord_t *new)
 {
 	for (;;) {
-		if (old->x == FIN)
-			goto draw;
-		if (new->x == FIN)
-			goto clear;
+		if (old->x == FIN) {
+draw:			if (new->x == FIN)
+				break;
+			if (new->x >= 0)
+				draw_block (new->x, new->y, 1);
+			new++;
+			continue;
+		}
+		if (new->x == FIN) {
+clear:			if (old->x >= 0)
+				draw_block (old->x, old->y, 0);
+			old++;
+			continue;
+		}
 		if (old->x > new->x)
 			goto draw;
 		if (old->x < new->x)
@@ -145,20 +157,10 @@ void move (coord_t *old, coord_t *new)
 		if (old->y > new->y)
 			goto draw;
 		if (old->y == new->y) {
+			/* old & new at the same place */
 			old++;
 			new++;
-			continue;       /* old & new at the same place */
 		}
-clear:          if (old->x >= 0)
-			draw_block (old->x, old->y, 0);
-		old++;
-		continue;
-
-draw:           if (new->x == FIN)
-			break;
-		if (new->x >= 0)
-			draw_block (new->x, new->y, 1);
-		new++;
 	}
 }
 
@@ -169,14 +171,11 @@ void clear ()
 {
 	int h, w;
 
-	gpanel_clear (&display, 0);
 	for (h=0; h<PITDEPTH; h++) {
 		for (w=0; w<PITWIDTH; w++) {
-			if (w % 3 == 0)
-				gpanel_pixel (&display, h*5 + 2, w*5, 1);
+			draw_block (&display, h, w, 0);
 			pit[h][w] = 0;
 		}
-		gpanel_pixel (&display, h*5 + 2, PITWIDTH*5, 1);
 		pitcnt[h] = 0;
 	}
 	for (w=0; w<PITWIDTH; w++)
@@ -250,10 +249,11 @@ int main ()
 	coord_t c, cnew, *cp;
 	unsigned up_pressed = 0, left_pressed = 0;
 	unsigned right_pressed = 0, down_pressed = 0;
-	extern gpanel_font_t font_fixed6x8;
 
 	buttons_init ();
-	gpanel_init (&display, &font_fixed6x8);
+	gpanel_init (&display, 0);
+	gpanel_clear (&display, 0);
+	gpanel_line (&display, PITDEPTH*5+1, 0, PITDEPTH*5+1, PITWIDTH*5-1, 1);
 
 	/* Draw the pit */
 	clear();
@@ -317,7 +317,7 @@ ok:
 
 			/* Up: move left. */
 			if (cnew.y <= 0)
-				goto out;
+				continue;
 			cnew.y--;
 			translate (&shape[ptype], cnew, anew, chk);
 			goto check;
@@ -330,7 +330,7 @@ ok:
 
 			/* Down: move right */
 			if (cnew.y >= PITWIDTH-1)
-				goto out;
+				continue;
 			cnew.y++;
 			translate (&shape[ptype], cnew, anew, chk);
 			goto check;
@@ -363,17 +363,17 @@ ok:
 
 check:		for (cp=chk; cp->x!=FIN; cp++) {
 			if (cp->y < 0 || cp->y >= PITWIDTH)
-				goto out;
+				goto done;
 		}
 		for (cp=chk; cp->x!=FIN; cp++) {
 			if (cp->x >= 0 && pit[cp->x][cp->y])
-				goto out;
+				goto done;
 		}
 		c = cnew;
 		angle = anew;
 		memcpy (old, new, sizeof old);
 		memcpy (new, chk, sizeof new);
 		move (old, new);
-out:		;
+done:		;
 	}
 }
