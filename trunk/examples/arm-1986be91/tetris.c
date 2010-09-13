@@ -123,10 +123,14 @@ void draw_block (int h, int w, int visible)
 		gpanel_rect_filled (&display, h, w, h + 4, w + 4, 1);
 	} else {
 		gpanel_rect_filled (&display, h, w, h + 4, w + 4, 0);
-		if (w == (PITWIDTH-1)*5)
-			gpanel_pixel (&display, h + 2, w - 1, 1);
-		else if (w % 15 == 0)
+
+		if (h == (PITDEPTH-1)*5)
+			gpanel_pixel (&display, h + 4, w + 2, 1);
+
+		if (w == 0)
 			gpanel_pixel (&display, h + 2, w, 1);
+		else if (w % 20 == 15)
+			gpanel_pixel (&display, h + 2, w + 4, 1);
 	}
 }
 
@@ -156,11 +160,11 @@ clear:			if (old->x >= 0)
 			goto clear;
 		if (old->y > new->y)
 			goto draw;
-		if (old->y == new->y) {
-			/* old & new at the same place */
-			old++;
-			new++;
-		}
+		if (old->y != new->y)
+			goto clear;
+		/* old & new at the same place */
+		old++;
+		new++;
 	}
 }
 
@@ -173,7 +177,7 @@ void clear ()
 
 	for (h=0; h<PITDEPTH; h++) {
 		for (w=0; w<PITWIDTH; w++) {
-			draw_block (&display, h, w, 0);
+			draw_block (h, w, 0);
 			pit[h][w] = 0;
 		}
 		pitcnt[h] = 0;
@@ -253,7 +257,6 @@ int main ()
 	buttons_init ();
 	gpanel_init (&display, 0);
 	gpanel_clear (&display, 0);
-	gpanel_line (&display, PITDEPTH*5+1, 0, PITDEPTH*5+1, PITWIDTH*5-1, 1);
 
 	/* Draw the pit */
 	clear();
