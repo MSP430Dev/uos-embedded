@@ -77,6 +77,7 @@ _irq_handler_ (void)
 	} else if (ipsr >= 16 && ipsr < 48) {
 		irq = ipsr - 16;
 		ARM_NVIC_ICER0 = 1 << irq;	/* clear pending irq */
+//debug_putchar (0, '@'+irq);
 	} else {
 		/* Cannot happen. */
 debug_printf ("<interrupt with ipsr==0> ");
@@ -105,12 +106,6 @@ debug_printf ("<unexpected interrupt> ");
 			 * there is no need to wake up the interrupt
 			 * servicing task, stopped on mutex_wait.
 			 * Task switching is not performed. */
-#ifdef ARM_1986BE9
-//				if (irq == 6 || irq == 7) {
-//					/* Enable UART transmit irq. */
-//					ARM_NVIC_ISER0 = 1 << irq;
-//				}
-#endif
 			goto done;
 		}
 	}
@@ -155,7 +150,7 @@ void arch_intr_allow (int irq)
 		/* Systick interrupt: nothing to do. */
 	} else {
 		ARM_NVIC_ISER0 = 1 << irq;
-debug_printf ("<ISER0:=%x> ", 1 << irq);
+//debug_printf ("<ISER0:=%x> ", 1 << irq);
 	}
 }
 

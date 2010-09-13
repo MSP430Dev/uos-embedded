@@ -2,6 +2,19 @@
 
 static int debug_char = -1;
 
+static void (*hook) (void *arg, short c);
+static void *hook_arg;
+
+/*
+ * Redirect debug output.
+ */
+void
+debug_redirect (void (*func) (void*, short), void *arg)
+{
+	hook = func;
+	hook_arg = arg;
+}
+
 #ifdef ARM_S3C4530
 /*
  * Send a byte to the UART transmitter, with interrupts disabled.
@@ -12,6 +25,12 @@ debug_putchar (void *arg, short c)
 	int x;
 
 	arm_intr_disable (&x);
+
+	if (hook) {
+		hook (hook_arg, c);
+		arm_intr_restore (x);
+		return;
+	}
 
 	/* Enable transmitter. */
 	ARM_UCON(0) = (ARM_UCON(0) & ~ARM_UCON_TMODE_MASK) | ARM_UCON_TMODE_IRQ;
@@ -131,6 +150,12 @@ debug_putchar (void *arg, short c)
 
 	arm_intr_disable (&x);
 
+	if (hook) {
+		hook (hook_arg, c);
+		arm_intr_restore (x);
+		return;
+	}
+
 	/* Wait for transmitter holding register empty. */
 	while (! (*AT91C_CONSOLE_CSR & AT91C_US_TXRDY))
 		continue;
@@ -223,16 +248,22 @@ debug_putchar (void *arg, short c)
 
 	arm_intr_disable (&x);
 
+	if (hook) {
+		hook (hook_arg, c);
+		arm_intr_restore (x);
+		return;
+	}
+
 	/* Wait for transmitter holding register empty. */
-//	while (! (ARM_UART2->RIS & ARM_UART_RIS_TX))
-//		continue;
+	while (ARM_UART2->FR & ARM_UART_FR_TXFF)
+		continue;
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
 	ARM_UART2->DR = c;
 
 	/* Wait for transmitter holding register empty. */
-	while (! (ARM_UART2->RIS & ARM_UART_RIS_TX))
+	while (ARM_UART2->FR & ARM_UART_FR_TXFF)
 		continue;
 
 	watchdog_alive ();
@@ -264,7 +295,7 @@ debug_getchar (void)
 	ARM_UART2->CR |= ARM_UART_CR_RXE;
 
 	/* Wait until receive data available. */
-	while (! (ARM_UART2->RIS & ARM_UART_RIS_RX)) {
+	while (ARM_UART2->FR & ARM_UART_FR_RXFE) {
 		watchdog_alive ();
 		arm_intr_restore (x);
 		arm_intr_disable (&x);
@@ -294,7 +325,7 @@ debug_peekchar (void)
 	ARM_UART2->CR |= ARM_UART_CR_RXE;
 
 	/* Wait until receive data available. */
-	if (! (ARM_UART2->RIS & ARM_UART_RIS_RX)) {
+	if (ARM_UART2->FR & ARM_UART_FR_RXFE) {
 		arm_intr_restore (x);
 		return -1;
 	}

@@ -305,15 +305,29 @@ void gpanel_glyph (gpanel_t *gp, unsigned width, const unsigned short *bits)
  */
 void gpanel_rect_filled (gpanel_t *gp, int x0, int y0, int x1, int y1, int color)
 {
-#if 0
-	int xmin, xmax, ymin, ymax, i;
+	/* Temporary solution */
+	int xmin, xmax, ymin, ymax, x, y;
 
 	/* calculate the min and max for x and y directions */
-	xmin = (x0 <= x1) ? x0 : x1;
-	xmax = (x0 > x1) ? x0 : x1;
-	ymin = (y0 <= y1) ? y0 : y1;
-	ymax = (y0 > y1) ? y0 : y1;
-
+	if (x0 <= x1) {
+		xmin = x0;
+		xmax = x1;
+	} else {
+		xmin = x1;
+		xmax = x0;
+	}
+	if (y0 <= y1) {
+		ymin = y0;
+		ymax = y1;
+	} else {
+		ymin = y1;
+		ymax = y0;
+	}
+	for (y=ymin; y<=ymax; y++)
+		for (x=xmin; x<=xmax; x++)
+			gpanel_pixel (gp, x, y, color);
+#if 1
+#else
 	/* specify the controller drawing box according to those limits */
 	write_command (PHILIPS_PASET);
 	write_data (ymin + 1);

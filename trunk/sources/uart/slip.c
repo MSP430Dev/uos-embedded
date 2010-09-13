@@ -28,6 +28,10 @@
 #   include "linux.h"
 #endif
 
+#if ARM_1986BE9
+#   include "amba-pl010.h"
+#endif
+
 #define SLIP_FLAG		0300
 #define SLIP_ESC		0333
 #define SLIP_ESC_FLAG		0334

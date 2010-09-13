@@ -32,5 +32,5 @@ debug_vprintf (const char *fmt, va_list args)
 
 void debug_putc (char c)
 {
-	debug_putchar (0, c);
+	putchar (&debug, c);
 }
