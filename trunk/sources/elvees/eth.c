@@ -11,12 +11,10 @@
 #include <elvees/eth.h>
 #include <elvees/ks8721bl.h>
 
-#define ETH_IRQ_RECEIVE	12		/* receive interrupt */
-#define ETH_IRQ_TRANSM	13		/* transmit interrupt */
-#define ETH_IRQ_DMA_RX	14		/* receive DMA interrupt */
-#define ETH_IRQ_DMA_TX	15		/* transmit DMA interrupt */
-
-#define ETH_MTU		1518		/* maximum ethernet frame length */
+#define ETH_IRQ_RECEIVE		12	/* receive interrupt */
+#define ETH_IRQ_TRANSMIT	13	/* transmit interrupt */
+#define ETH_IRQ_DMA_RX		14	/* receive DMA interrupt */
+#define ETH_IRQ_DMA_TX		15	/* transmit DMA interrupt */
 
 /*
  * PHY register write
@@ -24,7 +22,7 @@
 static void
 phy_write (eth_t *u, unsigned address, unsigned data)
 {
-	unsigned i;
+	unsigned i, status;
 
 	/* Issue the command to PHY. */
 	MC_MAC_MD_CONTROL = MD_CONTROL_OP_WRITE |	/* операция записи */
@@ -33,11 +31,14 @@ phy_write (eth_t *u, unsigned address, unsigned data)
 		MD_CONTROL_REG (address);		/* адрес регистра PHY */
 
 	/* Wait until the PHY write completes. */
-	for (i = 0; i < 100000; ++i) {
-		data = MC_MAC_MD_STATUS;
-		if (! (data & MD_STATUS_BUSY))
+	for (i=0; i<100000; ++i) {
+		status = MC_MAC_MD_STATUS;
+		if (! (status & MD_STATUS_BUSY))
 			break;
 	}
+	/*debug_printf ((status & MD_STATUS_BUSY) ?
+		"phy_write(%d, 0x%02x, 0x%04x) TIMEOUT\n" :
+		"phy_write(%d, 0x%02x, 0x%04x)\n", u->phy, address, data);*/
 }
 
 /*
@@ -46,7 +47,7 @@ phy_write (eth_t *u, unsigned address, unsigned data)
 static unsigned
 phy_read (eth_t *u, unsigned address)
 {
-	unsigned data, i;
+	unsigned status, i;
 
 	/* Issue the command to PHY. */
 	MC_MAC_MD_CONTROL = MD_CONTROL_OP_READ |	/* операция чтения */
@@ -54,13 +55,16 @@ phy_read (eth_t *u, unsigned address)
 		MD_CONTROL_REG (address);		/* адрес регистра PHY */
 
 	/* Wait until the PHY read completes. */
-	for (i = 0; i < 100000; ++i) {
-		data = MC_MAC_MD_STATUS;
-		if (! (data & MD_STATUS_BUSY))
+	for (i=0; i<100000; ++i) {
+		status = MC_MAC_MD_STATUS;
+		if (! (status & MD_STATUS_BUSY))
 			break;
 	}
-	data &= MD_STATUS_DATA;
-	return data;
+	/*debug_printf ((status & MD_STATUS_BUSY) ?
+		"phy_read(%d, 0x%02x) TIMEOUT\n" :
+		"phy_read(%d, 0x%02x) returned 0x%04x\n",
+		u->phy, address, status & MD_STATUS_DATA);*/
+	return status & MD_STATUS_DATA;
 }
 
 /*
@@ -68,10 +72,40 @@ phy_read (eth_t *u, unsigned address)
  */
 static void chip_init (eth_t *u)
 {
+	/* Включение тактовой частоты EMAC */
+	MC_CLKEN |= MC_CLKEN_EMAC;
+	udelay (10);
+
+	/* Find a device address of PHY transceiver.
+	 * Count down from 31 to 0, several times. */
+	unsigned id, retry = 0;
+	u->phy = 31;
+	for (;;) {
+		id = phy_read (u, PHY_ID1) << 16 |
+			phy_read (u, PHY_ID2);
+		if (id != 0 && id != 0xffffffff)
+			break;
+		if (u->phy > 0)
+			u->phy--;
+		else {
+			u->phy = 31;
+			retry++;
+			if (retry > 3) {
+				debug_printf ("eth_init: no PHY detected\n");
+				uos_halt (0);
+			}
+		}
+	}
+#ifndef NDEBUG
+	debug_printf ("eth_init: transceiver `%s' detected at address %d\n",
+		((id & PHY_ID_MASK) == PHY_ID_KS8721BL) ? "KS8721" : "Unknown",
+		u->phy);
+#endif
 	/* Reset transceiver. */
 	phy_write (u, PHY_CTL, PHY_CTL_RST);
 	while (phy_read (u, PHY_CTL) & PHY_CTL_RST)
 		continue;
+	phy_write (u, PHY_EXTCTL, PHY_EXTCTL_JABBER);
 
 	/* Perform auto-negotiation. */
 	phy_write (u, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
@@ -110,6 +144,9 @@ static void chip_init (eth_t *u)
 
 	/* Тактовый сигнал MDC не должен превышать 2.5 МГц. */
 	MC_MAC_MD_MODE = MD_MODE_DIVIDER (KHZ / 2000);
+
+	/* Максимальный размер кадра. */
+	MC_MAC_RX_FR_MAXSIZE = ETH_MTU;
 }
 
 void
@@ -336,65 +373,70 @@ eth_set_address (eth_t *u, unsigned char *addr)
 }
 
 /*
+ * Fetch data from receive FIFO.
+ * Must use DMA.
+ */
+static void
+eth_read_rxfifo (eth_t *u, int nbytes, unsigned char *data)
+{
+	/* Set the address and length for DMA. */
+	MC_IR_EMAC(0) = (unsigned) u->rxbuf & 0x1FFFFFFC;
+	MC_CSR_EMAC(0) = MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+
+	/* Run the DMA. */
+	MC_RUN_EMAC(0) = MC_DMA_RUN;
+	while (MC_RUN_EMAC(0) & MC_DMA_RUN) {
+		;
+	}
+	if (data)
+		memcpy (data, u->rxbuf,	nbytes);
+}
+
+/*
  * Fetch and process the received packet from the network controller.
  */
-#if 0
 static void
-eth_receive_data (eth_t *u)
+eth_receive_frame (eth_t *u)
 {
-	unsigned char buf[6];
-	unsigned len, rxstat;
-	buf_t *p;
-
-	/* Set the read pointer to the start of the received packet. */
-/*debug_printf ("eth_receive_data:\n set ERDPT to %#04x\n", u->next_packet_ptr);*/
-	chip_write16 (u, ERDPTL, u->next_packet_ptr);
-
-	/* Read next packet pointer, packet length and receive status. */
-	chip_read_buffer (6, buf);
-	u->next_packet_ptr = buf[0] | buf[1] << 8;
-	len = buf[2] | buf[3] << 8;
-	rxstat = buf[4] | buf[5] << 8;
-/*debug_printf (" next packet pointer = %#04x\n", u->next_packet_ptr);*/
-
-	if (! (rxstat & RSV_RXOK) || len < 4 || len > ETH_MTU) {
-		/* Skip this frame */
-/*debug_printf ("eth_receive_data: failed, rxstat=%#04x, length %d bytes\n", rxstat, len);*/
-		/*TODO: if next_packet_ptr or len is incorrect, reset the receiver.*/
+	unsigned frame_status = MC_MAC_RX_FRAME_STATUS_FIFO;
+	if (! (frame_status & RX_FRAME_STATUS_OK)) {
+		/* Invalid frame */
+debug_printf ("eth_receive_data: failed, frame_status=%#08x\n", frame_status);
 		++u->netif.in_errors;
-		goto skip;
+		return;
+	}
+	unsigned len = RX_FRAME_STATUS_LEN (frame_status);
+	if (len < 4 || len > ETH_MTU) {
+		/* Skip this frame */
+debug_printf ("eth_receive_data: bad length %d bytes, frame_status=%#08x\n", len, frame_status);
+		++u->netif.in_errors;
+		/* Extract data from RX FIFO. */
+skip:		eth_read_rxfifo (u, len, 0);
+		return;
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-/*debug_printf ("eth_receive_data: ok, rxstat=%#04x, length %d bytes\n", rxstat, len);*/
+debug_printf ("eth_receive_data: ok, frame_status=%#08x, length %d bytes\n", frame_status, len);
 
 	if (buf_queue_is_full (&u->inq)) {
-/*debug_printf ("eth_receive_data: input overflow\n");*/
+debug_printf ("eth_receive_data: input overflow\n");
 		++u->netif.in_discards;
 		goto skip;
 	}
 
 	/* Allocate a buf chain with total length 'len' */
-	p = buf_alloc (u->pool, len, 2);
+	buf_t *p = buf_alloc (u->pool, len, 2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
-/*debug_printf ("eth_receive_data: ignore packet - out of memory\n");*/
+debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 		++u->netif.in_discards;
 		goto skip;
 	}
 
-	/* Copy the packet from the receive buffer. */
-	chip_read_buffer (len, p->payload);
+	/* Copy the packet from the receive FIFO. */
+	eth_read_rxfifo (u, len, p->payload);
 	buf_queue_put (&u->inq, p);
-skip:
-	/* Move the RX read pointer to the start of the next received packet
-	 * This frees the memory we just read out */
-	set_erxrdpt (u, u->next_packet_ptr);
-
-	/* decrement the packet counter indicate we are done with this packet */
-	chip_set_bits (u, ECON2, ECON2_PKTDEC);
 }
-#endif
 
 /*
  * Process an interrupt.
@@ -403,23 +445,23 @@ skip:
 static unsigned
 handle_interrupts (eth_t *u)
 {
-#if 1
-	return 0;
-#else
-	unsigned active, eir;
-	buf_t *p;
+	unsigned active, status_rx, nframes;
+//	buf_t *p;
 
 	active = 0;
 	for (;;) {
 		/* Process all pending interrupts. */
-		eir = chip_read (u, EIR);
-/*debug_printf ("eth irq: EIR = %b\n", eir, EIR_BITS);*/
-		if (eir & EIR_RXERIF) {
+		status_rx = MC_MAC_STATUS_RX;
+debug_printf ("eth irq: STATUS_RX = %08x\n", status_rx);
+		if (status_rx & (STATUS_RX_STATUS_OVF | STATUS_RX_FIFO_OVF)) {
 			/* Count lost incoming packets. */
-			++u->netif.in_discards;
-			chip_clear_bits (u, EIR, EIR_RXERIF);
-			chip_clear_bits (u, ESTAT, ESTAT_BUFER);
+			if (STATUS_RX_NUM_MISSED (status_rx))
+				u->netif.in_discards += STATUS_RX_NUM_MISSED (status_rx);
+			else
+				u->netif.in_discards++;
+			MC_MAC_STATUS_RX = 0;
 		}
+#if 0
 		if (eir & EIR_TXERIF) {
 			/* Count collisions. */
 			++u->netif.out_collisions;
@@ -434,16 +476,18 @@ handle_interrupts (eth_t *u)
 			chip_set_bits (u, ECON1, ECON1_TXRTS);
 			eir &= ~EIR_TXIF;
 		}
-		if (! (eir & (EIR_PKTIF | EIR_TXIF))) {
+#endif
+		/* Check if a packet has been received and buffered. */
+		if (status_rx & STATUS_RX_DONE) {
+			++active;
+			nframes = STATUS_RX_NUM_FR (status_rx);
+			while (nframes-- > 0)
+				eth_receive_frame (u);
+		} else {
 			/* All interrupts processed. */
 			return active;
 		}
-		++active;
-
-		/* Check if a packet has been received and buffered. */
-		while (chip_read (u, EPKTCNT) != 0) {
-			eth_receive_data (u);
-		}
+#if 0
 		if (eir & EIR_TXIF) {
 			chip_clear_bits (u, EIR, EIR_TXIF);
 
@@ -452,8 +496,8 @@ handle_interrupts (eth_t *u)
 			if (p)
 				chip_transmit_packet (u, p);
 		}
-	}
 #endif
+	}
 }
 
 /*
@@ -478,10 +522,6 @@ eth_interrupt (void *arg)
 	eth_t *u = arg;
 
 	mutex_lock_irq (&u->netif.lock, ETH_IRQ_RECEIVE, 0, 0);
-
-	/* Enable interrupts. */
-/*	chip_write (u, EIE, EIE_INTIE | EIE_PKTIE | EIE_TXIE);*/
-
 	for (;;) {
 		/* Wait for the interrupt. */
 		mutex_wait (&u->netif.lock);
@@ -504,8 +544,6 @@ void
 eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 	arp_t *arp)
 {
-	unsigned id;
-
 	u->netif.interface = &eth_interface;
 	u->netif.name = name;
 	u->netif.arp = arp;
@@ -518,34 +556,11 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 
 	/* Initialize hardware. */
 	mutex_lock (&u->netif.lock);
-
-	/* Включение тактовой частоты EMAC */
-	MC_CLKEN |= MC_CLKEN_EMAC;
-	udelay (10);
-
-	/* Find a device address of PHY transceiver. */
-	for (u->phy=0; u->phy<32; u->phy++) {
-		id = phy_read (u, PHY_ID1) << 16 |
-			phy_read (u, PHY_ID2);
-		if (id != 0 && id != 0xffffffff)
-			break;
-	}
-	if (u->phy >= 32) {
-		debug_printf ("eth_init: no PHY detected\n");
-		uos_halt (0);
-	}
-#ifndef NDEBUG
-	debug_printf ("eth_init: transceiver `%s' detected at address %d\n",
-		((id & PHY_ID_MASK) == PHY_ID_KS8721BL) ? "KS8721" : "Unknown",
-		u->phy);
-#endif
 	chip_init (u);
-
 	mutex_unlock (&u->netif.lock);
 
 	/* Create receive task. */
-	task_create (eth_interrupt, u, name, prio,
-		u->stack, sizeof (u->stack));
+	task_create (eth_interrupt, u, name, prio, u->stack, sizeof (u->stack));
 }
 
 #if 0
@@ -723,114 +738,5 @@ static int nvcom_start_xmit (struct sk_buff *skb, struct net_device *dev)
 	/* Unlock priv */
 	spin_unlock_irqrestore(&priv->txlock, flags);
 	return 0;
-}
-
-irqreturn_t nvcom_receive(int irq, void *dev_id)
-{
-	struct net_device *dev = (struct net_device *) dev_id;
-	struct nvcom_eth_private *priv = netdev_priv(dev);
-
-	struct sk_buff *skb;
-
-	int i;
-	unsigned val;
-	unsigned num_frame=0 ;
-	unsigned* buffer_rx_status;
-	unsigned frame_rxw_64;
-	unsigned rx_frame_len;
-	unsigned rx_frame_len_64;
-
-	printk("RX IRQ\n");
-//Let check the status register to discover the cause of interrupt
-	val = REG_STATUS_RX;
-	num_frame=(val>>STATUS_RX_NUM_FR_SHFT)&STATUS_RX_NUM_FR_MASK;
-	frame_rxw_64=(val>>STATUS_RXW_SHFT )&STATUS_RXW_MASK;
-
-	printk("RX: Status=0x%08x\n",val );
-
-	printk("RX: %d frames in fifo allocated %d 64bit words\n ",num_frame,	frame_rxw_64 );
-
-	if( ((val & STATUS_RX_DONE_BIT)==0) && (num_frame==0)) {
-		printk("There is no frame in RX fifo\n");
-		return IRQ_HANDLED;
-	}
-
-	//Let get SATUS RX values from fifo via CPU
-	buffer_rx_status = priv->rx_status_buf;
-
-	for (i=0; i<num_frame; i++) {
-		val = REG_RX_FRAME_STATUS_FIFO;
-		rx_frame_len=val & RX_FRAME_STATUS_LEN_MASK ;
-		rx_frame_len_64=(rx_frame_len+7)>>3;
-
-
-		printk("RX: from fifo rx_status=0x%08x\n",val );
-		*(buffer_rx_status++)=val;
-		printk("RX: frame_len_byte=%d; len_64=%d\n",rx_frame_len,rx_frame_len_64);
-
-		/* Is frame received OK ?*/
-		if ( (RX_FRAME_STATUS_OK_BIT & val) != 0) {
-			/* Let get the load of packet via dma */
-			/* TO DO Check the DMA status before programm DMA*/
-			/*Set DMA modes */
-			/* Set DMA destination */
-
-			val=priv->dma_addr_rx;
-			printk ("REG_MAC_IR_DMA_0_RX:wr 0x%08x\n",val);
-			REG_MAC_IR_DMA_0_RX = val;
-
-			/*Set the length for DMA */
-			val= ( 	(rx_frame_len_64-1) << CSR_DMA_WCX_SHFT) & CSR_DMA_WCX_MASK;
-
-			printk("REG_MAC_CSR_DMA_0_RX:wr 0x%08x\n",val);
-			REG_MAC_CSR_DMA_0_RX = val;
-
-			/*Control read */
-		//	val = REG_MAC_CSR_DMA_0_RX;
-		//	printk("REG_MAC_CSR_DMA_0_RX before DMA start=0x%08x\n",val);
-
-			/* Run the DMA*/
-			printk("RX: Start DMA\n");
-			val = REG_MAC_CSR_DMA_0_RX;
-			val |= CMD_DMA_RUN;
-			printk("RX: Set DMA run:0x%08x\n ",val);
-			REG_MAC_CSR_DMA_0_RX = val;
-
-			while (REG_MAC_RUN_DMA_0_RX & CMD_DMA_RUN) {
-				printk("RX: DMA running 0x%08x\n",
-					REG_MAC_RUN_DMA_0_RX);
-			}
-			printk ("RX: DMA finished\n");
-			val = REG_MAC_CSR_DMA_0_RX;
-			printk("RX: REG_MAC_CSR_DMA_0_RX after DMA stop=0x%08x\n",val);
-
-		/* Dump the RX frame */
-			printk("Dump RX buf len=0x%x (%d)\n",rx_frame_len,rx_frame_len ) ;
-		//	nvcom_dump_frame((unsigned char*)priv->virt_addr_rx,rx_frame_len );
-		}
-		skb = dev_alloc_skb(rx_frame_len+2);
-		if (! skb) {
-			printk("RX: nvcom low on mem - packet dropped\n");
-			continue;
-		}
-
-		memcpy(skb_put(skb,rx_frame_len),priv->virt_addr_rx,rx_frame_len );
-		skb->dev=dev;
-		skb->protocol = eth_type_trans(skb,dev);
-		netif_rx(skb);
-
-	} /*For()  */
-
-/*Check number of rx_status records in fifo rx_status after read */
-//	val = REG_STATUS_RX;
-//	num_frame=(val>>STATUS_RX_NUM_FR_SHFT)&STATUS_RX_NUM_FR_MASK;
-//	printk("RX: %d frames in fifo after read\n ",num_frame );
-//	buffer_rx_status=priv->rx_status_buf;
-//	for(i=0;i<num_frame;i++)
-//		printk("RX: rx_status=0x%08x\n",*(buffer_rx_status++));
-
-//	MC_MAC_CONTROL &= ~(1 << MAC_CTRL_RX_DONE));
-
-	return IRQ_HANDLED;
 }
 #endif /* 0 */

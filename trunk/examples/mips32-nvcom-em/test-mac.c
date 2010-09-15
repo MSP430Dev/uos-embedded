@@ -15,7 +15,7 @@
 #endif
 #define SDRAM_SIZE	(64*1024*1024)
 
-ARRAY (stack_poll, 230);	/* Task: polling */
+ARRAY (stack_poll, 1000);	/* Task: polling */
 mem_pool_t pool;
 eth_t eth;
 
@@ -50,6 +50,7 @@ void poll_eth (void *data)
 		mdelay (10);
 		if (peekchar (&debug) >= 0)
 			command (getchar (&debug));
+
 		p = eth.netif.interface->input (&eth.netif);
 		if (p) {
 			++rx_packets;

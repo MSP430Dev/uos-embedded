@@ -192,10 +192,10 @@
 #define MC_DMA_CSR_END		0x00004000	/* Признак завершения передачи блока данных */
 #define MC_DMA_CSR_DONE		0x00008000	/* Признак завершения передачи цепочки блоков данных */
 #define MC_DMA_CSR_WCX_MASK	0xffff0000	/* Маска счетчика слов */
-#define MC_DMA_CSR_WCX(n)	(n << 16)	/* Установка счетчика слов */
+#define MC_DMA_CSR_WCX(n)	((n) << 16)	/* Установка счетчика слов */
 
 /* Псевдорегистр управления RUN */
-#define MC_DMA_PSEUDO_RUN_MASK	0x00000001	/* Управление битом RUN */
+#define MC_DMA_RUN		0x00000001	/* Управление битом RUN */
 
 /*--------------------------------------
  * Системный регистр CSR
@@ -206,7 +206,7 @@
 #define MC_CSR_FLUSH_D		0x00004000	/* data cache invalidate */
 
 #ifdef ELVEES_MC24
-#define MC_CSR_CLK(n)		(n << 4)	/* PLL clock multiply, 1..31, 0=1/16 */
+#define MC_CSR_CLK(n)		((n) << 4)	/* PLL clock multiply, 1..31, 0=1/16 */
 #define MC_CSR_CLKEN		0x00010000	/* PLL clock enable */
 #endif
 
@@ -324,18 +324,18 @@
 /*
  * Регистры порта внешней памяти CSCONi
  */
-#define MC_CSCON_CSMASK(addr)	(addr >> 24 & 0xff)
+#define MC_CSCON_CSMASK(addr)	((addr) >> 24 & 0xff)
 						/* Address mask bits 31:24 */
-#define MC_CSCON_CSBA(addr)	(addr >> 16 & 0xff00)
+#define MC_CSCON_CSBA(addr)	((addr) >> 16 & 0xff00)
 						/* Base address bits 31:24 */
-#define MC_CSCON_WS(n)		(n << 16)	/* Wait states for async memory */
+#define MC_CSCON_WS(n)		((n) << 16)	/* Wait states for async memory */
 #define MC_CSCON_E		(1 << 20)	/* Enable for nCS0, nCS1, nCS2 */
 #define MC_CSCON_T		(1 << 21)	/* Sync memory flag (only nCS0, nCS1) */
 #define MC_CSCON_AE		(1 << 22)	/* Wait for nACK */
 #define MC_CSCON_W64		(1 << 23)	/* 64-bit data width */
 #define MC_CSCON3_BYTE		(1 << 23)	/* 8-bit data width for nCS3 */
 #define MC_CSCON3_OVER		(1 << 24)	/* Status: no nACK for 256 CLK periods */
-#define MC_CSCON3_ADDR(addr)	((addr & 3) << 20)
+#define MC_CSCON3_ADDR(addr)	(((addr) & 3) << 20)
 						/* Address bits 1:0 for 8-bit memory access */
 
 /*
@@ -347,7 +347,7 @@
 #define MC_SDRCON_PS_4096	(3 << 0)	/* Page size 4096 */
 
 #ifdef ELVEES_MC24
-#define MC_SDRCON_RFR(nsec,khz)	(((nsec*khz+999999)/1000000) << 4)
+#define MC_SDRCON_RFR(nsec,khz)	((((nsec)*(khz)+999999)/1000000) << 4)
 						/* Refresh period */
 #define MC_SDRCON_BL_1		(0 << 16)	/* Bursh length 1 */
 #define MC_SDRCON_BL_2		(1 << 16)	/* Bursh length 2 */
@@ -490,7 +490,7 @@
  * the oscillator frequency and baud rate.
  * Round to the nearest integer.
  */
-#define MC_DL_BAUD(fr,bd)	((fr/8 + (bd)) / (bd) / 2)
+#define MC_DL_BAUD(fr,bd)	(((fr)/8 + (bd)) / (bd) / 2)
 
 /*--------------------------------------
  * Coprocessor 1 (FPU) registers.
@@ -583,20 +583,34 @@
 /*
  * STATUS_RX - статус приема кадра
  */
-#define STATUS_RX_DONE_SHFT		3
-#define STATUS_RX_NUM_FR_SHFT		4
-#define STATUS_RX_NUM_FR_MASK		0x7f
-#define STATUS_RXW_SHFT			12
-#define STATUS_RXW_MASK			0x3ff
-#define STATUS_RX_DONE_BIT		(1 << STATUS_RX_DONE_SHFT)
+#define STATUS_RX_RCV_DISABLED		(1 << 0)		/* Приём не разрешён */
+#define STATUS_RX_ONRECEIVE		(1 << 1)		/* Выполняется приём кадра */
+#define STATUS_RX_DONE			(1 << 3)		/* Есть кадры в RX FIFO */
+#define STATUS_RX_NUM_FR(s)		((s) >> 4 & 0x7f)	/* Число принятых кадров */
+#define STATUS_RX_STATUS_OVF		(1 << 11)		/* Переполнение FIFO статусов */
+#define STATUS_RX_RXW(s)		((s) >> 12 & 0x3ff)	/* Число слов в RX FIFO */
+#define STATUS_RX_FIFO_OVF		(1 << 23)		/* Переполнение FIFO данных */
+#define STATUS_RX_NUM_MISSED(s)		((s) >> 24 & 0x3f)	/* Число пропущенных кадров */
 
 /*
  * RX_FRAME_STATUS_FIFO - FIFO статусов принятых кадров
  */
-#define RX_FRAME_STATUS_LEN_SHFT	0
-#define RX_FRAME_STATUS_LEN_MASK	0xfff
-#define RX_FRAME_STATUS_OK_SHFT		12
-#define RX_FRAME_STATUS_OK_BIT		(1 << RX_FRAME_STATUS_OK_SHFT)
+#define RX_FRAME_STATUS_LEN(s)		((s) & 0xfff)	/* Число байт в принятом кадре */
+#define RX_FRAME_STATUS_OK		(1 << 12)	/* Кадр принят без ошибок */
+#define RX_FRAME_STATUS_LENGTH_ERROR	(1 << 13)	/* Ошибка длины данных */
+#define RX_FRAME_STATUS_ALIGN_ERROR	(1 << 14)	/* Ошибка выравнивания */
+#define RX_FRAME_STATUS_FRAME_ERROR	(1 << 15)	/* Ошибка формата кадра */
+#define RX_FRAME_STATUS_TOO_LONG	(1 << 16)	/* Слишком длинный кадр */
+#define RX_FRAME_STATUS_TOO_SHORT	(1 << 17)	/* Слишком короткий кадр */
+#define RX_FRAME_STATUS_DRIBBLE_NIBBLE	(1 << 18)	/* Нечётное число полубайт */
+#define RX_FRAME_STATUS_LEN_FIELD	(1 << 19)	/* Распознавание поля LENGTH */
+#define RX_FRAME_STATUS_FCS_DEL		(1 << 20)	/* Удаление поля FCS */
+#define RX_FRAME_STATUS_PAD_DEL		(1 << 21)	/* Удаление поля PAD */
+#define RX_FRAME_STATUS_UC		(1 << 22)	/* Распознавание адреса MAC */
+#define RX_FRAME_STATUS_MCM		(1 << 23)	/* Групповой адрес по маске */
+#define RX_FRAME_STATUS_MCHT		(1 << 24)	/* Групповой адрес по хэш-таблице */
+#define RX_FRAME_STATUS_BC		(1 << 25)	/* Широковещательный адрес */
+#define RX_FRAME_STATUS_ALL		(1 << 26)	/* Приём кадров с любым адресом */
 
 /*
  * MD_MODE - режим работы порта MD

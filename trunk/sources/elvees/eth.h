@@ -10,8 +10,10 @@
 #include <buf/buf-queue.h>
 
 #ifndef ETH_STACKSZ
-#   define ETH_STACKSZ	300
+#   define ETH_STACKSZ	1000
 #endif
+
+#define ETH_MTU		1520		/* maximum ethernet frame length */
 
 struct _mem_pool_t;
 struct _stream_t *stream;
@@ -28,11 +30,8 @@ typedef struct _eth_t {
 	struct _buf_t *outqdata[8];
 
 	unsigned phy;			/* address of external PHY */
-#if 0
-	unsigned bank;			/* current bank of chip registers */
-	unsigned next_packet_ptr;	/* next receive packet address */
-#endif
 	unsigned long intr;		/* interrupt counter */
+	unsigned char rxbuf [ETH_MTU];	/* receive buffer for DMA */
 
 	ARRAY (stack, ETH_STACKSZ); /* stack for interrupt task */
 } eth_t;

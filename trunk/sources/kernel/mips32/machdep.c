@@ -272,7 +272,7 @@ _arch_interrupt_ (void)
 			t->ticks++;
 			asm volatile (
 			"	j	switch_task \n"
-			"	nop"
+			"	nop"	: : "r" (t)
 			);
 		}
 	}
