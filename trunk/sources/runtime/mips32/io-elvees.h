@@ -567,6 +567,22 @@
 #define TX_FRAME_CONTROL_TX_REQ		(1 << 16) 	/* передача кадра */
 
 /*
+ * STATUS_TX - статус передачи кадра
+ */
+#define STATUS_TX_ONTX_REQ		(1 << 0)	/* Выполняется запрос передачи */
+#define STATUS_TX_ONTRANSMIT		(1 << 1)	/* Выполняется передача кадра */
+#define STATUS_TX_BUSY			(1 << 2)	/* Среда передачи занята */
+#define STATUS_TX_DONE			(1 << 3)	/* Передача завершена */
+#define STATUS_TX_TRANSMIT_DISABLED	(1 << 4)	/* Передача не разрешена */
+#define STATUS_TX_NOT_ENOUGH_DATA	(1 << 5)	/* Мало данных в TX FIFO */
+#define STATUS_TX_TRANSMIT_OK		(1 << 6)	/* Передача кадра успешно выполнена */
+#define STATUS_TX_EXCESSIVE_COLL	(1 << 7)	/* Повторная передача не удалась */
+#define STATUS_TX_LATE_COLL		(1 << 8)	/* Поздняя коллизия */
+#define STATUS_TX_ONCOL			(1 << 11)	/* Коллизия в среде передачи */
+#define STATUS_TX_COLL_NUM(s)		((s) >> 12 & 15) /* Счетчик попыток повторных передач */
+#define STATUS_TX_TXW(s)		((s) >> 16 & 0x3ff) /* Число слов в TX FIFO */
+
+/*
  * RX_FRAME_CONTROL - управление приемом кадра
  */
 #define RX_FRAME_CONTROL_DIS_RCV_FCS	(1 << 0) 	/* Отключение сохранения контрольной суммы */

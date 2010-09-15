@@ -13,7 +13,7 @@
 #   define ETH_STACKSZ	1000
 #endif
 
-#define ETH_MTU		1520		/* maximum ethernet frame length */
+#define ETH_MTU		1518		/* maximum ethernet frame length */
 
 struct _mem_pool_t;
 struct _stream_t *stream;
@@ -31,7 +31,7 @@ typedef struct _eth_t {
 
 	unsigned phy;			/* address of external PHY */
 	unsigned long intr;		/* interrupt counter */
-	unsigned char rxbuf [ETH_MTU];	/* receive buffer for DMA */
+	unsigned long long dmabuf [(ETH_MTU + 7) / 8];
 
 	ARRAY (stack, ETH_STACKSZ); /* stack for interrupt task */
 } eth_t;

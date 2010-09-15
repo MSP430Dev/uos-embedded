@@ -11,8 +11,15 @@
 
 #define CTL(c)		((c) & 037)
 
-ARRAY (stack_console, 400);		/* Task: menu on console */
-ARRAY (stack_test, 400);		/* Task: transmit/receive packets */
+#ifdef ENABLE_DCACHE
+#   define SDRAM_START	0x00000000
+#else
+#   define SDRAM_START	0xA0000000
+#endif
+#define SDRAM_SIZE	(64*1024*1024)
+
+ARRAY (stack_console, 1000);		/* Task: menu on console */
+ARRAY (stack_test, 1000);		/* Task: transmit/receive packets */
 mem_pool_t pool;
 eth_t eth;
 timer_t timer;
