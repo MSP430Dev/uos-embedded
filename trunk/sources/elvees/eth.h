@@ -20,7 +20,7 @@ struct _stream_t *stream;
 
 typedef struct _eth_t {
 	netif_t netif;			/* common network interface part */
-
+	mutex_t tx_lock;		/* get tx interrupts here */
 	struct _mem_pool_t *pool;	/* memory pool for allocating packets */
 
 	buf_queue_t inq;		/* queue of received packets */

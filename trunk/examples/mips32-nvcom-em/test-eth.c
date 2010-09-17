@@ -252,7 +252,7 @@ void menu ()
 			speed == 100000000 ? "100Base-TX" : "10Base-TX",
 			full_duplex ? "Full Duplex" : "Half Duplex");
 	}
-	printf (&debug, "\n");
+	printf (&debug, ", %u interrupts\n", eth.intr);
 
 	printf (&debug, "Transmit: %ld packets, %ld collisions, %ld errors\n",
 			eth.netif.out_packets, eth.netif.out_collisions,

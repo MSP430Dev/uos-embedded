@@ -124,6 +124,7 @@ static void chip_init (eth_t *u)
 		MAC_CONTROL_EN_TX |		/* разрешение передачи */
 		MAC_CONTROL_EN_TX_DMA |		/* разрешение передающего DMА */
 		MAC_CONTROL_EN_RX |		/* разрешение приема */
+		MAC_CONTROL_IRQ_TX_DONE | 	/* прерывание от передачи */
 		MAC_CONTROL_IRQ_RX_DONE | 	/* прерывание по приёму */
 		MAC_CONTROL_IRQ_RX_OVF; 	/* прерывание по переполнению */
 	debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);
@@ -153,18 +154,23 @@ void
 eth_debug (eth_t *u, struct _stream_t *stream)
 {
 	unsigned short ctl, advrt, sts, extctl;
+	unsigned status_rx, status_tx;
 
 	mutex_lock (&u->netif.lock);
 	ctl = phy_read (u, PHY_CTL);
 	sts = phy_read (u, PHY_STS);
 	advrt = phy_read (u, PHY_ADVRT);
 	extctl = phy_read (u, PHY_EXTCTL);
+	status_rx = MC_MAC_STATUS_RX;
+	status_tx = MC_MAC_STATUS_TX;
 	mutex_unlock (&u->netif.lock);
 
 	printf (stream, "CTL=%b\n", ctl, PHY_CTL_BITS);
 	printf (stream, "STS=%b\n", sts, PHY_STS_BITS);
 	printf (stream, "ADVRT=%b\n", advrt, PHY_ADVRT_BITS);
 	printf (stream, "EXTCTL=%b\n", extctl, PHY_EXTCTL_BITS);
+	printf (stream, "STATUS_TX=%b\n", status_tx, STATUS_TX_BITS);
+	printf (stream, "STATUS_RX=%b\n", status_rx, STATUS_RX_BITS);
 }
 
 void eth_start_negotiation (eth_t *u)
@@ -242,18 +248,16 @@ void eth_set_loop (eth_t *u, int on)
 void eth_set_promisc (eth_t *u, int station, int group)
 {
 	mutex_lock (&u->netif.lock);
-#if 0
-	erxfcon = ERXFCON_UCEN | ERXFCON_CRCEN | ERXFCON_BCEN;
+	unsigned rx_frame_control = MC_MAC_RX_FRAME_CONTROL &
+		~(RX_FRAME_CONTROL_EN_MCM | RX_FRAME_CONTROL_EN_ALL);
 	if (station) {
 		/* Accept any unicast. */
-		erxfcon &= ~ERXFCON_UCEN;
-	}
-	if (group) {
+		rx_frame_control |= RX_FRAME_CONTROL_EN_ALL;
+	} else if (group) {
 		/* Accept any multicast. */
-		erxfcon |= ERXFCON_MCEN;
+		rx_frame_control |= RX_FRAME_CONTROL_EN_MCM;
 	}
-	chip_write (u, ERXFCON, erxfcon);
-#endif
+	MC_MAC_RX_FRAME_CONTROL = rx_frame_control;
 	mutex_unlock (&u->netif.lock);
 }
 
@@ -318,6 +322,7 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 	}
 	chip_write_txfifo (u->dmabuf, len);
 	MC_MAC_TX_FRAME_CONTROL |= TX_FRAME_CONTROL_TX_REQ;
+	MC_MASKR0 |= 1 << ETH_IRQ_TRANSMIT;
 
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
@@ -331,24 +336,24 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 static bool_t
 eth_output (eth_t *u, buf_t *p, small_uint_t prio)
 {
-	mutex_lock (&u->netif.lock);
+	mutex_lock (&u->tx_lock);
 
 	/* Exit if link has failed */
 	if (p->tot_len < 4 || p->tot_len > ETH_MTU ||
 	    ! (phy_read (u, PHY_STS) & PHY_STS_LINK)) {
-debug_printf ("eth_output: transmit %d bytes, link failed\n", p->tot_len);
 		++u->netif.out_errors;
-		mutex_unlock (&u->netif.lock);
+		mutex_unlock (&u->tx_lock);
+debug_printf ("eth_output: transmit %d bytes, link failed\n", p->tot_len);
 		buf_free (p);
 		return 0;
 	}
-debug_printf ("eth_output: transmit %d bytes\n", p->tot_len);
+/*debug_printf ("eth_output: transmit %d bytes\n", p->tot_len);*/
 
 	if (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ) {
 		/* Занято, ставим в очередь. */
 		if (buf_queue_is_full (&u->outq)) {
 			++u->netif.out_discards;
-			mutex_unlock (&u->netif.lock);
+			mutex_unlock (&u->tx_lock);
 			debug_printf ("eth_output: overflow\n");
 			buf_free (p);
 			return 0;
@@ -357,7 +362,7 @@ debug_printf ("eth_output: transmit %d bytes\n", p->tot_len);
 	} else {
 		chip_transmit_packet (u, p);
 	}
-	mutex_unlock (&u->netif.lock);
+	mutex_unlock (&u->tx_lock);
 	return 1;
 }
 
@@ -395,7 +400,8 @@ eth_set_address (eth_t *u, unsigned char *addr)
 }
 
 /*
- * Fetch and process the received packet from the network controller.
+ * Fetch the received packet from the network controller.
+ * Put it to input queue.
  */
 static void
 eth_receive_frame (eth_t *u)
@@ -419,7 +425,7 @@ debug_printf ("eth_receive_data: bad length %d bytes, frame_status=%#08x\n", len
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-debug_printf ("eth_receive_data: ok, frame_status=%#08x, length %d bytes\n", frame_status, len);
+/*debug_printf ("eth_receive_data: ok, frame_status=%#08x, length %d bytes\n", frame_status, len);*/
 /*debug_printf ("eth_receive_data: %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n",
 ((unsigned char*)u->dmabuf)[0], ((unsigned char*)u->dmabuf)[1],
 ((unsigned char*)u->dmabuf)[2], ((unsigned char*)u->dmabuf)[3],
@@ -450,19 +456,17 @@ debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 }
 
 /*
- * Process an interrupt.
+ * Process a receive interrupt.
  * Return nonzero when there was some activity.
  */
 static unsigned
-handle_interrupts (eth_t *u)
+handle_receive_interrupt (eth_t *u)
 {
-	unsigned active, status_rx, nframes;
-
-	active = 0;
+	unsigned active = 0;
 	for (;;) {
 		/* Process all pending interrupts. */
-		status_rx = MC_MAC_STATUS_RX;
-/*debug_printf ("eth irq: STATUS_RX = %08x\n", status_rx);*/
+		unsigned status_rx = MC_MAC_STATUS_RX;
+/*debug_printf ("eth rx irq: STATUS_RX = %08x\n", status_rx);*/
 		if (status_rx & (STATUS_RX_STATUS_OVF | STATUS_RX_FIFO_OVF)) {
 			/* Count lost incoming packets. */
 			if (STATUS_RX_NUM_MISSED (status_rx))
@@ -471,43 +475,54 @@ handle_interrupts (eth_t *u)
 				u->netif.in_discards++;
 			MC_MAC_STATUS_RX = 0;
 		}
-#if 0
-		if (eir & EIR_TXERIF) {
-			/* Count collisions. */
-			++u->netif.out_collisions;
-
-			/* Transmitter stopped, reset required. */
-			chip_set_bits (u, ECON1, ECON1_TXRST);
-			chip_clear_bits (u, ECON1, ECON1_TXRST);
-			chip_clear_bits (u, ESTAT, ESTAT_TXABRT);
-
-			/* Retransmit the packet. */
-			chip_clear_bits (u, EIR, EIR_TXERIF | EIR_TXIF);
-			chip_set_bits (u, ECON1, ECON1_TXRTS);
-			eir &= ~EIR_TXIF;
-		}
-#endif
 		/* Check if a packet has been received and buffered. */
-		if (status_rx & STATUS_RX_DONE) {
-			++active;
-			nframes = STATUS_RX_NUM_FR (status_rx);
-			while (nframes-- > 0)
-				eth_receive_frame (u);
-		} else {
+		if (! (status_rx & STATUS_RX_DONE)) {
 			/* All interrupts processed. */
 			return active;
 		}
-#if 0
-		if (eir & EIR_TXIF) {
-			chip_clear_bits (u, EIR, EIR_TXIF);
+		++active;
 
-			/* Transmit a packet from queue. */
-			buf_t *p = buf_queue_get (&u->outq);
-			if (p)
-				chip_transmit_packet (u, p);
-		}
-#endif
+		/* Fetch all received packets. */
+		unsigned nframes = STATUS_RX_NUM_FR (status_rx);
+		while (nframes-- > 0)
+			eth_receive_frame (u);
 	}
+}
+
+/*
+ * Process a transmit interrupt: fast handler.
+ * Return 1 when we are expecting the hardware interrupt.
+ */
+static int
+handle_transmit_interrupt (void *arg)
+{
+	eth_t *u = arg;
+	++u->intr;
+
+	unsigned status_tx = MC_MAC_STATUS_TX;
+	if (! (status_tx & STATUS_TX_DONE)) {
+		/* Нет прерывания от передатчика. */
+debug_printf ("eth tx irq: no TX_DONE, STATUS_TX = %08x\n", status_tx);
+		return 0;
+	}
+	MC_MAC_STATUS_TX = 0;
+
+	/* Подсчитываем коллизии. */
+	if (status_tx & (STATUS_TX_ONCOL | STATUS_TX_LATE_COLL)) {
+		++u->netif.out_collisions;
+	}
+
+	/* Извлекаем следующий пакет из очереди. */
+	buf_t *p = buf_queue_get (&u->outq);
+	if (! p) {
+/*debug_printf ("eth tx irq: done, STATUS_TX = %08x\n", status_tx);*/
+		return 0;
+	}
+
+	/* Передаём следующий пакет. */
+debug_printf ("eth tx irq: send next packet, STATUS_TX = %08x\n", status_tx);
+	chip_transmit_packet (u, p);
+	return 1;
 }
 
 /*
@@ -518,29 +533,27 @@ void
 eth_poll (eth_t *u)
 {
 	mutex_lock (&u->netif.lock);
-	if (handle_interrupts (u))
+	if (handle_receive_interrupt (u))
 		mutex_signal (&u->netif.lock, 0);
 	mutex_unlock (&u->netif.lock);
 }
 
 /*
- * Interrupt task.
+ * Receive interrupt task.
  */
 static void
-eth_interrupt (void *arg)
+eth_receiver (void *arg)
 {
 	eth_t *u = arg;
 
+	/* Register receive interrupt. */
 	mutex_lock_irq (&u->netif.lock, ETH_IRQ_RECEIVE, 0, 0);
 
-	/* Initialize hardware. */
-	chip_init (u);
-
 	for (;;) {
-		/* Wait for the interrupt. */
+		/* Wait for the receive interrupt. */
 		mutex_wait (&u->netif.lock);
 		++u->intr;
-		handle_interrupts (u);
+		handle_receive_interrupt (u);
 	}
 }
 
@@ -568,6 +581,13 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 	buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
 	buf_queue_init (&u->outq, u->outqdata, sizeof (u->outqdata));
 
+	/* Register transmit interrupt: using fast handler. */
+	mutex_lock_irq (&u->tx_lock, ETH_IRQ_TRANSMIT, handle_transmit_interrupt, u);
+
+	/* Initialize hardware. */
+	chip_init (u);
+	mutex_unlock (&u->tx_lock);
+
 	/* Create receive task. */
-	task_create (eth_interrupt, u, name, prio, u->stack, sizeof (u->stack));
+	task_create (eth_receiver, u, name, prio, u->stack, sizeof (u->stack));
 }

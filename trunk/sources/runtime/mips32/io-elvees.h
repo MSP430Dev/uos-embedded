@@ -581,6 +581,9 @@
 #define STATUS_TX_ONCOL			(1 << 11)	/* Коллизия в среде передачи */
 #define STATUS_TX_COLL_NUM(s)		((s) >> 12 & 15) /* Счетчик попыток повторных передач */
 #define STATUS_TX_TXW(s)		((s) >> 16 & 0x3ff) /* Число слов в TX FIFO */
+#define STATUS_TX_BITS			"\20"\
+"\1ONTX_REQ\2ONTRANSMIT\3BUSY\4DONE\5DISABLED\6NDATA\7TXOK\10EXCCOLL"\
+"\11LATECOLL\14ONCOL"
 
 /*
  * RX_FRAME_CONTROL - управление приемом кадра
@@ -607,6 +610,8 @@
 #define STATUS_RX_RXW(s)		((s) >> 12 & 0x3ff)	/* Число слов в RX FIFO */
 #define STATUS_RX_FIFO_OVF		(1 << 23)		/* Переполнение FIFO данных */
 #define STATUS_RX_NUM_MISSED(s)		((s) >> 24 & 0x3f)	/* Число пропущенных кадров */
+#define STATUS_RX_BITS			"\30"\
+"\1DISABLED\2ONRECEIVE\4DONE\14STATUS_OVF\30FIFO_OVF"
 
 /*
  * RX_FRAME_STATUS_FIFO - FIFO статусов принятых кадров
