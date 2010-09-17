@@ -105,7 +105,7 @@ static void chip_init (eth_t *u)
 	phy_write (u, PHY_CTL, PHY_CTL_RST);
 	while (phy_read (u, PHY_CTL) & PHY_CTL_RST)
 		continue;
-	phy_write (u, PHY_EXTCTL, PHY_EXTCTL_JABBER);
+	phy_write (u, PHY_EXTCTL, 0 /*PHY_EXTCTL_JABBER*/);
 
 	/* Perform auto-negotiation. */
 	phy_write (u, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
@@ -116,7 +116,7 @@ static void chip_init (eth_t *u)
 	MC_MAC_CONTROL = MAC_CONTROL_CP_TX | MAC_CONTROL_RST_TX |
 			 MAC_CONTROL_CP_RX | MAC_CONTROL_RST_RX;
 	udelay (10);
-	debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);
+	/*debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);*/
 
 	/* Общие режимы. */
 	MC_MAC_CONTROL =
@@ -127,7 +127,7 @@ static void chip_init (eth_t *u)
 		MAC_CONTROL_IRQ_TX_DONE | 	/* прерывание от передачи */
 		MAC_CONTROL_IRQ_RX_DONE | 	/* прерывание по приёму */
 		MAC_CONTROL_IRQ_RX_OVF; 	/* прерывание по переполнению */
-	debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);
+	/*debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);*/
 
 	/* Режимы приёма. */
 	MC_MAC_RX_FRAME_CONTROL =
@@ -136,12 +136,19 @@ static void chip_init (eth_t *u)
 		RX_FRAME_CONTROL_DIS_TOOLONG | 	/* отбрасывание слишком длинных кадров */
 		RX_FRAME_CONTROL_DIS_FCSCHERR |	/* отбрасывание кадров с ошибкой контрольной суммы */
 		RX_FRAME_CONTROL_DIS_LENGTHERR;	/* отбрасывание кадров с ошибкой длины */
-	debug_printf ("RX_FRAME_CONTROL: 0x%08x\n", MC_MAC_RX_FRAME_CONTROL);
+	/*debug_printf ("RX_FRAME_CONTROL: 0x%08x\n", MC_MAC_RX_FRAME_CONTROL);*/
 
 	/* Режимы передачи:
 	 * запрет формирования кадра в блоке передачи. */
 	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR;
-	debug_printf ("TX_FRAME_CONTROL: 0x%08x\n", MC_MAC_TX_FRAME_CONTROL);
+	/*debug_printf ("TX_FRAME_CONTROL: 0x%08x\n", MC_MAC_TX_FRAME_CONTROL);*/
+
+	/* Режимы обработки коллизии. */
+	MC_MAC_IFS_COLL_MODE = IFS_COLL_MODE_ATTEMPT_NUM(15) |
+		IFS_COLL_MODE_EN_CW |
+		IFS_COLL_MODE_COLL_WIN(64) |
+		IFS_COLL_MODE_JAMB(0xC3) |
+		IFS_COLL_MODE_IFS(24);
 
 	/* Тактовый сигнал MDC не должен превышать 2.5 МГц. */
 	MC_MAC_MD_MODE = MD_MODE_DIVIDER (KHZ / 2000);
@@ -154,23 +161,22 @@ void
 eth_debug (eth_t *u, struct _stream_t *stream)
 {
 	unsigned short ctl, advrt, sts, extctl;
-	unsigned status_rx, status_tx;
 
 	mutex_lock (&u->netif.lock);
 	ctl = phy_read (u, PHY_CTL);
 	sts = phy_read (u, PHY_STS);
 	advrt = phy_read (u, PHY_ADVRT);
 	extctl = phy_read (u, PHY_EXTCTL);
-	status_rx = MC_MAC_STATUS_RX;
-	status_tx = MC_MAC_STATUS_TX;
+	/*unsigned status_rx = MC_MAC_STATUS_RX;*/
+	/*unsigned status_tx = MC_MAC_STATUS_TX;*/
 	mutex_unlock (&u->netif.lock);
 
 	printf (stream, "CTL=%b\n", ctl, PHY_CTL_BITS);
 	printf (stream, "STS=%b\n", sts, PHY_STS_BITS);
 	printf (stream, "ADVRT=%b\n", advrt, PHY_ADVRT_BITS);
 	printf (stream, "EXTCTL=%b\n", extctl, PHY_EXTCTL_BITS);
-	printf (stream, "STATUS_TX=%b\n", status_tx, STATUS_TX_BITS);
-	printf (stream, "STATUS_RX=%b\n", status_rx, STATUS_RX_BITS);
+	/*printf (stream, "STATUS_TX=%b\n", status_tx, STATUS_TX_BITS);*/
+	/*printf (stream, "STATUS_RX=%b\n", status_rx, STATUS_RX_BITS);*/
 }
 
 void eth_start_negotiation (eth_t *u)
@@ -270,6 +276,7 @@ chip_write_txfifo (unsigned long long *addr, unsigned nbytes)
 	/* Set the address and length for DMA. */
 	MC_IR_EMAC(1) = (unsigned) addr & 0x1FFFFFFC;
 	MC_CSR_EMAC(1) = MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+	MC_CP_EMAC(1) = 0;
 
 	/* Run the DMA. */
 	MC_RUN_EMAC(1) = MC_DMA_RUN;
@@ -287,6 +294,7 @@ chip_read_rxfifo (unsigned long long *addr, unsigned nbytes)
 	/* Set the address and length for DMA. */
 	MC_IR_EMAC(0) = (unsigned) addr & 0x1FFFFFFC;
 	MC_CSR_EMAC(0) = MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+	MC_CP_EMAC(0) = 0;
 
 	/* Run the DMA. */
 	MC_RUN_EMAC(0) = MC_DMA_RUN;
@@ -302,13 +310,6 @@ chip_read_rxfifo (unsigned long long *addr, unsigned nbytes)
 static void
 chip_transmit_packet (eth_t *u, buf_t *p)
 {
-	unsigned len = p->tot_len;
-	if (len < 60)
-		len = 60;
-
-	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR |
-		TX_FRAME_CONTROL_LENGTH (len);
-
 	/* Send the data from the buf chain to the interface,
 	 * one buf at a time. The size of the data in each
 	 * buf is kept in the ->len variable. */
@@ -320,12 +321,24 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 		memcpy (buf, q->payload, q->len);
 		buf += q->len;
 	}
+
+	unsigned len = p->tot_len;
+	if (len < 60) {
+		len = 60;
+		memset ((void*) u->dmabuf + p->tot_len, 0, len - p->tot_len);
+	}
+	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR |
+		TX_FRAME_CONTROL_DISPAD |
+		TX_FRAME_CONTROL_LENGTH (len);
+//u->dmabuf[0] |= 0xffffffffffffULL;
 	chip_write_txfifo (u->dmabuf, len);
 	MC_MAC_TX_FRAME_CONTROL |= TX_FRAME_CONTROL_TX_REQ;
 	MC_MASKR0 |= 1 << ETH_IRQ_TRANSMIT;
 
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
+
+debug_printf ("tx%d", len); buf_print_data ((unsigned char*) u->dmabuf, p->tot_len);
 	buf_free (p);
 }
 
@@ -360,7 +373,10 @@ debug_printf ("eth_output: transmit %d bytes, link failed\n", p->tot_len);
 		}
 		buf_queue_put (&u->outq, p);
 	} else {
+		/* Защитим мутексом буфер dmabuf. */
+		mutex_lock (&u->netif.lock);
 		chip_transmit_packet (u, p);
+		mutex_unlock (&u->netif.lock);
 	}
 	mutex_unlock (&u->tx_lock);
 	return 1;
@@ -453,6 +469,7 @@ debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 	/* Copy the packet data. */
 	memcpy (p->payload, u->dmabuf, len);
 	buf_queue_put (&u->inq, p);
+/*debug_printf ("rcv%d", p->tot_len); buf_print_ethernet (p);*/
 }
 
 /*

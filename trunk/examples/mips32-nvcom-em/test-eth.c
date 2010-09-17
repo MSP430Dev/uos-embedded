@@ -1,8 +1,7 @@
 /*
- * Testing Ethernet on Seismonet-E10 board.
+ * Testing Ethernet.
  */
 #include <runtime/lib.h>
-#include <kernel/uos.h>
 #include <stream/stream.h>
 #include <mem/mem.h>
 #include <buf/buf.h>

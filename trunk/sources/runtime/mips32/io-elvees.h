@@ -557,14 +557,24 @@
 #define MAC_CONTROL_RST_RX		(1 << 12) 	/* сброс блока приема */
 
 /*
+ * IFS_COLL_MODE - режим обработки коллизии
+ */
+#define IFS_COLL_MODE_ATTEMPT_NUM(n)	((n) & 15)	/* Количество попыток повторных передач */
+#define IFS_COLL_MODE_EN_CW		(1 << 4)	/* Разрешение отслеживания окна коллизии */
+#define IFS_COLL_MODE_TM_BACKOFF	(1 << 7)	/* Тестовый режим */
+#define IFS_COLL_MODE_COLL_WIN(n)	((n) << 8)	/* Размер окна коллизии */
+#define IFS_COLL_MODE_JAMB(n)		((n) << 16)	/* Байт jam-сообщения */
+#define IFS_COLL_MODE_IFS(n)		((n) << 24)	/* Межкадровый интервал */
+
+/*
  * TX_FRAME_CONTROL - управление передачей кадра
  */
-#define TX_FRAME_CONTROL_LENGTH(n)	((n) & 0xfff)	/* число байт данных */
-#define TX_FRAME_CONTROL_TYPE_EN	(1 << 12) 	/* поле длины задаёт тип */
-#define TX_FRAME_CONTROL_FCS_CLT_EN	(1 << 13) 	/* контрольная сумма из регистра */
-#define TX_FRAME_CONTROL_DISENCAPFR	(1 << 14) 	/* запрет формирования кадра в блоке передачи */
-#define TX_FRAME_CONTROL_DISPAD		(1 << 15) 	/* запрет заполнителей */
-#define TX_FRAME_CONTROL_TX_REQ		(1 << 16) 	/* передача кадра */
+#define TX_FRAME_CONTROL_LENGTH(n)	((n) & 0xfff)	/* Число байт данных */
+#define TX_FRAME_CONTROL_TYPE_EN	(1 << 12) 	/* Поле длины задаёт тип */
+#define TX_FRAME_CONTROL_FCS_CLT_EN	(1 << 13) 	/* Контрольная сумма из регистра */
+#define TX_FRAME_CONTROL_DISENCAPFR	(1 << 14) 	/* Запрет формирования кадра в блоке передачи */
+#define TX_FRAME_CONTROL_DISPAD		(1 << 15) 	/* Запрет заполнителей */
+#define TX_FRAME_CONTROL_TX_REQ		(1 << 16) 	/* Передача кадра */
 
 /*
  * STATUS_TX - статус передачи кадра

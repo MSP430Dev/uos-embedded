@@ -9,13 +9,20 @@
 #include <buf/buf.h>
 #include <timer/timer.h>
 #include <uart/uart.h>
-#include <enc28j60/eth.h>
+#include <elvees/eth.h>
 #include <net/route.h>
 #include <net/ip.h>
 #include <net/tcp.h>
 #include <net/telnet.h>
 
-ARRAY (stack_telnet, 800);
+#ifdef ENABLE_DCACHE
+#   define SDRAM_START	0x00000000
+#else
+#   define SDRAM_START	0xA0000000
+#endif
+#define SDRAM_SIZE	(64*1024*1024)
+
+ARRAY (stack_telnet, 1000);
 ARRAY (stack_console, 1500);
 
 #define TASKSZ		1500		/* Task: telnet menu */
@@ -37,7 +44,7 @@ stream_t *streamtab [MAXSESS];
 mem_pool_t pool;
 timer_t timer;
 uart_t uart;
-enc28j60_t eth;
+eth_t eth;
 arp_t *arp;
 route_t route;
 ip_t ip;
@@ -74,8 +81,8 @@ eth_cmd (stream_t *stream)
 	int full_duplex;
 
 	putchar (stream, '\n');
-	if (enc28j60_get_carrier (&eth)) {
-		speed = enc28j60_get_speed (&eth, &full_duplex);
+	if (eth_get_carrier (&eth)) {
+		speed = eth_get_speed (&eth, &full_duplex);
 		printf (stream, "Ethernet: %ld Mbit/sec, %s Duplex\n",
 			speed / 1000000, full_duplex ? "Full" : "Half");
 	} else
@@ -92,7 +99,7 @@ eth_cmd (stream_t *stream)
 
 	/* Print Ethernet hardware registers. */
 	puts (stream, "Ethernet hardware registers:\n");
-	enc28j60_debug (&eth, stream);
+	eth_debug (&eth, stream);
 
 	putchar (stream, '\n');
 }
@@ -281,23 +288,23 @@ void user_shell (void *arg)
 		if (line[0] == '\n')
 			continue;
 
-		if (strncmp ("help", line, 4) == 0) {
+		if (strncmp ((unsigned char*) "help", line, 4) == 0) {
 			help_cmd (stream);
-		} else if (strncmp ("quit", line, 4) == 0) {
+		} else if (strncmp ((unsigned char*) "quit", line, 4) == 0) {
 			break;
-		} else if (strncmp ("mem", line, 3) == 0) {
+		} else if (strncmp ((unsigned char*) "mem", line, 3) == 0) {
 			mem_cmd (stream);
-		} else if (strncmp ("eth", line, 3) == 0) {
+		} else if (strncmp ((unsigned char*) "eth", line, 3) == 0) {
 			eth_cmd (stream);
-		} else if (strncmp ("ip", line, 2) == 0) {
+		} else if (strncmp ((unsigned char*) "ip", line, 2) == 0) {
 			net_cmd (stream, 'i');
-		} else if (strncmp ("arp", line, 3) == 0) {
+		} else if (strncmp ((unsigned char*) "arp", line, 3) == 0) {
 			net_cmd (stream, 'a');
-		} else if (strncmp ("tcp", line, 3) == 0) {
+		} else if (strncmp ((unsigned char*) "tcp", line, 3) == 0) {
 			net_cmd (stream, 't');
-		} else if (strncmp ("icmp", line, 4) == 0) {
+		} else if (strncmp ((unsigned char*) "icmp", line, 4) == 0) {
 			net_cmd (stream, 'c');
-		} else if (strncmp ("sock", line, 4) == 0) {
+		} else if (strncmp ((unsigned char*) "sock", line, 4) == 0) {
 			net_cmd (stream, 0);
 		} else
 			printf (stream, "Unknown command: %s\n", line);
@@ -377,13 +384,33 @@ void uos_init (void)
 {
 	static unsigned char mac_addr [6] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
 	static unsigned char ip_addr [4] = { 192, 168, 20, 222 };
-	extern char __bss_end, __stack;
 	mutex_group_t *g;
 
-	/* Initialize memory pool, leave 128 bytes for idle task stack. */
-	mem_init (&pool, (unsigned) &__bss_end, (unsigned) &__stack - 128);
+	/* Configure 16 Mbyte of external Flash memory at nCS3. */
+	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+
+	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
+	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
+		MC_CSCON_T |			/* Sync memory */
+		MC_CSCON_CSBA (0x00000000) |	/* Base address */
+		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
+
+	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
+		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
+		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
+
+	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
+		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
+		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
+		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
+		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
+
+	MC_SDRCSR = 1;				/* Initialize SDRAM */
+        udelay (2);
+
+	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 	timer_init (&timer, KHZ, 50);
-	uart_init (&uart, 3, PRIO_UART, KHZ, 115200);
+	uart_init (&uart, 1, PRIO_UART, KHZ, 115200);
 
 	/*
 	 * Create a group of two locks: timer and eth.
@@ -398,7 +425,7 @@ void uos_init (void)
 	/*
 	 * Create interface eth0
 	 */
-	enc28j60_init (&eth, "eth0", PRIO_ETH, &pool, arp);
+	eth_init (&eth, "eth0", PRIO_ETH, &pool, arp);
 	netif_set_address (&eth.netif, mac_addr);
 	route_add_netif (&ip, &route, ip_addr, 24, &eth.netif);
 
