@@ -264,7 +264,7 @@ void menu ()
 	printf (&debug, "\n  5. Packet size: %d bytes", packet_size);
 	printf (&debug, "\n  6. Local loopback: %s",
 			local_loop ? "Enabled" : "Disabled");
-/*	printf (&debug, "\n  0. Start auto-negotiation");*/
+	printf (&debug, "\n  0. Start auto-negotiation");
 	puts (&debug, "\n\n");
 	for (;;) {
 		/* Ввод команды. */
@@ -318,10 +318,10 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 			eth_set_loop (&eth, local_loop);
 			break;
 		}
-/*		if (cmd == '0') {
+		if (cmd == '0') {
 			eth_start_negotiation (&eth);
 			break;
-		} */
+		}
 		if (cmd == CTL('E')) {
 			/* Регистры Ethernet. */
 			putchar (&debug, '\n');

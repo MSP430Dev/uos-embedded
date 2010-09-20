@@ -19,7 +19,7 @@ ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
 arp_t *arp;
-eth_t eth;
+eth_t *eth;
 route_t route;
 timer_t timer;
 ip_t ip;
@@ -97,15 +97,15 @@ void console_task (void *data)
 		case '\n': case '\r':
 			putchar (&debug, '\n');
 			printf (&debug, "Transmit: %ld packets, %ld collisions, %ld errors\n",
-					eth.netif.out_packets, eth.netif.out_collisions,
-					eth.netif.out_errors);
+					eth->netif.out_packets, eth->netif.out_collisions,
+					eth->netif.out_errors);
 			printf (&debug, "Receive: %ld packets, %ld errors, %ld lost\n",
-					eth.netif.in_packets, eth.netif.in_errors,
-					eth.netif.in_discards);
-			printf (&debug, "Interrupts: %ln\n", eth.intr);
+					eth->netif.in_packets, eth->netif.in_errors,
+					eth->netif.in_discards);
+			printf (&debug, "Interrupts: %ln\n", eth->intr);
 			printf (&debug, "Free memory: %u bytes\n",
 				mem_available (&pool));
-			eth_debug (&eth, &debug);
+			eth_debug (eth, &debug);
 			puts (&debug, "Local address   Port    Peer address    Port    State\n");
 			for (s=ip.tcp_sockets; s; s=s->next)
 				print_tcp_socket (&debug, s);
@@ -121,7 +121,7 @@ void console_task (void *data)
 			task_print (&debug, 0);
 			task_print (&debug, (task_t*) stack_console);
 			task_print (&debug, (task_t*) stack_tcp);
-			task_print (&debug, (task_t*) eth.stack);
+			task_print (&debug, (task_t*) eth->stack);
 			task_print (&debug, (task_t*) ip.stack);
 			putchar (&debug, '\n');
 			break;
@@ -230,11 +230,17 @@ void uos_init (void)
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 	timer_init (&timer, KHZ, 50);
 
+	eth = (eth_t*) mem_alloc (&pool, sizeof(eth_t));
+	if (! eth) {
+		debug_printf ("No memory for eth_t\n");
+		uos_halt (0);
+	}
+
 	/*
 	 * Create a group of two locks: timer and eth.
 	 */
 	g = mutex_group_init (group, sizeof(group));
-	mutex_group_add (g, &eth.netif.lock);
+	mutex_group_add (g, &eth->netif.lock);
 	mutex_group_add (g, &timer.decisec);
 
 	arp = arp_init (arp_data, sizeof(arp_data), &ip);
@@ -243,9 +249,9 @@ void uos_init (void)
 	/*
 	 * Create interface eth0
 	 */
-	eth_init (&eth, "eth0", 80, &pool, arp);
-	netif_set_address (&eth.netif, my_macaddr);
-	route_add_netif (&ip, &route, my_ip, 24, &eth.netif);
+	eth_init (eth, "eth0", 80, &pool, arp);
+	netif_set_address (&eth->netif, my_macaddr);
+	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
 
 	task_create (tcp_task, 0, "tcp", 1,
 		stack_tcp, sizeof (stack_tcp));

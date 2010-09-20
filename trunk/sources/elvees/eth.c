@@ -357,6 +357,7 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 	for (q=p; q; q=q->next) {
 		/* Copy the packet into the transmit buffer. */
 		assert (q->len > 0);
+/*debug_printf ("memcpy %08x <- %08x, %d bytes\n", buf, q->payload, q->len);*/
 		memcpy (buf, q->payload, q->len);
 		buf += q->len;
 	}
@@ -487,13 +488,13 @@ debug_printf ("eth_receive_data: bad length %d bytes, frame_status=%#08x\n", len
 ((unsigned char*)u->rxbuf)[12], ((unsigned char*)u->rxbuf)[13]);*/
 
 	if (buf_queue_is_full (&u->inq)) {
-debug_printf ("eth_receive_data: input overflow\n");
+/*debug_printf ("eth_receive_data: input overflow\n");*/
 		++u->netif.in_discards;
 		return;
 	}
 
 	/* Allocate a buf chain with total length 'len' */
-	buf_t *p = buf_alloc (u->pool, len, 4+2);
+	buf_t *p = buf_alloc (u->pool, len, 2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
 debug_printf ("eth_receive_data: ignore packet - out of memory\n");
@@ -502,9 +503,10 @@ debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 	}
 
 	/* Copy the packet data. */
+/*debug_printf ("receive %08x <- %08x, %d bytes\n", p->payload, u->rxbuf, len);*/
 	memcpy (p->payload, u->rxbuf, len);
 	buf_queue_put (&u->inq, p);
-/*debug_printf ("rcv%d", p->tot_len); buf_print_ethernet (p);*/
+/*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
 }
 
 /*
@@ -552,10 +554,11 @@ handle_transmit_interrupt (void *arg)
 	++u->intr;
 
 	unsigned status_tx = MC_MAC_STATUS_TX;
-	if (! (status_tx & STATUS_TX_DONE)) {
-		/* Нет прерывания от передатчика. */
-debug_printf ("eth tx irq: no TX_DONE, STATUS_TX = %08x\n", status_tx);
-		return 0;
+	if (status_tx & STATUS_TX_ONTX_REQ) {
+		/* Передачик пока не закончил. */
+/*debug_printf ("eth tx irq: ONTX_REQ, STATUS_TX = %08x\n", status_tx);*/
+		MC_MASKR0 |= 1 << ETH_IRQ_TRANSMIT;
+		return 1;
 	}
 	MC_MAC_STATUS_TX = 0;
 
@@ -572,7 +575,7 @@ debug_printf ("eth tx irq: no TX_DONE, STATUS_TX = %08x\n", status_tx);
 	}
 
 	/* Передаём следующий пакет. */
-debug_printf ("eth tx irq: send next packet, STATUS_TX = %08x\n", status_tx);
+/*debug_printf ("eth tx irq: send next packet, STATUS_TX = %08x\n", status_tx);*/
 	chip_transmit_packet (u, p);
 	return 1;
 }
@@ -588,6 +591,11 @@ eth_poll (eth_t *u)
 	if (handle_receive_interrupt (u))
 		mutex_signal (&u->netif.lock, 0);
 	mutex_unlock (&u->netif.lock);
+
+	mutex_lock (&u->tx_lock);
+	if (MC_MAC_STATUS_TX & STATUS_TX_DONE)
+		handle_transmit_interrupt (u);
+	mutex_unlock (&u->tx_lock);
 }
 
 /*
@@ -630,6 +638,8 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 	u->netif.type = NETIF_ETHERNET_CSMACD;
 	u->netif.bps = 10000000;
 	u->pool = pool;
+	u->rxbuf = (unsigned char*) (((unsigned) u->rxbuf_data + 7) & ~7);
+	u->txbuf = (unsigned char*) (((unsigned) u->txbuf_data + 7) & ~7);
 	u->rxbuf_physaddr = virt_to_phys ((unsigned) u->rxbuf);
 	u->txbuf_physaddr = virt_to_phys ((unsigned) u->txbuf);
 	buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
