@@ -57,6 +57,27 @@ $v0...$v1 (в случае `long long` или `double`).
 ||  arg1  || <--- Новое значение $sp ||
 ||  ---   ||
 
+== Преобразование виртуального адреса в физический ==
+В процессорах "Элвис" имеется режим FM (fixed mapping), когда виртуальный адрес отображается в физический по фиксированному алгоритму.
+
+|| *Виртуальный адрес* || *Физический адрес*   || *Сегмент* || 
+|| 0xxx xxxx           || 4xxx xxxx            || kuseg ||
+|| 1xxx xxxx           || 5xxx xxxx            || kuseg ||
+|| 2xxx xxxx           || 6xxx xxxx            || kuseg ||
+|| 3xxx xxxx           || 7xxx xxxx            || kuseg ||
+|| 4xxx xxxx           || 8xxx xxxx            || kuseg ||
+|| 5xxx xxxx           || 9xxx xxxx            || kuseg ||
+|| 6xxx xxxx           || Axxx xxxx            || kuseg ||
+|| 7xxx xxxx           || Bxxx xxxx            || kuseg ||
+|| 8xxx xxxx           || 0xxx xxxx            || kseg0 ||
+|| 9xxx xxxx           || 1xxx xxxx            || kseg0 ||
+|| Axxx xxxx           || 0xxx xxxx            || kseg1 ||
+|| Bxxx xxxx           || 1xxx xxxx            || kseg1 ||
+|| Cxxx xxxx           || Cxxx xxxx            || kseg2 ||
+|| Dxxx xxxx           || Dxxx xxxx            || kseg2 ||
+|| Exxx xxxx           || Exxx xxxx            || kseg3 ||
+|| Fxxx xxxx           || Fxxx xxxx            || kseg3 ||
+
 == Время входа в прерывание ==
 
 Показана латентность прерываний, измеренная тестом test_latency.c на платах MC-24R_EM и NVCom_EM, без использования FPU.
