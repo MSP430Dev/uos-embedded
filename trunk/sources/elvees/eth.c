@@ -17,6 +17,21 @@
 #define ETH_IRQ_DMA_TX		15	/* transmit DMA interrupt */
 
 /*
+ * Map virtual address to physical address in FM mode.
+ */
+static unsigned
+virt_to_phys (unsigned virtaddr)
+{
+	switch (virtaddr >> 28 & 0xE) {
+	default:  return virtaddr + 0x40000000;		/* kuseg */
+	case 0x8: return virtaddr - 0x80000000;		/* kseg0 */
+	case 0xA: return virtaddr - 0xA0000000;		/* kseg1 */
+	case 0xC: return virtaddr;			/* kseg2 */
+	case 0xE: return virtaddr;			/* kseg3 */
+	}
+}
+
+/*
  * PHY register write
  */
 static void
@@ -103,9 +118,13 @@ static void chip_init (eth_t *u)
 #endif
 	/* Reset transceiver. */
 	phy_write (u, PHY_CTL, PHY_CTL_RST);
-	while (phy_read (u, PHY_CTL) & PHY_CTL_RST)
-		continue;
-	phy_write (u, PHY_EXTCTL, 0 /*PHY_EXTCTL_JABBER*/);
+	int count;
+	for (count=10000; count>0; count--)
+		if (! (phy_read (u, PHY_CTL) & PHY_CTL_RST))
+			break;
+	if (count == 0)
+		debug_printf ("eth_init: PHY reset failed\n");
+	phy_write (u, PHY_EXTCTL, PHY_EXTCTL_JABBER);
 
 	/* Perform auto-negotiation. */
 	phy_write (u, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
@@ -268,38 +287,58 @@ void eth_set_promisc (eth_t *u, int station, int group)
 }
 
 /*
- * Put data to transmit FIFO from dmabuf.
+ * Put data to transmit FIFO from dma buffer.
  */
 static void
-chip_write_txfifo (unsigned long long *addr, unsigned nbytes)
+chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 {
 	/* Set the address and length for DMA. */
-	MC_IR_EMAC(1) = (unsigned) addr & 0x1FFFFFFC;
-	MC_CSR_EMAC(1) = MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+	unsigned csr = MC_DMA_CSR_WN(15) |
+		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+	MC_CSR_EMAC(1) = csr;
+	MC_IR_EMAC(1) = physaddr;
 	MC_CP_EMAC(1) = 0;
 
 	/* Run the DMA. */
-	MC_RUN_EMAC(1) = MC_DMA_RUN;
-	while (MC_RUN_EMAC(1) & MC_DMA_RUN) {
-		;
+	MC_CSR_EMAC(1) = csr | MC_DMA_CSR_RUN;
+
+	unsigned count;
+	for (count=100000; count>0; count--) {
+		csr = MC_CSR_EMAC(1);
+		if (! (csr & MC_DMA_CSR_RUN))
+			break;
+	}
+	if (count == 0) {
+		debug_printf ("eth: TX DMA failed, CSR=%08x\n", csr);
+		MC_CSR_EMAC(1) = 0;
 	}
 }
 
 /*
- * Fetch data from receive FIFO to dmabuf.
+ * Fetch data from receive FIFO to dma buffer.
  */
 static void
-chip_read_rxfifo (unsigned long long *addr, unsigned nbytes)
+chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 {
 	/* Set the address and length for DMA. */
-	MC_IR_EMAC(0) = (unsigned) addr & 0x1FFFFFFC;
-	MC_CSR_EMAC(0) = MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+	unsigned csr = MC_DMA_CSR_WN(15) |
+		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+	MC_CSR_EMAC(0) = csr;
+	MC_IR_EMAC(0) = physaddr;
 	MC_CP_EMAC(0) = 0;
 
 	/* Run the DMA. */
-	MC_RUN_EMAC(0) = MC_DMA_RUN;
-	while (MC_RUN_EMAC(0) & MC_DMA_RUN) {
-		;
+	MC_CSR_EMAC(0) = csr | MC_DMA_CSR_RUN;
+
+	unsigned count;
+	for (count=100000; count>0; count--) {
+		csr = MC_CSR_EMAC(0);
+		if (! (csr & MC_DMA_CSR_RUN))
+			break;
+	}
+	if (count == 0) {
+		debug_printf ("eth: RX DMA failed, CSR=%08x\n", csr);
+		MC_CSR_EMAC(0) = 0;
 	}
 }
 
@@ -314,7 +353,7 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 	 * one buf at a time. The size of the data in each
 	 * buf is kept in the ->len variable. */
 	buf_t *q;
-	unsigned char *buf = (unsigned char*) u->dmabuf;
+	unsigned char *buf = (unsigned char*) u->txbuf;
 	for (q=p; q; q=q->next) {
 		/* Copy the packet into the transmit buffer. */
 		assert (q->len > 0);
@@ -325,20 +364,19 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 	unsigned len = p->tot_len;
 	if (len < 60) {
 		len = 60;
-		memset ((void*) u->dmabuf + p->tot_len, 0, len - p->tot_len);
+		memset ((void*) u->txbuf + p->tot_len, 0, len - p->tot_len);
 	}
 	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR |
 		TX_FRAME_CONTROL_DISPAD |
 		TX_FRAME_CONTROL_LENGTH (len);
-//u->dmabuf[0] |= 0xffffffffffffULL;
-	chip_write_txfifo (u->dmabuf, len);
+	chip_write_txfifo (u->txbuf_physaddr, len);
 	MC_MAC_TX_FRAME_CONTROL |= TX_FRAME_CONTROL_TX_REQ;
 	MC_MASKR0 |= 1 << ETH_IRQ_TRANSMIT;
 
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
 
-debug_printf ("tx%d", len); buf_print_data ((unsigned char*) u->dmabuf, p->tot_len);
+/*debug_printf ("tx%d", len); buf_print_data ((unsigned char*) u->txbuf, p->tot_len);*/
 	buf_free (p);
 }
 
@@ -373,10 +411,7 @@ debug_printf ("eth_output: transmit %d bytes, link failed\n", p->tot_len);
 		}
 		buf_queue_put (&u->outq, p);
 	} else {
-		/* Защитим мутексом буфер dmabuf. */
-		mutex_lock (&u->netif.lock);
 		chip_transmit_packet (u, p);
-		mutex_unlock (&u->netif.lock);
 	}
 	mutex_unlock (&u->tx_lock);
 	return 1;
@@ -431,7 +466,7 @@ debug_printf ("eth_receive_data: failed, frame_status=%#08x\n", frame_status);
 	}
 	/* Extract data from RX FIFO. */
 	unsigned len = RX_FRAME_STATUS_LEN (frame_status);
-	chip_read_rxfifo (u->dmabuf, len);
+	chip_read_rxfifo (u->rxbuf_physaddr, len);
 
 	if (len < 4 || len > ETH_MTU) {
 		/* Skip this frame */
@@ -443,13 +478,13 @@ debug_printf ("eth_receive_data: bad length %d bytes, frame_status=%#08x\n", len
 	u->netif.in_bytes += len;
 /*debug_printf ("eth_receive_data: ok, frame_status=%#08x, length %d bytes\n", frame_status, len);*/
 /*debug_printf ("eth_receive_data: %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n",
-((unsigned char*)u->dmabuf)[0], ((unsigned char*)u->dmabuf)[1],
-((unsigned char*)u->dmabuf)[2], ((unsigned char*)u->dmabuf)[3],
-((unsigned char*)u->dmabuf)[4], ((unsigned char*)u->dmabuf)[5],
-((unsigned char*)u->dmabuf)[6], ((unsigned char*)u->dmabuf)[7],
-((unsigned char*)u->dmabuf)[8], ((unsigned char*)u->dmabuf)[9],
-((unsigned char*)u->dmabuf)[10], ((unsigned char*)u->dmabuf)[11],
-((unsigned char*)u->dmabuf)[12], ((unsigned char*)u->dmabuf)[13]);*/
+((unsigned char*)u->rxbuf)[0], ((unsigned char*)u->rxbuf)[1],
+((unsigned char*)u->rxbuf)[2], ((unsigned char*)u->rxbuf)[3],
+((unsigned char*)u->rxbuf)[4], ((unsigned char*)u->rxbuf)[5],
+((unsigned char*)u->rxbuf)[6], ((unsigned char*)u->rxbuf)[7],
+((unsigned char*)u->rxbuf)[8], ((unsigned char*)u->rxbuf)[9],
+((unsigned char*)u->rxbuf)[10], ((unsigned char*)u->rxbuf)[11],
+((unsigned char*)u->rxbuf)[12], ((unsigned char*)u->rxbuf)[13]);*/
 
 	if (buf_queue_is_full (&u->inq)) {
 debug_printf ("eth_receive_data: input overflow\n");
@@ -458,7 +493,7 @@ debug_printf ("eth_receive_data: input overflow\n");
 	}
 
 	/* Allocate a buf chain with total length 'len' */
-	buf_t *p = buf_alloc (u->pool, len, 2);
+	buf_t *p = buf_alloc (u->pool, len, 4+2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
 debug_printf ("eth_receive_data: ignore packet - out of memory\n");
@@ -467,7 +502,7 @@ debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 	}
 
 	/* Copy the packet data. */
-	memcpy (p->payload, u->dmabuf, len);
+	memcpy (p->payload, u->rxbuf, len);
 	buf_queue_put (&u->inq, p);
 /*debug_printf ("rcv%d", p->tot_len); buf_print_ethernet (p);*/
 }
@@ -595,6 +630,8 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 	u->netif.type = NETIF_ETHERNET_CSMACD;
 	u->netif.bps = 10000000;
 	u->pool = pool;
+	u->rxbuf_physaddr = virt_to_phys ((unsigned) u->rxbuf);
+	u->txbuf_physaddr = virt_to_phys ((unsigned) u->txbuf);
 	buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
 	buf_queue_init (&u->outq, u->outqdata, sizeof (u->outqdata));
 

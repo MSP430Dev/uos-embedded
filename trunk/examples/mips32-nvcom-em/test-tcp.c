@@ -10,11 +10,7 @@
 #include <timer/timer.h>
 #include <elvees/eth.h>
 
-#ifdef ENABLE_DCACHE
-#   define SDRAM_START	0x00000000
-#else
-#   define SDRAM_START	0xA0000000
-#endif
+#define SDRAM_START	0xA0000000
 #define SDRAM_SIZE	(64*1024*1024)
 
 ARRAY (stack_tcp, 1500);
@@ -183,6 +179,24 @@ closed:		tcp_close (user_socket);
 		mem_free (user_socket);
 		user_socket = 0;
 	}
+}
+
+bool_t __attribute__((weak))
+uos_valid_memory_address (void *ptr)
+{
+	unsigned address = (unsigned) ptr;
+	extern unsigned __data_start, _estack[];
+
+	/* Internal SRAM. */
+	if (address >= (unsigned) &__data_start &&
+	    address < (unsigned) _estack)
+		return 1;
+
+	if (address >= SDRAM_START &&
+	    address < SDRAM_START + SDRAM_SIZE)
+		return 1;
+
+	return 0;
 }
 
 void uos_init (void)

@@ -41,7 +41,7 @@ void debug_dump_stack (const char *caption, void *sp, void *frame, void *callee)
 		sp, from, frame, to, callee, __builtin_frame_address (0));
 
 	/* Stack always grows down. */
-	for (p = from, flag = 0, len = 0;; --p) {
+	for (p = from, flag = 0, len = 0; ; --p) {
 		if (len == 0) {
 			if (sizeof (p) == 1)
 				debug_printf ("[%8S.%02X]", caption, (size_t) p);
@@ -62,7 +62,9 @@ void debug_dump_stack (const char *caption, void *sp, void *frame, void *callee)
 			c = '>';
 
 		if (uos_valid_memory_address (p)) {
-			if (callee && *(void**)p == callee && (flag & 1) == 0) {
+			if (callee && (flag & 1) == 0 &&
+			    ((size_t) p & (sizeof(void*)-1)) == 0 && /* aligned */
+			    *(void**)p == callee) {
 				c = '*';
 				flag |= 1;
 			}

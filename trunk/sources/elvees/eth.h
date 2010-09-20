@@ -10,7 +10,7 @@
 #include <buf/buf-queue.h>
 
 #ifndef ETH_STACKSZ
-#   define ETH_STACKSZ	1000
+#   define ETH_STACKSZ	2000
 #endif
 
 #define ETH_MTU		1518		/* maximum ethernet frame length */
@@ -31,7 +31,10 @@ typedef struct _eth_t {
 
 	unsigned phy;			/* address of external PHY */
 	unsigned long intr;		/* interrupt counter */
-	unsigned long long dmabuf [(ETH_MTU + 7) / 8];
+	unsigned long long rxbuf [(ETH_MTU + 7) / 8];
+	unsigned long long txbuf [(ETH_MTU + 7) / 8];
+	unsigned rxbuf_physaddr;	/* phys address of rxbuf[] */
+	unsigned txbuf_physaddr;	/* phys address of txbuf[] */
 
 	ARRAY (stack, ETH_STACKSZ); /* stack for interrupt task */
 } eth_t;
@@ -45,94 +48,5 @@ long eth_get_speed (eth_t *u, int *duplex);
 void eth_set_loop (eth_t *u, int on);
 void eth_set_promisc (eth_t *u, int station, int group);
 void eth_poll (eth_t *u);
-
-#if 0
-#define MAC_ADDR_LEN 6
-
-#define DEVICE_NAME "%s: NVCom Ethernet Controller Version 1.0, "
-
-/* The size (2048 bytes) in 64 bytes of TX buffer for dma use */
-#define TX_BUF_SIZE_64		256
-#define TX_BUF_BYTE_SIZE	2048
-#define TX_ALIGN_ADD		8
-#define ETH_PKG_HEADER_LEN	14
-
-/* The size of RXframe buffer fifo is 64 x 32 bit */
-#define RX_STATUS_BUF_SIZE_32	64
-#define RX_STATUS_BUF_BYTE_SIZE 64*4
-
-/* The size of RX FIFO is 512 x 64 bit */
-#define RX_BUF_SIZE_64		512
-#define RX_BUF_BYTE_SIZE	4096
-#define RX_ALIGN_ADD		8
-
-#define NV_PHY_INIT_TIMEOUT	1000000
-
-struct nvcom_eth_platform_data
-{
-        unsigned	board_id;
-	unsigned	bus_id;
-	unsigned	phy_id;
-	phy_interface_t	interface;
-	unsigned char	mac_addr[6];
-};
-
-struct nvcom_mdio_platform_data
-{
-        unsigned	board_id;
-        unsigned	phy_id;
-	int		irq[32];
-};
-
-struct nvcom_eth_private {
-
-	/* Fields controlled by TX lock */
-	spinlock_t	txlock;
-
-	/* Pointer to the array of skbuffs */
-	struct sk_buff	**tx_skbuff;
-
-	/* TX Phisical addres for DMA TX buffer */
-	dma_addr_t	dma_addr_tx;
-
-	/* TX Virtual addres of DMA TX buffer */
-	unsigned	virt_addr_tx;
-
-
-	/* RX_STATUS buffer */
-	unsigned	*rx_status_buf;
-
-	/* RX Phisical addres for DMA RX buffer */
-	dma_addr_t	dma_addr_rx;
-
-	/* Virtual addres of DMA RX buffer */
-	unsigned	virt_addr_rx;
-
-
-	/* RX Locked fields */
-	spinlock_t	rxlock;
-
-	/* info structure initialized by platform code */
-	struct nvcom_eth_platform_data *einfo;
-
-	/* PHY stuff */
-	struct mii_if_info mii_if;
-	struct phy_device *phydev;
-
-	/* Network Statistics */
-	struct net_device_stats stats;
-
-	/* the buffer to TX aligned to 64 bytes boundary for dma use */
-//	u_int64_t *tx_b_64;
-
-	unsigned	load_len_bytes;
-	unsigned	load_len64;
-};
-
-extern irqreturn_t nvcom_receive (int irq, void *dev_id);
-
-int nvcom_mdio_read (struct mii_bus *bus, int mii_id, int regnum);
-int nvcom_mdio_write (struct mii_bus *bus, int mii_id, int regnum, u16 value);
-#endif /* 0 */
 
 #endif /* __NVCOM_ETH_H */

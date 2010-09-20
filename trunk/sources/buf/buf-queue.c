@@ -62,7 +62,7 @@ buf_queue_clean (buf_queue_t *q)
 void
 buf_queue_init (buf_queue_t *q, buf_t **buf, int bytes)
 {
-	q->tail =
+	q->tail = buf;
 	q->queue = buf;
 	q->size = bytes / sizeof (buf_t*);
 	q->count = 0;

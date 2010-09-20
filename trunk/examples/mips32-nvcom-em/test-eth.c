@@ -10,14 +10,10 @@
 
 #define CTL(c)		((c) & 037)
 
-#ifdef ENABLE_DCACHE
-#   define SDRAM_START	0x00000000
-#else
-#   define SDRAM_START	0xA0000000
-#endif
+#define SDRAM_START	0xA0000000
 #define SDRAM_SIZE	(64*1024*1024)
 
-ARRAY (stack_console, 1000);		/* Task: menu on console */
+ARRAY (stack_console, 1500);		/* Task: menu on console */
 ARRAY (stack_test, 1000);		/* Task: transmit/receive packets */
 mem_pool_t pool;
 eth_t eth;
@@ -308,7 +304,11 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 				printf (&debug, "No memory for data_pattern\n");
 				uos_halt (1);
 			}
-			memset (data_pattern, 0xFF, packet_size);
+			int i;
+			for (i=0; i<packet_size; i++)
+				data_pattern[i] = i;
+			if (packet_size >= 6)
+				memset (data_pattern, 0xFF, 6);
 			if (packet_size >= 12)
 				memcpy (data_pattern+6, eth.netif.ethaddr, 6);
 			break;
@@ -360,6 +360,24 @@ void main_console (void *data)
 		menu ();
 }
 
+bool_t __attribute__((weak))
+uos_valid_memory_address (void *ptr)
+{
+	unsigned address = (unsigned) ptr;
+	extern unsigned __data_start, _estack[];
+
+	/* Internal SRAM. */
+	if (address >= (unsigned) &__data_start &&
+	    address < (unsigned) _estack)
+		return 1;
+
+	if (address >= SDRAM_START &&
+	    address < SDRAM_START + SDRAM_SIZE)
+		return 1;
+
+	return 0;
+}
+
 void uos_init (void)
 {
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
@@ -385,9 +403,11 @@ void uos_init (void)
         udelay (2);
 
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
-
 	timer_init (&timer, KHZ, 50);
+
+	unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
 	eth_init (&eth, "eth0", 80, &pool, 0);
+	netif_set_address (&eth.netif, my_macaddr);
 
 	task_create (main_test, 0, "test", 5,
 		stack_test, sizeof (stack_test));

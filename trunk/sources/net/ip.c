@@ -271,6 +271,8 @@ ip_output_netif (ip_t *ip, buf_t *p, unsigned char *dest, unsigned char *src,
 	iphdr->chksum_h = chksum;
 	iphdr->chksum_l = chksum >> 8;
 #endif
+	/*debug_printf ("ip: netif %S output %d bytes\n",
+		netif->name, p->tot_len);*/
 	/*buf_print_ip (p);*/
 
 	if (! gateway)
