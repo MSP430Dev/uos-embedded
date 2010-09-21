@@ -10,7 +10,7 @@
 #include <buf/buf-queue.h>
 
 #ifndef ETH_STACKSZ
-#   define ETH_STACKSZ	2000
+#   define ETH_STACKSZ	1500
 #endif
 
 #define ETH_MTU		1518		/* maximum ethernet frame length */
@@ -31,14 +31,15 @@ typedef struct _eth_t {
 
 	unsigned phy;			/* address of external PHY */
 	unsigned long intr;		/* interrupt counter */
-	unsigned char rxbuf_data [ETH_MTU + 16];
-	unsigned char txbuf_data [ETH_MTU + 16];
+	unsigned char rxbuf_data [ETH_MTU + 8];
+	unsigned char txbuf_data [ETH_MTU + 8];
 	unsigned char *rxbuf;		/* aligned rxbuf[] */
 	unsigned char *txbuf;		/* aligned txbuf[] */
 	unsigned rxbuf_physaddr;	/* phys address of rxbuf[] */
 	unsigned txbuf_physaddr;	/* phys address of txbuf[] */
 
-	ARRAY (stack, ETH_STACKSZ); /* stack for interrupt task */
+	ARRAY (stack, ETH_STACKSZ);	/* stack for receive task */
+	ARRAY (tstack, ETH_STACKSZ);	/* stack for transmit task */
 } eth_t;
 
 void eth_init (eth_t *u, const char *name, int prio,

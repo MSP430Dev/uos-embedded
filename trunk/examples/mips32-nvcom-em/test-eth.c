@@ -337,6 +337,7 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 			task_print (&debug, (task_t*) stack_console);
 			task_print (&debug, (task_t*) stack_test);
 			task_print (&debug, (task_t*) eth.stack);
+			task_print (&debug, (task_t*) eth.tstack);
 			putchar (&debug, '\n');
 			continue;
 		}

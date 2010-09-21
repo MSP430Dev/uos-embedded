@@ -122,6 +122,7 @@ void console_task (void *data)
 			task_print (&debug, (task_t*) stack_console);
 			task_print (&debug, (task_t*) stack_tcp);
 			task_print (&debug, (task_t*) eth->stack);
+			task_print (&debug, (task_t*) eth->tstack);
 			task_print (&debug, (task_t*) ip.stack);
 			putchar (&debug, '\n');
 			break;
