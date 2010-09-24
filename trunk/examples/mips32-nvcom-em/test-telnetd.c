@@ -382,10 +382,6 @@ void main_telnet (void *data)
 
 void uos_init (void)
 {
-	static unsigned char mac_addr [6] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
-	static unsigned char ip_addr [4] = { 192, 168, 20, 222 };
-	mutex_group_t *g;
-
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
 	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
 
@@ -415,7 +411,7 @@ void uos_init (void)
 	/*
 	 * Create a group of two locks: timer and eth.
 	 */
-	g = mutex_group_init (group, sizeof(group));
+	mutex_group_t *g = mutex_group_init (group, sizeof(group));
 	mutex_group_add (g, &eth.netif.lock);
 	mutex_group_add (g, &timer.decisec);
 
@@ -425,8 +421,10 @@ void uos_init (void)
 	/*
 	 * Create interface eth0
 	 */
-	eth_init (&eth, "eth0", PRIO_ETH, &pool, arp);
-	netif_set_address (&eth.netif, mac_addr);
+	const unsigned char mac_addr [6] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
+	eth_init (&eth, "eth0", PRIO_ETH, &pool, arp, mac_addr);
+
+	static unsigned char ip_addr [4] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, ip_addr, 24, &eth.netif);
 
 	task_create (main_console, 0, "console", PRIO_CONSOLE,

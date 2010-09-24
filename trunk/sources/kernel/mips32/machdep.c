@@ -349,7 +349,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* arg2 */
 	*--sp = 0;			/* arg1 */
 	*--sp = (unsigned) func;	/* epc - callee address */
-	*--sp = mips32_read_c0_register (C0_STATUS) | ST_IE; /* enable interrupts */
+	*--sp = ST_IE;			/* enable interrupts */
 	*--sp = 0;			/* hi */
 	*--sp = 0;			/* lo */
 	*--sp = 0;			/* ra */

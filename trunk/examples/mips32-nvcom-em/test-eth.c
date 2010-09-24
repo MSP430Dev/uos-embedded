@@ -406,9 +406,8 @@ void uos_init (void)
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 	timer_init (&timer, KHZ, 50);
 
-	unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
-	eth_init (&eth, "eth0", 80, &pool, 0);
-	netif_set_address (&eth.netif, my_macaddr);
+	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
+	eth_init (&eth, "eth0", 80, &pool, 0, my_macaddr);
 
 	task_create (main_test, 0, "test", 5,
 		stack_test, sizeof (stack_test));

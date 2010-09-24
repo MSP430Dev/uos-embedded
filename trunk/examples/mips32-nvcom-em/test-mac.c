@@ -91,6 +91,8 @@ void uos_init (void)
 	puts (&debug, "\nTesting Ethernet.\n");
 	printf (&debug, "Free %u bytes\n", mem_available (&pool));
 
-	eth_init (&eth, "eth0", 80, &pool, 0);
+	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
+	eth_init (&eth, "eth0", 80, &pool, 0, my_macaddr);
+
 	task_create (poll_eth, 0, "poll", 1, stack_poll, sizeof (stack_poll));
 }

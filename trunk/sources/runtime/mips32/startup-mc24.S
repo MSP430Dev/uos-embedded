@@ -90,13 +90,13 @@ _reset_vector_:	.globl	_reset_vector_
 		sw	$a0, (CONTEXT_PC * 4) ($sp)
 
 		mfc0	$a0, $C0_STATUS
-		li	$a1, ~(ST_ERL | ST_EXL | ST_IE)
-		and	$a0, $a0, $a1			# Clear ERL, EXL and IE bits
+#		li	$a1, ~(ST_ERL | ST_EXL | ST_IE)
+#		and	$a0, $a0, $a1			# Clear ERL, EXL and IE bits
 		sw	$a0, (CONTEXT_STATUS * 4) ($sp)
-		mtc0	$a0, $C0_STATUS			# put SR back
-		nop
-		nop
-		nop
+#		mtc0	$a0, $C0_STATUS			# put SR back
+#		nop
+#		nop
+#		nop
 		.endm
 
 #---------------------------------------
@@ -159,20 +159,24 @@ _restore_regs_: .globl _restore_regs_
 		lw	$31, (CONTEXT_RA * 4) ($sp)
 		.set	at
 
-#		lw	$k0, (CONTEXT_STATUS * 4) ($sp)	# K0 = saved status
 		mfc0	$k0, $C0_STATUS
+		ori	$k0, $k0, ST_IE
+		lw	$k1, (CONTEXT_STATUS * 4) ($sp)	# K0 = saved status, only IE bit
+		andi	$k1, $k1, ST_IE			# Restore only IE bit
+		xori	$k1, $k1, ST_IE
+		xor	$k0, $k0, $k1			# Add saved IE bit
 
 		addi	$sp, $sp, CONTEXT_WORDS*4	# Deallocate saved context
 
 		# Invoke CPU specific mechanism for returning from this exception
 		.set mips3
-		ori	$k0, $k0, ST_EXL | ST_IE	# prevent interrupts until eret
+#		ori	$k0, $k0, ST_EXL | ST_IE	# prevent interrupts until eret
 		mtc0	$k0, $C0_STATUS			# put SR back
 		nop
 		nop
 		nop
 		sync					# settle things down
-		eret					# return
+		eret					# PC <= EPC; EXL <= 0
 		nop					# just to be safe
 		.set mips0
 

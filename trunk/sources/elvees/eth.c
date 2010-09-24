@@ -150,7 +150,6 @@ static void chip_init (eth_t *u)
 
 	/* Режимы приёма. */
 	MC_MAC_RX_FRAME_CONTROL =
-RX_FRAME_CONTROL_EN_ALL |
 		RX_FRAME_CONTROL_DIS_RCV_FCS | 	/* не сохранять контрольную сумму */
 		RX_FRAME_CONTROL_ACC_TOOSHORT |	/* прием коротких кадров */
 		RX_FRAME_CONTROL_DIS_TOOLONG | 	/* отбрасывание слишком длинных кадров */
@@ -172,16 +171,16 @@ RX_FRAME_CONTROL_EN_ALL |
 
 	/* Тактовый сигнал MDC не должен превышать 2.5 МГц. */
 	MC_MAC_MD_MODE = MD_MODE_DIVIDER (KHZ / 2000);
-#if 0
+
 	/* Свой адрес. */
-	MC_MAC_UCADDR_L = u->netif.ethaddr[5] |
-		(u->netif.ethaddr[4] << 8) |
-		(u->netif.ethaddr[3] << 16)|
-		(u->netif.ethaddr[2] << 24);
-	MC_MAC_UCADDR_H = u->netif.ethaddr[1] |
-		(u->netif.ethaddr[0] << 8);
-debug_printf ("UCADDR=%02x:%08x\n", MC_MAC_UCADDR_H, MC_MAC_UCADDR_L);
-#endif
+	MC_MAC_UCADDR_L = u->netif.ethaddr[0] |
+			 (u->netif.ethaddr[1] << 8) |
+			 (u->netif.ethaddr[2] << 16)|
+			 (u->netif.ethaddr[3] << 24);
+	MC_MAC_UCADDR_H = u->netif.ethaddr[4] |
+			 (u->netif.ethaddr[5] << 8);
+/*debug_printf ("UCADDR=%02x:%08x\n", MC_MAC_UCADDR_H, MC_MAC_UCADDR_L);*/
+
 	/* Максимальный размер кадра. */
 	MC_MAC_RX_FR_MAXSIZE = ETH_MTU;
 }
@@ -302,13 +301,14 @@ void eth_set_promisc (eth_t *u, int station, int group)
 static void
 chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 {
-debug_printf ("write_txfifo %08x, %d bytes\n", physaddr, nbytes);
+/*debug_printf ("write_txfifo %08x, %d bytes\n", physaddr, nbytes);*/
 	/* Set the address and length for DMA. */
 	unsigned csr = MC_DMA_CSR_WN(15) |
 		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
 	MC_IR_EMAC(1) = physaddr;
 	MC_CP_EMAC(1) = 0;
 	MC_CSR_EMAC(1) = csr;
+debug_printf ("<t%d> ", nbytes);
 
 	/* Run the DMA. */
 	MC_CSR_EMAC(1) = csr | MC_DMA_CSR_RUN;
@@ -338,6 +338,7 @@ chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 	MC_CSR_EMAC(0) = csr;
 	MC_IR_EMAC(0) = physaddr;
 	MC_CP_EMAC(0) = 0;
+debug_printf ("(r%d) ", nbytes);
 
 	/* Run the DMA. */
 	MC_CSR_EMAC(0) = csr | MC_DMA_CSR_RUN;
@@ -369,7 +370,7 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 	for (q=p; q; q=q->next) {
 		/* Copy the packet into the transmit buffer. */
 		assert (q->len > 0);
-debug_printf ("txcpy %08x <- %08x, %d bytes\n", buf, q->payload, q->len);
+/*debug_printf ("txcpy %08x <- %08x, %d bytes\n", buf, q->payload, q->len);*/
 		memcpy (buf, q->payload, q->len);
 		buf += q->len;
 	}
@@ -377,21 +378,19 @@ debug_printf ("txcpy %08x <- %08x, %d bytes\n", buf, q->payload, q->len);
 	unsigned len = p->tot_len;
 	if (len < 60) {
 		len = 60;
-debug_printf ("txzero %08x, %d bytes\n", u->txbuf + p->tot_len, len - p->tot_len);
+/*debug_printf ("txzero %08x, %d bytes\n", u->txbuf + p->tot_len, len - p->tot_len);*/
 		memset (u->txbuf + p->tot_len, 0, len - p->tot_len);
 	}
 	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR |
 		TX_FRAME_CONTROL_DISPAD |
 		TX_FRAME_CONTROL_LENGTH (len);
 	chip_write_txfifo (u->txbuf_physaddr, len);
-debug_printf ("<1>");
+debug_printf ("!");
 	MC_MAC_TX_FRAME_CONTROL |= TX_FRAME_CONTROL_TX_REQ;
-debug_printf ("<2>");
+debug_printf ("@");
 
 	++u->netif.out_packets;
-debug_printf ("<3>");
 	u->netif.out_bytes += len;
-debug_printf ("<4>");
 
 /*debug_printf ("tx%d", len); buf_print_data (u->txbuf, p->tot_len);*/
 }
@@ -414,7 +413,7 @@ debug_printf ("eth_output: transmit %d bytes, link failed\n", p->tot_len);
 		buf_free (p);
 		return 0;
 	}
-debug_printf ("eth_output: transmit %d bytes\n", p->tot_len);
+/*debug_printf ("eth_output: transmit %d bytes\n", p->tot_len);*/
 
 	if (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ) {
 		/* Занято, ставим в очередь. */
@@ -458,11 +457,12 @@ eth_set_address (eth_t *u, unsigned char *addr)
 	memcpy (&u->netif.ethaddr, addr, 6);
 
 	MC_MAC_UCADDR_L = u->netif.ethaddr[0] |
-		(u->netif.ethaddr[1] << 8) |
-		(u->netif.ethaddr[2] << 16)|
-		(u->netif.ethaddr[3] << 24);
+			 (u->netif.ethaddr[1] << 8) |
+			 (u->netif.ethaddr[2] << 16)|
+			 (u->netif.ethaddr[3] << 24);
 	MC_MAC_UCADDR_H = u->netif.ethaddr[4] |
-		(u->netif.ethaddr[5] << 8);
+			 (u->netif.ethaddr[5] << 8);
+/*debug_printf ("UCADDR=%02x:%08x\n", MC_MAC_UCADDR_H, MC_MAC_UCADDR_L);*/
 
 	mutex_unlock (&u->netif.lock);
 }
@@ -519,10 +519,10 @@ debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 	}
 
 	/* Copy the packet data. */
-debug_printf ("receive %08x <- %08x, %d bytes\n", p->payload, u->rxbuf, len);
+/*debug_printf ("receive %08x <- %08x, %d bytes\n", p->payload, u->rxbuf, len);*/
 	memcpy (p->payload, u->rxbuf, len);
 	buf_queue_put (&u->inq, p);
-/*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
+debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);
 }
 
 /*
@@ -582,7 +582,8 @@ debug_printf ("eth tx irq: ONTX_REQ, STATUS_TX = %08x\n", status_tx);
 	/* Извлекаем следующий пакет из очереди. */
 	buf_t *p = buf_queue_get (&u->outq);
 	if (! p) {
-debug_printf ("eth tx irq: done, STATUS_TX = %08x\n", status_tx);
+/*debug_printf ("eth tx irq: done, STATUS_TX = %08x\n", status_tx);*/
+debug_printf ("#");
 		return;
 	}
 
@@ -620,9 +621,6 @@ eth_receiver (void *arg)
 
 	/* Register receive interrupt. */
 	mutex_lock_irq (&u->netif.lock, ETH_IRQ_RECEIVE, 0, 0);
-
-	/* Initialize hardware. */
-	chip_init (u);
 
 	for (;;) {
 		/* Wait for the receive interrupt. */
@@ -663,7 +661,7 @@ static netif_interface_t eth_interface = {
  */
 void
 eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
-	arp_t *arp)
+	arp_t *arp, const unsigned char *macaddr)
 {
 	u->netif.interface = &eth_interface;
 	u->netif.name = name;
@@ -671,6 +669,8 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 	u->netif.mtu = 1500;
 	u->netif.type = NETIF_ETHERNET_CSMACD;
 	u->netif.bps = 10000000;
+	memcpy (&u->netif.ethaddr, macaddr, 6);
+
 	u->pool = pool;
 	u->rxbuf = (unsigned char*) (((unsigned) u->rxbuf_data + 7) & ~7);
 	u->txbuf = (unsigned char*) (((unsigned) u->txbuf_data + 7) & ~7);
@@ -678,6 +678,9 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 	u->txbuf_physaddr = virt_to_phys ((unsigned) u->txbuf);
 	buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
 	buf_queue_init (&u->outq, u->outqdata, sizeof (u->outqdata));
+
+	/* Initialize hardware. */
+	chip_init (u);
 
 	/* Create transmit task. */
 	task_create (eth_transmitter, u, "eth-tx", prio, u->tstack, sizeof (u->tstack));
