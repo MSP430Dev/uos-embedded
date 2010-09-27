@@ -272,7 +272,7 @@ static void dump_of_death (unsigned int context[])
 
 void _exception_handler_ (unsigned int context[])
 {
-	unsigned int cause, badvaddr, config, prid;
+	unsigned int cause, badvaddr, config;
 	const char *code = 0;
 
 	debug_printf ("\n\n*** 0x%08x: exception ", context [CONTEXT_PC]);
@@ -301,25 +301,23 @@ void _exception_handler_ (unsigned int context[])
 
 	badvaddr = mips32_read_c0_register (C0_BADVADDR);
 	config = mips32_read_c0_register (C0_CONFIG);
-	prid = mips32_read_c0_register (C0_PRID);
-	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x, prid=0x%08x\n",
-		cause, badvaddr, config, prid);
+	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x\n",
+		cause, badvaddr, config);
 
 	dump_of_death (context);
 }
 
 void _pagefault_handler_ (unsigned int context[])
 {
-	unsigned int cause, badvaddr, config, prid;
+	unsigned int cause, badvaddr, config;
 
 	debug_printf ("\n\n*** 0x%08x: page fault\n", context [CONTEXT_PC]);
 
 	cause = mips32_read_c0_register (C0_CAUSE);
 	badvaddr = mips32_read_c0_register (C0_BADVADDR);
 	config = mips32_read_c0_register (C0_CONFIG);
-	prid = mips32_read_c0_register (C0_PRID);
-	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x, prid=0x%08x\n",
-		cause, badvaddr, config, prid);
+	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x\n",
+		cause, badvaddr, config);
 
 	dump_of_death (context);
 }

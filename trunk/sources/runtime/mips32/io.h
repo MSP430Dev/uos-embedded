@@ -48,6 +48,27 @@
 
 #define CONTEXT_WORDS	32
 
+/*
+ * Exception handlers, written in C, require some space in stack
+ * for local storage. Minimum requirement is 16 bytes.
+ * To compute needed space, you should get disassembled code of
+ * _arch_interrupt_() and look at the function entry instructions.
+ * For example:
+ *	addiu   sp,sp,-64
+ * 	sw      ra,60(sp)
+ *	...
+ *	sw      s0,24(sp)
+ * Number in the last instruction is the frame space, needed for
+ * local storage. When it is greater than 16, you must put it
+ * in a macro definition here.
+ */
+#ifdef ELVEES_NVCOM01
+#   define MIPS_FSPACE		24	/* for Elvees NVCom-01 */
+#endif
+#ifndef MIPS_FSPACE
+#   define MIPS_FSPACE		16	/* default minimum */
+#endif
+
 #ifndef __ASSEMBLER__
 
 /*
@@ -58,7 +79,7 @@ mips32_set_stack_pointer (void *x)
 {
 	asm volatile (
 	"move	$sp, %0"
-	: : "r" (x));
+	: : "r" (x) : "sp");
 }
 
 /*
@@ -145,11 +166,17 @@ do {								\
 static void inline __attribute__ ((always_inline))
 mips32_intr_disable (int *x)
 {
+#if 1
 	int status;
-
 	status = mips32_read_c0_register (C0_STATUS);
 	*x = status;
 	mips32_write_c0_register (C0_STATUS, status & ~ST_IE);
+#else
+	asm volatile (
+	"syscall \n"
+"	move	%0, $a0"
+	: "=r" (*x) : "K" (C0_STATUS) : "a0");
+#endif
 }
 
 /*
@@ -158,7 +185,10 @@ mips32_intr_disable (int *x)
 static void inline __attribute__ ((always_inline))
 mips32_intr_restore (int x)
 {
-	mips32_write_c0_register (C0_STATUS, x);
+	int status;
+
+	status = mips32_read_c0_register (C0_STATUS);
+	mips32_write_c0_register (C0_STATUS, status | (x & ST_IE));
 }
 
 /*
@@ -227,6 +257,5 @@ mips32_virtual_addr_to_physical (unsigned int virt)
 		}
 	}
 }
-
 
 #endif /* __ASSEMBLER__ */

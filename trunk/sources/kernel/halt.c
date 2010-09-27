@@ -30,7 +30,9 @@ uos_halt (int dump_flag)
 #else
 	unsigned char n;
 	task_t *t;
+	arch_state_t x;
 
+	arch_intr_disable (&x);
 	if (dump_flag) {
 		task_print (&debug, 0);
 		n = 0;

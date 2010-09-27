@@ -35,52 +35,52 @@ _arch_task_switch_ ()
 "arch_task_switch: .globl arch_task_switch");
 	asm volatile ("move	%0, $a0" : "=r" (target));
 
-	asm volatile ("addi	$sp, $sp, -%0" : : "i" (CONTEXT_WORDS * 4 + 16));
+	asm volatile ("addi	$sp, $sp, -%0" : : "i" (CONTEXT_WORDS * 4 + MIPS_FSPACE));
 	asm volatile (".set	noat");
-	asm volatile ("sw	$1, %0 ($sp)" : : "i" (CONTEXT_R1 * 4 + 16));
-	asm volatile ("sw	$2, %0 ($sp)" : : "i" (CONTEXT_R2 * 4 + 16));
-	asm volatile ("sw	$3, %0 ($sp)" : : "i" (CONTEXT_R3 * 4 + 16));
-	asm volatile ("sw	$4, %0 ($sp)" : : "i" (CONTEXT_R4 * 4 + 16));
-	asm volatile ("sw	$5, %0 ($sp)" : : "i" (CONTEXT_R5 * 4 + 16));
-	asm volatile ("sw	$6, %0 ($sp)" : : "i" (CONTEXT_R6 * 4 + 16));
-	asm volatile ("sw	$7, %0 ($sp)" : : "i" (CONTEXT_R7 * 4 + 16));
-	asm volatile ("sw	$8, %0 ($sp)" : : "i" (CONTEXT_R8 * 4 + 16));
-	asm volatile ("sw	$9, %0 ($sp)" : : "i" (CONTEXT_R9 * 4 + 16));
-	asm volatile ("sw	$10, %0 ($sp)" : : "i" (CONTEXT_R10 * 4 + 16));
-	asm volatile ("sw	$11, %0 ($sp)" : : "i" (CONTEXT_R11 * 4 + 16));
-	asm volatile ("sw	$12, %0 ($sp)" : : "i" (CONTEXT_R12 * 4 + 16));
-	asm volatile ("sw	$13, %0 ($sp)" : : "i" (CONTEXT_R13 * 4 + 16));
-	asm volatile ("sw	$14, %0 ($sp)" : : "i" (CONTEXT_R14 * 4 + 16));
-	asm volatile ("sw	$15, %0 ($sp)" : : "i" (CONTEXT_R15 * 4 + 16));
-	asm volatile ("sw	$16, %0 ($sp)" : : "i" (CONTEXT_R16 * 4 + 16));
-	asm volatile ("sw	$17, %0 ($sp)" : : "i" (CONTEXT_R17 * 4 + 16));
-	asm volatile ("sw	$18, %0 ($sp)" : : "i" (CONTEXT_R18 * 4 + 16));
-	asm volatile ("sw	$19, %0 ($sp)" : : "i" (CONTEXT_R19 * 4 + 16));
-	asm volatile ("sw	$20, %0 ($sp)" : : "i" (CONTEXT_R20 * 4 + 16));
-	asm volatile ("sw	$21, %0 ($sp)" : : "i" (CONTEXT_R21 * 4 + 16));
-	asm volatile ("sw	$22, %0 ($sp)" : : "i" (CONTEXT_R22 * 4 + 16));
-	asm volatile ("sw	$23, %0 ($sp)" : : "i" (CONTEXT_R23 * 4 + 16));
-	asm volatile ("sw	$24, %0 ($sp)" : : "i" (CONTEXT_R24 * 4 + 16));
-	asm volatile ("sw	$25, %0 ($sp)" : : "i" (CONTEXT_R25 * 4 + 16));
+	asm volatile ("sw	$1, %0 ($sp)" : : "i" (CONTEXT_R1 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$2, %0 ($sp)" : : "i" (CONTEXT_R2 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$3, %0 ($sp)" : : "i" (CONTEXT_R3 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$4, %0 ($sp)" : : "i" (CONTEXT_R4 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$5, %0 ($sp)" : : "i" (CONTEXT_R5 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$6, %0 ($sp)" : : "i" (CONTEXT_R6 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$7, %0 ($sp)" : : "i" (CONTEXT_R7 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$8, %0 ($sp)" : : "i" (CONTEXT_R8 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$9, %0 ($sp)" : : "i" (CONTEXT_R9 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$10, %0 ($sp)" : : "i" (CONTEXT_R10 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$11, %0 ($sp)" : : "i" (CONTEXT_R11 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$12, %0 ($sp)" : : "i" (CONTEXT_R12 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$13, %0 ($sp)" : : "i" (CONTEXT_R13 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$14, %0 ($sp)" : : "i" (CONTEXT_R14 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$15, %0 ($sp)" : : "i" (CONTEXT_R15 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$16, %0 ($sp)" : : "i" (CONTEXT_R16 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$17, %0 ($sp)" : : "i" (CONTEXT_R17 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$18, %0 ($sp)" : : "i" (CONTEXT_R18 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$19, %0 ($sp)" : : "i" (CONTEXT_R19 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$20, %0 ($sp)" : : "i" (CONTEXT_R20 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$21, %0 ($sp)" : : "i" (CONTEXT_R21 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$22, %0 ($sp)" : : "i" (CONTEXT_R22 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$23, %0 ($sp)" : : "i" (CONTEXT_R23 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$24, %0 ($sp)" : : "i" (CONTEXT_R24 * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$25, %0 ($sp)" : : "i" (CONTEXT_R25 * 4 + MIPS_FSPACE));
 	/* Skip $26 - K0*/
 	/* Skip $27 - K1*/
-	asm volatile ("sw	$28, %0 ($sp)" : : "i" (CONTEXT_GP * 4 + 16));
+	asm volatile ("sw	$28, %0 ($sp)" : : "i" (CONTEXT_GP * 4 + MIPS_FSPACE));
 	/* Skip $29 - SP*/
-	asm volatile ("sw	$30, %0 ($sp)" : : "i" (CONTEXT_FP * 4 + 16));
-	asm volatile ("sw	$31, %0 ($sp)" : : "i" (CONTEXT_RA * 4 + 16));
+	asm volatile ("sw	$30, %0 ($sp)" : : "i" (CONTEXT_FP * 4 + MIPS_FSPACE));
+	asm volatile ("sw	$31, %0 ($sp)" : : "i" (CONTEXT_RA * 4 + MIPS_FSPACE));
 	asm volatile (".set	at");
 
 	/* Save special registers. */
 	asm volatile ("mfhi	$a0" : : : "a0");
-	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_HI * 4 + 16));
+	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_HI * 4 + MIPS_FSPACE));
 
 	asm volatile ("mflo	$a0" : : : "a0");
-	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_LO * 4 + 16));
+	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_LO * 4 + MIPS_FSPACE));
 
 	asm volatile ("mfc0	$a0, $%0" : : "i" (C0_STATUS) : "a0");
-	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_STATUS * 4 + 16));
+	asm volatile ("sw	$a0, %0 ($sp)" : : "i" (CONTEXT_STATUS * 4 + MIPS_FSPACE));
 
-	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4 + 16));
+	asm volatile ("sw	$ra, %0 ($sp)" : : "i" (CONTEXT_PC * 4 + MIPS_FSPACE));
 
 	asm volatile (
 "switch_task:");
@@ -91,22 +91,22 @@ _arch_task_switch_ ()
 		task_current->fpu_state = mips32_read_fpu_control (C1_FCSR);
 
 		asm volatile ("addi	$sp, $sp, -%0" : : "i" (32 * 4));
-		asm volatile ("sdc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
-		asm volatile ("sdc1	$2, %0 ($sp)" : : "i" (2 * 4 + 16));
-		asm volatile ("sdc1	$4, %0 ($sp)" : : "i" (4 * 4 + 16));
-		asm volatile ("sdc1	$6, %0 ($sp)" : : "i" (6 * 4 + 16));
-		asm volatile ("sdc1	$8, %0 ($sp)" : : "i" (8 * 4 + 16));
-		asm volatile ("sdc1	$10, %0 ($sp)" : : "i" (10 * 4 + 16));
-		asm volatile ("sdc1	$12, %0 ($sp)" : : "i" (12 * 4 + 16));
-		asm volatile ("sdc1	$14, %0 ($sp)" : : "i" (14 * 4 + 16));
-		asm volatile ("sdc1	$16, %0 ($sp)" : : "i" (16 * 4 + 16));
-		asm volatile ("sdc1	$18, %0 ($sp)" : : "i" (18 * 4 + 16));
-		asm volatile ("sdc1	$20, %0 ($sp)" : : "i" (20 * 4 + 16));
-		asm volatile ("sdc1	$22, %0 ($sp)" : : "i" (22 * 4 + 16));
-		asm volatile ("sdc1	$24, %0 ($sp)" : : "i" (24 * 4 + 16));
-		asm volatile ("sdc1	$26, %0 ($sp)" : : "i" (26 * 4 + 16));
-		asm volatile ("sdc1	$28, %0 ($sp)" : : "i" (28 * 4 + 16));
-		asm volatile ("sdc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
+		asm volatile ("sdc1	$0, %0 ($sp)" : : "i" (0 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$2, %0 ($sp)" : : "i" (2 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$4, %0 ($sp)" : : "i" (4 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$6, %0 ($sp)" : : "i" (6 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$8, %0 ($sp)" : : "i" (8 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$10, %0 ($sp)" : : "i" (10 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$12, %0 ($sp)" : : "i" (12 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$14, %0 ($sp)" : : "i" (14 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$16, %0 ($sp)" : : "i" (16 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$18, %0 ($sp)" : : "i" (18 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$20, %0 ($sp)" : : "i" (20 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$22, %0 ($sp)" : : "i" (22 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$24, %0 ($sp)" : : "i" (24 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$26, %0 ($sp)" : : "i" (26 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$28, %0 ($sp)" : : "i" (28 * 4 + MIPS_FSPACE));
+		asm volatile ("sdc1	$30, %0 ($sp)" : : "i" (30 * 4 + MIPS_FSPACE));
 	}
 #endif
 	/* Save current task stack. */
@@ -120,33 +120,30 @@ _arch_task_switch_ ()
 #ifdef ARCH_HAVE_FPU
 	if (task_current->fpu_state != ~0) {
 		/* Restore FPU state. */
-		asm volatile ("ldc1	$0, %0 ($sp)" : : "i" (0 * 4 + 16));
-		asm volatile ("ldc1	$2, %0 ($sp)" : : "i" (2 * 4 + 16));
-		asm volatile ("ldc1	$4, %0 ($sp)" : : "i" (4 * 4 + 16));
-		asm volatile ("ldc1	$6, %0 ($sp)" : : "i" (6 * 4 + 16));
-		asm volatile ("ldc1	$8, %0 ($sp)" : : "i" (8 * 4 + 16));
-		asm volatile ("ldc1	$10, %0 ($sp)" : : "i" (10 * 4 + 16));
-		asm volatile ("ldc1	$12, %0 ($sp)" : : "i" (12 * 4 + 16));
-		asm volatile ("ldc1	$14, %0 ($sp)" : : "i" (14 * 4 + 16));
-		asm volatile ("ldc1	$16, %0 ($sp)" : : "i" (16 * 4 + 16));
-		asm volatile ("ldc1	$18, %0 ($sp)" : : "i" (18 * 4 + 16));
-		asm volatile ("ldc1	$20, %0 ($sp)" : : "i" (20 * 4 + 16));
-		asm volatile ("ldc1	$22, %0 ($sp)" : : "i" (22 * 4 + 16));
-		asm volatile ("ldc1	$24, %0 ($sp)" : : "i" (24 * 4 + 16));
-		asm volatile ("ldc1	$26, %0 ($sp)" : : "i" (26 * 4 + 16));
-		asm volatile ("ldc1	$28, %0 ($sp)" : : "i" (28 * 4 + 16));
-		asm volatile ("ldc1	$30, %0 ($sp)" : : "i" (30 * 4 + 16));
+		asm volatile ("ldc1	$0, %0 ($sp)" : : "i" (0 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$2, %0 ($sp)" : : "i" (2 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$4, %0 ($sp)" : : "i" (4 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$6, %0 ($sp)" : : "i" (6 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$8, %0 ($sp)" : : "i" (8 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$10, %0 ($sp)" : : "i" (10 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$12, %0 ($sp)" : : "i" (12 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$14, %0 ($sp)" : : "i" (14 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$16, %0 ($sp)" : : "i" (16 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$18, %0 ($sp)" : : "i" (18 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$20, %0 ($sp)" : : "i" (20 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$22, %0 ($sp)" : : "i" (22 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$24, %0 ($sp)" : : "i" (24 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$26, %0 ($sp)" : : "i" (26 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$28, %0 ($sp)" : : "i" (28 * 4 + MIPS_FSPACE));
+		asm volatile ("ldc1	$30, %0 ($sp)" : : "i" (30 * 4 + MIPS_FSPACE));
 		asm volatile ("addi	$sp, $sp, %0" : : "i" (32 * 4));
 
 		mips32_write_fpu_control (C1_FCSR, task_current->fpu_state);
 	}
 #endif
 	/* Restore registers. */
-	asm volatile (
-		".globl	_restore_regs_ \n"
-	"	j	_restore_regs_ \n"
-	"	nop"
-	);
+	asm volatile (".globl _restore_regs_");
+	asm volatile ("j _restore_regs_");
 }
 
 /*
@@ -160,9 +157,13 @@ _arch_interrupt_ (void)
 	mutex_irq_t *h;
 	int irq;
 
+	/* Мы входим в функцию минуя пролог, созданный компилятором.
+	 * Это делается, чтобы избежать избыточного сохранения регистров и
+	 * расходования места в стеке. */
 	asm volatile (
 "_irq_handler_: .globl _irq_handler_"
 	);
+
 #ifdef ELVEES_FPU_EPC_BUG
 	/* Исправляем ошибку в процессоре MC-24RT3: требуется откат
 	 * адреса EPC, если прерывание произошло в слоте перехода
@@ -264,25 +265,20 @@ _arch_interrupt_ (void)
 
 	/* LY: copy a few lines of code from task_schedule() here. */
 	if (task_need_schedule)	{
-		register task_t *t __asm ("v0");
+		task_t *t;
 
 		task_need_schedule = 0;
 		t = task_policy ();
 		if (t != task_current) {
 			t->ticks++;
-			asm volatile (
-			"	j	switch_task \n"
-			"	nop"	: : "r" (t)
-			);
+			asm volatile ("move $v0, %0" : : "r" (t) : "v0");
+			asm volatile ("j switch_task");
 		}
 	}
 
 	/* Restore registers. */
-	asm volatile (
-		".globl	_restore_regs_ \n"
-	"	j	_restore_regs_ \n"
-	"	nop"
-	);
+	asm volatile (".globl _restore_regs_");
+	asm volatile ("j _restore_regs_");
 }
 
 /*
@@ -339,7 +335,7 @@ void
 arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	unsigned stacksz)
 {
-	unsigned *sp = (unsigned*) ((char*) t + stacksz);
+	unsigned i, *sp = (unsigned*) ((char*) t + stacksz);
 	extern void _gp;
 
 	if ((unsigned) sp & 4)
@@ -380,10 +376,8 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* r3 */
 	*--sp = 0;			/* r2 */
 	*--sp = 0;			/* r1 */
-	*--sp = 0;			/* arg4 */
-	*--sp = 0;			/* arg3 */
-	*--sp = 0;			/* arg2 */
-	*--sp = 0;			/* arg1 */
+	for (i=0; i<MIPS_FSPACE; i+=4)
+		*--sp = 0;		/* args and locals */
 	t->stack_context = (void*) sp;	/* must be at 8-byte boundary */
 
 #ifdef ARCH_HAVE_FPU

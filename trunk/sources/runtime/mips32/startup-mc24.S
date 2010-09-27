@@ -15,7 +15,7 @@
 _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
-		la	$sp, _estack-16			# Stack at end of internal SRAM
+		la	$sp, _estack			# Stack at end of internal SRAM
 #if 1
 		lui	$gp, 0xb840			# Set global pointer
 		mfc0	$a0, $C0_COUNT			# Get CPU tick counter
@@ -105,7 +105,7 @@ _reset_vector_:	.globl	_reset_vector_
 exception:
 		SAVE_REGS				# Save all registers in stack
 		move	$a0, $sp			# Arg0: pointer to saved state
-		addi	$sp, $sp, -16			# Make an arg frame
+		addi	$sp, $sp, -MIPS_FSPACE		# Make an arg frame
 
 		.extern _exception_handler_
 		j	_exception_handler_		# Jump to C code, no return
@@ -115,7 +115,7 @@ exception:
 # Restore CPU state and return from interrupt
 
 _restore_regs_: .globl _restore_regs_
-		addi	$sp, $sp, 16			# Remove an arg frame
+		addi	$sp, $sp, MIPS_FSPACE		# Remove an arg frame
 
 		lw	$a0, (CONTEXT_LO * 4) ($sp)	# Load HI, LO registers
 		mtlo	$a0
@@ -160,7 +160,7 @@ _restore_regs_: .globl _restore_regs_
 		.set	at
 
 		mfc0	$k0, $C0_STATUS
-		ori	$k0, $k0, ST_IE
+		ori	$k0, $k0, ST_EXL | ST_IE	# prevent interrupts until eret
 		lw	$k1, (CONTEXT_STATUS * 4) ($sp)	# K0 = saved status, only IE bit
 		andi	$k1, $k1, ST_IE			# Restore only IE bit
 		xori	$k1, $k1, ST_IE
@@ -169,12 +169,11 @@ _restore_regs_: .globl _restore_regs_
 		addi	$sp, $sp, CONTEXT_WORDS*4	# Deallocate saved context
 
 		# Invoke CPU specific mechanism for returning from this exception
-		.set mips3
-#		ori	$k0, $k0, ST_EXL | ST_IE	# prevent interrupts until eret
 		mtc0	$k0, $C0_STATUS			# put SR back
 		nop
 		nop
 		nop
+		.set mips3
 		sync					# settle things down
 		eret					# PC <= EPC; EXL <= 0
 		nop					# just to be safe
@@ -188,7 +187,7 @@ _pagefault_vector_: .globl _pagefault_vector_
 
 		SAVE_REGS				# Save all registers in stack
 		move	$a0, $sp			# Arg0: pointer to saved state
-		addi	$sp, $sp, -16			# Make an arg frame
+		addi	$sp, $sp, -MIPS_FSPACE		# Make an arg frame
 
 		.extern _pagefault_handler_
 		j	_pagefault_handler_		# Jump to C code, no return
@@ -199,9 +198,26 @@ _pagefault_vector_: .globl _pagefault_vector_
 #
 		.org	0x0380
 _exception_vector_: .globl _exception_vector_
-		j	exception			# Not enough space here
+
+		mfc0	$k0, $C0_CAUSE
+		andi	$k0, $k0, CA_EXC_CODE
+		li	$k1, CA_Sys
+		bne	$k1, $k0, exception
 		nop					# (delay slot)
 
+#
+# Инструкция SYSCALL: чтение регистра STATUS и запрет прерываний.
+#
+		mfc0	$a0, $C0_STATUS			# Get SR
+		li	$k0, ~ST_IE
+		and	$k0, $a0, $k0			# Clear IE bit
+
+		mtc0	$k0, $C0_STATUS			# Put SR back
+		xori	$a0, ST_EXL			# Clear EXL for user
+		.set mips3
+		eret					# PC <= EPC; EXL <= 0
+		nop					# just to be safe
+		.set mips0
 
 #---------------------------------------
 # Interrupt vector at 0xBFC00400
@@ -210,7 +226,7 @@ _exception_vector_: .globl _exception_vector_
 _interrupt_vector_: .globl _interrupt_vector_
 
 		SAVE_REGS				# Save all registers in stack
-		addi	$sp, $sp, -16			# Make an arg frame
+		addi	$sp, $sp, -MIPS_FSPACE		# Make an arg frame
 
 		.extern _irq_handler_
 		j	_irq_handler_			# Jump to C code, no return

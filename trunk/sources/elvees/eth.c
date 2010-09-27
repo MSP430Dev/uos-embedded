@@ -308,7 +308,7 @@ chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 	MC_IR_EMAC(1) = physaddr;
 	MC_CP_EMAC(1) = 0;
 	MC_CSR_EMAC(1) = csr;
-debug_printf ("<t%d> ", nbytes);
+/*debug_printf ("<t%d> ", nbytes);*/
 
 	/* Run the DMA. */
 	MC_CSR_EMAC(1) = csr | MC_DMA_CSR_RUN;
@@ -318,7 +318,7 @@ debug_printf ("<t%d> ", nbytes);
 		csr = MC_CSR_EMAC(1);
 		if (! (csr & MC_DMA_CSR_RUN))
 			break;
-debug_printf ("~");
+/*debug_printf ("~");*/
 	}
 	if (count == 0) {
 		debug_printf ("eth: TX DMA failed, CSR=%08x\n", csr);
@@ -338,7 +338,7 @@ chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 	MC_CSR_EMAC(0) = csr;
 	MC_IR_EMAC(0) = physaddr;
 	MC_CP_EMAC(0) = 0;
-debug_printf ("(r%d) ", nbytes);
+/*debug_printf ("(r%d) ", nbytes);*/
 
 	/* Run the DMA. */
 	MC_CSR_EMAC(0) = csr | MC_DMA_CSR_RUN;
@@ -385,9 +385,9 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 		TX_FRAME_CONTROL_DISPAD |
 		TX_FRAME_CONTROL_LENGTH (len);
 	chip_write_txfifo (u->txbuf_physaddr, len);
-debug_printf ("!");
+/*debug_printf ("!");*/
 	MC_MAC_TX_FRAME_CONTROL |= TX_FRAME_CONTROL_TX_REQ;
-debug_printf ("@");
+/*debug_printf ("@");*/
 
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
@@ -522,7 +522,7 @@ debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 /*debug_printf ("receive %08x <- %08x, %d bytes\n", p->payload, u->rxbuf, len);*/
 	memcpy (p->payload, u->rxbuf, len);
 	buf_queue_put (&u->inq, p);
-debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);
+/*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
 }
 
 /*
@@ -583,7 +583,7 @@ debug_printf ("eth tx irq: ONTX_REQ, STATUS_TX = %08x\n", status_tx);
 	buf_t *p = buf_queue_get (&u->outq);
 	if (! p) {
 /*debug_printf ("eth tx irq: done, STATUS_TX = %08x\n", status_tx);*/
-debug_printf ("#");
+/*debug_printf ("#");*/
 		return;
 	}
 

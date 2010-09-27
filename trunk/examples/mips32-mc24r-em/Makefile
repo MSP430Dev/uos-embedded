@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-CURRENT		= test-uart
+CURRENT		= test-timer
 TESTS		+= test-debug.srec test-task.srec test-timer.srec
 TESTS		+= test-uart.srec test-ram.srec test-tcl.srec
 TESTS		+= philosophers.srec test-latency.srec test-tswitch.srec
