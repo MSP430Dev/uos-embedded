@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-tcp
+TEST		= test-telnetd
 TESTS		= $(TEST).srec
 #TESTS		+= test-debug.srec test-task.srec test-timer.srec test-uart.srec
 #TESTS		+= philosophers.srec test-ram.srec #test-tcl.srec

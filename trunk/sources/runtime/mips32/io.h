@@ -160,23 +160,18 @@ do {								\
 } while (0)
 
 /*
- * Disable the hardware interrupts.
+ * Disable the hardware interrupts,
  * saving the interrupt state into the supplied variable.
  */
 static void inline __attribute__ ((always_inline))
 mips32_intr_disable (int *x)
 {
-#if 1
-	int status;
-	status = mips32_read_c0_register (C0_STATUS);
-	*x = status;
-	mips32_write_c0_register (C0_STATUS, status & ~ST_IE);
-#else
+	/* This must be atomic operation.
+	 * On MIPS1 this could be done only using system call exception. */
 	asm volatile (
 	"syscall \n"
 "	move	%0, $a0"
 	: "=r" (*x) : "K" (C0_STATUS) : "a0");
-#endif
 }
 
 /*

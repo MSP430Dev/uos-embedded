@@ -10,7 +10,7 @@
 #include <buf/buf-queue.h>
 
 #ifndef ETH_STACKSZ
-#   define ETH_STACKSZ	1500
+#   define ETH_STACKSZ	1000
 #endif
 
 #define ETH_MTU		1518		/* maximum ethernet frame length */

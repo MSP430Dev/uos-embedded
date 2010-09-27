@@ -14,13 +14,12 @@
 #define SDRAM_SIZE	(64*1024*1024)
 
 ARRAY (stack_tcp, 1500);
-ARRAY (stack_console, 1500);
-ARRAY (stack_poll, 1500);
+ARRAY (stack_console, 1000);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
 arp_t *arp;
-eth_t *eth;
+eth_t eth_data, *eth = &eth_data;
 route_t route;
 timer_t timer;
 ip_t ip;
@@ -121,7 +120,6 @@ void console_task (void *data)
 		case 't' & 037:
 			task_print (&debug, 0);
 			task_print (&debug, (task_t*) stack_console);
-//			task_print (&debug, (task_t*) stack_poll);
 			task_print (&debug, (task_t*) stack_tcp);
 			task_print (&debug, (task_t*) eth->stack);
 			task_print (&debug, (task_t*) eth->tstack);
@@ -184,16 +182,6 @@ closed:		tcp_close (user_socket);
 	}
 }
 
-/*
- * Task of polling ethernet controller.
- */
-void poll_task (void *data)
-{
-	for (;;) {
-		eth_poll (eth);
-	}
-}
-
 bool_t __attribute__((weak))
 uos_valid_memory_address (void *ptr)
 {
@@ -243,14 +231,6 @@ void uos_init (void)
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 	timer_init (&timer, KHZ, 50);
 
-	static eth_t eth_data;
-	eth = &eth_data;
-//	eth = (eth_t*) mem_alloc (&pool, sizeof(eth_t));
-//	if (! eth) {
-//		debug_printf ("No memory for eth_t\n");
-//		uos_halt (0);
-//	}
-
 	/*
 	 * Create a group of two locks: timer and eth.
 	 */
@@ -267,8 +247,6 @@ void uos_init (void)
 	eth_init (eth, "eth0", 80, &pool, arp, my_macaddr);
 	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
 
-if(0)	task_create (poll_task, 0, "poll", 1,
-		stack_poll, sizeof (stack_poll));
 	task_create (tcp_task, 0, "tcp", 10,
 		stack_tcp, sizeof (stack_tcp));
 	task_create (console_task, 0, "cons", 20,

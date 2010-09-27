@@ -22,7 +22,7 @@
 #endif
 #define SDRAM_SIZE	(64*1024*1024)
 
-ARRAY (stack_telnet, 1000);
+ARRAY (stack_telnet, 1500);
 ARRAY (stack_console, 1500);
 
 #define TASKSZ		1500		/* Task: telnet menu */
@@ -69,6 +69,7 @@ mem_cmd (stream_t *stream)
 			task_print (stream, (task_t*) tasktab[n]);
 	task_print (stream, (task_t*) ip.stack);
 	task_print (stream, (task_t*) eth.stack);
+	task_print (stream, (task_t*) eth.tstack);
 	task_print (stream, (task_t*) uart.rstack);
 
 	putchar (stream, '\n');
@@ -378,6 +379,24 @@ void main_telnet (void *data)
 		}
 		start_session (sock);
 	}
+}
+
+bool_t __attribute__((weak))
+uos_valid_memory_address (void *ptr)
+{
+	unsigned address = (unsigned) ptr;
+	extern unsigned __data_start, _estack[];
+
+	/* Internal SRAM. */
+	if (address >= (unsigned) &__data_start &&
+	    address < (unsigned) _estack)
+		return 1;
+
+	if (address >= SDRAM_START &&
+	    address < SDRAM_START + SDRAM_SIZE)
+		return 1;
+
+	return 0;
 }
 
 void uos_init (void)

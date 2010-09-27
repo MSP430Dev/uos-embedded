@@ -12,7 +12,7 @@
 #      define IP_STACKSZ	0x800
 #   endif
 #   if MIPS32
-#      define IP_STACKSZ	0x800
+#      define IP_STACKSZ	1500
 #   endif
 #   if LINUX386
 #      define IP_STACKSZ	4000
