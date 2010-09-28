@@ -1158,5 +1158,93 @@ typedef struct
 				 * 1 - при записи или стирании
 				 */
 
+/*------------------------------------------------------
+ * Контроллер CAN.
+ */
+typedef struct
+{
+	arm_reg_t ID; 		/* Идентификатор сообщения */
+	arm_reg_t DLC;		/* Длина и формат сообщения */
+	arm_reg_t DATAL; 	/* Младшая часть данных */
+	arm_reg_t DATAH;	/* Старшая часть данных */
+} CAN_BUF_t;
+
+typedef struct
+{
+	arm_reg_t MASK;	 	/* Маска для приема сообщения */
+	arm_reg_t FILTER; 	/* Фильтр для приема сообщения */
+} CAN_MASK_t;
+
+typedef struct
+{
+	arm_reg_t CONTROL;	/* Управление */
+	arm_reg_t STATUS;	/* Состояние */
+	arm_reg_t BITTMNG;	/* Задание скорости работы */
+	arm_reg_t reserved0;
+	arm_reg_t INT_EN;	/* Разрешение прерываний */
+	arm_reg_t reserved1;
+	arm_reg_t reserved2;
+	arm_reg_t OVER;		/* Границы счетчика ошибок */
+	arm_reg_t RXID;		/* Идентификатор принятого сообщения */
+	arm_reg_t RXDLC;	/* Длина и формат принятого сообщения */
+	arm_reg_t RXDATAL; 	/* Младшая часть принятых данных */
+	arm_reg_t RXDATAH;	/* Старшая часть принятых данных */
+	arm_reg_t TXID;		/* Идентификатор передаваемого сообщения */
+	arm_reg_t TXDLC;	/* Длина и формат передаваемого сообщения */
+	arm_reg_t DATAL; 	/* Младшая часть передаваемых данных */
+	arm_reg_t DATAH;	/* Старшая часть передаваемых данных */
+	arm_reg_t BUF_CON [32];	/* Управление буферами 1..32 */
+	arm_reg_t INT_RX;	/* Разрешение прерываний от приемных буферов */
+	arm_reg_t RX;		/* Флаги RX_FULL от приемных буферов */
+	arm_reg_t INT_TX;	/* Разрешение прерываний от передающих буферов */
+	arm_reg_t TX;	 	/* Флаги ~TX_REQ от передающих буферов */
+	arm_reg_t reserved3 [76];
+	CAN_BUF_t BUF [32];	/* Буферы 1..32: ID, DLC, DATA */
+	arm_reg_t reserved4 [64];
+	CAN_MASK_t MASK [32];	/* Маски и фильтры для приёма в буферы 1..32 */
+} CAN_t;
+
+#define ARM_CAN0		((CAN_t*) ARM_CAN0_BASE)
+#define ARM_CAN1		((CAN_t*) ARM_CAN1_BASE)
+
+/*
+ * Регистр CAN CONTROL - управление контроллером
+ */
+#define	CAN_CONTROL_EN		(1 << 0)	/* Разрешение работы */
+#define	CAN_CONTROL_ROM		(1 << 1)	/* Только на приём */
+#define	CAN_CONTROL_STM		(1 << 2)	/* Режим самотестирования */
+#define	CAN_CONTROL_SAP		(1 << 3)	/* Подтверждаем приём собственных пакетов */
+#define	CAN_CONTROL_ROP		(1 << 4)	/* Принимаем собственные пакеты */
+
+/*
+ * Регистры CAN BUF_CON[0..31] - управление буферами
+ */
+#define	CAN_BUF_CON_EN		(1 << 0)	/* Разрешение работы буфера */
+#define	CAN_BUF_CON_RX_ON	(1 << 1)	/* Режим работы буфера: на приём */
+#define	CAN_BUF_CON_OVER_EN	(1 << 2)	/* Разрешение перезаписи принятого сообщения */
+#define	CAN_BUF_CON_RTR_EN	(1 << 3)	/* Ответить при приеме RTR в буфер */
+#define	CAN_BUF_CON_PRIOR_0	(1 << 4)	/* Приоритет при отправке */
+#define	CAN_BUF_CON_TX_REQ	(1 << 5)	/* Запрос на отправку сообщения */
+#define	CAN_BUF_CON_RX_FULL	(1 << 6)	/* Флаг готовности приема */
+#define	CAN_BUF_CON_OVER_WR	(1 << 7)	/* Флаг перезаписи принятого сообщения */
+
+/*
+ * Регистры CAN BUF[0..31].ID - идентификатор сообщения
+ */
+#define	CAN_BUF_ID_EID_SHIFT	0		/* Сдвиг поля EID */
+#define	CAN_BUF_ID_EID_MASK	0x3FFFF		/* Маска поля EID */
+#define	CAN_BUF_ID_SID_SHIFT	18		/* Сдвиг поля SID */
+#define	CAN_BUF_ID_SID_MASK	(0x7FF << 18)	/* Маска поля SID */
+
+/*
+ * Регистры CAN BUF[0..31].DLC - длина и формат сообщения
+ */
+#define	CAN_BUF_DLC_LEN(n)	((n) & 15)	/* Длина данных в байтах */
+#define	CAN_BUF_DLC_RTR		(1 << 8)	/* Запрос обратного ответа */
+#define	CAN_BUF_DLC_R1		(1 << 9)	/* Всегда должно быть “1” */
+#define	CAN_BUF_DLC_R0		(1 << 10)	/* Всегда должно быть “0” */
+#define	CAN_BUF_DLC_SSR		(1 << 11)	/* Всегда должно быть “1” */
+#define	CAN_BUF_DLC_IDE		(1 << 12)	/* Расширенный формат */
+
 /* End of Milandr 1986BE9x register definitions.
  *----------------------------------------------*/
