@@ -3,7 +3,7 @@
 
 typedef struct _bridge_entry_t {
 	unsigned short	time_to_live;
-	unsigned char	addr [6];
+	unsigned short	addr [3];
 	struct _bridge_entry_t	*next;
 } bridge_entry_t;
 

@@ -5,6 +5,7 @@
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
+#include <kernel/internal.h>
 #include <stream/stream.h>
 #include <mem/mem.h>
 #include <buf/buf.h>
@@ -573,6 +574,7 @@ debug_printf ("eth tx irq: ONTX_REQ, STATUS_TX = %08x\n", status_tx);
 		return;
 	}
 	MC_MAC_STATUS_TX = 0;
+	mutex_activate (&u->netif.lock, 0);
 
 	/* Подсчитываем коллизии. */
 	if (status_tx & (STATUS_TX_ONCOL | STATUS_TX_LATE_COLL)) {

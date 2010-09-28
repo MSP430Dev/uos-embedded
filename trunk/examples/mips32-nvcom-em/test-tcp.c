@@ -144,7 +144,8 @@ void tcp_task (void *data)
 	}
 	/* Добавляем заголовок - длину пакета (LSB). */
 	memset (buf, 0xff, sizeof (buf));
-	*(short*) buf = sizeof (buf);
+	buf[0] = (char) sizeof (buf);
+	buf[1] = sizeof (buf) >> 8;
 	for (;;) {
 		printf (&debug, "Server waiting on port %d...\n", serv_port);
 		printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
