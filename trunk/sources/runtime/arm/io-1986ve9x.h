@@ -309,6 +309,20 @@ typedef struct
 #define ARM_CPU_CLOCK_HCLK_LSI		(3 << 8) /* LSI */
 
 /*
+ * Регистр CAN_CLOCK: управление тактовой частотой CAN
+ * Делитель тактовой частоты:
+ *	0 - HCLK
+ *	1 - HCLK/2
+ *	2 - HCLK/4
+ *	...
+ *	7 - HCLK/128
+ */
+#define ARM_CAN_CLOCK_EN2	(1 << 25)	/* Разрешение тактовой частоты на CAN2 */
+#define ARM_CAN_CLOCK_EN1	(1 << 24)	/* Разрешение тактовой частоты на CAN1 */
+#define ARM_CAN_CLOCK_BRG2(n)	((n) << 8)	/* Делитель тактовой частоты CAN2 */
+#define ARM_CAN_CLOCK_BRG1(n)	(n)		/* Делитель тактовой частоты CAN1 */
+
+/*
  * Регистр UART_CLOCK: управление тактовой частотой UART
  * Делитель тактовой частоты:
  *	0 - HCLK
@@ -1217,6 +1231,25 @@ typedef struct
 #define	CAN_CONTROL_ROP		(1 << 4)	/* Принимаем собственные пакеты */
 
 /*
+ * Регистр CAN BITTMNG - задание скорости работы
+ */
+#define	CAN_BITTMNG_SB		(1 << 27)	/* Трехкратное семплирование */
+#define	CAN_BITTMNG_SJW(n)	((n-1) << 25)	/* Размер фазы SJW */
+#define	CAN_BITTMNG_SEG2(n)	((n-1) << 22)	/* Размер фазы SEG2 */
+#define	CAN_BITTMNG_SEG1(n)	((n-1) << 19)	/* Размер фазы SEG1 */
+#define	CAN_BITTMNG_PSEG(n)	((n-1) << 16)	/* Размер фазы PSEG */
+#define	CAN_BITTMNG_BRP(n)	(n)		/* Предделитель системной частоты */
+
+/*
+ * Регистр CAN INT_EN - разрешение прерываний
+ */
+#define	CAN_INT_EN_ERR_OVER	(1 << 4)	/* Счётчик TEC или REC переполнился */
+#define	CAN_INT_EN_ERR		(1 << 3)	/* Возникла ошибка */
+#define	CAN_INT_EN_TX		(1 << 2)	/* Возможна передача */
+#define	CAN_INT_EN_RX		(1 << 1)	/* Принято сообщение */
+#define	CAN_INT_EN_GLB		(1 << 0)	/* Общее разрешение прерывания */
+
+/*
  * Регистры CAN BUF_CON[0..31] - управление буферами
  */
 #define	CAN_BUF_CON_EN		(1 << 0)	/* Разрешение работы буфера */
@@ -1245,6 +1278,7 @@ typedef struct
 #define	CAN_BUF_DLC_R0		(1 << 10)	/* Всегда должно быть “0” */
 #define	CAN_BUF_DLC_SSR		(1 << 11)	/* Всегда должно быть “1” */
 #define	CAN_BUF_DLC_IDE		(1 << 12)	/* Расширенный формат */
+
 
 /* End of Milandr 1986BE9x register definitions.
  *----------------------------------------------*/
