@@ -188,3 +188,17 @@ unsigned arm_get_ipsr ()
 	: "=r" (x));
 	return x;
 }
+
+/*
+ * Count a number of leading (most significant) zero bits in a word.
+ */
+static int inline __attribute__ ((always_inline))
+arm_count_leading_zeroes (unsigned x)
+{
+	int n;
+
+	asm volatile (
+	"clz	%0, %1"
+	: "=r" (n) : "r" (x));
+	return n;
+}

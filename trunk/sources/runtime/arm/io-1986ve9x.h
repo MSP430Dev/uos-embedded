@@ -1218,8 +1218,8 @@ typedef struct
 	CAN_MASK_t MASK [32];	/* Маски и фильтры для приёма в буферы 1..32 */
 } CAN_t;
 
-#define ARM_CAN0		((CAN_t*) ARM_CAN0_BASE)
 #define ARM_CAN1		((CAN_t*) ARM_CAN1_BASE)
+#define ARM_CAN2		((CAN_t*) ARM_CAN2_BASE)
 
 /*
  * Регистр CAN CONTROL - управление контроллером
@@ -1229,6 +1229,25 @@ typedef struct
 #define	CAN_CONTROL_STM		(1 << 2)	/* Режим самотестирования */
 #define	CAN_CONTROL_SAP		(1 << 3)	/* Подтверждаем приём собственных пакетов */
 #define	CAN_CONTROL_ROP		(1 << 4)	/* Принимаем собственные пакеты */
+
+/*
+ * Регистр CAN STATUS - состояние контроллера
+ */
+#define	CAN_STATUS_TEC(s)	((s) >> 24)	/* Счетчик ошибок передатчика */
+#define	CAN_STATUS_REC(s)	((s) >> 16 & 0xFF) /* Счетчик ошибок приемника */
+#define	CAN_STATUS_TEC8		(1 << 12)	/* TEC более 255 */
+#define	CAN_STATUS_REC8		(1 << 11)	/* REC более 255 */
+#define	CAN_STATUS_BUS_OFF	(1 << 10)	/* Ожидается восстановление шины */
+#define	CAN_STATUS_ERR_ACTIVE	(1 << 9)	/* Отсылается флаг пассивной ошибки */
+#define	CAN_STATUS_ID_LOWER	(1 << 8)	/* При передаче был проигран арбитраж */
+#define	CAN_STATUS_ERR_ACK	(1 << 7)	/* Ошибка подтверждения приема */
+#define	CAN_STATUS_ERR_FRAME	(1 << 6)	/* Ошибка формата пакета */
+#define	CAN_STATUS_ERR_CRC	(1 << 5)	/* Ошибка контрольной суммы пакета */
+#define	CAN_STATUS_ERR_BITSTUFF	(1 << 4)	/* Ошибка вставленных битов пакета */
+#define	CAN_STATUS_ERR_BIT	(1 << 3)	/* Ошибка передаваемых битов пакета */
+#define	CAN_STATUS_ERR_OVER	(1 << 2)	/* Превышение заданного уровня TEC и REC */
+#define	CAN_STATUS_TX_READY	(1 << 1)	/* Есть буфер готовый для отправки сообщений */
+#define	CAN_STATUS_RX_READY	(1 << 0)	/* Есть буфер с принятым сообщением */
 
 /*
  * Регистр CAN BITTMNG - задание скорости работы
@@ -1264,20 +1283,20 @@ typedef struct
 /*
  * Регистры CAN BUF[0..31].ID - идентификатор сообщения
  */
-#define	CAN_BUF_ID_EID_SHIFT	0		/* Сдвиг поля EID */
-#define	CAN_BUF_ID_EID_MASK	0x3FFFF		/* Маска поля EID */
-#define	CAN_BUF_ID_SID_SHIFT	18		/* Сдвиг поля SID */
-#define	CAN_BUF_ID_SID_MASK	(0x7FF << 18)	/* Маска поля SID */
+#define	CAN_ID_EID_SHIFT	0		/* Сдвиг поля EID */
+#define	CAN_ID_EID_MASK		0x3FFFF		/* Маска поля EID */
+#define	CAN_ID_SID_SHIFT	18		/* Сдвиг поля SID */
+#define	CAN_ID_SID_MASK		(0x7FF << 18)	/* Маска поля SID */
 
 /*
  * Регистры CAN BUF[0..31].DLC - длина и формат сообщения
  */
-#define	CAN_BUF_DLC_LEN(n)	((n) & 15)	/* Длина данных в байтах */
-#define	CAN_BUF_DLC_RTR		(1 << 8)	/* Запрос обратного ответа */
-#define	CAN_BUF_DLC_R1		(1 << 9)	/* Всегда должно быть “1” */
-#define	CAN_BUF_DLC_R0		(1 << 10)	/* Всегда должно быть “0” */
-#define	CAN_BUF_DLC_SSR		(1 << 11)	/* Всегда должно быть “1” */
-#define	CAN_BUF_DLC_IDE		(1 << 12)	/* Расширенный формат */
+#define	CAN_DLC_LEN(n)		((n) & 15)	/* Длина данных в байтах */
+#define	CAN_DLC_RTR		(1 << 8)	/* Запрос обратного ответа */
+#define	CAN_DLC_R1		(1 << 9)	/* Всегда должно быть “1” */
+#define	CAN_DLC_R0		(1 << 10)	/* Всегда должно быть “0” */
+#define	CAN_DLC_SSR		(1 << 11)	/* Всегда должно быть “1” */
+#define	CAN_DLC_IDE		(1 << 12)	/* Расширенный формат */
 
 
 /* End of Milandr 1986BE9x register definitions.

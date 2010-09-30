@@ -27,7 +27,7 @@ void can_queue_init (can_queue_t *q)
  * Before call, a user should check that the queue is not full.
  */
 static inline __attribute__((always_inline))
-void can_queue_put (can_queue_t *q, can_frame_t p)
+void can_queue_put (can_queue_t *q, can_frame_t *fr)
 {
 	can_frame_t *head;
 
@@ -42,7 +42,7 @@ void can_queue_put (can_queue_t *q, can_frame_t p)
 		head += CAN_QUEUE_SIZE;
 
 	/* Put the packet in. */
-	*head = p;
+	*head = *fr;
 	++q->count;
 	/*debug_printf ("    on return count = %d, head = 0x%04x\n", q->count, q->head);*/
 }
@@ -52,27 +52,19 @@ void can_queue_put (can_queue_t *q, can_frame_t p)
  * When empty, returns {0,0,0,0};
  */
 static inline __attribute__((always_inline))
-can_frame_t can_queue_get (can_queue_t *q)
+void can_queue_get (can_queue_t *q, can_frame_t *fr)
 {
-	can_frame_t p;
-
 	assert (q->tail >= q->queue);
 	assert (q->tail < q->queue + CAN_QUEUE_SIZE);
-	if (q->count == 0) {
-		/*debug_printf ("can_queue_get: returned 0\n");*/
-		return {0};
+	if (q->count > 0) {
+		/* Get the first packet from queue. */
+		*fr = *q->tail;
+
+		/* Advance head pointer. */
+		if (--q->tail < q->queue)
+			q->tail += CAN_QUEUE_SIZE;
+		--q->count;
 	}
-
-	/* Get the first packet from queue. */
-	p = *q->tail;
-
-	/* Advance head pointer. */
-	if (--q->tail < q->queue)
-		q->tail += CAN_QUEUE_SIZE;
-	--q->count;
-
-	/*debug_printf ("can_queue_get: returned 0x%04x\n", p);*/
-	return p;
 }
 
 /*
