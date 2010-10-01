@@ -77,6 +77,9 @@ static void can_setup (can_t *c, int kbitsec)
 			ARM_CAN_CLOCK_EN2 | ARM_CAN_CLOCK_BRG2(0);
 	}
 	c->reg->CONTROL = 0;
+	if (c->loop)
+		c->reg->CONTROL |= CAN_CONTROL_STM |
+			CAN_CONTROL_SAP | CAN_CONTROL_ROP;
 	can_setup_timing (c, kbitsec);
 
 	unsigned i;
@@ -107,7 +110,7 @@ static void can_setup (can_t *c, int kbitsec)
 	c->reg->INT_TX = 0;
 	c->reg->INT_EN = CAN_INT_EN_RX | CAN_INT_EN_TX | CAN_INT_EN_GLB;
 	c->reg->STATUS = 0;
-	c->reg->CONTROL = CAN_CONTROL_EN;
+	c->reg->CONTROL |= CAN_CONTROL_EN;
 }
 
 /*
@@ -155,9 +158,24 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 void can_set_speed (can_t *c, unsigned kbitsec)
 {
 	mutex_lock (&c->lock);
-	c->reg->CONTROL = 0;
+	c->reg->CONTROL &= ~CAN_CONTROL_EN;
 	can_setup_timing (c, kbitsec);
-	c->reg->CONTROL = CAN_CONTROL_EN;
+	c->reg->CONTROL |= CAN_CONTROL_EN;
+	mutex_unlock (&c->lock);
+}
+
+/*
+ * Управление режимом шлейфа.
+ */
+void can_set_loop (can_t *c, int on)
+{
+	mutex_lock (&c->lock);
+	c->loop = on;
+	c->reg->CONTROL = 0;
+	if (c->loop)
+		c->reg->CONTROL |= CAN_CONTROL_STM |
+			CAN_CONTROL_SAP | CAN_CONTROL_ROP;
+	c->reg->CONTROL |= CAN_CONTROL_EN;
 	mutex_unlock (&c->lock);
 }
 
@@ -168,14 +186,11 @@ void can_set_speed (can_t *c, unsigned kbitsec)
 void can_output (can_t *c, const can_frame_t *fr)
 {
 	mutex_lock (&c->lock);
-	for (;;) {
-		if (transmit_enqueue (c, fr)) {
-			/* Есть место в буфере устройства. */
-			mutex_unlock (&c->lock);
-			return;
-		}
+	while (! transmit_enqueue (c, fr)) {
+		/* Ждём появления места в буфере устройства. */
 		mutex_wait (&c->lock);
 	}
+	mutex_unlock (&c->lock);
 }
 
 /*
@@ -198,6 +213,7 @@ static void can_handle_interrupt (can_t *c)
 {
 	unsigned status = c->reg->STATUS;
 	c->reg->STATUS = 0;
+debug_printf ("can interrupt: STATUS = %08x\n", status);
 
 	c->rec = CAN_STATUS_REC (status);
 	if (status & CAN_STATUS_REC8)

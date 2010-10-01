@@ -137,7 +137,7 @@ again:
 		}
 		if (cmd == '5') {
 			local_loop = ! local_loop;
-//			can_set_loop (&can, local_loop);
+			can_set_loop (&can, local_loop);
 			break;
 		}
 		if (cmd == CTL('T')) {
@@ -170,8 +170,10 @@ void uos_init (void)
 	/* Use LCD panel for debug output. */
 	gpanel_init (&display, &font_fixed6x8);
 	gpanel_clear (&display, 0);
-	debug_redirect (gpanel_putchar, &display);
-	debug_printf ("Testing CAN.\n");
+	printf (&display, "Testing CAN.\n");
+
+//	debug_redirect (gpanel_putchar, &display);
+//	debug_printf ("Testing CAN.\n");
 
 	timer_init (&timer, KHZ, 50);
 

@@ -78,30 +78,72 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 	gp->c1 = 0;
 	gp->c2 = 0;
 
-	ARM_RSTCLK->PER_CLOCK = 0xFFFFFFFF;
+	/* Enable clock for PORTA, PORTC, PORTE, external bus. */
+	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOA |
+		ARM_PER_CLOCK_GPIOC | ARM_PER_CLOCK_GPIOE |
+		ARM_PER_CLOCK_EXT_BUS;
 
 	/* Инициализация портов внешней шины и выводов для работы с экраном */
-        ARM_GPIOA->FUNC = 0x00005555;   /* Main Function для DATA[7:0] */
-        ARM_GPIOA->ANALOG = 0xFFFF;     /* Digital */
-        ARM_GPIOA->PWR = 0x00005555;    /* Fast */
+	ARM_GPIOA->FUNC = (ARM_GPIOA->FUNC & ~0xFFFF) |	/* Main Function для DATA[7:0] */
+		ARM_FUNC_MAIN(0) | ARM_FUNC_MAIN(1) |
+		ARM_FUNC_MAIN(2) | ARM_FUNC_MAIN(3) |
+		ARM_FUNC_MAIN(4) | ARM_FUNC_MAIN(5) |
+		ARM_FUNC_MAIN(6) | ARM_FUNC_MAIN(7);
+        ARM_GPIOA->ANALOG |= 0xFF;			/* Digital */
+	ARM_GPIOA->PWR = (ARM_GPIOA->PWR & ~0xFFFF) |	/* Fast */
+		ARM_PWR_FAST(0) | ARM_PWR_FAST(1) |
+		ARM_PWR_FAST(2) | ARM_PWR_FAST(3) |
+		ARM_PWR_FAST(4) | ARM_PWR_FAST(5) |
+		ARM_PWR_FAST(6) | ARM_PWR_FAST(7);
 
-        ARM_GPIOE->FUNC = 0x00400500;   /* Main Function для ADDR[20,21,27] */
-        ARM_GPIOE->ANALOG = 0xFFFF;     /* Digital */
-        ARM_GPIOE->PWR = 0x00400500;    /* Fast */
+#define PORTE_ADDR20	4
+#define PORTE_ADDR21	5
+#define PORTE_ADDR27	11
+	ARM_GPIOE->FUNC = (ARM_GPIOE->FUNC &		/* Main Function для ADDR[20,21,27] */
+		~(ARM_FUNC_MASK (PORTE_ADDR20) |
+		ARM_FUNC_MASK (PORTE_ADDR21) |
+		ARM_FUNC_MASK (PORTE_ADDR27))) |
+		ARM_FUNC_MAIN (PORTE_ADDR20) |
+		ARM_FUNC_MAIN (PORTE_ADDR21) |
+		ARM_FUNC_MAIN (PORTE_ADDR27);
+        ARM_GPIOE->ANALOG |= (1 << PORTE_ADDR20) |	/* Digital */
+		(1 << PORTE_ADDR21) | (1 << PORTE_ADDR27);
+	ARM_GPIOE->PWR = (ARM_GPIOE->PWR &		/* Fast */
+		~(ARM_PWR_MASK (PORTE_ADDR20) |
+		ARM_PWR_MASK (PORTE_ADDR21) |
+		ARM_PWR_MASK (PORTE_ADDR27))) |
+		ARM_PWR_FAST (PORTE_ADDR20) |
+		ARM_PWR_FAST (PORTE_ADDR21) |
+		ARM_PWR_FAST (PORTE_ADDR27);
 
-        ARM_GPIOC->FUNC = 0x15504010;   /* Main Function для RESET WE & CLOCK & KEYS*/
-        ARM_GPIOC->ANALOG = 0xFFFF;     /* Digital */
-        ARM_GPIOC->PWR = 0x0008C010;    /* Fast */
+#define PORTC_WE	2
+#define PORTC_CLOCK	7
+#define PORTC_LCD_RST	9
+	ARM_GPIOC->FUNC = (ARM_GPIOC->FUNC &		/* Main Function для WE, CLOCK */
+		~(ARM_FUNC_MASK (PORTC_WE) |
+		ARM_FUNC_MASK (PORTC_CLOCK) |
+		ARM_FUNC_MASK (PORTC_LCD_RST))) |
+		ARM_FUNC_MAIN (PORTC_WE) |
+		ARM_FUNC_MAIN (PORTC_CLOCK);
+        ARM_GPIOC->ANALOG |= (1 << PORTC_WE) |		/* Digital */
+		(1 << PORTC_CLOCK) | (1 << PORTC_LCD_RST);
+	ARM_GPIOC->PWR = (ARM_GPIOC->PWR &		/* Fast */
+		~(ARM_PWR_MASK (PORTC_WE) |
+		ARM_PWR_MASK (PORTC_CLOCK) |
+		ARM_PWR_MASK (PORTC_LCD_RST))) |
+		ARM_PWR_SLOW (PORTC_WE) |
+		ARM_PWR_FASTEST (PORTC_CLOCK) |
+		ARM_PWR_FAST (PORTC_LCD_RST);
 
 	/* Инициализация внешней шины */
         ARM_EXTBUS->CONTROL = 0x0000F001;
 
 	/* Программный сброс экрана. */
-	ARM_GPIOC->DATA = 0x00000200;
-	ARM_GPIOC->OE = 0x00000200;
+	ARM_GPIOC->DATA |= 1 << PORTC_LCD_RST;
+	ARM_GPIOC->OE |= 1 << PORTC_LCD_RST;
 	for (x=0; x<255; x++)
-		ARM_GPIOC->DATA = 0;
-	ARM_GPIOC->DATA = 0x00000200;
+		ARM_GPIOC->DATA &= ~(1 << PORTC_LCD_RST);
+	ARM_GPIOC->DATA |= 1 << PORTC_LCD_RST;
 
 	/* Инициализация всех кристаллов. */
 	for (x=0; x<gp->ncol; x+=64) {
