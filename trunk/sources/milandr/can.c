@@ -9,10 +9,85 @@
 #define ALL_TBUFS	(((1 << NTBUF) - 1) << NRBUF)
 
 /*
+ * Initialize queue.
+ */
+static inline __attribute__((always_inline))
+void can_queue_init (can_queue_t *q)
+{
+	q->tail = q->queue;
+	q->count = 0;
+}
+
+/*
+ * Add a packet to queue.
+ * Before call, a user should check that the queue is not full.
+ */
+static inline __attribute__((always_inline))
+void can_queue_put (can_queue_t *q, can_frame_t *fr)
+{
+	can_frame_t *head;
+
+	/*debug_printf ("can_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n", p, q->count, q->head);*/
+
+	/* Must be called ONLY when queue is not full. */
+	assert (q->count < CAN_QUEUE_SIZE);
+
+	/* Compute the last place in the queue. */
+	head = q->tail - q->count;
+	if (head < q->queue)
+		head += CAN_QUEUE_SIZE;
+
+	/* Put the packet in. */
+	*head = *fr;
+	++q->count;
+	/*debug_printf ("    on return count = %d, head = 0x%04x\n", q->count, q->head);*/
+}
+
+/*
+ * Get a packet from queue.
+ * When empty, returns {0,0,0,0};
+ */
+static inline __attribute__((always_inline))
+void can_queue_get (can_queue_t *q, can_frame_t *fr)
+{
+	assert (q->tail >= q->queue);
+	assert (q->tail < q->queue + CAN_QUEUE_SIZE);
+	if (q->count > 0) {
+		/* Get the first packet from queue. */
+		*fr = *q->tail;
+
+		/* Advance head pointer. */
+		if (--q->tail < q->queue)
+			q->tail += CAN_QUEUE_SIZE;
+		--q->count;
+	}
+}
+
+/*
+ * Check that queue is full.
+ */
+static inline __attribute__((always_inline))
+bool_t can_queue_is_full (can_queue_t *q)
+{
+	return (q->count == CAN_QUEUE_SIZE);
+}
+
+/*
+ * Check that queue is empty.
+ */
+static inline __attribute__((always_inline))
+bool_t can_queue_is_empty (can_queue_t *q)
+{
+	return (q->count == 0);
+}
+
+/*
  * Задание скорости работы.
  */
 static void can_setup_timing (can_t *c, int kbitsec)
 {
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+
 	/* Разбиваем битовый интервал на 20 квантов:
 	 * 1) Первый квант - всегда - сегмент синхронизации.
 	 * 2) Три кванта - сегмент компенсации задержки распространения (PSEG).
@@ -23,10 +98,10 @@ static void can_setup_timing (can_t *c, int kbitsec)
 	c->kbitsec = (KHZ / (brp + 1) + 10) / 20;
 
 	/* Максимальное отклонение фронта (SJW) - четыре кванта. */
-	c->reg->BITTMNG = CAN_BITTMNG_SB | CAN_BITTMNG_SJW (4) |
+	reg->BITTMNG = CAN_BITTMNG_SB | CAN_BITTMNG_SJW (4) |
 		CAN_BITTMNG_SEG2 (8) | CAN_BITTMNG_SEG1 (8) |
 		CAN_BITTMNG_PSEG (3) | CAN_BITTMNG_BRP (brp);
-/*debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, c->kbitsec, brp, c->reg->BITTMNG);*/
+/*debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, c->kbitsec, brp, reg->BITTMNG);*/
 }
 
 /*
@@ -34,7 +109,9 @@ static void can_setup_timing (can_t *c, int kbitsec)
  */
 static void can_setup (can_t *c, int kbitsec)
 {
-	if (c->reg == ARM_CAN1) {
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+
+	if (c->port == 0) {
 		/* Включаем тактирование порта CAN1, PORTC. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN1;
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOC;
@@ -77,41 +154,41 @@ static void can_setup (can_t *c, int kbitsec)
 		ARM_RSTCLK->CAN_CLOCK = (ARM_RSTCLK->CAN_CLOCK & ~ARM_CAN_CLOCK_BRG2(7)) |
 			ARM_CAN_CLOCK_EN2 | ARM_CAN_CLOCK_BRG2(0);
 	}
-	c->reg->CONTROL = 0;
+	reg->CONTROL = 0;
 	if (c->loop)
-		c->reg->CONTROL |= CAN_CONTROL_STM |
+		reg->CONTROL |= CAN_CONTROL_STM |
 			CAN_CONTROL_SAP | CAN_CONTROL_ROP;
 	can_setup_timing (c, kbitsec);
 
 	unsigned i;
 	for (i=0; i<32; i++) {
-		c->reg->BUF_CON[i] = CAN_BUF_CON_EN;
-		c->reg->BUF[i].ID = 0;
-		c->reg->BUF[i].DLC = CAN_DLC_LEN(8) | CAN_DLC_R1 | CAN_DLC_SSR;
-		c->reg->BUF[i].DATAL = 0;
-		c->reg->BUF[i].DATAH = 0;
-		c->reg->MASK[i].MASK = 0;
-		c->reg->MASK[i].FILTER = 0;
+		reg->BUF_CON[i] = CAN_BUF_CON_EN;
+		reg->BUF[i].ID = 0;
+		reg->BUF[i].DLC = CAN_DLC_LEN(8) | CAN_DLC_R1 | CAN_DLC_SSR;
+		reg->BUF[i].DATAL = 0;
+		reg->BUF[i].DATAH = 0;
+		reg->MASK[i].MASK = 0;
+		reg->MASK[i].FILTER = 0;
 
 		/* Первые 16 буферов используются для приёма. */
 		if (i < NRBUF) {
-			c->reg->BUF_CON[i] |= CAN_BUF_CON_RX_ON;
+			reg->BUF_CON[i] |= CAN_BUF_CON_RX_ON;
 			if (i == NRBUF-1) {
 				/* 16-й буфер служит для обнаружения потерь. */
-				c->reg->BUF_CON[i] |= CAN_BUF_CON_OVER_EN;
+				reg->BUF_CON[i] |= CAN_BUF_CON_OVER_EN;
 			}
 		}
 	}
 
 	/* Максимальное значение счётчика ошибок. */
-	c->reg->OVER = 255;
+	reg->OVER = 255;
 
 	/* Разрешение прерываний от приёмных буферов. */
-	c->reg->INT_RX = ALL_RBUFS;
-	c->reg->INT_TX = 0;
-	c->reg->INT_EN = CAN_INT_EN_RX | CAN_INT_EN_TX | CAN_INT_EN_GLB;
-	c->reg->STATUS = 0;
-	c->reg->CONTROL |= CAN_CONTROL_EN;
+	reg->INT_RX = ALL_RBUFS;
+	reg->INT_TX = 0;
+	reg->INT_EN = CAN_INT_EN_RX | CAN_INT_EN_TX | CAN_INT_EN_GLB;
+	reg->STATUS = 0;
+	reg->CONTROL |= CAN_CONTROL_EN;
 }
 
 /*
@@ -119,20 +196,22 @@ static void can_setup (can_t *c, int kbitsec)
  */
 static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 {
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+
 	/* Проверяем, что есть свободный буфер для передачи. */
-	int i = arm_count_leading_zeroes (c->reg->TX & ALL_TBUFS);
+	int i = arm_count_leading_zeroes (reg->TX & ALL_TBUFS);
 	if (i >= NTBUF)
 		return 0;
 
 	/* Нашли свободный буфер. */
 	i = NRBUF + NTBUF - 1 - i;
-	if (c->reg->BUF_CON[i] & CAN_BUF_CON_TX_REQ) {
+	if (reg->BUF_CON[i] & CAN_BUF_CON_TX_REQ) {
 		/* Такого не может быть. */
 		debug_printf ("can_output: tx buffer busy\n");
 		return 0;
 	}
 
-	CAN_BUF_t *buf = &c->reg->BUF[i];
+	CAN_BUF_t *buf = &reg->BUF[i];
 	if (fr->dlc & CAN_DLC_IDE) {
 		/* Расширенный формат кадра */
 		buf->ID = fr->id & (CAN_ID_EID_MASK | CAN_ID_SID_MASK);
@@ -145,11 +224,11 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 	}
 	buf->DATAL = fr->data[0];
 	buf->DATAH = fr->data[1];
-	c->reg->BUF_CON[i] |= CAN_BUF_CON_TX_REQ;
+	reg->BUF_CON[i] |= CAN_BUF_CON_TX_REQ;
 	c->out_packets++;
 
 	/* Разрешение прерывания от передающего буфера. */
-	c->reg->INT_TX |= 1 << i;
+	reg->INT_TX |= 1 << i;
 	return 1;
 }
 
@@ -158,10 +237,12 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
  */
 void can_set_speed (can_t *c, unsigned kbitsec)
 {
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+
 	mutex_lock (&c->lock);
-	c->reg->CONTROL &= ~CAN_CONTROL_EN;
+	reg->CONTROL &= ~CAN_CONTROL_EN;
 	can_setup_timing (c, kbitsec);
-	c->reg->CONTROL |= CAN_CONTROL_EN;
+	reg->CONTROL |= CAN_CONTROL_EN;
 	mutex_unlock (&c->lock);
 }
 
@@ -170,13 +251,15 @@ void can_set_speed (can_t *c, unsigned kbitsec)
  */
 void can_set_loop (can_t *c, int on)
 {
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+
 	mutex_lock (&c->lock);
 	c->loop = on;
-	c->reg->CONTROL = 0;
+	reg->CONTROL = 0;
 	if (c->loop)
-		c->reg->CONTROL |= CAN_CONTROL_STM |
+		reg->CONTROL |= CAN_CONTROL_STM |
 			CAN_CONTROL_SAP | CAN_CONTROL_ROP;
-	c->reg->CONTROL |= CAN_CONTROL_EN;
+	reg->CONTROL |= CAN_CONTROL_EN;
 	mutex_unlock (&c->lock);
 }
 
@@ -210,8 +293,10 @@ void can_input (can_t *c, can_frame_t *fr)
 
 static void can_handle_interrupt (can_t *c)
 {
-	unsigned status = c->reg->STATUS;
-	c->reg->STATUS = 0;
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+
+	unsigned status = reg->STATUS;
+	reg->STATUS = 0;
 //debug_printf ("can interrupt: STATUS = %08x\n", status);
 
 	c->rec = CAN_STATUS_REC (status);
@@ -255,25 +340,25 @@ static void can_handle_interrupt (can_t *c)
 	if (status & CAN_STATUS_RX_READY) {
 		unsigned i;
 		for (i=0; i<NRBUF; i++) {
-			unsigned bufcon = c->reg->BUF_CON[i];
+			unsigned bufcon = reg->BUF_CON[i];
 			if (! (bufcon & CAN_BUF_CON_RX_FULL))
 				continue;
 			if (bufcon & CAN_BUF_CON_OVER_WR) {
 				/* Сообщение перезаписано */
 				c->in_discards++;
-				c->reg->BUF_CON[i] = bufcon &
+				reg->BUF_CON[i] = bufcon &
 					~(CAN_BUF_CON_RX_FULL |
 					CAN_BUF_CON_OVER_WR);
 				continue;
 			}
-			CAN_BUF_t *buf = &c->reg->BUF[i];
+			CAN_BUF_t *buf = &reg->BUF[i];
 			can_frame_t fr;
 			fr.id = buf->ID;
 			fr.dlc = buf->DLC;
 			fr.data[0] = buf->DATAL;
 			fr.data[1] = buf->DATAH;
 /*debug_printf ("can rx: %08x-%08x-%08x-%08x\n", fr.id, fr.dlc, fr.data[0], fr.data[1]);*/
-			c->reg->BUF_CON[i] = bufcon & ~CAN_BUF_CON_RX_FULL;
+			reg->BUF_CON[i] = bufcon & ~CAN_BUF_CON_RX_FULL;
 
 			if (CAN_DLC_LEN (fr.dlc) > 8) {
 				c->in_errors++;
@@ -292,7 +377,7 @@ static void can_handle_interrupt (can_t *c)
 	/* Есть ли закончившие передающие буферы. */
 	if (status & CAN_STATUS_TX_READY) {
 		/* Оставляем маску только для активных буферов. */
-		c->reg->INT_TX = ~c->reg->TX & ALL_TBUFS;
+		reg->INT_TX = ~reg->TX & ALL_TBUFS;
 	}
 }
 
@@ -302,7 +387,7 @@ static void can_handle_interrupt (can_t *c)
 static void can_task (void *arg)
 {
 	can_t *c = arg;
-	int irq = (c->reg == ARM_CAN1) ? 0 : 1;
+	int irq = (c->port == 0) ? 0 : 1;
 
 	mutex_lock_irq (&c->lock, irq, 0, 0);
 	for (;;) {
@@ -320,7 +405,7 @@ static void can_task (void *arg)
  */
 void can_init (can_t *c, int port, int prio, unsigned kbitsec)
 {
-	c->reg = (port == 0) ? ARM_CAN1 : ARM_CAN2;
+	c->port = port;
 	can_queue_init (&c->inq);
 	can_setup (c, kbitsec);
 

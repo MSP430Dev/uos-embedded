@@ -26,7 +26,16 @@ typedef struct __attribute__((__packed__)) _can_frame_t {
 	unsigned data [2];			/* До 8 байт данных */
 } can_frame_t;
 
-#include <milandr/can-queue.h>
+/*
+ * Queue of CAN packets.
+ */
+#define CAN_QUEUE_SIZE		16	/* max number of packets in queue */
+
+typedef struct _can_queue_t {
+	unsigned count;
+	can_frame_t *tail;
+	can_frame_t queue [CAN_QUEUE_SIZE];
+} can_queue_t;
 
 /*
  * Data structure for CAN channel.
@@ -34,10 +43,10 @@ typedef struct __attribute__((__packed__)) _can_frame_t {
 typedef struct _can_t {
 	mutex_t lock;			/* interrupt goes here */
 
-	CAN_t *reg;			/* hardware registers */
-	can_queue_t inq;		/* queue of received packets */
+	unsigned port;			/* port number */
 	unsigned kbitsec;		/* data rate kbit/sec */
 	int loop;			/* enable internal loopback */
+	can_queue_t inq;		/* queue of received packets */
 
 	/* Statistics. */
 	unsigned long intr;		/* interrupt counter */
