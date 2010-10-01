@@ -5,7 +5,7 @@
 #include <kernel/uos.h>
 
 #ifdef ENABLE_DCACHE
-#   define SDRAM_START	0x00000000
+#   define SDRAM_START	0x80000000
 #else
 #   define SDRAM_START	0xA0000000
 #endif

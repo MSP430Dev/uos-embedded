@@ -10,11 +10,16 @@
 #include <timer/timer.h>
 #include <elvees/eth.h>
 
-#define SDRAM_START	0xA0000000
+#ifdef ENABLE_DCACHE
+#   define SDRAM_START	0x80000000
+#else
+#   define SDRAM_START	0xA0000000
+#endif
 #define SDRAM_SIZE	(64*1024*1024)
 
 ARRAY (stack_tcp, 1500);
 ARRAY (stack_console, 1000);
+//ARRAY (stack_poll, 1000);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
@@ -102,7 +107,7 @@ void console_task (void *data)
 			printf (&debug, "Receive: %ld packets, %ld errors, %ld lost\n",
 					eth->netif.in_packets, eth->netif.in_errors,
 					eth->netif.in_discards);
-			printf (&debug, "Interrupts: %ln\n", eth->intr);
+			printf (&debug, "Interrupts: %ln, CRPLL=%08x\n", eth->intr, MC_CRPLL);
 			printf (&debug, "Free memory: %u bytes\n",
 				mem_available (&pool));
 			eth_debug (eth, &debug);
@@ -120,6 +125,7 @@ void console_task (void *data)
 		case 't' & 037:
 			task_print (&debug, 0);
 			task_print (&debug, (task_t*) stack_console);
+//			task_print (&debug, (task_t*) stack_poll);
 			task_print (&debug, (task_t*) stack_tcp);
 			task_print (&debug, (task_t*) eth->stack);
 			task_print (&debug, (task_t*) eth->tstack);
@@ -127,6 +133,13 @@ void console_task (void *data)
 			putchar (&debug, '\n');
 			break;
 		}
+	}
+}
+
+void poll_task (void *data)
+{
+	for (;;) {
+		eth_poll (eth);
 	}
 }
 
@@ -212,6 +225,7 @@ void uos_init (void)
 
 	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
+		MC_CSCON_WS (0) |		/* Wait states  */
 		MC_CSCON_T |			/* Sync memory */
 		MC_CSCON_CSBA (0x00000000) |	/* Base address */
 		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
@@ -229,7 +243,14 @@ void uos_init (void)
 	MC_SDRCSR = 1;				/* Initialize SDRAM */
         udelay (2);
 
+#if 0
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
+#else
+	/* Используем только внутреннюю память CRAM.
+	 * Оставляем 256 байтов для задачи "idle". */
+	extern unsigned __bss_end[], _estack[];
+	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
+#endif
 	timer_init (&timer, KHZ, 50);
 
 	/*
@@ -250,6 +271,8 @@ void uos_init (void)
 
 	task_create (tcp_task, 0, "tcp", 10,
 		stack_tcp, sizeof (stack_tcp));
+//	task_create (poll_task, 0, "poll", 1,
+//		stack_poll, sizeof (stack_poll));
 	task_create (console_task, 0, "cons", 20,
 		stack_console, sizeof (stack_console));
 }

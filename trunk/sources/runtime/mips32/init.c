@@ -34,17 +34,20 @@ void __attribute ((noreturn))_init_ (void)
 #endif
 		);
 
-#ifdef ENABLE_ICACHE
+#if defined (ENABLE_ICACHE) || defined (ENABLE_DCACHE)
 	/* Enable cache for kseg0 segment. */
 	mips32_write_c0_register (C0_CONFIG, 3);
 	MC_CSR |= MC_CSR_FLUSH_I | MC_CSR_FLUSH_D;
+#else
+	/* Disable cache for kseg0 segment. */
+	mips32_write_c0_register (C0_CONFIG, 2);
+#endif
+#ifdef ENABLE_ICACHE
+	/* Jump to cached kseg0 segment. */
 	asm volatile (
 		"la	$k0, 1f \n"
 		"jr	$k0 \n"
 	"1:");
-#else
-	/* Disable cache for kseg0 segment. */
-	mips32_write_c0_register (C0_CONFIG, 2);
 #endif
 
 #ifdef ARCH_HAVE_FPU

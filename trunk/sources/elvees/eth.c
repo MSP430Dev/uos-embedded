@@ -399,6 +399,8 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 /*
  * Do the actual transmission of the packet. The packet is contained
  * in the pbuf that is passed to the function. This pbuf might be chained.
+ * Return 1 when the packet is succesfully queued for transmission.
+ * Or return 0 if the packet is lost.
  */
 static bool_t
 eth_output (eth_t *u, buf_t *p, small_uint_t prio)
@@ -410,26 +412,29 @@ eth_output (eth_t *u, buf_t *p, small_uint_t prio)
 	    ! (phy_read (u, PHY_STS) & PHY_STS_LINK)) {
 		++u->netif.out_errors;
 		mutex_unlock (&u->tx_lock);
-debug_printf ("eth_output: transmit %d bytes, link failed\n", p->tot_len);
+/*debug_printf ("eth_output: transmit %d bytes, link failed\n", p->tot_len);*/
 		buf_free (p);
 		return 0;
 	}
 /*debug_printf ("eth_output: transmit %d bytes\n", p->tot_len);*/
 
-	if (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ) {
-		/* Занято, ставим в очередь. */
-		if (buf_queue_is_full (&u->outq)) {
-			++u->netif.out_discards;
-			mutex_unlock (&u->tx_lock);
-			debug_printf ("eth_output: overflow\n");
-			buf_free (p);
-			return 0;
-		}
-		buf_queue_put (&u->outq, p);
-	} else {
+	if (! (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ)) {
+		/* Смело отсылаем. */
 		chip_transmit_packet (u, p);
+		mutex_unlock (&u->tx_lock);
 		buf_free (p);
+		return 1;
 	}
+	/* Занято, ставим в очередь. */
+	if (buf_queue_is_full (&u->outq)) {
+		/* Нет места в очереди: теряем пакет. */
+		++u->netif.out_discards;
+		mutex_unlock (&u->tx_lock);
+		debug_printf ("eth_output: overflow\n");
+		buf_free (p);
+		return 0;
+	}
+	buf_queue_put (&u->outq, p);
 	mutex_unlock (&u->tx_lock);
 	return 1;
 }
@@ -570,11 +575,11 @@ handle_transmit_interrupt (eth_t *u)
 	unsigned status_tx = MC_MAC_STATUS_TX;
 	if (status_tx & STATUS_TX_ONTX_REQ) {
 		/* Передачик пока не закончил. */
-debug_printf ("eth tx irq: ONTX_REQ, STATUS_TX = %08x\n", status_tx);
+/*debug_printf ("eth tx irq: ONTX_REQ, STATUS_TX = %08x\n", status_tx);*/
 		return;
 	}
 	MC_MAC_STATUS_TX = 0;
-	mutex_activate (&u->netif.lock, 0);
+	mutex_signal (&u->netif.lock, 0);
 
 	/* Подсчитываем коллизии. */
 	if (status_tx & (STATUS_TX_ONCOL | STATUS_TX_LATE_COLL)) {
@@ -608,8 +613,8 @@ eth_poll (eth_t *u)
 	mutex_unlock (&u->netif.lock);
 
 	mutex_lock (&u->tx_lock);
-	if (MC_MAC_STATUS_TX & STATUS_TX_DONE)
-		handle_transmit_interrupt (u);
+//if (MC_MAC_STATUS_TX & STATUS_TX_DONE)
+	handle_transmit_interrupt (u);
 	mutex_unlock (&u->tx_lock);
 }
 
