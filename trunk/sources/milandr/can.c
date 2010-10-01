@@ -19,13 +19,14 @@ static void can_setup_timing (can_t *c, int kbitsec)
 	 * 3) Восемь квантов - сегмент фазы 1 (SEG1).
 	 * 4) Восемь квантов - сегмент фазы 2 (SEG2).
 	 */
-	unsigned brp = ((KHZ / c->kbitsec + 10) / 20) - 1;
+	unsigned brp = ((KHZ / kbitsec + 10) / 20) - 1;
 	c->kbitsec = (KHZ / (brp + 1) + 10) / 20;
 
 	/* Максимальное отклонение фронта (SJW) - четыре кванта. */
 	c->reg->BITTMNG = CAN_BITTMNG_SB | CAN_BITTMNG_SJW (4) |
 		CAN_BITTMNG_SEG2 (8) | CAN_BITTMNG_SEG1 (8) |
 		CAN_BITTMNG_PSEG (3) | CAN_BITTMNG_BRP (brp);
+/*debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, c->kbitsec, brp, c->reg->BITTMNG);*/
 }
 
 /*
@@ -131,19 +132,19 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 		return 0;
 	}
 
+	CAN_BUF_t *buf = &c->reg->BUF[i];
 	if (fr->dlc & CAN_DLC_IDE) {
 		/* Расширенный формат кадра */
-		c->reg->BUF[i].ID = fr->id &
-			(CAN_ID_EID_MASK | CAN_ID_SID_MASK);
-		c->reg->BUF[i].DLC = CAN_DLC_LEN (fr->dlc) |
+		buf->ID = fr->id & (CAN_ID_EID_MASK | CAN_ID_SID_MASK);
+		buf->DLC = CAN_DLC_LEN (fr->dlc) |
 			CAN_DLC_IDE | CAN_DLC_SSR | CAN_DLC_R1;
 	} else {
 		/* Стандартный формат кадра */
-		c->reg->BUF[i].ID = fr->id & CAN_ID_SID_MASK;
-		c->reg->BUF[i].DLC = CAN_DLC_LEN (fr->dlc);
+		buf->ID = fr->id & CAN_ID_SID_MASK;
+		buf->DLC = CAN_DLC_LEN (fr->dlc);
 	}
-	c->reg->BUF[i].DATAL = fr->data[0];
-	c->reg->BUF[i].DATAH = fr->data[1];
+	buf->DATAL = fr->data[0];
+	buf->DATAH = fr->data[1];
 	c->reg->BUF_CON[i] |= CAN_BUF_CON_TX_REQ;
 	c->out_packets++;
 
@@ -199,21 +200,19 @@ void can_output (can_t *c, const can_frame_t *fr)
 void can_input (can_t *c, can_frame_t *fr)
 {
 	mutex_lock (&c->lock);
-	for (;;) {
-		if (! can_queue_is_empty (&c->inq)) {
-			can_queue_get (&c->inq, fr);
-			mutex_unlock (&c->lock);
-			return;
-		}
+	while (can_queue_is_empty (&c->inq)) {
+		/* Ждём приёма пакета. */
 		mutex_wait (&c->lock);
 	}
+	can_queue_get (&c->inq, fr);
+	mutex_unlock (&c->lock);
 }
 
 static void can_handle_interrupt (can_t *c)
 {
 	unsigned status = c->reg->STATUS;
 	c->reg->STATUS = 0;
-debug_printf ("can interrupt: STATUS = %08x\n", status);
+//debug_printf ("can interrupt: STATUS = %08x\n", status);
 
 	c->rec = CAN_STATUS_REC (status);
 	if (status & CAN_STATUS_REC8)
@@ -267,11 +266,13 @@ debug_printf ("can interrupt: STATUS = %08x\n", status);
 					CAN_BUF_CON_OVER_WR);
 				continue;
 			}
+			CAN_BUF_t *buf = &c->reg->BUF[i];
 			can_frame_t fr;
-			fr.id = c->reg->BUF[i].ID;
-			fr.dlc = c->reg->BUF[i].DLC;
-			fr.data[0] = c->reg->BUF[i].DATAL;
-			fr.data[1] = c->reg->BUF[i].DATAH;
+			fr.id = buf->ID;
+			fr.dlc = buf->DLC;
+			fr.data[0] = buf->DATAL;
+			fr.data[1] = buf->DATAH;
+/*debug_printf ("can rx: %08x-%08x-%08x-%08x\n", fr.id, fr.dlc, fr.data[0], fr.data[1]);*/
 			c->reg->BUF_CON[i] = bufcon & ~CAN_BUF_CON_RX_FULL;
 
 			if (CAN_DLC_LEN (fr.dlc) > 8) {
@@ -304,7 +305,6 @@ static void can_task (void *arg)
 	int irq = (c->reg == ARM_CAN1) ? 0 : 1;
 
 	mutex_lock_irq (&c->lock, irq, 0, 0);
-
 	for (;;) {
 		/* Wait for interrupt. */
 		mutex_wait (&c->lock);

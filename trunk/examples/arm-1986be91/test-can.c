@@ -54,9 +54,9 @@ void task_transmit ()
 	for (;;) {
 		/* Send packets - make transmit queue full. */
 		if (transmit_enable) {
-			can_output (&can, &pattern);
+			send_packets (100);
 		}
-		timer_delay (&timer, 20);
+		timer_delay (&timer, 10);
 	}
 }
 
@@ -96,7 +96,7 @@ void task_console (void *data)
 	small_uint_t cmd;
 again:
 	printf (&debug, "\nTesting CAN\n\n");
-	printf (&debug, "CAN: %u interrupts\n", can.intr);
+	printf (&debug, "CAN: %u kbit/sec, %u interrupts\n", can.kbitsec, can.intr);
 
 	printf (&debug, "Transmit: %ld packets, %ld collisions, %ld errors\n",
 			can.out_packets, can.out_collisions, can.out_errors);
@@ -168,20 +168,20 @@ void uos_init (void)
 	buttons_init ();
 
 	/* Use LCD panel for debug output. */
-	gpanel_init (&display, &font_fixed6x8);
-	gpanel_clear (&display, 0);
-	printf (&display, "Testing CAN.\n");
+//	gpanel_init (&display, &font_fixed6x8);
+//	gpanel_clear (&display, 0);
+//	printf (&display, "Testing CAN.\n");
 
 //	debug_redirect (gpanel_putchar, &display);
 //	debug_printf ("Testing CAN.\n");
 
-	timer_init (&timer, KHZ, 50);
+	timer_init (&timer, KHZ, 10);
 
 	can_init (&can, 1, 90, 1000);
 
-	task_create (task_receive, 0, "rx", 30,
+	task_create (task_receive, 0, "rcv", 30,
 		stack_receive, sizeof (stack_receive));
-	task_create (task_transmit, 0, "tx", 20,
+	task_create (task_transmit, 0, "send", 20,
 		stack_transmit, sizeof (stack_transmit));
 	task_create (task_console, 0, "console", 10,
 		stack_console, sizeof (stack_console));
