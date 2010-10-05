@@ -1,0 +1,23 @@
+#summary Signals of board Milandr 5600ВГ1У.
+
+[http://forum.milandr.ru/viewtopic.php?t=226 http://uos-embedded.googlecode.com/svn/wiki/images/milandr-vg1-board.jpg]
+
+Модуль Ethernet на базе микросхемы 5600ВГ1У предназначен для установки на отладочную плату
+[http://milandr.ru/index.php?mact=Products,cntnt01,details,0&cntnt01productid=67&cntnt01returnid=68 1986ВЕ91Т].
+
+Привязка сигналов микросхемы 5600ВГ1У к ножкам процессора 1986ВЕ91Т:
+|| *На 5600ВГ1У*                  || *На процессоре* || *Дополнительные функции*  ||
+|| A0-A12                         || PF2-PF14        || A2-A14                    ||
+|| D0-D15                         || PA0-PA15        || D0-D15                    ||
+|| /OE                            || PC1             ||                           ||
+|| /WE                            || PC2             ||                           ||
+|| /CS                            || PE12            || CS0                       ||
+|| /IRQ                           || PB10            || D26                       ||
+|| /RST                           || PB11            || D27                       ||
+|| RDY                            || ---             || Нет соединения            ||
+|| CLKS                           || ---             || +5V                       ||
+|| CLK                            || ---             || GND                       ||
+|| X1, X2                         || ---             || Кварц 10 МГц через джампер ||
+|| XS                             || ---             || GND через джампер         ||
+|| LED0                           || ---             || Зелёный светодиод "State" ||
+|| LED1                           || ---             || Жёлтый светодиод "Link"   ||
