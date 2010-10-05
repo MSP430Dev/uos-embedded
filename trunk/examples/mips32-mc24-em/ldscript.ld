@@ -9,8 +9,12 @@ OUTPUT_ARCH(mips)
 MEMORY
 {
   sram   (rx)   : ORIGIN = 0xbfc00000,	LENGTH = 1M
-  iram   (rw!x) : ORIGIN = 0xb8000000,	LENGTH = 32K
+  cram   (rw!x) : ORIGIN = 0xb8000000,	LENGTH = 32K
 }
+
+/* higher address of the user mode stack */
+_estack = ORIGIN(cram) + LENGTH(cram);
+
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */
@@ -78,7 +82,7 @@ SECTIONS
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.eh_frame)
     _edata = .;
-  } > iram
+  } > cram
 
   .bss ADDR (.data) + SIZEOF (.data) (NOLOAD) :
   {
@@ -92,7 +96,7 @@ SECTIONS
       _end.  Align after .bss to ensure correct alignment even if the
       .bss section disappears because there are no input sections.  */
    . = ALIGN (32 / 8);
-  } > iram
+  } > cram
   __bss_end = . ;
   _end = .;
 
