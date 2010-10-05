@@ -300,7 +300,7 @@
 #define dflt_PPI_CTRL		(BIT_READ_CLR_STAT | BIT_RG_inMEM)
 
 #define dflt_GCTRL		(dflt_PPI_CTRL | dflt_SPI_CTRL)
-#define dflt_addr_RG		(MAC_SPC_BASE + MAC_SPC_SIZE -2*sizeof_RG)
+#define dflt_addr_RG		(MAC_SPC_BASE + MAC_SPC_SIZE - 2*sizeof_RG)
 #define dflt_addr_Rx_BF		(MAC_SPC_BASE + 0*sizeof_RxBF)
 #define dflt_addr_Tx_BF		(MAC_SPC_BASE + 2*sizeof_TxBF)
 #define dflt_addr_Rx_BD		(dflt_addr_Rx_BF + sizeof_RxBF)

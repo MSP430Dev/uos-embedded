@@ -93,18 +93,6 @@ typedef	struct RX_BD_ctrl
 #endif
 } t_RX_BD_ctrl;
 
-typedef	union TX_ctrl
-{
-	unsigned	all;
-	t_TX_BD_ctrl	bit;
-} t_TX_ctrl;
-
-typedef	union RX_ctrl
-{
-	unsigned	all;
-	t_RX_BD_ctrl	bit;
-} t_RX_ctrl;
-
 typedef	struct TX_Buffer_Descriptor
 {
 	t_TX_ctrl	TX_ctrl;	// Словосостояние отправки пакета
@@ -200,12 +188,6 @@ typedef	struct bits_MAC_INT
 	volatile unsigned TX_BUSY	: 1;	// Индикатор принятия и обслуживания пакета Pause
 #endif
 } t_bits_MAC_INT;
-
-typedef	struct MAC_PACKETLEN
-{
-	unsigned MIN_FRAME;		// Минимальная допустимая длина пакета
-	unsigned MAX_FRAME;		// Максимальная допустимая длина пакета
-} t_MAC_PACKETLEN;
 
 typedef	struct bits_MAC_COLLCONF
 {
@@ -313,56 +295,16 @@ typedef	struct bits_PHY_STAT
 #endif
 } t_bits_PHY_STAT;
 
-typedef	union MAC_CTRL
-{
-	unsigned		all;
-	t_bits_MAC_CTRL		bit;
-} t_MAC_CTRL;
-
-typedef	union MAC_COLLCONF
-{
-	unsigned		all;
-	t_bits_MAC_COLLCONF	field;
-} t_MAC_COLLCONF;
-
-typedef	union INT_SOURCE
-{
-	volatile unsigned	all;
-	t_bits_MAC_INT		bit;
-} t_INT_SOURCE;
-
-typedef	union INT_MASK
-{
-	unsigned		all;
-	t_bits_MAC_INT		bit;
-} t_INT_MASK;
-
-typedef union GCTRL
-{
-	unsigned 		all;
-	t_bits_GCTRL		bit;
-} t_GCTRL;
-
-typedef union PHY_CTRL
-{
-	unsigned 		all;
-	t_bits_PHY_CTRL		bit;
-} t_PHY_CTRL;
-
-typedef union PHY_STAT
-{
-	volatile unsigned 	all;
-	t_bits_PHY_STAT		bit;
-} t_PHY_STAT;
-
 typedef	struct MAC
 {
 	t_MAC_CTRL		MAC_CTRL;	// Регистр управления MAC-уровнем контроллера
+	unsigned		MIN_FRAME;	// Минимальная допустимая длина пакета
+	unsigned		MAX_FRAME;	// Максимальная допустимая длина пакета
 	t_MAC_PACKETLEN		PACKETLEN;	// Регистр управления границами допустимых длин пакетов(MinFrame и MaxFrame)
 	t_MAC_COLLCONF		COLLCONF;	// Регистр управления обработки коллизий
 	unsigned		IPGT;		// Регистр задания межпакетного интервала
-	unsigned		MAC_ADDR[3];	// Регистр задания MAC-адреса контроллера
-	unsigned		HASH[4];	// Регистр задания HASH-таблицы для расширенной фильтрации MAC-адресов
+	unsigned		MAC_ADDR [3];	// Регистр задания MAC-адреса контроллера
+	unsigned		HASH [4];	// Регистр задания HASH-таблицы для расширенной фильтрации MAC-адресов
 	t_INT_MASK		INT_MASK;	// Регистр маскирования прерываний
 	t_INT_SOURCE		INT_SOURCE;	// Регистр флагов прерываний
 	t_PHY_CTRL		PHY_CTRL;	// Регистр управления PHY-уровнем контроллера
