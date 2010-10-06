@@ -12,7 +12,7 @@
 #   define K5600BG1_STACKSZ	1000
 #endif
 
-#define K5600BG1_MTU		1518	/* maximum ethernet frame length */
+#define K5600BG1_MTU		1520	/* maximum ethernet frame length */
 
 struct _mem_pool_t;
 struct _stream_t *stream;
@@ -29,10 +29,8 @@ typedef struct _k5600bg1_t {
 	struct _buf_t *outqdata[8];
 
 	unsigned long intr;		/* interrupt counter */
-	unsigned char rxbuf_data [K5600BG1_MTU + 8];
-	unsigned char txbuf_data [K5600BG1_MTU + 8];
-	unsigned char *rxbuf;		/* aligned rxbuf[] */
-	unsigned char *txbuf;		/* aligned txbuf[] */
+	unsigned char rxbuf [K5600BG1_MTU];
+	unsigned char txbuf [K5600BG1_MTU];
 
 	ARRAY (stack, K5600BG1_STACKSZ); /* stack for irq task */
 } k5600bg1_t;

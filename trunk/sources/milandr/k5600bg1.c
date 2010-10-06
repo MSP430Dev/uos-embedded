@@ -13,55 +13,20 @@
 
 #define K5600BG1_IRQ		12	/* interrupt from pin PB10 */
 
-/*
- * PHY register write
- */
-static void
-phy_write (k5600bg1_t *u, unsigned address, unsigned data)
-{
-	unsigned i, status;
-
-	/* Issue the command to PHY. */
-	MC_MAC_MD_CONTROL = MD_CONTROL_OP_WRITE |	/* операция записи */
-		MD_CONTROL_DATA (data) |		/* данные для записи */
-		MD_CONTROL_PHY (u->phy) |		/* адрес PHY */
-		MD_CONTROL_REG (address);		/* адрес регистра PHY */
-
-	/* Wait until the PHY write completes. */
-	for (i=0; i<100000; ++i) {
-		status = MC_MAC_MD_STATUS;
-		if (! (status & MD_STATUS_BUSY))
-			break;
-	}
-	/*debug_printf ((status & MD_STATUS_BUSY) ?
-		"phy_write(%d, 0x%02x, 0x%04x) TIMEOUT\n" :
-		"phy_write(%d, 0x%02x, 0x%04x)\n", u->phy, address, data);*/
-}
+#define PORTB_NIRQ	(1 << 10)	// nIRQ on PB10
+#define PORTB_NRST	(1 << 11)	// nRST on PB11
+#define PORTC_NOE	(1 << 1)	// nOE on PC1
+#define PORTC_NWE	(1 << 2)	// nWE on PC2
+#define PORTE_NCS	(1 << 12)	// nCS on PE12
 
 /*
- * PHY register read
+ * Set /RST to 0 for one microsecond.
  */
-static unsigned
-phy_read (k5600bg1_t *u, unsigned address)
+static void chip_reset ()
 {
-	unsigned status, i;
-
-	/* Issue the command to PHY. */
-	MC_MAC_MD_CONTROL = MD_CONTROL_OP_READ |	/* операция чтения */
-		MD_CONTROL_PHY (u->phy) |		/* адрес PHY */
-		MD_CONTROL_REG (address);		/* адрес регистра PHY */
-
-	/* Wait until the PHY read completes. */
-	for (i=0; i<100000; ++i) {
-		status = MC_MAC_MD_STATUS;
-		if (! (status & MD_STATUS_BUSY))
-			break;
-	}
-	/*debug_printf ((status & MD_STATUS_BUSY) ?
-		"phy_read(%d, 0x%02x) TIMEOUT\n" :
-		"phy_read(%d, 0x%02x) returned 0x%04x\n",
-		u->phy, address, status & MD_STATUS_DATA);*/
-	return status & MD_STATUS_DATA;
+	ARM_GPIOB->DATA &= ~PORTB_NRST;
+	udelay (1);
+	ARM_GPIOB->DATA |= PORTB_NRST;
 }
 
 /*
@@ -69,35 +34,70 @@ phy_read (k5600bg1_t *u, unsigned address)
  */
 static void chip_init (k5600bg1_t *u)
 {
-	/* Включение тактовой частоты EMAC */
-	MC_CLKEN |= MC_CLKEN_EMAC;
-	udelay (10);
+	/* Включение тактовой частоты портов A-C, E, F. */
+	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOA |
+		ARM_PER_CLOCK_GPIOB | ARM_PER_CLOCK_GPIOC |
+		ARM_PER_CLOCK_GPIOE | ARM_PER_CLOCK_GPIOF;
 
-	/* Find a device address of PHY transceiver.
-	 * Count down from 31 to 0, several times. */
-	unsigned id, retry = 0;
-	u->phy = 31;
-	for (;;) {
-		id = phy_read (u, PHY_ID1) << 16 |
-			phy_read (u, PHY_ID2);
-		if (id != 0 && id != 0xffffffff)
-			break;
-		if (u->phy > 0)
-			u->phy--;
-		else {
-			u->phy = 31;
-			retry++;
-			if (retry > 3) {
-				debug_printf ("k5600bg1_init: no PHY detected\n");
-				uos_halt (0);
-			}
-		}
-	}
-#ifndef NDEBUG
-	debug_printf ("k5600bg1_init: transceiver `%s' detected at address %d\n",
-		((id & PHY_ID_MASK) == PHY_ID_KS8721BL) ? "KS8721" : "Unknown",
-		u->phy);
-#endif
+	/* Цифровые сигналы. */
+	ARM_GPIOA->ANALOG = 0xFFFF;			// Data 0-15
+	ARM_GPIOB->ANALOG |= PORTB_NIRQ | PORTB_NRST;	// nIRQ on PB10, nRST on PB11
+	ARM_GPIOC->ANALOG |= PORTC_NOE | PORTC_NWE;	// nOE on PC1, nWE on PC2
+	ARM_GPIOE->ANALOG |= PORTE_NCS;			// nCS on PE12
+	ARM_GPIOF->ANALOG |= 0x7FFC;			// Addr 2-14
+
+	/* Быстрый фронт. */
+	ARM_GPIOA->PWR = 0xFFFFFFFF;
+	ARM_GPIOB->PWR |= ARM_PWR_FASTEST(10) | ARM_PWR_FASTEST(11);
+	ARM_GPIOC->PWR |= ARM_PWR_FASTEST(1) | ARM_PWR_FASTEST(2);
+	ARM_GPIOE->PWR |= ARM_PWR_FASTEST(12);
+	ARM_GPIOF->PWR |= ARM_PWR_FASTEST(2) | ARM_PWR_FASTEST(3) |
+		ARM_PWR_FASTEST(4) | ARM_PWR_FAST(5) | ARM_PWR_FASTEST(6) |
+		ARM_PWR_FASTEST(7) | ARM_PWR_FAST(8) | ARM_PWR_FASTEST(9) |
+		ARM_PWR_FASTEST(10) | ARM_PWR_FAST(11) | ARM_PWR_FASTEST(12) |
+		ARM_PWR_FASTEST(13) | ARM_PWR_FAST(14);
+
+	/* Основная функция для PA0-15(DATA), PC1(OE), PC2(WE), PF2-14(ADDR).
+	 * Альтернативная функция для PB10 (EXT_INT2).
+	 * Функция по умолчанию для PB11 и PE12. */
+	ARM_GPIOA->FUNC = 0x55555555;			// Data 0-15
+	ARM_GPIOB->FUNC = (ARM_GPIOB->FUNC &		// nIRQ on PB10, nRST on PB11
+		~(ARM_FUNC_MASK(10) | ARM_FUNC_MASK(11))) |
+		ARM_FUNC_ALT(10);
+	ARM_GPIOC->FUNC = (ARM_GPIOC->FUNC &		// nOE on PC1, nWE on PC2
+		~(ARM_FUNC_MASK(1) | ARM_FUNC_MASK(2))) |
+		ARM_FUNC_MAIN(1) | ARM_FUNC_MAIN(2);
+	ARM_GPIOE->FUNC &= ~ARM_FUNC_MASK(12);		// nCS on PE12
+	ARM_GPIOF->FUNC = (ARM_GPIOF->FUNC &		// Addr 2-14
+		~(ARM_FUNC_MASK(2) | ARM_FUNC_MASK(3) |
+		ARM_FUNC_MASK(4) | ARM_FUNC_MASK(5) | ARM_FUNC_MASK(6) |
+		ARM_FUNC_MASK(7) | ARM_FUNC_MASK(8) | ARM_FUNC_MASK(9) |
+		ARM_FUNC_MASK(10) | ARM_FUNC_MASK(11) | ARM_FUNC_MASK(12) |
+		ARM_FUNC_MASK(13) | ARM_FUNC_MASK(14))) |
+		ARM_FUNC_MAIN(2) | ARM_FUNC_MAIN(3) |
+		ARM_FUNC_MAIN(4) | ARM_FUNC_MAIN(5) | ARM_FUNC_MAIN(6) |
+		ARM_FUNC_MAIN(7) | ARM_FUNC_MAIN(8) | ARM_FUNC_MAIN(9) |
+		ARM_FUNC_MAIN(10) | ARM_FUNC_MAIN(11) | ARM_FUNC_MAIN(12) |
+		ARM_FUNC_MAIN(13) | ARM_FUNC_MAIN(14);
+
+	/* Для nOE и nWE отключаем режим открытого коллектора. */
+	ARM_GPIOC->PD &= ~(PORTC_NOE | PORTC_NWE);
+
+	/* Включаем выходные сигналы.  */
+	ARM_GPIOB->DATA |= PORTB_NRST;		// nRST on PB11
+	ARM_GPIOB->OE |= PORTB_NRST;
+	ARM_GPIOE->DATA |= PORTE_NCS;		// nCS on PE12
+	ARM_GPIOE->OE |= PORTE_NCS;
+
+	chip_reset ();
+
+	/* Включение внешней шины адрес/данные в режиме RAM.
+	 * Длительность цикла на шине равна пяти тактам (2 wait states). */
+	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS(2);
+
+	ETH_REG->GCTRL = 0x5382;
+
+#if 0
 	/* Reset transceiver. */
 	phy_write (u, PHY_CTL, PHY_CTL_RST);
 	int count;
@@ -165,115 +165,88 @@ static void chip_init (k5600bg1_t *u)
 
 	/* Максимальный размер кадра. */
 	MC_MAC_RX_FR_MAXSIZE = K5600BG1_MTU;
+#endif
 }
 
 void
 k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 {
-	unsigned short ctl, advrt, sts, extctl;
+	unsigned short phy_stat, gctrl;
 
 	mutex_lock (&u->netif.lock);
-	ctl = phy_read (u, PHY_CTL);
-	sts = phy_read (u, PHY_STS);
-	advrt = phy_read (u, PHY_ADVRT);
-	extctl = phy_read (u, PHY_EXTCTL);
-	/*unsigned status_rx = MC_MAC_STATUS_RX;*/
-	/*unsigned status_tx = MC_MAC_STATUS_TX;*/
+	phy_stat = ETH_REG->PHY_STAT;
+	gctrl = ETH_REG->GCTRL;
 	mutex_unlock (&u->netif.lock);
 
-	printf (stream, "CTL=%b\n", ctl, PHY_CTL_BITS);
-	printf (stream, "STS=%b\n", sts, PHY_STS_BITS);
-	printf (stream, "ADVRT=%b\n", advrt, PHY_ADVRT_BITS);
-	printf (stream, "EXTCTL=%b\n", extctl, PHY_EXTCTL_BITS);
-	/*printf (stream, "STATUS_TX=%b\n", status_tx, STATUS_TX_BITS);*/
-	/*printf (stream, "STATUS_RX=%b\n", status_rx, STATUS_RX_BITS);*/
+	printf (stream, "PHY_STAT=%b\n", phy_stat, PHY_STAT_BITS);
+	printf (stream, "GCTRL=%04x\n", gctrl);
 }
 
 void k5600bg1_start_negotiation (k5600bg1_t *u)
 {
 	mutex_lock (&u->netif.lock);
-	phy_write (u, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
-		PHY_ADVRT_10_FDX | PHY_ADVRT_100_HDX | PHY_ADVRT_100_FDX);
-	phy_write (u, PHY_CTL, PHY_CTL_ANEG_EN | PHY_CTL_ANEG_RST);
+	ETH_REG->PHY_CTRL = PHY_CTRL_RST | PHY_CTRL_TXEN | PHY_CTRL_RXEN |
+		PHY_CTRL_DIR | PHY_CTRL_LINK_PERIOD (11);
 	mutex_unlock (&u->netif.lock);
 }
 
 int k5600bg1_get_carrier (k5600bg1_t *u)
 {
-	unsigned status;
+	unsigned phy_stat;
 
 	mutex_lock (&u->netif.lock);
-	status = phy_read (u, PHY_STS);
+	phy_stat = ETH_REG->PHY_STAT;
 	mutex_unlock (&u->netif.lock);
 
-	return (status & PHY_STS_LINK) != 0;
+	return (phy_stat & PHY_STAT_LINK) != 0;
 }
 
 long k5600bg1_get_speed (k5600bg1_t *u, int *duplex)
 {
-	unsigned extctl;
+	unsigned phy_ctrl;
 
 	mutex_lock (&u->netif.lock);
-	extctl = phy_read (u, PHY_EXTCTL);
+	phy_ctrl = ETH_REG->PHY_CTRL;
 	mutex_unlock (&u->netif.lock);
 
-	switch (extctl & PHY_EXTCTL_MODE_MASK) {
-	case PHY_EXTCTL_MODE_10_HDX:	/* 10Base-T half duplex */
+	if (phy_ctrl & PHY_CTRL_HALFD) {
 		if (duplex)
 			*duplex = 0;
-		u->netif.bps = 10 * 1000000;
-		break;
-	case PHY_EXTCTL_MODE_100_HDX:	/* 100Base-TX half duplex */
-		if (duplex)
-			*duplex = 0;
-		u->netif.bps = 100 * 1000000;
-		break;
-	case PHY_EXTCTL_MODE_10_FDX:	/* 10Base-T full duplex */
+	} else {
 		if (duplex)
 			*duplex = 1;
-		u->netif.bps = 10 * 1000000;
-		break;
-	case PHY_EXTCTL_MODE_100_FDX:	/* 100Base-TX full duplex */
-		if (duplex)
-			*duplex = 1;
-		u->netif.bps = 100 * 1000000;
-		break;
-	default:
-		return 0;
 	}
 	return u->netif.bps;
 }
 
+/*
+ * Set PHY loop-back mode.
+ */
 void k5600bg1_set_loop (k5600bg1_t *u, int on)
 {
-	unsigned control;
+	unsigned phy_ctrl;
 
 	mutex_lock (&u->netif.lock);
-
-	/* Set PHY loop-back mode. */
-	control = phy_read (u, PHY_CTL);
+	phy_ctrl = ETH_REG->PHY_CTRL;
 	if (on) {
-		control |= PHY_CTL_LPBK;
+		phy_ctrl |= PHY_CTRL_LB;
 	} else {
-		control &= ~PHY_CTL_LPBK;
+		phy_ctrl &= ~PHY_CTRL_LB;
 	}
-	phy_write (u, PHY_CTL, control);
+	ETH_REG->PHY_CTRL = phy_ctrl;
 	mutex_unlock (&u->netif.lock);
 }
 
 void k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
 {
 	mutex_lock (&u->netif.lock);
-	unsigned rx_frame_control = MC_MAC_RX_FRAME_CONTROL &
-		~(RX_FRAME_CONTROL_EN_MCM | RX_FRAME_CONTROL_EN_ALL);
+	unsigned mac_ctrl = ETH_REG->MAC_CTRL & ~MAC_CTRL_PRO_EN;
 	if (station) {
 		/* Accept any unicast. */
-		rx_frame_control |= RX_FRAME_CONTROL_EN_ALL;
-	} else if (group) {
-		/* Accept any multicast. */
-		rx_frame_control |= RX_FRAME_CONTROL_EN_MCM;
+		mac_ctrl |= MAC_CTRL_PRO_EN;
 	}
-	MC_MAC_RX_FRAME_CONTROL = rx_frame_control;
+	/* TODO: multicasts. */
+	ETH_REG->MAC_CTRL = mac_ctrl;
 	mutex_unlock (&u->netif.lock);
 }
 
@@ -283,6 +256,7 @@ void k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
 static void
 chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 {
+#if 0
 /*debug_printf ("write_txfifo %08x, %d bytes\n", physaddr, nbytes);*/
 	/* Set the address and length for DMA. */
 	unsigned csr = MC_DMA_CSR_WN(15) |
@@ -306,6 +280,7 @@ chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 		debug_printf ("eth: TX DMA failed, CSR=%08x\n", csr);
 		MC_CSR_EMAC(1) = 0;
 	}
+#endif
 }
 
 /*
@@ -314,6 +289,7 @@ chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 static void
 chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 {
+#if 0
 	/* Set the address and length for DMA. */
 	unsigned csr = MC_DMA_CSR_WN(15) |
 		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
@@ -335,6 +311,7 @@ chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 		debug_printf ("eth: RX DMA failed, CSR=%08x\n", csr);
 		MC_CSR_EMAC(0) = 0;
 	}
+#endif
 }
 
 /*
@@ -363,6 +340,7 @@ chip_transmit_packet (k5600bg1_t *u, buf_t *p)
 /*debug_printf ("txzero %08x, %d bytes\n", u->txbuf + p->tot_len, len - p->tot_len);*/
 		memset (u->txbuf + p->tot_len, 0, len - p->tot_len);
 	}
+#if 0
 	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR |
 		TX_FRAME_CONTROL_DISPAD |
 		TX_FRAME_CONTROL_LENGTH (len);
@@ -370,7 +348,7 @@ chip_transmit_packet (k5600bg1_t *u, buf_t *p)
 /*debug_printf ("!");*/
 	MC_MAC_TX_FRAME_CONTROL |= TX_FRAME_CONTROL_TX_REQ;
 /*debug_printf ("@");*/
-
+#endif
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
 
@@ -389,8 +367,8 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 	mutex_lock (&u->tx_lock);
 
 	/* Exit if link has failed */
-	if (p->tot_len < 4 || p->tot_len > K5600BG1_MTU ||
-	    ! (phy_read (u, PHY_STS) & PHY_STS_LINK)) {
+	if (p->tot_len < 4 || p->tot_len > K5600BG1_MTU /*||
+	    ! (phy_read (u, PHY_STS) & PHY_STS_LINK)*/) {
 		++u->netif.out_errors;
 		mutex_unlock (&u->tx_lock);
 /*debug_printf ("k5600bg1_output: transmit %d bytes, link failed\n", p->tot_len);*/
@@ -399,6 +377,7 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 	}
 /*debug_printf ("k5600bg1_output: transmit %d bytes\n", p->tot_len);*/
 
+#if 0
 	if (! (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ)) {
 		/* Смело отсылаем. */
 		chip_transmit_packet (u, p);
@@ -406,6 +385,7 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 		buf_free (p);
 		return 1;
 	}
+#endif
 	/* Занято, ставим в очередь. */
 	if (buf_queue_is_full (&u->outq)) {
 		/* Нет места в очереди: теряем пакет. */
@@ -443,6 +423,7 @@ k5600bg1_set_address (k5600bg1_t *u, unsigned char *addr)
 	mutex_lock (&u->netif.lock);
 	memcpy (&u->netif.ethaddr, addr, 6);
 
+#if 0
 	MC_MAC_UCADDR_L = u->netif.ethaddr[0] |
 			 (u->netif.ethaddr[1] << 8) |
 			 (u->netif.ethaddr[2] << 16)|
@@ -450,7 +431,7 @@ k5600bg1_set_address (k5600bg1_t *u, unsigned char *addr)
 	MC_MAC_UCADDR_H = u->netif.ethaddr[4] |
 			 (u->netif.ethaddr[5] << 8);
 /*debug_printf ("UCADDR=%02x:%08x\n", MC_MAC_UCADDR_H, MC_MAC_UCADDR_L);*/
-
+#endif
 	mutex_unlock (&u->netif.lock);
 }
 
@@ -461,6 +442,7 @@ k5600bg1_set_address (k5600bg1_t *u, unsigned char *addr)
 static void
 k5600bg1_receive_frame (k5600bg1_t *u)
 {
+#if 0
 	unsigned frame_status = MC_MAC_RX_FRAME_STATUS_FIFO;
 	if (! (frame_status & RX_FRAME_STATUS_OK)) {
 		/* Invalid frame */
@@ -510,6 +492,7 @@ debug_printf ("k5600bg1_receive_data: ignore packet - out of memory\n");
 	memcpy (p->payload, u->rxbuf, len);
 	buf_queue_put (&u->inq, p);
 /*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
+#endif
 }
 
 /*
@@ -519,8 +502,11 @@ debug_printf ("k5600bg1_receive_data: ignore packet - out of memory\n");
 static unsigned
 handle_interrupt (k5600bg1_t *u)
 {
-	unsigned active = 0;
+/*	unsigned active = 0;*/
 	for (;;) {
+#if 1
+		return 0;
+#else
 		unsigned status_rx = MC_MAC_STATUS_RX;
 /*debug_printf ("eth rx irq: STATUS_RX = %08x\n", status_rx);*/
 		if (status_rx & (STATUS_RX_STATUS_OVF | STATUS_RX_FIFO_OVF)) {
@@ -561,6 +547,7 @@ handle_interrupt (k5600bg1_t *u)
 				buf_free (p);
 			}
 		}
+#endif
 	}
 }
 
@@ -615,12 +602,10 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	u->netif.arp = arp;
 	u->netif.mtu = 1500;
 	u->netif.type = NETIF_ETHERNET_CSMACD;
-	u->netif.bps = 10000000;
+	u->netif.bps = 1000000;
 	memcpy (&u->netif.ethaddr, macaddr, 6);
 
 	u->pool = pool;
-	u->rxbuf = (unsigned char*) (((unsigned) u->rxbuf_data + 7) & ~7);
-	u->txbuf = (unsigned char*) (((unsigned) u->txbuf_data + 7) & ~7);
 	buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
 	buf_queue_init (&u->outq, u->outqdata, sizeof (u->outqdata));
 
