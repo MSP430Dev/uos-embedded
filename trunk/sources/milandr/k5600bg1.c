@@ -11,18 +11,21 @@
 #include <milandr/k5600bg1.h>
 #include <milandr/k5600bg1-regs.h>
 
-#define K5600BG1_IRQ		12	/* interrupt from pin PB10 */
+#define K5600BG1_IRQ	12		/* interrupt from pin PB10 */
 
-#define PORTB_NIRQ	(1 << 10)	// nIRQ on PB10
-#define PORTB_NRST	(1 << 11)	// nRST on PB11
-#define PORTC_NOE	(1 << 1)	// nOE on PC1
-#define PORTC_NWE	(1 << 2)	// nWE on PC2
-#define PORTE_NCS	(1 << 12)	// nCS on PE12
+#define PORTB_NIRQ	(1 << 10)	/* nIRQ on PB10 */
+#define PORTB_NRST	(1 << 11)	/* nRST on PB11 */
+#define PORTC_NOE	(1 << 1)	/* nOE on PC1 */
+#define PORTC_NWE	(1 << 2)	/* nWE on PC2 */
+#define PORTE_NCS	(1 << 12)	/* nCS on PE12 */
+
+#define NRD		8		/* number of receive descriptors */
 
 /*
  * Set /RST to 0 for one microsecond.
  */
-static void chip_reset ()
+static void
+chip_reset ()
 {
 	ARM_GPIOB->DATA &= ~PORTB_NRST;
 	udelay (1);
@@ -30,14 +33,28 @@ static void chip_reset ()
 }
 
 /*
+ * Control /CS for 5600ВГ1 chip.
+ */
+static void
+chip_select (int on)
+{
+	if (on)
+		ARM_GPIOE->DATA &= ~PORTE_NCS;		// Select
+	else
+		ARM_GPIOE->DATA |= PORTE_NCS;		// Idle
+}
+
+/*
  * Set default values to Ethernet controller registers.
  */
-static void chip_init (k5600bg1_t *u)
+static void
+chip_init (k5600bg1_t *u)
 {
 	/* Включение тактовой частоты портов A-C, E, F. */
 	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOA |
 		ARM_PER_CLOCK_GPIOB | ARM_PER_CLOCK_GPIOC |
-		ARM_PER_CLOCK_GPIOE | ARM_PER_CLOCK_GPIOF;
+		ARM_PER_CLOCK_GPIOE | ARM_PER_CLOCK_GPIOF |
+		ARM_PER_CLOCK_EXT_BUS;
 
 	/* Цифровые сигналы. */
 	ARM_GPIOA->ANALOG = 0xFFFF;			// Data 0-15
@@ -83,7 +100,12 @@ static void chip_init (k5600bg1_t *u)
 	/* Для nOE и nWE отключаем режим открытого коллектора. */
 	ARM_GPIOC->PD &= ~(PORTC_NOE | PORTC_NWE);
 
-	/* Включаем выходные сигналы.  */
+	/* Для nRST включаем режим открытого коллектора.
+	 * Чтобы сделать переход от +3.3V к +5V. */
+	ARM_GPIOB->PD |= PORTB_NRST;
+	ARM_GPIOB->PULL |= PORTB_NRST;
+
+	/* Включаем выходные сигналы в неактивном состоянии.  */
 	ARM_GPIOB->DATA |= PORTB_NRST;		// nRST on PB11
 	ARM_GPIOB->OE |= PORTB_NRST;
 	ARM_GPIOE->DATA |= PORTE_NCS;		// nCS on PE12
@@ -92,97 +114,87 @@ static void chip_init (k5600bg1_t *u)
 	chip_reset ();
 
 	/* Включение внешней шины адрес/данные в режиме RAM.
-	 * Длительность цикла на шине равна пяти тактам (2 wait states). */
-	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS(2);
+	 * Длительность цикла должна быть не меньше 112.5 нс.
+	 * При частоте процессора 40 МГц (один такт 25 нс)
+	 * установка ws=9 или 10 даёт цикл в 125 нс. */
+	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS (9);
+	chip_select (1);
 
-	ETH_REG->GCTRL = 0x5382;
-
-#if 0
-	/* Reset transceiver. */
-	phy_write (u, PHY_CTL, PHY_CTL_RST);
-	int count;
-	for (count=10000; count>0; count--)
-		if (! (phy_read (u, PHY_CTL) & PHY_CTL_RST))
-			break;
-	if (count == 0)
-		debug_printf ("k5600bg1_init: PHY reset failed\n");
-	phy_write (u, PHY_EXTCTL, PHY_EXTCTL_JABBER);
-
-	/* Perform auto-negotiation. */
-	phy_write (u, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
-		PHY_ADVRT_10_FDX | PHY_ADVRT_100_HDX | PHY_ADVRT_100_FDX);
-	phy_write (u, PHY_CTL, PHY_CTL_ANEG_EN | PHY_CTL_ANEG_RST);
-
-	/* Reset TX and RX blocks and pointers */
-	MC_MAC_CONTROL = MAC_CONTROL_CP_TX | MAC_CONTROL_RST_TX |
-			 MAC_CONTROL_CP_RX | MAC_CONTROL_RST_RX;
-	udelay (10);
-	/*debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);*/
+	/* Режимы параллельного интерфейса к процессору. */
+/*debug_printf ("GCTRL (%x) = %08x\n", &ETH_REG->GCTRL, ETH_REG->GCTRL);*/
+	ETH_REG->GCTRL = GCTRL_GLBL_RST;
+	udelay (1);
+	ETH_REG->GCTRL = GCTRL_READ_CLR_STAT | GCTRL_SPI_RST |
+		GCTRL_ASYNC_MODE | GCTRL_SPI_TX_EDGE | GCTRL_SPI_DIR |
+		GCTRL_SPI_FRAME_POL | GCTRL_SPI_DIV(2);
+/*debug_printf ("GCTRL = %08x\n", ETH_REG->GCTRL);*/
 
 	/* Общие режимы. */
-	MC_MAC_CONTROL =
-		MAC_CONTROL_FULLD |		/* дуплексный режим */
-		MAC_CONTROL_EN_TX |		/* разрешение передачи */
-		MAC_CONTROL_EN_TX_DMA |		/* разрешение передающего DMА */
-		MAC_CONTROL_EN_RX |		/* разрешение приема */
-		MAC_CONTROL_IRQ_TX_DONE | 	/* прерывание от передачи */
-		MAC_CONTROL_IRQ_RX_DONE | 	/* прерывание по приёму */
-		MAC_CONTROL_IRQ_RX_OVF; 	/* прерывание по переполнению */
-	/*debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);*/
+	ETH_REG->MAC_CTRL = MAC_CTRL_PRO_EN |	// Прием всех пакетов
+		MAC_CTRL_BCA_EN |		// Прием всех широковещательных пакетов
+		MAC_CTRL_SHORT_FRAME_EN;	// Прием коротких пакетов
+// MAC_CTRL_DSCR_SCAN_EN	// Режим сканирования дескрипторов
+// MAC_CTRL_BIG_ENDIAN		// Левый бит вперёд (big endian)
 
-	/* Режимы приёма. */
-	MC_MAC_RX_FRAME_CONTROL =
-		RX_FRAME_CONTROL_DIS_RCV_FCS | 	/* не сохранять контрольную сумму */
-		RX_FRAME_CONTROL_ACC_TOOSHORT |	/* прием коротких кадров */
-		RX_FRAME_CONTROL_DIS_TOOLONG | 	/* отбрасывание слишком длинных кадров */
-		RX_FRAME_CONTROL_DIS_FCSCHERR |	/* отбрасывание кадров с ошибкой контрольной суммы */
-		RX_FRAME_CONTROL_DIS_LENGTHERR;	/* отбрасывание кадров с ошибкой длины */
-	/*debug_printf ("RX_FRAME_CONTROL: 0x%08x\n", MC_MAC_RX_FRAME_CONTROL);*/
-
-	/* Режимы передачи:
-	 * запрет формирования кадра в блоке передачи. */
-	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR;
-	/*debug_printf ("TX_FRAME_CONTROL: 0x%08x\n", MC_MAC_TX_FRAME_CONTROL);*/
-
-	/* Режимы обработки коллизии. */
-	MC_MAC_IFS_COLL_MODE = IFS_COLL_MODE_ATTEMPT_NUM(15) |
-		IFS_COLL_MODE_EN_CW |
-		IFS_COLL_MODE_COLL_WIN(64) |
-		IFS_COLL_MODE_JAMB(0xC3) |
-		IFS_COLL_MODE_IFS(24);
-
-	/* Тактовый сигнал MDC не должен превышать 2.5 МГц. */
-	MC_MAC_MD_MODE = MD_MODE_DIVIDER (KHZ / 2000);
+	/* Режимы PHY. */
+	ETH_REG->PHY_CTRL = PHY_CTRL_DIR |	// Прямой порядок битов в полубайте
+		PHY_CTRL_RXEN | PHY_CTRL_TXEN |	// Включение приёмника и передатчика
+		PHY_CTRL_LINK_PERIOD (11);	// Период LINK-импульсов
 
 	/* Свой адрес. */
-	MC_MAC_UCADDR_L = u->netif.ethaddr[0] |
-			 (u->netif.ethaddr[1] << 8) |
-			 (u->netif.ethaddr[2] << 16)|
-			 (u->netif.ethaddr[3] << 24);
-	MC_MAC_UCADDR_H = u->netif.ethaddr[4] |
-			 (u->netif.ethaddr[5] << 8);
-/*debug_printf ("UCADDR=%02x:%08x\n", MC_MAC_UCADDR_H, MC_MAC_UCADDR_L);*/
+	ETH_REG->MAC_ADDR[0] = u->netif.ethaddr[0] | (u->netif.ethaddr[1] << 8);
+	ETH_REG->MAC_ADDR[1] = u->netif.ethaddr[2] | (u->netif.ethaddr[3] << 8);
+	ETH_REG->MAC_ADDR[2] = u->netif.ethaddr[4] | (u->netif.ethaddr[5] << 8);
 
-	/* Максимальный размер кадра. */
-	MC_MAC_RX_FR_MAXSIZE = K5600BG1_MTU;
-#endif
+	ETH_REG->MIN_FRAME = 64;		// Минимальная длина пакета
+	ETH_REG->MAX_FRAME = K5600BG1_MTU + 4;	// Максимальная длина пакета
+	ETH_REG->COLLCONF = COLLCONF_COLLISION_WINDOW (64) |
+		COLLCONF_RETRIES_LIMIT (15);	// Лимит повторов передачи
+	ETH_REG->IPGT = 96;			// Межпакетный интервал
+
+	ETH_REG->RXBF_HEAD = 2048 - 1;
+	ETH_REG->RXBF_TAIL = 0;
+
+	/* Начальное состояние дескрипторов. */
+	unsigned i;
+	for (i=0; i<NRD; i++) {
+		ETH_RXDESC[i].CTRL = DESC_RX_RDY | DESC_RX_IRQ_EN;
+	}
+	ETH_RXDESC[NRD-1].CTRL |= DESC_RX_WRAP;
+	ETH_TXDESC[0].CTRL = DESC_TX_WRAP;
+
+	/* Ждём прерывания по приёму и передаче. */
+	ETH_REG->INT_MASK = INT_TXF | INT_RXF | INT_RXS | INT_RXE;
 }
 
 void
 k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 {
-	unsigned short phy_stat, gctrl;
+	unsigned short mac_ctrl, int_src, phy_ctrl, phy_stat, gctrl;
 
 	mutex_lock (&u->netif.lock);
+	mac_ctrl = ETH_REG->MAC_CTRL;
+	int_src = ETH_REG->INT_SRC;
+	phy_ctrl = ETH_REG->PHY_CTRL;
 	phy_stat = ETH_REG->PHY_STAT;
 	gctrl = ETH_REG->GCTRL;
 	mutex_unlock (&u->netif.lock);
 
-	printf (stream, "PHY_STAT=%b\n", phy_stat, PHY_STAT_BITS);
-	printf (stream, "GCTRL=%04x\n", gctrl);
+	printf (stream, "MAC_CTRL = %04x\n", mac_ctrl);
+	printf (stream, "INT_SRC = %04x\n", int_src);
+	printf (stream, "PHY_CTRL = %04x\n", phy_ctrl);
+	printf (stream, "PHY_STAT = %b\n", phy_stat, PHY_STAT_BITS);
+	printf (stream, "GCTRL = %04x\n", gctrl);
+	printf (stream, "rn = %u, RXDESC[rn].CTRL = %04x\n", u->rn,
+		ETH_RXDESC[u->rn].CTRL);
+	if (! (ETH_RXDESC[u->rn].CTRL & DESC_RX_RDY))
+		printf (stream, "    .LEN = %u, .PTRL = %04x\n",
+			ETH_RXDESC[u->rn].LEN, ETH_RXDESC[u->rn].PTRL);
+	printf (stream, "TXDESC.CTRL = %04x\n", ETH_TXDESC[0].CTRL);
 }
 
-void k5600bg1_start_negotiation (k5600bg1_t *u)
+void
+k5600bg1_start_negotiation (k5600bg1_t *u)
 {
 	mutex_lock (&u->netif.lock);
 	ETH_REG->PHY_CTRL = PHY_CTRL_RST | PHY_CTRL_TXEN | PHY_CTRL_RXEN |
@@ -190,7 +202,8 @@ void k5600bg1_start_negotiation (k5600bg1_t *u)
 	mutex_unlock (&u->netif.lock);
 }
 
-int k5600bg1_get_carrier (k5600bg1_t *u)
+int
+k5600bg1_get_carrier (k5600bg1_t *u)
 {
 	unsigned phy_stat;
 
@@ -201,7 +214,8 @@ int k5600bg1_get_carrier (k5600bg1_t *u)
 	return (phy_stat & PHY_STAT_LINK) != 0;
 }
 
-long k5600bg1_get_speed (k5600bg1_t *u, int *duplex)
+long
+k5600bg1_get_speed (k5600bg1_t *u, int *duplex)
 {
 	unsigned phy_ctrl;
 
@@ -222,7 +236,8 @@ long k5600bg1_get_speed (k5600bg1_t *u, int *duplex)
 /*
  * Set PHY loop-back mode.
  */
-void k5600bg1_set_loop (k5600bg1_t *u, int on)
+void
+k5600bg1_set_loop (k5600bg1_t *u, int on)
 {
 	unsigned phy_ctrl;
 
@@ -237,7 +252,8 @@ void k5600bg1_set_loop (k5600bg1_t *u, int on)
 	mutex_unlock (&u->netif.lock);
 }
 
-void k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
+void
+k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
 {
 	mutex_lock (&u->netif.lock);
 	unsigned mac_ctrl = ETH_REG->MAC_CTRL & ~MAC_CTRL_PRO_EN;
@@ -251,81 +267,17 @@ void k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
 }
 
 /*
- * Put data to transmit FIFO from dma buffer.
- */
-static void
-chip_write_txfifo (unsigned physaddr, unsigned nbytes)
-{
-#if 0
-/*debug_printf ("write_txfifo %08x, %d bytes\n", physaddr, nbytes);*/
-	/* Set the address and length for DMA. */
-	unsigned csr = MC_DMA_CSR_WN(15) |
-		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
-	MC_IR_EMAC(1) = physaddr;
-	MC_CP_EMAC(1) = 0;
-	MC_CSR_EMAC(1) = csr;
-/*debug_printf ("<t%d> ", nbytes);*/
-
-	/* Run the DMA. */
-	MC_CSR_EMAC(1) = csr | MC_DMA_CSR_RUN;
-
-	unsigned count;
-	for (count=100000; count>0; count--) {
-		csr = MC_CSR_EMAC(1);
-		if (! (csr & MC_DMA_CSR_RUN))
-			break;
-/*debug_printf ("~");*/
-	}
-	if (count == 0) {
-		debug_printf ("eth: TX DMA failed, CSR=%08x\n", csr);
-		MC_CSR_EMAC(1) = 0;
-	}
-#endif
-}
-
-/*
- * Fetch data from receive FIFO to dma buffer.
- */
-static void
-chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
-{
-#if 0
-	/* Set the address and length for DMA. */
-	unsigned csr = MC_DMA_CSR_WN(15) |
-		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
-	MC_CSR_EMAC(0) = csr;
-	MC_IR_EMAC(0) = physaddr;
-	MC_CP_EMAC(0) = 0;
-/*debug_printf ("(r%d) ", nbytes);*/
-
-	/* Run the DMA. */
-	MC_CSR_EMAC(0) = csr | MC_DMA_CSR_RUN;
-
-	unsigned count;
-	for (count=100000; count>0; count--) {
-		csr = MC_CSR_EMAC(0);
-		if (! (csr & MC_DMA_CSR_RUN))
-			break;
-	}
-	if (count == 0) {
-		debug_printf ("eth: RX DMA failed, CSR=%08x\n", csr);
-		MC_CSR_EMAC(0) = 0;
-	}
-#endif
-}
-
-/*
  * Write the packet to chip memory and start transmission.
  * Deallocate the packet.
  */
 static void
-chip_transmit_packet (k5600bg1_t *u, buf_t *p)
+transmit_packet (k5600bg1_t *u, buf_t *p)
 {
 	/* Send the data from the buf chain to the interface,
 	 * one buf at a time. The size of the data in each
 	 * buf is kept in the ->len variable. */
 	buf_t *q;
-	unsigned char *buf = (unsigned char*) u->txbuf;
+	unsigned char *buf = ETH_TXBUF;
 	for (q=p; q; q=q->next) {
 		/* Copy the packet into the transmit buffer. */
 		assert (q->len > 0);
@@ -337,22 +289,17 @@ chip_transmit_packet (k5600bg1_t *u, buf_t *p)
 	unsigned len = p->tot_len;
 	if (len < 60) {
 		len = 60;
-/*debug_printf ("txzero %08x, %d bytes\n", u->txbuf + p->tot_len, len - p->tot_len);*/
-		memset (u->txbuf + p->tot_len, 0, len - p->tot_len);
+		memset (ETH_TXBUF + p->tot_len, 0, len - p->tot_len);
 	}
-#if 0
-	MC_MAC_TX_FRAME_CONTROL = TX_FRAME_CONTROL_DISENCAPFR |
-		TX_FRAME_CONTROL_DISPAD |
-		TX_FRAME_CONTROL_LENGTH (len);
-	chip_write_txfifo (u->txbuf, len);
-/*debug_printf ("!");*/
-	MC_MAC_TX_FRAME_CONTROL |= TX_FRAME_CONTROL_TX_REQ;
-/*debug_printf ("@");*/
-#endif
+	ETH_TXDESC[0].PTRL = 0x1000;
+	ETH_TXDESC[0].PTRH = 0;
+	ETH_TXDESC[0].LEN = len;
+	ETH_TXDESC[0].CTRL = DESC_TX_RDY | DESC_TX_IRQ_EN | DESC_TX_WRAP;
+
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
 
-/*debug_printf ("tx%d", len); buf_print_data (u->txbuf, p->tot_len);*/
+debug_printf ("tx%d", len); buf_print_data (ETH_TXBUF, p->tot_len);
 }
 
 /*
@@ -371,21 +318,20 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 	    ! (phy_read (u, PHY_STS) & PHY_STS_LINK)*/) {
 		++u->netif.out_errors;
 		mutex_unlock (&u->tx_lock);
-/*debug_printf ("k5600bg1_output: transmit %d bytes, link failed\n", p->tot_len);*/
+/*debug_printf ("output: transmit %d bytes, link failed\n", p->tot_len);*/
 		buf_free (p);
 		return 0;
 	}
-/*debug_printf ("k5600bg1_output: transmit %d bytes\n", p->tot_len);*/
+/*debug_printf ("output: transmit %d bytes\n", p->tot_len);*/
 
-#if 0
-	if (! (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ)) {
+	if (! (ETH_TXDESC[0].CTRL & DESC_TX_RDY)) {
 		/* Смело отсылаем. */
-		chip_transmit_packet (u, p);
+		transmit_packet (u, p);
 		mutex_unlock (&u->tx_lock);
 		buf_free (p);
 		return 1;
 	}
-#endif
+
 	/* Занято, ставим в очередь. */
 	if (buf_queue_is_full (&u->outq)) {
 		/* Нет места в очереди: теряем пакет. */
@@ -423,15 +369,10 @@ k5600bg1_set_address (k5600bg1_t *u, unsigned char *addr)
 	mutex_lock (&u->netif.lock);
 	memcpy (&u->netif.ethaddr, addr, 6);
 
-#if 0
-	MC_MAC_UCADDR_L = u->netif.ethaddr[0] |
-			 (u->netif.ethaddr[1] << 8) |
-			 (u->netif.ethaddr[2] << 16)|
-			 (u->netif.ethaddr[3] << 24);
-	MC_MAC_UCADDR_H = u->netif.ethaddr[4] |
-			 (u->netif.ethaddr[5] << 8);
-/*debug_printf ("UCADDR=%02x:%08x\n", MC_MAC_UCADDR_H, MC_MAC_UCADDR_L);*/
-#endif
+	ETH_REG->MAC_ADDR[0] = u->netif.ethaddr[0] | (u->netif.ethaddr[1] << 8);
+	ETH_REG->MAC_ADDR[1] = u->netif.ethaddr[2] | (u->netif.ethaddr[3] << 8);
+	ETH_REG->MAC_ADDR[2] = u->netif.ethaddr[4] | (u->netif.ethaddr[5] << 8);
+
 	mutex_unlock (&u->netif.lock);
 }
 
@@ -440,30 +381,31 @@ k5600bg1_set_address (k5600bg1_t *u, unsigned char *addr)
  * Put it to input queue.
  */
 static void
-k5600bg1_receive_frame (k5600bg1_t *u)
+receive_packet (k5600bg1_t *u)
 {
-#if 0
-	unsigned frame_status = MC_MAC_RX_FRAME_STATUS_FIFO;
-	if (! (frame_status & RX_FRAME_STATUS_OK)) {
+	unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
+
+	if (desc_rx & DESC_RX_OR) {
+		/* Count lost incoming packets. */
+		u->netif.in_discards++;
+	}
+	if (desc_rx & (DESC_RX_EF | DESC_RX_CRC_ERR | DESC_RX_SMB_ERR)) {
 		/* Invalid frame */
-debug_printf ("k5600bg1_receive_data: failed, frame_status=%#08x\n", frame_status);
+debug_printf ("receive_data: failed, desc_rx=%#04x\n", desc_rx);
 		++u->netif.in_errors;
 		return;
 	}
-	/* Extract data from RX FIFO. */
-	unsigned len = RX_FRAME_STATUS_LEN (frame_status);
-	chip_read_rxfifo (u->rxbuf, len);
-
+	unsigned len = ETH_RXDESC[u->rn].LEN;
 	if (len < 4 || len > K5600BG1_MTU) {
 		/* Skip this frame */
-debug_printf ("k5600bg1_receive_data: bad length %d bytes, frame_status=%#08x\n", len, frame_status);
+debug_printf ("receive_data: bad length %d bytes, desc_rx=%#08x\n", len, desc_rx);
 		++u->netif.in_errors;
 		return;
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-/*debug_printf ("k5600bg1_receive_data: ok, frame_status=%#08x, length %d bytes\n", frame_status, len);*/
-/*debug_printf ("k5600bg1_receive_data: %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n",
+debug_printf ("receive_data: ok, desc_rx=%#08x, length %d bytes\n", desc_rx, len);
+/*debug_printf ("receive_data: %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n",
 ((unsigned char*)u->rxbuf)[0], ((unsigned char*)u->rxbuf)[1],
 ((unsigned char*)u->rxbuf)[2], ((unsigned char*)u->rxbuf)[3],
 ((unsigned char*)u->rxbuf)[4], ((unsigned char*)u->rxbuf)[5],
@@ -473,7 +415,7 @@ debug_printf ("k5600bg1_receive_data: bad length %d bytes, frame_status=%#08x\n"
 ((unsigned char*)u->rxbuf)[12], ((unsigned char*)u->rxbuf)[13]);*/
 
 	if (buf_queue_is_full (&u->inq)) {
-/*debug_printf ("k5600bg1_receive_data: input overflow\n");*/
+debug_printf ("receive_data: input overflow\n");
 		++u->netif.in_discards;
 		return;
 	}
@@ -482,17 +424,16 @@ debug_printf ("k5600bg1_receive_data: bad length %d bytes, frame_status=%#08x\n"
 	buf_t *p = buf_alloc (u->pool, len, 2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
-debug_printf ("k5600bg1_receive_data: ignore packet - out of memory\n");
+debug_printf ("receive_data: ignore packet - out of memory\n");
 		++u->netif.in_discards;
 		return;
 	}
 
 	/* Copy the packet data. */
 /*debug_printf ("receive %08x <- %08x, %d bytes\n", p->payload, u->rxbuf, len);*/
-	memcpy (p->payload, u->rxbuf, len);
+	memcpy (p->payload, ETH_RXBUF + (ETH_RXDESC[u->rn].PTRL << 1), len);
 	buf_queue_put (&u->inq, p);
 /*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
-#endif
 }
 
 /*
@@ -502,53 +443,48 @@ debug_printf ("k5600bg1_receive_data: ignore packet - out of memory\n");
 static unsigned
 handle_interrupt (k5600bg1_t *u)
 {
-/*	unsigned active = 0;*/
+	unsigned active = 0;
 	for (;;) {
-#if 1
-		return 0;
-#else
-		unsigned status_rx = MC_MAC_STATUS_RX;
-/*debug_printf ("eth rx irq: STATUS_RX = %08x\n", status_rx);*/
-		if (status_rx & (STATUS_RX_STATUS_OVF | STATUS_RX_FIFO_OVF)) {
-			/* Count lost incoming packets. */
-			if (STATUS_RX_NUM_MISSED (status_rx))
-				u->netif.in_discards += STATUS_RX_NUM_MISSED (status_rx);
-			else
-				u->netif.in_discards++;
-			MC_MAC_STATUS_RX = 0;
-		}
-		/* Check if a packet has been received and buffered. */
-		if (! (status_rx & STATUS_RX_DONE)) {
-			/* All interrupts processed. */
-			return active;
-		}
+		unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
+		if (desc_rx & DESC_RX_RDY)
+			break;
+
 		++active;
-		MC_MAC_STATUS_RX = 0;
+debug_printf ("eth rx irq: CTRL[%u] = %04x\n", u->rn, desc_rx);
 
-		/* Fetch all received packets. */
-		unsigned nframes = STATUS_RX_NUM_FR (status_rx);
-		while (nframes-- > 0)
-			k5600bg1_receive_frame (u);
+		ETH_RXDESC[u->rn].CTRL = DESC_RX_RDY | DESC_RX_IRQ_EN;
+		if (u->rn == NRD-1)
+			ETH_RXDESC[NRD-1].CTRL |= DESC_RX_WRAP;
 
-		unsigned status_tx = MC_MAC_STATUS_TX;
-		if (status_tx & STATUS_TX_DONE) {
-			MC_MAC_STATUS_TX = 0;
+		/* Fetch the received packet. */
+		receive_packet (u);
+		u->rn++;
+		if (u->rn >= NRD)
+			u->rn = 0;
+	}
+	unsigned desc_tx = ETH_TXDESC[0].CTRL;
+	if (! (desc_tx & DESC_TX_RDY)) {
+		if (desc_tx & DESC_TX_IRQ_EN) {
+			/* Закончена передача пакета. */
+			ETH_TXDESC[0].CTRL = DESC_TX_WRAP;
+			++active;
+debug_printf ("eth tx irq: CTRL = %04x\n", desc_tx);
 
 			/* Подсчитываем коллизии. */
-			if (status_tx & (STATUS_TX_ONCOL | STATUS_TX_LATE_COLL)) {
+			if (desc_tx & (DESC_TX_RL | DESC_TX_LC)) {
 				++u->netif.out_collisions;
 			}
-
-			/* Извлекаем следующий пакет из очереди. */
-			buf_t *p = buf_queue_get (&u->outq);
-			if (p) {
-				/* Передаём следующий пакет. */
-				chip_transmit_packet (u, p);
-				buf_free (p);
-			}
 		}
-#endif
+
+		/* Извлекаем следующий пакет из очереди. */
+		buf_t *p = buf_queue_get (&u->outq);
+		if (p) {
+			/* Передаём следующий пакет. */
+			transmit_packet (u, p);
+			buf_free (p);
+		}
 	}
+	return active;
 }
 
 /*
@@ -568,7 +504,7 @@ k5600bg1_poll (k5600bg1_t *u)
  * Interrupt task.
  */
 static void
-k5600bg1_task (void *arg)
+interrupt_task (void *arg)
 {
 	k5600bg1_t *u = arg;
 
@@ -613,5 +549,5 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_init (u);
 
 	/* Create interrupt task. */
-	task_create (k5600bg1_task, u, "eth-rx", prio, u->stack, sizeof (u->stack));
+	task_create (interrupt_task, u, "eth-rx", prio, u->stack, sizeof (u->stack));
 }

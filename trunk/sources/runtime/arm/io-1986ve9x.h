@@ -210,6 +210,16 @@ typedef struct
 
 #define ARM_EXTBUS		((EXTBUS_t*) ARM_EXT_BUS_BASE)
 
+/*
+ * Регистр EXTBUS CONTROL: управление внешней системной шиной
+ */
+#define ARM_EXTBUS_ROM		(1 << 0)	/* Память ROM - только чтение */
+#define ARM_EXTBUS_RAM		(1 << 1)	/* Память RAM - чтение и запись */
+#define ARM_EXTBUS_NAND		(1 << 2)	/* Память NAND Flash */
+#define ARM_EXTBUS_CPOL		(1 << 3)	/* Отрицательная полярность CLOCK */
+#define ARM_EXTBUS_DONE		(1 << 7)	/* Операция памяти NAND завершена */
+#define ARM_EXTBUS_WS(x)	((x) << 12)	/* Длительность цикла = ws+3 */
+
 /*------------------------------------------------------
  * Clock management
  */

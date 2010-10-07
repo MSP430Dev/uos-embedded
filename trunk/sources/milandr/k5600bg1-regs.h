@@ -36,21 +36,21 @@ typedef	struct {
 } eth_regs_t;
 
 typedef	struct {
-	eth_reg_t ctrl;		// Управление и состояние
-	eth_reg_t len;		// Полная длина пакета в байтах
-	eth_reg_t ptrh;		// Старшая часть указателя данных
-	eth_reg_t ptrl;		// Указатель на данные пакета
+	eth_reg_t CTRL;		// Управление и состояние
+	eth_reg_t LEN;		// Полная длина пакета в байтах
+	eth_reg_t PTRH;		// Старшая часть указателя данных
+	eth_reg_t PTRL;		// Указатель на данные пакета
 } eth_desc_t;
 
 /*
  * Адреса регистров и буферов приёма/передачи.
  */
 #define ETH_BASE	0x60000000
-#define ETH_RXBUF	((eth_reg_t*)  (ETH_BASE + 0x0000))
-#define ETH_RXDESC	((eth_desc_t*) (ETH_BASE + 0x2000))
-#define ETH_TXBUF	((eth_reg_t*)  (ETH_BASE + 0x4000))
-#define ETH_TXDESC	((eth_desc_t*) (ETH_BASE + 0x6000))
-#define ETH_REG		((eth_regs_t*) (ETH_BASE + 0x7F00))
+#define ETH_RXBUF	((unsigned char*) (ETH_BASE + 0x0000))
+#define ETH_RXDESC	((eth_desc_t*)    (ETH_BASE + 0x2000))
+#define ETH_TXBUF	((unsigned char*) (ETH_BASE + 0x4000))
+#define ETH_TXDESC	((eth_desc_t*)    (ETH_BASE + 0x6000))
+#define ETH_REG		((eth_regs_t*)    (ETH_BASE + 0x7F00))
 
 /*
  * Регистр GCTRL - управление интерфейсом к процессору
@@ -66,6 +66,7 @@ typedef	struct {
 						// сигнала кадровой синхронизации SPI
 #define GCTRL_SPI_CLK_POL	(1 << 6)	// Инверсная полярность тактового сигнала
 #define GCTRL_SPI_CLK_PHASE	(1 << 5)	// Инверсная фаза тактового сигнала
+#define GCTRL_SPI_DIV(x)	(x)		// (зарезервировано)
 
 /*
  * Регистр MAC_CTRL - управление MAC-уровнем
@@ -89,7 +90,7 @@ typedef	struct {
 /*
  * Регистр COLLCONF - управление обработкой коллизий
  */
-#define COLLCONF_RETRIES_LIMIT(x)	((x) << 16)	// Лимит повторов передачи
+#define COLLCONF_RETRIES_LIMIT(x)	((x) << 8)	// Лимит повторов передачи
 #define COLLCONF_COLLISION_WINDOW(x)	(x)		// Окно коллизий
 
 /*

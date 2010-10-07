@@ -28,9 +28,10 @@ typedef struct _k5600bg1_t {
 	buf_queue_t outq;		/* queue of packets to transmit */
 	struct _buf_t *outqdata[8];
 
+	unsigned rn;			/* next receive descriptor number */
+
 	unsigned long intr;		/* interrupt counter */
 	unsigned char rxbuf [K5600BG1_MTU];
-	unsigned char txbuf [K5600BG1_MTU];
 
 	ARRAY (stack, K5600BG1_STACKSZ); /* stack for irq task */
 } k5600bg1_t;

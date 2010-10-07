@@ -135,8 +135,9 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 		ARM_PWR_FASTEST (PORTC_CLOCK) |
 		ARM_PWR_FAST (PORTC_LCD_RST);
 
-	/* Инициализация внешней шины */
-        ARM_EXTBUS->CONTROL = 0x0000F001;
+	/* Включение внешней шины адрес/данные в режиме ROM.
+	 * Длительность цикла на шине равна 18 тактам (15 wait states). */
+	ARM_EXTBUS->CONTROL = ARM_EXTBUS_ROM | ARM_EXTBUS_WS(15);
 
 	/* Программный сброс экрана. */
 	ARM_GPIOC->DATA |= 1 << PORTC_LCD_RST;

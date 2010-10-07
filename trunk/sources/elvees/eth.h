@@ -1,7 +1,7 @@
 /*
- * Ethernet controller driver for ELVEES MULTICORE NVCom
- * Writed by Ildar F Kaibyshev skif@elvees.com
- * Copyright (c) 2010 Elvees
+ * Ethernet controller driver for Elvees Multicore NVCom.
+ * Copyright (c) 2010 Serge Vakulenko.
+ * Based on sources from Ildar F Kaibyshev skif@elvees.com.
  */
 #ifndef __NVCOM_ETH_H
 #define __NVCOM_ETH_H

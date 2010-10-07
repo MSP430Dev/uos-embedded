@@ -1,6 +1,6 @@
 /*
  * Ethernet driver for Elvees NVCom.
- * Ported to uOS by Serge Vakulenko (c) 2010.
+ * Copyright (c) 2010 Serge Vakulenko.
  * Based on sources from Ildar F Kaibyshev skif@elvees.com.
  */
 #include <runtime/lib.h>
