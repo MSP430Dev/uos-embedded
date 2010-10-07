@@ -12,14 +12,11 @@
 #   define K5600BG1_STACKSZ	1000
 #endif
 
-#define K5600BG1_MTU		1520	/* maximum ethernet frame length */
-
 struct _mem_pool_t;
 struct _stream_t *stream;
 
 typedef struct _k5600bg1_t {
 	netif_t netif;			/* common network interface part */
-	mutex_t tx_lock;		/* get tx interrupts here */
 	struct _mem_pool_t *pool;	/* memory pool for allocating packets */
 
 	buf_queue_t inq;		/* queue of received packets */
@@ -29,9 +26,7 @@ typedef struct _k5600bg1_t {
 	struct _buf_t *outqdata[8];
 
 	unsigned rn;			/* next receive descriptor number */
-
 	unsigned long intr;		/* interrupt counter */
-	unsigned char rxbuf [K5600BG1_MTU];
 
 	ARRAY (stack, K5600BG1_STACKSZ); /* stack for irq task */
 } k5600bg1_t;

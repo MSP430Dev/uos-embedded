@@ -11,7 +11,8 @@
 #include <milandr/k5600bg1.h>
 #include <milandr/k5600bg1-regs.h>
 
-#define K5600BG1_IRQ	12		/* interrupt from pin PB10 */
+#define K5600BG1_IRQ	29		/* pin PB10 - EXT_INT2 */
+#define K5600BG1_MTU	1518		/* maximum ethernet frame length */
 
 #define PORTB_NIRQ	(1 << 10)	/* nIRQ on PB10 */
 #define PORTB_NRST	(1 << 11)	/* nRST on PB11 */
@@ -348,13 +349,13 @@ transmit_packet (k5600bg1_t *u, buf_t *p)
 static bool_t
 k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 {
-	mutex_lock (&u->tx_lock);
+	mutex_lock (&u->netif.lock);
 
 	/* Exit if link has failed */
 	if (p->tot_len < 4 || p->tot_len > K5600BG1_MTU /*||
 	    ! (phy_read (u, PHY_STS) & PHY_STS_LINK)*/) {
 		++u->netif.out_errors;
-		mutex_unlock (&u->tx_lock);
+		mutex_unlock (&u->netif.lock);
 /*debug_printf ("output: transmit %d bytes, link failed\n", p->tot_len);*/
 		buf_free (p);
 		return 0;
@@ -364,7 +365,7 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 	if (! (ETH_TXDESC[0].CTRL & DESC_TX_RDY)) {
 		/* Смело отсылаем. */
 		transmit_packet (u, p);
-		mutex_unlock (&u->tx_lock);
+		mutex_unlock (&u->netif.lock);
 		buf_free (p);
 		return 1;
 	}
@@ -373,13 +374,13 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 	if (buf_queue_is_full (&u->outq)) {
 		/* Нет места в очереди: теряем пакет. */
 		++u->netif.out_discards;
-		mutex_unlock (&u->tx_lock);
+		mutex_unlock (&u->netif.lock);
 		debug_printf ("k5600bg1_output: overflow\n");
 		buf_free (p);
 		return 0;
 	}
 	buf_queue_put (&u->outq, p);
-	mutex_unlock (&u->tx_lock);
+	mutex_unlock (&u->netif.lock);
 	return 1;
 }
 
