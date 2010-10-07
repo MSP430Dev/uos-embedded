@@ -121,13 +121,13 @@ chip_init (k5600bg1_t *u)
 	chip_select (1);
 
 	/* Режимы параллельного интерфейса к процессору. */
-/*debug_printf ("GCTRL (%x) = %08x\n", &ETH_REG->GCTRL, ETH_REG->GCTRL);*/
+/*debug_printf ("GCTRL (%x) = %04x\n", &ETH_REG->GCTRL, ETH_REG->GCTRL);*/
 	ETH_REG->GCTRL = GCTRL_GLBL_RST;
 	udelay (1);
 	ETH_REG->GCTRL = GCTRL_READ_CLR_STAT | GCTRL_SPI_RST |
 		GCTRL_ASYNC_MODE | GCTRL_SPI_TX_EDGE | GCTRL_SPI_DIR |
 		GCTRL_SPI_FRAME_POL | GCTRL_SPI_DIV(2);
-/*debug_printf ("GCTRL = %08x\n", ETH_REG->GCTRL);*/
+/*debug_printf ("GCTRL = %04x\n", ETH_REG->GCTRL);*/
 
 	/* Общие режимы. */
 	ETH_REG->MAC_CTRL = MAC_CTRL_PRO_EN |	// Прием всех пакетов
@@ -266,6 +266,30 @@ k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
 	mutex_unlock (&u->netif.lock);
 }
 
+static void
+chip_copyin (unsigned char *data, volatile unsigned *chipbuf, unsigned bytes)
+{
+	while (bytes >= 2) {
+		unsigned word = *chipbuf++;
+		*data++ = word;
+		*data++ = word >> 8;
+		bytes -= 2;
+	}
+}
+
+static void
+chip_copyout (volatile unsigned *chipbuf, unsigned char *data, unsigned bytes)
+{
+	while (bytes >= 2) {
+		unsigned word = *data++;
+		word |= *data++ << 8;
+		*chipbuf++ = word;
+		bytes -= 2;
+	}
+	if (bytes > 0)
+		*chipbuf = *data;
+}
+
 /*
  * Write the packet to chip memory and start transmission.
  * Deallocate the packet.
@@ -277,20 +301,33 @@ transmit_packet (k5600bg1_t *u, buf_t *p)
 	 * one buf at a time. The size of the data in each
 	 * buf is kept in the ->len variable. */
 	buf_t *q;
-	unsigned char *buf = ETH_TXBUF;
+	volatile unsigned *buf = ETH_TXBUF;
+	unsigned odd = 0;
 	for (q=p; q; q=q->next) {
 		/* Copy the packet into the transmit buffer. */
 		assert (q->len > 0);
 /*debug_printf ("txcpy %08x <- %08x, %d bytes\n", buf, q->payload, q->len);*/
-		memcpy (buf, q->payload, q->len);
-		buf += q->len;
+		if (odd) {
+			*buf++ |= *q->payload << 8;
+			if (q->len > 1) {
+				chip_copyout (buf, q->payload + 1, q->len - 1);
+				buf += (q->len - 1) >> 1;
+				odd ^= (q->len & 1);
+			} else
+				odd = 0;
+		} else {
+			chip_copyout (buf, q->payload, q->len);
+			buf += (q->len >> 1);
+			odd ^= (q->len & 1);
+		}
 	}
 
 	unsigned len = p->tot_len;
-	if (len < 60) {
-		len = 60;
-		memset (ETH_TXBUF + p->tot_len, 0, len - p->tot_len);
+	while (len < 60) {
+		*buf++ = 0;
+		len += 2;
 	}
+
 	ETH_TXDESC[0].PTRL = 0x1000;
 	ETH_TXDESC[0].PTRH = 0;
 	ETH_TXDESC[0].LEN = len;
@@ -299,7 +336,7 @@ transmit_packet (k5600bg1_t *u, buf_t *p)
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
 
-debug_printf ("tx%d", len); buf_print_data (ETH_TXBUF, p->tot_len);
+/*debug_printf ("tx%d", len); buf_print_data (ETH_TXBUF, p->tot_len);*/
 }
 
 /*
@@ -384,7 +421,6 @@ static void
 receive_packet (k5600bg1_t *u)
 {
 	unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
-
 	if (desc_rx & DESC_RX_OR) {
 		/* Count lost incoming packets. */
 		u->netif.in_discards++;
@@ -398,21 +434,18 @@ debug_printf ("receive_data: failed, desc_rx=%#04x\n", desc_rx);
 	unsigned len = ETH_RXDESC[u->rn].LEN;
 	if (len < 4 || len > K5600BG1_MTU) {
 		/* Skip this frame */
-debug_printf ("receive_data: bad length %d bytes, desc_rx=%#08x\n", len, desc_rx);
+debug_printf ("receive_data: bad length %d bytes, desc_rx=%#04x\n", len, desc_rx);
 		++u->netif.in_errors;
 		return;
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-debug_printf ("receive_data: ok, desc_rx=%#08x, length %d bytes\n", desc_rx, len);
-/*debug_printf ("receive_data: %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n",
-((unsigned char*)u->rxbuf)[0], ((unsigned char*)u->rxbuf)[1],
-((unsigned char*)u->rxbuf)[2], ((unsigned char*)u->rxbuf)[3],
-((unsigned char*)u->rxbuf)[4], ((unsigned char*)u->rxbuf)[5],
-((unsigned char*)u->rxbuf)[6], ((unsigned char*)u->rxbuf)[7],
-((unsigned char*)u->rxbuf)[8], ((unsigned char*)u->rxbuf)[9],
-((unsigned char*)u->rxbuf)[10], ((unsigned char*)u->rxbuf)[11],
-((unsigned char*)u->rxbuf)[12], ((unsigned char*)u->rxbuf)[13]);*/
+debug_printf ("receive_data: %d bytes, rn=%u, CTRL=%#04x, PTRL=%#04x\n", len, u->rn, desc_rx, ETH_RXDESC[u->rn].PTRL);
+debug_printf ("              %04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x\n",
+ETH_RXBUF[0], ETH_RXBUF[1], ETH_RXBUF[2], ETH_RXBUF[3],
+ETH_RXBUF[4], ETH_RXBUF[5], ETH_RXBUF[6], ETH_RXBUF[7],
+ETH_RXBUF[8], ETH_RXBUF[9], ETH_RXBUF[10], ETH_RXBUF[11],
+ETH_RXBUF[12], ETH_RXBUF[13]);
 
 	if (buf_queue_is_full (&u->inq)) {
 debug_printf ("receive_data: input overflow\n");
@@ -430,10 +463,9 @@ debug_printf ("receive_data: ignore packet - out of memory\n");
 	}
 
 	/* Copy the packet data. */
-/*debug_printf ("receive %08x <- %08x, %d bytes\n", p->payload, u->rxbuf, len);*/
-	memcpy (p->payload, ETH_RXBUF + (ETH_RXDESC[u->rn].PTRL << 1), len);
+	chip_copyin (p->payload, ETH_RXBUF + ETH_RXDESC[u->rn].PTRL, len);
 	buf_queue_put (&u->inq, p);
-/*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
+debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);
 }
 
 /*
@@ -448,16 +480,14 @@ handle_interrupt (k5600bg1_t *u)
 		unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
 		if (desc_rx & DESC_RX_RDY)
 			break;
-
 		++active;
-debug_printf ("eth rx irq: CTRL[%u] = %04x\n", u->rn, desc_rx);
 
+		/* Fetch the received packet. */
+		receive_packet (u);
 		ETH_RXDESC[u->rn].CTRL = DESC_RX_RDY | DESC_RX_IRQ_EN;
 		if (u->rn == NRD-1)
 			ETH_RXDESC[NRD-1].CTRL |= DESC_RX_WRAP;
 
-		/* Fetch the received packet. */
-		receive_packet (u);
 		u->rn++;
 		if (u->rn >= NRD)
 			u->rn = 0;

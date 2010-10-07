@@ -46,11 +46,11 @@ typedef	struct {
  * Адреса регистров и буферов приёма/передачи.
  */
 #define ETH_BASE	0x60000000
-#define ETH_RXBUF	((unsigned char*) (ETH_BASE + 0x0000))
-#define ETH_RXDESC	((eth_desc_t*)    (ETH_BASE + 0x2000))
-#define ETH_TXBUF	((unsigned char*) (ETH_BASE + 0x4000))
-#define ETH_TXDESC	((eth_desc_t*)    (ETH_BASE + 0x6000))
-#define ETH_REG		((eth_regs_t*)    (ETH_BASE + 0x7F00))
+#define ETH_RXBUF	((eth_reg_t*)  (ETH_BASE + 0x0000))
+#define ETH_RXDESC	((eth_desc_t*) (ETH_BASE + 0x2000))
+#define ETH_TXBUF	((eth_reg_t*)  (ETH_BASE + 0x4000))
+#define ETH_TXDESC	((eth_desc_t*) (ETH_BASE + 0x6000))
+#define ETH_REG		((eth_regs_t*) (ETH_BASE + 0x7F00))
 
 /*
  * Регистр GCTRL - управление интерфейсом к процессору
