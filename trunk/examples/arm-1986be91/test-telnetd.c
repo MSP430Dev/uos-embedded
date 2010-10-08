@@ -9,18 +9,11 @@
 #include <buf/buf.h>
 #include <timer/timer.h>
 #include <uart/uart.h>
-#include <elvees/eth.h>
+#include <milandr/k5600bg1.h>
 #include <net/route.h>
 #include <net/ip.h>
 #include <net/tcp.h>
 #include <net/telnet.h>
-
-#ifdef ENABLE_DCACHE
-#   define SDRAM_START	0x80000000
-#else
-#   define SDRAM_START	0xA0000000
-#endif
-#define SDRAM_SIZE	(64*1024*1024)
 
 ARRAY (stack_telnet, 1500);
 ARRAY (stack_console, 1500);
@@ -44,7 +37,7 @@ stream_t *streamtab [MAXSESS];
 mem_pool_t pool;
 timer_t timer;
 uart_t uart;
-eth_t eth;
+k5600bg1_t eth;
 arp_t *arp;
 route_t route;
 ip_t ip;
@@ -69,7 +62,6 @@ mem_cmd (stream_t *stream)
 			task_print (stream, (task_t*) tasktab[n]);
 	task_print (stream, (task_t*) ip.stack);
 	task_print (stream, (task_t*) eth.stack);
-	task_print (stream, (task_t*) eth.tstack);
 	task_print (stream, (task_t*) uart.rstack);
 
 	putchar (stream, '\n');
@@ -82,8 +74,8 @@ eth_cmd (stream_t *stream)
 	int full_duplex;
 
 	putchar (stream, '\n');
-	if (eth_get_carrier (&eth)) {
-		speed = eth_get_speed (&eth, &full_duplex);
+	if (k5600bg1_get_carrier (&eth)) {
+		speed = k5600bg1_get_speed (&eth, &full_duplex);
 		printf (stream, "Ethernet: %ld Mbit/sec, %s Duplex\n",
 			speed / 1000000, full_duplex ? "Full" : "Half");
 	} else
@@ -100,7 +92,7 @@ eth_cmd (stream_t *stream)
 
 	/* Print Ethernet hardware registers. */
 	puts (stream, "Ethernet hardware registers:\n");
-	eth_debug (&eth, stream);
+	k5600bg1_debug (&eth, stream);
 
 	putchar (stream, '\n');
 }
@@ -381,49 +373,13 @@ void main_telnet (void *data)
 	}
 }
 
-bool_t __attribute__((weak))
-uos_valid_memory_address (void *ptr)
-{
-	unsigned address = (unsigned) ptr;
-	extern unsigned __data_start, _estack[];
-
-	/* Internal SRAM. */
-	if (address >= (unsigned) &__data_start &&
-	    address < (unsigned) _estack)
-		return 1;
-
-	if (address >= SDRAM_START &&
-	    address < SDRAM_START + SDRAM_SIZE)
-		return 1;
-
-	return 0;
-}
-
 void uos_init (void)
 {
-	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+	/* Используем только внутреннюю память.
+	 * Оставляем 256 байтов для задачи "idle". */
+	extern unsigned __bss_end[], _estack[];
+	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
 
-	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
-	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
-		MC_CSCON_T |			/* Sync memory */
-		MC_CSCON_CSBA (0x00000000) |	/* Base address */
-		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
-
-	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
-		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
-		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
-
-	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
-		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
-		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
-		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
-		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
-
-	MC_SDRCSR = 1;				/* Initialize SDRAM */
-        udelay (2);
-
-	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 	timer_init (&timer, KHZ, 50);
 	uart_init (&uart, 1, PRIO_UART, KHZ, 115200);
 
@@ -441,7 +397,7 @@ void uos_init (void)
 	 * Create interface eth0
 	 */
 	const unsigned char mac_addr [6] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
-	eth_init (&eth, "eth0", PRIO_ETH, &pool, arp, mac_addr);
+	k5600bg1_init (&eth, "eth0", PRIO_ETH, &pool, arp, mac_addr);
 
 	static unsigned char ip_addr [4] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, ip_addr, 24, &eth.netif);
