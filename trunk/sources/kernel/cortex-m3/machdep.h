@@ -23,12 +23,7 @@
 /*
  * The total number of different hardware interrupts.
  */
-#ifdef ARM_S3C4530
-#   define ARCH_INTERRUPTS		21
-#endif
-#ifdef ARM_AT91SAM
-#   define ARCH_INTERRUPTS		32
-#endif
+#define ARCH_INTERRUPTS		33
 
 /*
  * Type for saving task stack context.
@@ -54,7 +49,15 @@ void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 /*
  * Perform the task switch.
  */
-void arch_task_switch (task_t *target);
+static inline void
+arch_task_switch (task_t *target)
+{
+	/* Use supervisor call for task switching. */
+	asm volatile (
+	"mov	r0, %0 \n\t"
+	"svc	#0"
+	: : "r" (target) : "r0", "memory", "cc");
+}
 
 /*
  * The global interrupt control.

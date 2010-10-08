@@ -14,7 +14,11 @@
 #	include <runtime/arm/types.h>
 #	include <runtime/arm/string.h>
 #	include <runtime/arm/stdlib.h>
-#	include <runtime/arm/io.h>
+#       ifdef ARM_CORTEX_M3
+#	    include <runtime/cortex-m3/io.h>
+#       else
+#	    include <runtime/arm/io.h>
+#       endif
 #	include <runtime/ctype.h>
 #	define __BYTE_ORDER __LITTLE_ENDIAN
 #	define __FLOAT_WORD_ORDER __BIG_ENDIAN
