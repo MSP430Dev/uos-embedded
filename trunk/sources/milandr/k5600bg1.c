@@ -11,6 +11,16 @@
 #include <milandr/k5600bg1.h>
 #include <milandr/k5600bg1-regs.h>
 
+/*
+ * Адреса регистров и буферов приёма/передачи.
+ */
+#define ETH_BASE	0x60000000
+#define ETH_RXBUF	((eth_reg_t*)  (ETH_BASE + 0x0000))
+#define ETH_RXDESC	((eth_desc_t*) (ETH_BASE + 0x2000))
+#define ETH_TXBUF	((eth_reg_t*)  (ETH_BASE + 0x4000))
+#define ETH_TXDESC	((eth_desc_t*) (ETH_BASE + 0x6000))
+#define ETH_REG		((eth_regs_t*) (ETH_BASE + 0x7F00))
+
 #define K5600BG1_IRQ	29		/* pin PB10 - EXT_INT2 */
 #define K5600BG1_MTU	1518		/* maximum ethernet frame length */
 
@@ -21,6 +31,7 @@
 #define PORTE_NCS	(1 << 12)	/* nCS on PE12 */
 
 #define NRD		8		/* number of receive descriptors */
+#define RXBUF_BYTES	4096		/* size of hardware receive buffer */
 
 /*
  * Set /RST to 0 for one microsecond.
@@ -28,9 +39,9 @@
 static void
 chip_reset ()
 {
-	ARM_GPIOB->DATA &= ~PORTB_NRST;
+	ARM_GPIOB->OE |= PORTB_NRST;
 	udelay (1);
-	ARM_GPIOB->DATA |= PORTB_NRST;
+	ARM_GPIOB->OE &= ~PORTB_NRST;
 }
 
 /*
@@ -107,8 +118,8 @@ chip_init (k5600bg1_t *u)
 	ARM_GPIOB->PULL |= PORTB_NRST;
 
 	/* Включаем выходные сигналы в неактивном состоянии.  */
-	ARM_GPIOB->DATA |= PORTB_NRST;		// nRST on PB11
-	ARM_GPIOB->OE |= PORTB_NRST;
+	ARM_GPIOB->DATA &= ~PORTB_NRST;		// nRST on PB11
+	ARM_GPIOB->OE &= ~PORTB_NRST;		// открытый сток
 	ARM_GPIOE->DATA |= PORTE_NCS;		// nCS on PE12
 	ARM_GPIOE->OE |= PORTE_NCS;
 
@@ -122,20 +133,17 @@ chip_init (k5600bg1_t *u)
 	chip_select (1);
 
 	/* Режимы параллельного интерфейса к процессору. */
-/*debug_printf ("GCTRL (%x) = %04x\n", &ETH_REG->GCTRL, ETH_REG->GCTRL);*/
 	ETH_REG->GCTRL = GCTRL_GLBL_RST;
 	udelay (1);
 	ETH_REG->GCTRL = GCTRL_READ_CLR_STAT | GCTRL_SPI_RST |
 		GCTRL_ASYNC_MODE | GCTRL_SPI_TX_EDGE | GCTRL_SPI_DIR |
 		GCTRL_SPI_FRAME_POL | GCTRL_SPI_DIV(2);
-/*debug_printf ("GCTRL = %04x\n", ETH_REG->GCTRL);*/
 
 	/* Общие режимы. */
 	ETH_REG->MAC_CTRL = MAC_CTRL_PRO_EN |	// Прием всех пакетов
 		MAC_CTRL_BCA_EN |		// Прием всех широковещательных пакетов
 		MAC_CTRL_SHORT_FRAME_EN;	// Прием коротких пакетов
 // MAC_CTRL_DSCR_SCAN_EN	// Режим сканирования дескрипторов
-// MAC_CTRL_BIG_ENDIAN		// Левый бит вперёд (big endian)
 
 	/* Режимы PHY. */
 	ETH_REG->PHY_CTRL = PHY_CTRL_DIR |	// Прямой порядок битов в полубайте
@@ -153,8 +161,8 @@ chip_init (k5600bg1_t *u)
 		COLLCONF_RETRIES_LIMIT (15);	// Лимит повторов передачи
 	ETH_REG->IPGT = 96;			// Межпакетный интервал
 
-	ETH_REG->RXBF_HEAD = 2048 - 1;
 	ETH_REG->RXBF_TAIL = 0;
+	ETH_REG->RXBF_HEAD = RXBUF_BYTES/2 - 1;
 
 	/* Начальное состояние дескрипторов. */
 	unsigned i;
@@ -171,27 +179,30 @@ chip_init (k5600bg1_t *u)
 void
 k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 {
-	unsigned short mac_ctrl, int_src, phy_ctrl, phy_stat, gctrl;
+	unsigned short mac_ctrl, phy_ctrl, phy_stat, gctrl;
+	unsigned short rxbf_head, rxbf_tail;
 
 	mutex_lock (&u->netif.lock);
+	gctrl = ETH_REG->GCTRL;
 	mac_ctrl = ETH_REG->MAC_CTRL;
-	int_src = ETH_REG->INT_SRC;
 	phy_ctrl = ETH_REG->PHY_CTRL;
 	phy_stat = ETH_REG->PHY_STAT;
-	gctrl = ETH_REG->GCTRL;
+	rxbf_head = ETH_REG->RXBF_HEAD;
+	rxbf_tail = ETH_REG->RXBF_TAIL;
 	mutex_unlock (&u->netif.lock);
 
-	printf (stream, "MAC_CTRL = %04x\n", mac_ctrl);
-	printf (stream, "INT_SRC = %04x\n", int_src);
-	printf (stream, "PHY_CTRL = %04x\n", phy_ctrl);
+	printf (stream, "GCTRL = %b\n", gctrl, GCTRL_BITS);
+	printf (stream, "MAC_CTRL = %b\n", mac_ctrl, MAC_CTRL_BITS);
+	printf (stream, "PHY_CTRL = %b\n", phy_ctrl, PHY_CTRL_BITS);
 	printf (stream, "PHY_STAT = %b\n", phy_stat, PHY_STAT_BITS);
-	printf (stream, "GCTRL = %04x\n", gctrl);
-	printf (stream, "rn = %u, RXDESC[rn].CTRL = %04x\n", u->rn,
-		ETH_RXDESC[u->rn].CTRL);
+	printf (stream, "INT_SRC = %b\n", u->intr_flags, INT_BITS);
+	printf (stream, "RXBF HEAD:TAIL = %04x:%04x\n", rxbf_head, rxbf_tail);
+	printf (stream, "RXDESC[%u].CTRL = %b\n", u->rn,
+		ETH_RXDESC[u->rn].CTRL, DESC_RX_BITS);
 	if (! (ETH_RXDESC[u->rn].CTRL & DESC_RX_RDY))
 		printf (stream, "    .LEN = %u, .PTRL = %04x\n",
 			ETH_RXDESC[u->rn].LEN, ETH_RXDESC[u->rn].PTRL);
-	printf (stream, "TXDESC.CTRL = %04x\n", ETH_TXDESC[0].CTRL);
+	printf (stream, "   TXDESC.CTRL = %b\n", ETH_TXDESC[0].CTRL, DESC_TX_BITS);
 }
 
 void
@@ -275,6 +286,8 @@ chip_copyin (unsigned char *data, volatile unsigned *chipbuf, unsigned bytes)
 		*data++ = word;
 		*data++ = word >> 8;
 		bytes -= 2;
+		if (chipbuf >= ETH_RXBUF + RXBUF_BYTES/2)
+			chipbuf = ETH_RXBUF;
 	}
 }
 
@@ -307,7 +320,6 @@ transmit_packet (k5600bg1_t *u, buf_t *p)
 	for (q=p; q; q=q->next) {
 		/* Copy the packet into the transmit buffer. */
 		assert (q->len > 0);
-/*debug_printf ("txcpy %08x <- %08x, %d bytes\n", buf, q->payload, q->len);*/
 		if (odd) {
 			*buf++ |= *q->payload << 8;
 			if (q->len > 1) {
@@ -337,7 +349,12 @@ transmit_packet (k5600bg1_t *u, buf_t *p)
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
 
-/*debug_printf ("tx%d", len); buf_print_data (ETH_TXBUF, p->tot_len);*/
+debug_printf ("tx %d bytes: ", len);
+debug_printf ("%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x\n",
+ETH_TXBUF[0], ETH_TXBUF[1], ETH_TXBUF[2], ETH_TXBUF[3],
+ETH_TXBUF[4], ETH_TXBUF[5], ETH_TXBUF[6], ETH_TXBUF[7],
+ETH_TXBUF[8], ETH_TXBUF[9], ETH_TXBUF[10], ETH_TXBUF[11],
+ETH_TXBUF[12], ETH_TXBUF[13]);
 }
 
 /*
@@ -419,34 +436,33 @@ k5600bg1_set_address (k5600bg1_t *u, unsigned char *addr)
  * Put it to input queue.
  */
 static void
-receive_packet (k5600bg1_t *u)
+receive_packet (k5600bg1_t *u, unsigned desc_rx, unsigned len, unsigned ptr)
 {
-	unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
 	if (desc_rx & DESC_RX_OR) {
 		/* Count lost incoming packets. */
 		u->netif.in_discards++;
 	}
 	if (desc_rx & (DESC_RX_EF | DESC_RX_CRC_ERR | DESC_RX_SMB_ERR)) {
 		/* Invalid frame */
-debug_printf ("receive_data: failed, desc_rx=%#04x\n", desc_rx);
+debug_printf ("receive_data: failed, desc_rx=%b\n", desc_rx, DESC_RX_BITS);
 		++u->netif.in_errors;
 		return;
 	}
-	unsigned len = ETH_RXDESC[u->rn].LEN;
 	if (len < 4 || len > K5600BG1_MTU) {
 		/* Skip this frame */
-debug_printf ("receive_data: bad length %d bytes, desc_rx=%#04x\n", len, desc_rx);
+debug_printf ("receive_data: bad length %d bytes, desc_rx=%b\n", len, desc_rx, DESC_RX_BITS);
 		++u->netif.in_errors;
 		return;
 	}
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
-debug_printf ("receive_data: %d bytes, rn=%u, CTRL=%#04x, PTRL=%#04x\n", len, u->rn, desc_rx, ETH_RXDESC[u->rn].PTRL);
+/*debug_printf ("receive_data: %d bytes, rn=%u, PTRL=%#04x, CTRL=%b\n", len, u->rn, ptr, desc_rx, DESC_RX_BITS);
+debug_printf ("              RXBF HEAD:TAIL=%04x:%04x\n", ETH_REG->RXBF_HEAD, ETH_REG->RXBF_TAIL);
 debug_printf ("              %04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x\n",
 ETH_RXBUF[0], ETH_RXBUF[1], ETH_RXBUF[2], ETH_RXBUF[3],
 ETH_RXBUF[4], ETH_RXBUF[5], ETH_RXBUF[6], ETH_RXBUF[7],
 ETH_RXBUF[8], ETH_RXBUF[9], ETH_RXBUF[10], ETH_RXBUF[11],
-ETH_RXBUF[12], ETH_RXBUF[13]);
+ETH_RXBUF[12], ETH_RXBUF[13]);*/
 
 	if (buf_queue_is_full (&u->inq)) {
 debug_printf ("receive_data: input overflow\n");
@@ -464,9 +480,9 @@ debug_printf ("receive_data: ignore packet - out of memory\n");
 	}
 
 	/* Copy the packet data. */
-	chip_copyin (p->payload, ETH_RXBUF + ETH_RXDESC[u->rn].PTRL, len);
+	chip_copyin (p->payload, ETH_RXBUF + ptr, len);
 	buf_queue_put (&u->inq, p);
-debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);
+/*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
 }
 
 /*
@@ -477,6 +493,7 @@ static unsigned
 handle_interrupt (k5600bg1_t *u)
 {
 	unsigned active = 0;
+	u->intr_flags = ETH_REG->INT_SRC;
 	for (;;) {
 		unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
 		if (desc_rx & DESC_RX_RDY)
@@ -484,11 +501,18 @@ handle_interrupt (k5600bg1_t *u)
 		++active;
 
 		/* Fetch the received packet. */
-		receive_packet (u);
+		unsigned len = ETH_RXDESC[u->rn].LEN;
+		unsigned ptr = ETH_RXDESC[u->rn].PTRL;
+		receive_packet (u, desc_rx, len, ptr);
+
+		/* Корректируем указатель на свободное место буфера. */
+		ETH_REG->RXBF_HEAD = ptr + (len >> 1) - 1;
+/*debug_printf ("HEAD = %04x (%04x), %x words, PTRL = %04x\n", ETH_REG->RXBF_HEAD, ptr + (len >> 1) - 1, len >> 1, ptr);*/
+
+		/* Освобождаем дескриптор. */
 		ETH_RXDESC[u->rn].CTRL = DESC_RX_RDY | DESC_RX_IRQ_EN;
 		if (u->rn == NRD-1)
 			ETH_RXDESC[NRD-1].CTRL |= DESC_RX_WRAP;
-
 		u->rn++;
 		if (u->rn >= NRD)
 			u->rn = 0;

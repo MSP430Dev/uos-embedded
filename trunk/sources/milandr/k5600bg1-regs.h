@@ -43,16 +43,6 @@ typedef	struct {
 } eth_desc_t;
 
 /*
- * Адреса регистров и буферов приёма/передачи.
- */
-#define ETH_BASE	0x60000000
-#define ETH_RXBUF	((eth_reg_t*)  (ETH_BASE + 0x0000))
-#define ETH_RXDESC	((eth_desc_t*) (ETH_BASE + 0x2000))
-#define ETH_TXBUF	((eth_reg_t*)  (ETH_BASE + 0x4000))
-#define ETH_TXDESC	((eth_desc_t*) (ETH_BASE + 0x6000))
-#define ETH_REG		((eth_regs_t*) (ETH_BASE + 0x7F00))
-
-/*
  * Регистр GCTRL - управление интерфейсом к процессору
  */
 #define GCTRL_GLBL_RST		(1 << 15)	// Общий сброс всего контроллера
@@ -67,6 +57,9 @@ typedef	struct {
 #define GCTRL_SPI_CLK_POL	(1 << 6)	// Инверсная полярность тактового сигнала
 #define GCTRL_SPI_CLK_PHASE	(1 << 5)	// Инверсная фаза тактового сигнала
 #define GCTRL_SPI_DIV(x)	(x)		// (зарезервировано)
+#define GCTRL_BITS		"\20" \
+"\06spi_clk_phase\07spi_clk_pol\10spi_frame_pol" \
+"\11spi_dir\12spi_tx_edge\13spi_rx_edge\15async_mode\16spi_rst\17read_clr_stat\20glbl_rst"
 
 /*
  * Регистр MAC_CTRL - управление MAC-уровнем
@@ -86,6 +79,9 @@ typedef	struct {
 #define MAC_CTRL_HALFD_EN	(1 << 2)	// Полудуплексный режим
 #define MAC_CTRL_BIG_ENDIAN	(1 << 1)	// Левый бит вперёд (big endian)
 #define MAC_CTRL_LB_EN		(1 << 0)	// Тестовый шлейф на уровне MAC
+#define MAC_CTRL_BITS		"\20" \
+"\01lb_en\02big_endian\03halfd_en\04bckof_dis\05err_frame_en\06short_frame_en\07long_frame_en\10ctrl_frame_en" \
+"\11mca_en\12bca_en\13pro_en\14pause_en\15dscr_scan_en\17rx_rst\20tx_rst"
 
 /*
  * Регистр COLLCONF - управление обработкой коллизий
@@ -106,6 +102,8 @@ typedef	struct {
 #define INT_TXE			(1 << 6)	// Наличие ошибок при передаче пакета
 #define INT_TXC			(1 << 5)	// Передача пакета управления
 #define INT_TX_BUSY		(1 << 0)	// Приём и обслуживание пакета Pause
+#define INT_BITS		"\20" \
+"\01tx_busy\06txc\07txe\10txf\12rxs\13rxl\15rxbf_full\16rxc\17rxe\20rxf"
 
 /*
  * Регистр PHY_CTRL - управление PHY-уровнем
@@ -121,6 +119,8 @@ typedef	struct {
 #define PHY_CTRL_HALFD		(1 << 2)	// Полудуплесный режим
 #define PHY_CTRL_DLB		(1 << 1)	// Тестовый шлейф на входе PHY
 #define PHY_CTRL_LB		(1 << 0)	// Тестовый шлейф на выходе PHY
+#define PHY_CTRL_BITS		"\20" \
+"\01lb\02dlb\03halfd\04early_dv\05dir\06base_2\15rxen\16txen\17ext_en\20rst"
 
 /*
  * Регистр PHY_STAT - состояние PHY-уровня
@@ -134,8 +134,9 @@ typedef	struct {
 #define PHY_STAT_EXT_LINK	(1 << 5)	// Внешний PHY: наличие подключения
 #define PHY_STAT_EXT_COL	(1 << 1)	// Внешний PHY: наличие коллизии
 #define PHY_STAT_EXT_CRS	(1 << 0)	// Внешний PHY: наличие несущей в линии
-#define PHY_STAT_BITS		"\20\01ext_crs\02ext_col\06ext_link" \
-				"\11crs\12col\13link\14pol\15jab\16jam"
+#define PHY_STAT_BITS		"\20" \
+"\01ext_crs\02ext_col\06ext_link\11crs\12col\13link\14pol\15jab\16jam"
+
 /*
  * Дескриптор передатчика - управление и состояние
  */
@@ -150,6 +151,9 @@ typedef	struct {
 #define DESC_TX_LC		(1 << 2)	// Наличия Late Collision
 #define DESC_TX_UR		(1 << 1)	// Underrun
 #define DESC_TX_CS		(1 << 0)	// Потеря несущей во время передачи
+#define DESC_TX_BITS		"\20" \
+"\01cs\02ur\03lc\04rl" \
+"\11crc_dis\12pad_dis\13pre_dis\16irq_en\17wrap\20rdy"
 
 /*
  * Дескриптор приёмника - управление и состояние
@@ -168,3 +172,6 @@ typedef	struct {
 #define DESC_RX_SMB_ERR		(1 << 2)	// Ошибка в данных
 #define DESC_RX_LC		(1 << 1)	// Наличие Late Collision
 #define DESC_RX_OR		(1 << 0)	// Переполнение буфера приема
+#define DESC_RX_BITS		"\20" \
+"\01or\02lc\03smb_err\04crc_err\05ef\06sf\07lf\10cf" \
+"\11uca\12bca\13mca\16irq_en\17wrap\20rdy"

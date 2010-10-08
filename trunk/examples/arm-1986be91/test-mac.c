@@ -10,7 +10,7 @@
 
 #define SDRAM_SIZE	(64*1024*1024)
 
-ARRAY (stack_poll, 1500);	/* Task: polling */
+ARRAY (stack_poll, 1000);	/* Task: polling */
 mem_pool_t pool;
 k5600bg1_t eth;
 
@@ -43,7 +43,7 @@ void poll_eth (void *data)
 	for (;;) {
 		k5600bg1_poll (&eth);
 
-		puts (&debug, "\rWaiting... ");
+		puts (&debug, "Waiting... \r");
 		mdelay (10);
 		if (peekchar (&debug) >= 0)
 			command (getchar (&debug));

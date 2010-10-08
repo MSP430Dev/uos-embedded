@@ -26,6 +26,7 @@ typedef struct _k5600bg1_t {
 	struct _buf_t *outqdata[8];
 
 	unsigned rn;			/* next receive descriptor number */
+	unsigned intr_flags;		/* interrupt flags */
 	unsigned long intr;		/* interrupt counter */
 
 	ARRAY (stack, K5600BG1_STACKSZ); /* stack for irq task */
