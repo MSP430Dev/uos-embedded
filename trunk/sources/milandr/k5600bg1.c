@@ -128,8 +128,9 @@ chip_init (k5600bg1_t *u)
 	/* Включение внешней шины адрес/данные в режиме RAM.
 	 * Длительность цикла должна быть не меньше 112.5 нс.
 	 * При частоте процессора 40 МГц (один такт 25 нс)
-	 * установка ws=9 или 10 даёт цикл в 125 нс. */
-	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS (9);
+	 * установка ws=11 или 12 даёт цикл в 150 нс.
+	 * Проверено: 125 нс (ws=9) недостаточно. */
+	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS (11);
 	chip_select (1);
 
 	/* Режимы параллельного интерфейса к процессору. */
@@ -203,15 +204,7 @@ k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 		printf (stream, "    .LEN = %u, .PTRL = %04x\n",
 			ETH_RXDESC[u->rn].LEN, ETH_RXDESC[u->rn].PTRL);
 	printf (stream, "   TXDESC.CTRL = %b\n", ETH_TXDESC[0].CTRL, DESC_TX_BITS);
-}
-
-void
-k5600bg1_start_negotiation (k5600bg1_t *u)
-{
-	mutex_lock (&u->netif.lock);
-	ETH_REG->PHY_CTRL = PHY_CTRL_RST | PHY_CTRL_TXEN | PHY_CTRL_RXEN |
-		PHY_CTRL_DIR | PHY_CTRL_LINK_PERIOD (11);
-	mutex_unlock (&u->netif.lock);
+	printf (stream, "NVIC_IABR0 = %08x\n", ARM_NVIC_IABR0);
 }
 
 int
@@ -229,19 +222,17 @@ k5600bg1_get_carrier (k5600bg1_t *u)
 long
 k5600bg1_get_speed (k5600bg1_t *u, int *duplex)
 {
-	unsigned phy_ctrl;
+	unsigned phy_ctrl, phy_stat;
 
 	mutex_lock (&u->netif.lock);
 	phy_ctrl = ETH_REG->PHY_CTRL;
+	phy_stat = ETH_REG->PHY_STAT;
 	mutex_unlock (&u->netif.lock);
 
-	if (phy_ctrl & PHY_CTRL_HALFD) {
-		if (duplex)
-			*duplex = 0;
-	} else {
-		if (duplex)
-			*duplex = 1;
-	}
+	if (! (phy_stat & PHY_STAT_LINK))
+		return 0;
+	if (duplex)
+		*duplex = ! (phy_ctrl & PHY_CTRL_HALFD);
 	return u->netif.bps;
 }
 
@@ -349,12 +340,12 @@ transmit_packet (k5600bg1_t *u, buf_t *p)
 	++u->netif.out_packets;
 	u->netif.out_bytes += len;
 
-debug_printf ("tx %d bytes: ", len);
+/*debug_printf ("tx %d bytes: ", len);
 debug_printf ("%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x\n",
 ETH_TXBUF[0], ETH_TXBUF[1], ETH_TXBUF[2], ETH_TXBUF[3],
 ETH_TXBUF[4], ETH_TXBUF[5], ETH_TXBUF[6], ETH_TXBUF[7],
 ETH_TXBUF[8], ETH_TXBUF[9], ETH_TXBUF[10], ETH_TXBUF[11],
-ETH_TXBUF[12], ETH_TXBUF[13]);
+ETH_TXBUF[12], ETH_TXBUF[13]);*/
 }
 
 /*
@@ -392,7 +383,7 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 		/* Нет места в очереди: теряем пакет. */
 		++u->netif.out_discards;
 		mutex_unlock (&u->netif.lock);
-		debug_printf ("k5600bg1_output: overflow\n");
+/*		debug_printf ("k5600bg1_output: overflow\n");*/
 		buf_free (p);
 		return 0;
 	}
@@ -457,12 +448,7 @@ debug_printf ("receive_data: bad length %d bytes, desc_rx=%b\n", len, desc_rx, D
 	++u->netif.in_packets;
 	u->netif.in_bytes += len;
 /*debug_printf ("receive_data: %d bytes, rn=%u, PTRL=%#04x, CTRL=%b\n", len, u->rn, ptr, desc_rx, DESC_RX_BITS);
-debug_printf ("              RXBF HEAD:TAIL=%04x:%04x\n", ETH_REG->RXBF_HEAD, ETH_REG->RXBF_TAIL);
-debug_printf ("              %04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x\n",
-ETH_RXBUF[0], ETH_RXBUF[1], ETH_RXBUF[2], ETH_RXBUF[3],
-ETH_RXBUF[4], ETH_RXBUF[5], ETH_RXBUF[6], ETH_RXBUF[7],
-ETH_RXBUF[8], ETH_RXBUF[9], ETH_RXBUF[10], ETH_RXBUF[11],
-ETH_RXBUF[12], ETH_RXBUF[13]);*/
+debug_printf ("              RXBF HEAD:TAIL=%04x:%04x\n", ETH_REG->RXBF_HEAD, ETH_REG->RXBF_TAIL);*/
 
 	if (buf_queue_is_full (&u->inq)) {
 debug_printf ("receive_data: input overflow\n");
@@ -483,6 +469,15 @@ debug_printf ("receive_data: ignore packet - out of memory\n");
 	chip_copyin (p->payload, ETH_RXBUF + ptr, len);
 	buf_queue_put (&u->inq, p);
 /*debug_printf ("[%d]", p->tot_len); buf_print_ethernet (p);*/
+/*unsigned short *rx = (unsigned short*) p->payload;
+debug_printf ("              %04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-\n",
+rx[0], rx[1], rx[2], rx[3], rx[4], rx[5], rx[6], rx[7]);
+debug_printf ("             -%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-\n",
+rx[8+0], rx[8+1], rx[8+2], rx[8+3], rx[8+4], rx[8+5], rx[8+6], rx[8+7]);
+debug_printf ("             -%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x-\n",
+rx[16+0], rx[16+1], rx[16+2], rx[16+3], rx[16+4], rx[16+5], rx[16+6], rx[16+7]);
+debug_printf ("             -%04x-%04x-%04x-%04x-%04x-%04x-%04x-%04x\n",
+rx[24+0], rx[24+1], rx[24+2], rx[24+3], rx[24+4], rx[24+5], rx[24+6], rx[24+7]);*/
 }
 
 /*
@@ -494,6 +489,7 @@ handle_interrupt (k5600bg1_t *u)
 {
 	unsigned active = 0;
 	u->intr_flags = ETH_REG->INT_SRC;
+//debug_printf ("<%x> ", u->intr_flags);
 	for (;;) {
 		unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
 		if (desc_rx & DESC_RX_RDY)
@@ -503,7 +499,7 @@ handle_interrupt (k5600bg1_t *u)
 		/* Fetch the received packet. */
 		unsigned len = ETH_RXDESC[u->rn].LEN;
 		unsigned ptr = ETH_RXDESC[u->rn].PTRL;
-		receive_packet (u, desc_rx, len, ptr);
+		receive_packet (u, desc_rx, len-4, ptr);
 
 		/* Корректируем указатель на свободное место буфера. */
 		ETH_REG->RXBF_HEAD = ptr + (len >> 1) - 1;
@@ -523,7 +519,7 @@ handle_interrupt (k5600bg1_t *u)
 			/* Закончена передача пакета. */
 			ETH_TXDESC[0].CTRL = DESC_TX_WRAP;
 			++active;
-debug_printf ("eth tx irq: CTRL = %04x\n", desc_tx);
+/*debug_printf ("eth tx finished: desc_tx = %b\n", desc_tx, DESC_TX_BITS);*/
 
 			/* Подсчитываем коллизии. */
 			if (desc_tx & (DESC_TX_RL | DESC_TX_LC)) {
@@ -604,5 +600,5 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_init (u);
 
 	/* Create interrupt task. */
-	task_create (interrupt_task, u, "eth-rx", prio, u->stack, sizeof (u->stack));
+	task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
 }

@@ -6,17 +6,14 @@
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <timer/timer.h>
-#include <elvees/eth.h>
+#include <milandr/k5600bg1.h>
 
 #define CTL(c)		((c) & 037)
-
-#define SDRAM_START	0xA0000000
-#define SDRAM_SIZE	(64*1024*1024)
 
 ARRAY (stack_console, 1500);		/* Task: menu on console */
 ARRAY (stack_test, 1000);		/* Task: transmit/receive packets */
 mem_pool_t pool;
-eth_t eth;
+k5600bg1_t eth;
 timer_t timer;
 int packet_size = 1500;
 int local_loop;
@@ -169,7 +166,7 @@ void send_packets (int num)
 	}
 }
 
-void main_test ()
+void test_task ()
 {
 	buf_t *p;
 
@@ -191,7 +188,9 @@ void main_test ()
 				netif_output (&eth.netif, p, 0, 0);
 			}
 		}
-		timer_delay (&timer, 20);
+		k5600bg1_poll (&eth);
+//if (ARM_GPIOB->DATA >> 10 & 1) debug_printf ("!");
+//else debug_printf (".");
 	}
 }
 
@@ -220,7 +219,7 @@ void run_test ()
 				continue;
 			}
 			if (c == 'D' || c == 'd') {
-				eth_debug (&eth, &debug);
+				k5600bg1_debug (&eth, &debug);
 				continue;
 			}
 			break;
@@ -234,18 +233,14 @@ void run_test ()
 void menu ()
 {
 	small_uint_t cmd;
-	long speed;
 	int full_duplex;
 
 	printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
 
 	printf (&debug, "Ethernet: %s",
-		eth_get_carrier (&eth) ? "Cable OK" : "No cable");
-	speed = eth_get_speed (&eth, &full_duplex);
-	if (speed) {
-		printf (&debug, ", %s %s",
-			speed == 100000000 ? "100Base-TX" : "10Base-TX",
-			full_duplex ? "Full Duplex" : "Half Duplex");
+		k5600bg1_get_carrier (&eth) ? "Cable OK" : "No cable");
+	if (k5600bg1_get_speed (&eth, &full_duplex)) {
+		printf (&debug, ", %s", full_duplex ? "Full Duplex" : "Half Duplex");
 	}
 	printf (&debug, ", %u interrupts\n", eth.intr);
 
@@ -259,16 +254,17 @@ void menu ()
 
 	printf (&debug, "\n  1. Transmit 1 packet");
 	printf (&debug, "\n  2. Transmit 2 packets");
-	printf (&debug, "\n  3. Transmit 100 packets");
+	printf (&debug, "\n  3. Transmit 8 packets");
 	printf (&debug, "\n  4. Run send/receive test");
 	printf (&debug, "\n  5. Packet size: %d bytes", packet_size);
 	printf (&debug, "\n  6. Local loopback: %s",
 			local_loop ? "Enabled" : "Disabled");
-	printf (&debug, "\n  0. Start auto-negotiation");
 	puts (&debug, "\n\n");
 	for (;;) {
 		/* Ввод команды. */
 		puts (&debug, "Command: ");
+		while (peekchar (&debug) < 0)
+			timer_delay (&timer, 50);
 		cmd = getchar (&debug);
 		putchar (&debug, '\n');
 
@@ -284,7 +280,7 @@ void menu ()
 			break;
 		}
 		if (cmd == '3') {
-			send_packets (100);
+			send_packets (8);
 			break;
 		}
 		if (cmd == '4') {
@@ -315,17 +311,13 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 		}
 		if (cmd == '6') {
 			local_loop = ! local_loop;
-			eth_set_loop (&eth, local_loop);
-			break;
-		}
-		if (cmd == '0') {
-			eth_start_negotiation (&eth);
+			k5600bg1_set_loop (&eth, local_loop);
 			break;
 		}
 		if (cmd == CTL('E')) {
 			/* Регистры Ethernet. */
 			putchar (&debug, '\n');
-			eth_debug (&eth, &debug);
+			k5600bg1_debug (&eth, &debug);
 			putchar (&debug, '\n');
 			continue;
 		}
@@ -337,17 +329,16 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 			task_print (&debug, (task_t*) stack_console);
 			task_print (&debug, (task_t*) stack_test);
 			task_print (&debug, (task_t*) eth.stack);
-			task_print (&debug, (task_t*) eth.tstack);
 			putchar (&debug, '\n');
 			continue;
 		}
 	}
 }
 
-void main_console (void *data)
+void console_task (void *data)
 {
 	printf (&debug, "\nTesting Ethernet\n\n");
-	eth_set_promisc (&eth, 1, 1);
+	k5600bg1_set_promisc (&eth, 1, 1);
 
 	data_pattern = mem_alloc (&pool, packet_size);
 	if (! data_pattern) {
@@ -361,56 +352,20 @@ void main_console (void *data)
 		menu ();
 }
 
-bool_t __attribute__((weak))
-uos_valid_memory_address (void *ptr)
-{
-	unsigned address = (unsigned) ptr;
-	extern unsigned __data_start, _estack[];
-
-	/* Internal SRAM. */
-	if (address >= (unsigned) &__data_start &&
-	    address < (unsigned) _estack)
-		return 1;
-
-	if (address >= SDRAM_START &&
-	    address < SDRAM_START + SDRAM_SIZE)
-		return 1;
-
-	return 0;
-}
-
 void uos_init (void)
 {
-	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+	/* Используем только внутреннюю память.
+	 * Оставляем 256 байтов для задачи "idle". */
+	extern unsigned __bss_end[], _estack[];
+	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
 
-	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
-	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
-		MC_CSCON_T |			/* Sync memory */
-		MC_CSCON_CSBA (0x00000000) |	/* Base address */
-		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
-
-	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
-		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
-		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
-
-	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
-		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
-		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
-		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
-		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
-
-	MC_SDRCSR = 1;				/* Initialize SDRAM */
-        udelay (2);
-
-	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 	timer_init (&timer, KHZ, 50);
 
 	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
-	eth_init (&eth, "eth0", 80, &pool, 0, my_macaddr);
+	k5600bg1_init (&eth, "eth0", 80, &pool, 0, my_macaddr);
 
-	task_create (main_test, 0, "test", 5,
+	task_create (test_task, 0, "test", 5,
 		stack_test, sizeof (stack_test));
-	task_create (main_console, 0, "console", 2,
+	task_create (console_task, 0, "console", 10,
 		stack_console, sizeof (stack_console));
 }

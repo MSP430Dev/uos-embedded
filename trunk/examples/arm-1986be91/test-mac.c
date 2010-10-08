@@ -2,13 +2,10 @@
  * Testing Ethernet.
  */
 #include <runtime/lib.h>
-#include <kernel/uos.h>
 #include <stream/stream.h>
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <milandr/k5600bg1.h>
-
-#define SDRAM_SIZE	(64*1024*1024)
 
 ARRAY (stack_poll, 1000);	/* Task: polling */
 mem_pool_t pool;
@@ -61,7 +58,7 @@ void poll_eth (void *data)
 
 void uos_init (void)
 {
-	/* Используем только внутреннюю память CRAM.
+	/* Используем только внутреннюю память.
 	 * Оставляем 256 байтов для задачи "idle". */
 	extern unsigned __bss_end[], _estack[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
