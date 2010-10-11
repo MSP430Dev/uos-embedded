@@ -62,8 +62,8 @@ int main (int argc, char **argv)
 			continue;
 		}
 /*		printf ("<%d> ", len);*/
-		printf (".");
-		fflush (stdout);
+/*		printf (".");*/
+/*		fflush (stdout);*/
 		k = 2;
 		while (k < len) {
 			n = recv (sock, buffer + k, len - k, 0);
@@ -76,7 +76,7 @@ int main (int argc, char **argv)
 		}
 		++packets_received;
 		bytes_received += len;
-		if (packets_received >= packets_printed+1000) {
+		if (packets_received >= packets_printed+100) {
 			packets_printed = packets_received;
 			gettimeofday (&now, 0);
 

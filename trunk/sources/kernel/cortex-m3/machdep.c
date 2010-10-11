@@ -29,7 +29,7 @@ _svc_ (task_t *target)
 	/* Save registers R4-R11 and BASEPRI in stack. */
 	asm volatile (
 	"mrs	r12, basepri \n\t"
-	"push	{r4-r12}"
+	"push	{r4-r12,lr}"
 	);
 
 	/* Save current task stack. */
@@ -40,14 +40,13 @@ _svc_ (task_t *target)
 	/* Switch to the new task. */
 	arm_set_stack_pointer (task_current->stack_context);
 
-	/* Load registers R4-R11 and BASEPRI. */
+	/* Load registers R4-R11 and BASEPRI.
+	 * Return from exception. */
 	asm volatile (
-	"pop	{r4-r12} \n\t"
-	"msr	basepri, r12"
+	"pop	{r4-r12,lr} \n\t"
+	"msr	basepri, r12 \n\t"
+	"bx	lr"
 	);
-
-	/* Return from exception. */
-	asm volatile ("bx	lr");
 }
 
 /*
@@ -58,14 +57,12 @@ _svc_ (task_t *target)
 void __attribute__ ((naked))
 _irq_handler_ (void)
 {
-	/* Save registers R4-R11 and BASEPRI in stack. */
+	/* Save registers R4-R11 and BASEPRI in stack.
+	 * Save return address. */
 	asm volatile (
 	"mrs	r12, basepri \n\t"
-	"push	{r4-r12}"
+	"push	{r4-r12,lr}"
 	);
-
-	/* Save return address. */
-	unsigned lr = arm_get_register (14);
 
 	/* Get the current irq number */
 	int irq;
@@ -127,17 +124,14 @@ debug_printf ("<unexpected interrupt> ");
 		}
 	}
 done:
-	/* Restore return address. */
-	arm_set_register (14, lr);
-
-	/* Load registers R4-R11 and BASEPRI. */
+	/* Load registers R4-R11 and BASEPRI.
+	 * Restore return address.
+	 * Return from exception. */
 	asm volatile (
-	"pop	{r4-r12} \n\t"
-	"msr	basepri, r12"
+	"pop	{r4-r12,lr} \n\t"
+	"msr	basepri, r12 \n\t"
+	"bx	lr"
 	);
-
-	/* Return from exception. */
-	asm volatile ("bx	lr");
 }
 
 /*
@@ -176,6 +170,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* r2 */
 	*--sp = 0;			/* r1 */
 	*--sp = (unsigned) arg;		/* r0 - task argument */
+	*--sp = 0xFFFFFFF9;		/* lr = EXC_RETURN */
 	*--sp = 0;			/* basepri */
 	*--sp = 0;			/* r11 */
 	*--sp = 0;			/* r10 */
