@@ -15,7 +15,7 @@ int main (int argc, char **argv)
 	struct sockaddr_in sin;
 	char *serv_addr;
 	unsigned short serv_port = 2222;
-	char buffer [512];
+	char buffer [1024];
 	int n, k, len;
 	unsigned packets_received, packets_printed, msec;
 	double bytes_received;
@@ -56,14 +56,14 @@ int main (int argc, char **argv)
 			break;
 		}
 		len = *(unsigned short*) buffer;
-		if (len != 512) {
+		if (len != sizeof (buffer)) {
 			printf ("<Bad packet length = %d> ", len);
 			fflush (stdout);
 			continue;
 		}
 /*		printf ("<%d> ", len);*/
-/*		printf (".");*/
-/*		fflush (stdout);*/
+		printf (".");
+		fflush (stdout);
 		k = 2;
 		while (k < len) {
 			n = recv (sock, buffer + k, len - k, 0);

@@ -11,7 +11,7 @@
 #include <gpanel/gpanel.h>
 #include <milandr/k5600bg1.h>
 
-ARRAY (stack_tcp, 1500);
+ARRAY (stack_tcp, 1000);
 ARRAY (stack_console, 1000);
 ARRAY (stack_poll, 1000);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
@@ -23,6 +23,7 @@ route_t route;
 timer_t timer;
 ip_t ip;
 tcp_socket_t *user_socket;
+unsigned char buf [1024];
 
 gpanel_t display;
 extern gpanel_font_t font_fixed6x8;
@@ -159,7 +160,7 @@ void tcp_task (void *data)
 {
 	tcp_socket_t *lsock;
 	unsigned short serv_port = 2222;
-	unsigned char ch, buf [512];
+	unsigned char ch;
 	int n;
 
 	lsock = tcp_listen (&ip, 0, serv_port);
