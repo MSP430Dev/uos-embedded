@@ -12,20 +12,31 @@ enum {
 	RESET	= 4,
 };
 
+#define PORTC_WE	2
+#define PORTC_CLOCK	7
+#define PORTC_LCD_RST	9
+
+#define PORTE_ADDR20	4
+#define PORTE_ADDR21	5
+#define PORTE_ADDR27	11
+
 static void set_crystal (gpanel_t *gp, int num)
 {
 	if (num & 64) {
 		/* Кристалл #2. */
 		gp->DATA = (unsigned*) 0x18200000;
 		gp->CMD  = (unsigned*) 0x10200000;
-		ARM_GPIOE->DATA = 1 << 5;
+		ARM_GPIOE->DATA = (ARM_GPIOE->DATA &
+			~(1 << PORTE_ADDR20 | 1 << PORTE_ADDR27)) |
+			1 << PORTE_ADDR21;
 	} else {
 		/* Кристалл #1. */
 		gp->DATA = (unsigned*) 0x18100000;
 		gp->CMD  = (unsigned*) 0x10100000;
-		ARM_GPIOE->DATA = 1 << 4;
+		ARM_GPIOE->DATA = (ARM_GPIOE->DATA &
+			~(1 << PORTE_ADDR21 | 1 << PORTE_ADDR27)) |
+			1 << PORTE_ADDR20;
 	}
-	ARM_GPIOE->OE = 0x30;
 	udelay (8);
 }
 
@@ -96,9 +107,6 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 		ARM_PWR_FAST(4) | ARM_PWR_FAST(5) |
 		ARM_PWR_FAST(6) | ARM_PWR_FAST(7);
 
-#define PORTE_ADDR20	4
-#define PORTE_ADDR21	5
-#define PORTE_ADDR27	11
 	ARM_GPIOE->FUNC = (ARM_GPIOE->FUNC &		/* Main Function для ADDR[20,21,27] */
 		~(ARM_FUNC_MASK (PORTE_ADDR20) |
 		ARM_FUNC_MASK (PORTE_ADDR21) |
@@ -116,9 +124,6 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 		ARM_PWR_FAST (PORTE_ADDR21) |
 		ARM_PWR_FAST (PORTE_ADDR27);
 
-#define PORTC_WE	2
-#define PORTC_CLOCK	7
-#define PORTC_LCD_RST	9
 	ARM_GPIOC->FUNC = (ARM_GPIOC->FUNC &		/* Main Function для WE, CLOCK */
 		~(ARM_FUNC_MASK (PORTC_WE) |
 		ARM_FUNC_MASK (PORTC_CLOCK) |
@@ -137,7 +142,10 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 
 	/* Включение внешней шины адрес/данные в режиме ROM.
 	 * Длительность цикла на шине равна 18 тактам (15 wait states). */
-	ARM_EXTBUS->CONTROL = ARM_EXTBUS_ROM | ARM_EXTBUS_WS(15);
+	if (ARM_EXTBUS->CONTROL & ARM_EXTBUS_RAM)
+		ARM_EXTBUS->CONTROL |= ARM_EXTBUS_WS(15);
+	else
+		ARM_EXTBUS->CONTROL = ARM_EXTBUS_ROM | ARM_EXTBUS_WS(15);
 
 	/* Программный сброс экрана. */
 	ARM_GPIOC->DATA |= 1 << PORTC_LCD_RST;
@@ -147,6 +155,7 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
 	ARM_GPIOC->DATA |= 1 << PORTC_LCD_RST;
 
 	/* Инициализация всех кристаллов. */
+	ARM_GPIOE->OE |= 1 << PORTE_ADDR20 | 1 << PORTE_ADDR21;
 	for (x=0; x<gp->ncol; x+=64) {
 		set_crystal (gp, x);
 		wait_status (gp, BUSY);

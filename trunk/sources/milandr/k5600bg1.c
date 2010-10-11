@@ -78,7 +78,7 @@ chip_init (k5600bg1_t *u)
 	/* Быстрый фронт. */
 	ARM_GPIOA->PWR = 0xFFFFFFFF;
 	ARM_GPIOB->PWR |= ARM_PWR_FASTEST(10) | ARM_PWR_FASTEST(11);
-	ARM_GPIOC->PWR |= ARM_PWR_FASTEST(1) | ARM_PWR_FASTEST(2);
+	ARM_GPIOC->PWR |= ARM_PWR_FASTEST(1) | ARM_PWR_SLOW(2);
 	ARM_GPIOE->PWR |= ARM_PWR_FASTEST(12);
 	ARM_GPIOF->PWR |= ARM_PWR_FASTEST(2) | ARM_PWR_FASTEST(3) |
 		ARM_PWR_FASTEST(4) | ARM_PWR_FAST(5) | ARM_PWR_FASTEST(6) |
@@ -130,7 +130,7 @@ chip_init (k5600bg1_t *u)
 	 * При частоте процессора 40 МГц (один такт 25 нс)
 	 * установка ws=11 или 12 даёт цикл в 150 нс.
 	 * Проверено: 125 нс (ws=9) недостаточно. */
-	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS (11);
+	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS (15);
 	chip_select (1);
 
 	/* Режимы параллельного интерфейса к процессору. */
@@ -144,7 +144,6 @@ chip_init (k5600bg1_t *u)
 	ETH_REG->MAC_CTRL = MAC_CTRL_PRO_EN |	// Прием всех пакетов
 		MAC_CTRL_BCA_EN |		// Прием всех широковещательных пакетов
 		MAC_CTRL_SHORT_FRAME_EN;	// Прием коротких пакетов
-// MAC_CTRL_DSCR_SCAN_EN	// Режим сканирования дескрипторов
 
 	/* Режимы PHY. */
 	ETH_REG->PHY_CTRL = PHY_CTRL_DIR |	// Прямой порядок битов в полубайте
@@ -175,6 +174,7 @@ chip_init (k5600bg1_t *u)
 
 	/* Ждём прерывания по приёму и передаче. */
 	ETH_REG->INT_MASK = INT_TXF | INT_RXF | INT_RXS | INT_RXE;
+	chip_select (0);
 }
 
 void
@@ -182,14 +182,21 @@ k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 {
 	unsigned short mac_ctrl, phy_ctrl, phy_stat, gctrl;
 	unsigned short rxbf_head, rxbf_tail;
+	unsigned short tx_ctrl, rx_ctrl, rx_len, rx_ptr;
 
 	mutex_lock (&u->netif.lock);
+	chip_select (1);
 	gctrl = ETH_REG->GCTRL;
 	mac_ctrl = ETH_REG->MAC_CTRL;
 	phy_ctrl = ETH_REG->PHY_CTRL;
 	phy_stat = ETH_REG->PHY_STAT;
 	rxbf_head = ETH_REG->RXBF_HEAD;
 	rxbf_tail = ETH_REG->RXBF_TAIL;
+	rx_ctrl = ETH_RXDESC[u->rn].CTRL;
+	rx_len = ETH_RXDESC[u->rn].LEN;
+	rx_ptr = ETH_RXDESC[u->rn].PTRL;
+	tx_ctrl = ETH_TXDESC[0].CTRL;
+	chip_select (0);
 	mutex_unlock (&u->netif.lock);
 
 	printf (stream, "GCTRL = %b\n", gctrl, GCTRL_BITS);
@@ -198,12 +205,11 @@ k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 	printf (stream, "PHY_STAT = %b\n", phy_stat, PHY_STAT_BITS);
 	printf (stream, "INT_SRC = %b\n", u->intr_flags, INT_BITS);
 	printf (stream, "RXBF HEAD:TAIL = %04x:%04x\n", rxbf_head, rxbf_tail);
-	printf (stream, "RXDESC[%u].CTRL = %b\n", u->rn,
-		ETH_RXDESC[u->rn].CTRL, DESC_RX_BITS);
-	if (! (ETH_RXDESC[u->rn].CTRL & DESC_RX_RDY))
+	printf (stream, "RXDESC[%u].CTRL = %b\n", u->rn, rx_ctrl, DESC_RX_BITS);
+	if (! (rx_ctrl & DESC_RX_RDY))
 		printf (stream, "    .LEN = %u, .PTRL = %04x\n",
-			ETH_RXDESC[u->rn].LEN, ETH_RXDESC[u->rn].PTRL);
-	printf (stream, "   TXDESC.CTRL = %b\n", ETH_TXDESC[0].CTRL, DESC_TX_BITS);
+			rx_len, rx_ptr);
+	printf (stream, "   TXDESC.CTRL = %b\n", tx_ctrl, DESC_TX_BITS);
 	printf (stream, "NVIC_IABR0 = %08x\n", ARM_NVIC_IABR0);
 }
 
@@ -213,7 +219,9 @@ k5600bg1_get_carrier (k5600bg1_t *u)
 	unsigned phy_stat;
 
 	mutex_lock (&u->netif.lock);
+	chip_select (1);
 	phy_stat = ETH_REG->PHY_STAT;
+	chip_select (0);
 	mutex_unlock (&u->netif.lock);
 
 	return (phy_stat & PHY_STAT_LINK) != 0;
@@ -225,8 +233,10 @@ k5600bg1_get_speed (k5600bg1_t *u, int *duplex)
 	unsigned phy_ctrl, phy_stat;
 
 	mutex_lock (&u->netif.lock);
+	chip_select (1);
 	phy_ctrl = ETH_REG->PHY_CTRL;
 	phy_stat = ETH_REG->PHY_STAT;
+	chip_select (0);
 	mutex_unlock (&u->netif.lock);
 
 	if (! (phy_stat & PHY_STAT_LINK))
@@ -245,6 +255,7 @@ k5600bg1_set_loop (k5600bg1_t *u, int on)
 	unsigned phy_ctrl;
 
 	mutex_lock (&u->netif.lock);
+	chip_select (1);
 	phy_ctrl = ETH_REG->PHY_CTRL;
 	if (on) {
 		phy_ctrl |= PHY_CTRL_LB;
@@ -252,6 +263,7 @@ k5600bg1_set_loop (k5600bg1_t *u, int on)
 		phy_ctrl &= ~PHY_CTRL_LB;
 	}
 	ETH_REG->PHY_CTRL = phy_ctrl;
+	chip_select (0);
 	mutex_unlock (&u->netif.lock);
 }
 
@@ -259,6 +271,7 @@ void
 k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
 {
 	mutex_lock (&u->netif.lock);
+	chip_select (1);
 	unsigned mac_ctrl = ETH_REG->MAC_CTRL & ~MAC_CTRL_PRO_EN;
 	if (station) {
 		/* Accept any unicast. */
@@ -266,6 +279,7 @@ k5600bg1_set_promisc (k5600bg1_t *u, int station, int group)
 	}
 	/* TODO: multicasts. */
 	ETH_REG->MAC_CTRL = mac_ctrl;
+	chip_select (0);
 	mutex_unlock (&u->netif.lock);
 }
 
@@ -358,10 +372,12 @@ static bool_t
 k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 {
 	mutex_lock (&u->netif.lock);
+	chip_select (1);
 
 	/* Exit if link has failed */
 	if (p->tot_len < 4 || p->tot_len > K5600BG1_MTU /*||
 	    ! (phy_read (u, PHY_STS) & PHY_STS_LINK)*/) {
+		chip_select (0);
 		++u->netif.out_errors;
 		mutex_unlock (&u->netif.lock);
 /*debug_printf ("output: transmit %d bytes, link failed\n", p->tot_len);*/
@@ -373,10 +389,12 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 	if (! (ETH_TXDESC[0].CTRL & DESC_TX_RDY)) {
 		/* Смело отсылаем. */
 		transmit_packet (u, p);
+		chip_select (0);
 		mutex_unlock (&u->netif.lock);
 		buf_free (p);
 		return 1;
 	}
+	chip_select (0);
 
 	/* Занято, ставим в очередь. */
 	if (buf_queue_is_full (&u->outq)) {
@@ -415,9 +433,11 @@ k5600bg1_set_address (k5600bg1_t *u, unsigned char *addr)
 	mutex_lock (&u->netif.lock);
 	memcpy (&u->netif.ethaddr, addr, 6);
 
+	chip_select (1);
 	ETH_REG->MAC_ADDR[0] = u->netif.ethaddr[0] | (u->netif.ethaddr[1] << 8);
 	ETH_REG->MAC_ADDR[1] = u->netif.ethaddr[2] | (u->netif.ethaddr[3] << 8);
 	ETH_REG->MAC_ADDR[2] = u->netif.ethaddr[4] | (u->netif.ethaddr[5] << 8);
+	chip_select (0);
 
 	mutex_unlock (&u->netif.lock);
 }
@@ -488,6 +508,7 @@ static unsigned
 handle_interrupt (k5600bg1_t *u)
 {
 	unsigned active = 0;
+	chip_select (1);
 	u->intr_flags = ETH_REG->INT_SRC;
 //debug_printf ("<%x> ", u->intr_flags);
 	for (;;) {
@@ -535,6 +556,7 @@ handle_interrupt (k5600bg1_t *u)
 			buf_free (p);
 		}
 	}
+	chip_select (0);
 	return active;
 }
 

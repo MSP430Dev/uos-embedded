@@ -8,6 +8,7 @@
 #include <net/ip.h>
 #include <net/tcp.h>
 #include <timer/timer.h>
+#include <gpanel/gpanel.h>
 #include <milandr/k5600bg1.h>
 
 ARRAY (stack_tcp, 1500);
@@ -22,6 +23,9 @@ route_t route;
 timer_t timer;
 ip_t ip;
 tcp_socket_t *user_socket;
+
+gpanel_t display;
+extern gpanel_font_t font_fixed6x8;
 
 static const char *
 state_name (tcp_state_t state)
@@ -80,14 +84,30 @@ static void print_socket_data (stream_t *stream, tcp_socket_t *s)
 	printf (stream, "ssthresh=%u\n", s->ssthresh);
 }
 
+void display_refresh ()
+{
+	gpanel_clear (&display, 0);
+	puts (&display, "Работает 5600ВГ1У.\r\n\n");
+	printf (&display, "TX пакетов: %9lu\r\n", eth.netif.out_packets);
+	printf (&display, "    ошибок: %9lu\r\n", eth.netif.out_errors);
+	printf (&display, "RX пакетов: %9lu\r\n", eth.netif.in_packets);
+	printf (&display, "    ошибок: %9lu\r\n", eth.netif.in_errors);
+	printf (&display, "Прерываний: %9lu\r\n", eth.intr);
+	printf (&display, "Своб. байтов: %7u\n", mem_available (&pool));
+}
+
 void console_task (void *data)
 {
-	int c;
+	int c, display_count = 0;
 	tcp_socket_t *s;
 
 	for (;;) {
 		if (peekchar (&debug) < 0) {
 			timer_delay (&timer, 50);
+			if (++display_count == 10) {
+				display_refresh ();
+				display_count = 0;
+			}
 			continue;
 		}
 		c = getchar (&debug);
@@ -190,12 +210,17 @@ closed:		tcp_close (user_socket);
 
 void uos_init (void)
 {
+	printf (&debug, "\nCPU speed is %d MHz\n", KHZ/1000);
+
 	/* Используем только внутреннюю память.
 	 * Оставляем 256 байтов для задачи "idle". */
 	extern unsigned __bss_end[], _estack[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
 
 	timer_init (&timer, KHZ, 50);
+	gpanel_init (&display, &font_fixed6x8);
+	gpanel_clear (&display, 0);
+	puts (&display, "Работает 5600ВГ1У.\r\n\n");
 
 	/*
 	 * Create a group of two locks: timer and eth.
