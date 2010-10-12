@@ -416,7 +416,7 @@ k5600bg1_output (k5600bg1_t *u, buf_t *p, small_uint_t prio)
 		/* Нет места в очереди: теряем пакет. */
 		++u->netif.out_discards;
 		mutex_unlock (&u->netif.lock);
-/*		debug_printf ("k5600bg1_output: overflow\n");*/
+		/*debug_printf ("k5600bg1_output: overflow\n");*/
 		buf_free (p);
 		return 0;
 	}
@@ -486,7 +486,7 @@ debug_printf ("receive_data: bad length %d bytes, desc_rx=%b\n", len, desc_rx, D
 debug_printf ("              RXBF HEAD:TAIL=%04x:%04x\n", ETH_REG->RXBF_HEAD, ETH_REG->RXBF_TAIL);*/
 
 	if (buf_queue_is_full (&u->inq)) {
-debug_printf ("receive_data: input overflow\n");
+/*debug_printf ("receive_data: input overflow\n");*/
 		++u->netif.in_discards;
 		return;
 	}

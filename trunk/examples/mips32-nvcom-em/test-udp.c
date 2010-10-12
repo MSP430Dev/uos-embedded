@@ -9,25 +9,27 @@
 #include <net/ip.h>
 #include <net/udp.h>
 #include <timer/timer.h>
-#include <gpanel/gpanel.h>
-#include <milandr/k5600bg1.h>
+#include <elvees/eth.h>
 
-ARRAY (stack_udp, 1000);
+#ifdef ENABLE_DCACHE
+#   define SDRAM_START	0x80000000
+#else
+#   define SDRAM_START	0xA0000000
+#endif
+#define SDRAM_SIZE	(64*1024*1024)
+
+ARRAY (stack_udp, 1500);
 ARRAY (stack_console, 1000);
-ARRAY (stack_poll, 1000);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
 arp_t *arp;
-k5600bg1_t eth;
+eth_t eth;
 route_t route;
 timer_t timer;
 ip_t ip;
 udp_socket_t sock;
 unsigned char buf [1024];
-
-gpanel_t display;
-extern gpanel_font_t font_fixed6x8;
 
 static void print_udp_socket (stream_t *stream, udp_socket_t *s)
 {
@@ -47,62 +49,39 @@ static void print_udp_socket (stream_t *stream, udp_socket_t *s)
 	putchar (stream, '\n');
 }
 
-void display_refresh ()
-{
-	unsigned sec = timer_milliseconds (&timer) / 1000;
-	unsigned min = sec / 60;
-	unsigned hour = min / 60;
-	sec -= min*60;
-	min -= hour*60;
-
-k5600bg1_poll (&eth);
-	gpanel_clear (&display, 0);
-k5600bg1_poll (&eth);
-	puts (&display, "Работает 5600ВГ1У.\r\n");
-k5600bg1_poll (&eth);
-	printf (&display, "Время:      %3u:%02u:%02u\r\n", hour, min, sec);
-k5600bg1_poll (&eth);
-	printf (&display, "TX пакетов: %9lu\r\n", eth.netif.out_packets);
-k5600bg1_poll (&eth);
-	printf (&display, "    ошибок: %9lu\r\n", eth.netif.out_errors);
-k5600bg1_poll (&eth);
-	printf (&display, "RX пакетов: %9lu\r\n", eth.netif.in_packets);
-k5600bg1_poll (&eth);
-	printf (&display, "    ошибок: %9lu\r\n", eth.netif.in_errors);
-k5600bg1_poll (&eth);
-	printf (&display, "Прерываний: %9lu\r\n", eth.intr);
-k5600bg1_poll (&eth);
-	printf (&display, "Своб. байтов: %7u\r\n", mem_available (&pool));
-k5600bg1_poll (&eth);
-}
-
 void console_task (void *data)
 {
-	int c, display_count = 0;
+	int c;
+	long speed;
+	int full_duplex;
 
 	for (;;) {
 		if (peekchar (&debug) < 0) {
 			timer_delay (&timer, 50);
-			if (++display_count == 10) {
-				display_refresh ();
-				display_count = 0;
-			}
 			continue;
 		}
 		c = getchar (&debug);
 		switch (c) {
 		case '\n': case '\r':
 			putchar (&debug, '\n');
+			printf (&debug, "Ethernet: %s",
+				eth_get_carrier (&eth) ? "Cable OK" : "No cable");
+			speed = eth_get_speed (&eth, &full_duplex);
+			if (speed) {
+				printf (&debug, ", %s %s",
+					speed == 100000000 ? "100Base-TX" : "10Base-TX",
+					full_duplex ? "Full Duplex" : "Half Duplex");
+			}
+			printf (&debug, ", %lu interrupts\n", eth.intr);
 			printf (&debug, "Transmit: %ld packets, %ld collisions, %ld errors\n",
 					eth.netif.out_packets, eth.netif.out_collisions,
 					eth.netif.out_errors);
 			printf (&debug, "Receive: %ld packets, %ld errors, %ld lost\n",
 					eth.netif.in_packets, eth.netif.in_errors,
 					eth.netif.in_discards);
-			printf (&debug, "Interrupts: %ln\n", eth.intr);
 			printf (&debug, "Free memory: %u bytes\n",
 				mem_available (&pool));
-			k5600bg1_debug (&eth, &debug);
+			eth_debug (&eth, &debug);
 			puts (&debug, "Local port      Peer address    Port\n");
 			print_udp_socket (&debug, &sock);
 			putchar (&debug, '\n');
@@ -110,9 +89,9 @@ void console_task (void *data)
 		case 't' & 037:
 			task_print (&debug, 0);
 			task_print (&debug, (task_t*) stack_console);
-			task_print (&debug, (task_t*) stack_poll);
 			task_print (&debug, (task_t*) stack_udp);
 			task_print (&debug, (task_t*) eth.stack);
+			task_print (&debug, (task_t*) eth.tstack);
 			task_print (&debug, (task_t*) ip.stack);
 			putchar (&debug, '\n');
 			break;
@@ -120,15 +99,11 @@ void console_task (void *data)
 	}
 }
 
-void poll_task (void *data)
-{
-	for (;;) {
-		k5600bg1_poll (&eth);
-	}
-}
-
 void print_packet (buf_t *p, unsigned char *addr, unsigned short port)
 {
+#if 1
+/*	debug_printf (" <%d>", p->tot_len);*/
+#else
 	unsigned char *s, c;
 
 	debug_printf ("received %d bytes from %d.%d.%d.%d port %d\n",
@@ -151,6 +126,7 @@ void print_packet (buf_t *p, unsigned char *addr, unsigned short port)
 		}
 	}
 	debug_printf ("\"\n");
+#endif
 }
 
 void udp_task (void *data)
@@ -166,28 +142,48 @@ void udp_task (void *data)
 	for (;;) {
 		p = udp_recvfrom (&sock, addr, &port);
 
-		/*print_packet (p, addr, port);*/
-#if 1
+		print_packet (p, addr, port);
+
 		udp_sendto (&sock, p, addr, port);
-#else
-		buf_free (p);
-#endif
 	}
 }
 
 void uos_init (void)
 {
+	/* Configure 16 Mbyte of external Flash memory at nCS3. */
+	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+
+	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
+	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
+		MC_CSCON_WS (0) |		/* Wait states  */
+		MC_CSCON_T |			/* Sync memory */
+		MC_CSCON_CSBA (0x00000000) |	/* Base address */
+		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
+
+	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
+		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
+		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
+
+	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
+		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
+		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
+		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
+		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
+
+	MC_SDRCSR = 1;				/* Initialize SDRAM */
+        udelay (2);
+
 	printf (&debug, "\nCPU speed is %d MHz\n", KHZ/1000);
 
-	/* Используем только внутреннюю память.
+#if 0
+	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
+#else
+	/* Используем только внутреннюю память CRAM.
 	 * Оставляем 256 байтов для задачи "idle". */
 	extern unsigned __bss_end[], _estack[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
-
+#endif
 	timer_init (&timer, KHZ, 50);
-	gpanel_init (&display, &font_fixed6x8);
-	gpanel_clear (&display, 0);
-	puts (&display, "Работает 5600ВГ1У.\r\n\n");
 
 	/*
 	 * Create a group of two locks: timer and eth.
@@ -203,15 +199,13 @@ void uos_init (void)
 	 * Create interface eth0
 	 */
 	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
-	k5600bg1_init (&eth, "eth0", 80, &pool, arp, my_macaddr);
+	eth_init (&eth, "eth0", 80, &pool, arp, my_macaddr);
 
 	unsigned char my_ip[] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth.netif);
 
 	task_create (udp_task, 0, "udp", 10,
 		stack_udp, sizeof (stack_udp));
-	task_create (poll_task, 0, "poll", 1,
-		stack_poll, sizeof (stack_poll));
 	task_create (console_task, 0, "cons", 20,
 		stack_console, sizeof (stack_console));
 }

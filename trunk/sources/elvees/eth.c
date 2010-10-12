@@ -595,7 +595,7 @@ handle_transmit_interrupt (eth_t *u)
 	}
 
 	/* Передаём следующий пакет. */
-debug_printf ("eth tx irq: send next packet, STATUS_TX = %08x\n", status_tx);
+/*debug_printf ("eth tx irq: send next packet, STATUS_TX = %08x\n", status_tx);*/
 	chip_transmit_packet (u, p);
 	buf_free (p);
 }

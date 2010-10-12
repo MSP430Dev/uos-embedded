@@ -91,6 +91,8 @@ void console_task (void *data)
 {
 	int c;
 	tcp_socket_t *s;
+	long speed;
+	int full_duplex;
 
 	for (;;) {
 		if (peekchar (&debug) < 0) {
@@ -101,13 +103,21 @@ void console_task (void *data)
 		switch (c) {
 		case '\n': case '\r':
 			putchar (&debug, '\n');
+			printf (&debug, "Ethernet: %s",
+				eth_get_carrier (eth) ? "Cable OK" : "No cable");
+			speed = eth_get_speed (eth, &full_duplex);
+			if (speed) {
+				printf (&debug, ", %s %s",
+					speed == 100000000 ? "100Base-TX" : "10Base-TX",
+					full_duplex ? "Full Duplex" : "Half Duplex");
+			}
+			printf (&debug, ", %lu interrupts\n", eth->intr);
 			printf (&debug, "Transmit: %ld packets, %ld collisions, %ld errors\n",
 					eth->netif.out_packets, eth->netif.out_collisions,
 					eth->netif.out_errors);
 			printf (&debug, "Receive: %ld packets, %ld errors, %ld lost\n",
 					eth->netif.in_packets, eth->netif.in_errors,
 					eth->netif.in_discards);
-			printf (&debug, "Interrupts: %ln, CRPLL=%08x\n", eth->intr, MC_CRPLL);
 			printf (&debug, "Free memory: %u bytes\n",
 				mem_available (&pool));
 			eth_debug (eth, &debug);
@@ -243,7 +253,7 @@ void uos_init (void)
 	MC_SDRCSR = 1;				/* Initialize SDRAM */
         udelay (2);
 
-#if 0
+#if 1
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 #else
 	/* Используем только внутреннюю память CRAM.
