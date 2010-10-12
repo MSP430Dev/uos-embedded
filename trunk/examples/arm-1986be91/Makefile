@@ -2,13 +2,13 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-tcp
+TEST		= test-udp
 #TESTS		= test-debug.srec test-lcd.srec test-task-lcd.srec
 #TESTS		+= test-timer.srec test-timer-lcd.srec test-uart.srec
 #TESTS		+= test-latency.srec test-tswitch.srec philosophers.srec
 #TESTS		+= test-can.srec tetris.srec
-TESTS           += test-mac.srec test-eth.srec test-tcp.srec test-telnetd.srec
-OUTS		= $(TESTS:%.srec=%.elf)
+TESTS           += test-mac.srec test-eth.srec test-tcp.srec test-udp.srec test-telnetd.srec
+OUTS		= $(TESTS:%.srec=%.elf) udpping
 
 # Using MILPROG utility.
 PROG            = milprog
@@ -19,7 +19,7 @@ all:		$(OUTS) $(TESTS) $(TEST).dis
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.elf *.lst *.dis .deps $(TESTS) $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.lst *.dis .deps $(TESTS) $(MODULES) udpping
 
 probe:
 		$(PROG)
@@ -35,5 +35,8 @@ gdb:		$(TEST).elf
 
 insight:	$(TEST).elf
 		arm-elf-insight -x gdbinit $(TEST).elf &
+
+udpping:	udpping.c
+		gcc -Wall -O $< -lpthread -o $@
 
 include $(OS)/sources/rules.mak

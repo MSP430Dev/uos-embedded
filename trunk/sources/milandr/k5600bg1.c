@@ -143,11 +143,13 @@ chip_init (k5600bg1_t *u)
 	/* Общие режимы. */
 	ETH_REG->MAC_CTRL = MAC_CTRL_PRO_EN |	// Прием всех пакетов
 		MAC_CTRL_BCA_EN |		// Прием всех широковещательных пакетов
+		MAC_CTRL_HALFD_EN |		// Полудуплексный режим
 		MAC_CTRL_SHORT_FRAME_EN;	// Прием коротких пакетов
 
 	/* Режимы PHY. */
 	ETH_REG->PHY_CTRL = PHY_CTRL_DIR |	// Прямой порядок битов в полубайте
 		PHY_CTRL_RXEN | PHY_CTRL_TXEN |	// Включение приёмника и передатчика
+		PHY_CTRL_HALFD |		// Полудуплесный режим
 		PHY_CTRL_LINK_PERIOD (11);	// Период LINK-импульсов
 
 	/* Свой адрес. */
@@ -183,6 +185,8 @@ k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 	unsigned short mac_ctrl, phy_ctrl, phy_stat, gctrl;
 	unsigned short rxbf_head, rxbf_tail;
 	unsigned short tx_ctrl, rx_ctrl, rx_len, rx_ptr;
+	unsigned short stat_rx_all, stat_rx_ok, stat_rx_ovf;
+	unsigned short stat_rx_lost, stat_tx_all, stat_tx_ok;
 
 	mutex_lock (&u->netif.lock);
 	chip_select (1);
@@ -196,6 +200,12 @@ k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 	rx_len = ETH_RXDESC[u->rn].LEN;
 	rx_ptr = ETH_RXDESC[u->rn].PTRL;
 	tx_ctrl = ETH_TXDESC[0].CTRL;
+	stat_rx_all = ETH_REG->STAT_RX_ALL;
+	stat_rx_ok = ETH_REG->STAT_RX_OK;
+	stat_rx_ovf = ETH_REG->STAT_RX_OVF;
+	stat_rx_lost = ETH_REG->STAT_RX_LOST;
+	stat_tx_all = ETH_REG->STAT_TX_ALL;
+	stat_tx_ok = ETH_REG->STAT_TX_OK;
 	chip_select (0);
 	mutex_unlock (&u->netif.lock);
 
@@ -210,7 +220,12 @@ k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream)
 		printf (stream, "    .LEN = %u, .PTRL = %04x\n",
 			rx_len, rx_ptr);
 	printf (stream, "   TXDESC.CTRL = %b\n", tx_ctrl, DESC_TX_BITS);
-	printf (stream, "NVIC_IABR0 = %08x\n", ARM_NVIC_IABR0);
+	printf (stream, "STAT_RX_ALL = %u\n", stat_rx_all);
+	printf (stream, "STAT_RX_OK = %u\n", stat_rx_ok);
+	printf (stream, "STAT_RX_OVF = %u\n", stat_rx_ovf);
+	printf (stream, "STAT_RX_LOST = %u\n", stat_rx_lost);
+	printf (stream, "STAT_TX_ALL = %u\n", stat_tx_all);
+	printf (stream, "STAT_TX_OK = %u\n", stat_tx_ok);
 }
 
 int

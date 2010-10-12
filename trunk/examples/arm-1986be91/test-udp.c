@@ -4,14 +4,15 @@
 #include <runtime/lib.h>
 #include <stream/stream.h>
 #include <mem/mem.h>
+#include <buf/buf.h>
 #include <net/route.h>
 #include <net/ip.h>
-#include <net/tcp.h>
+#include <net/udp.h>
 #include <timer/timer.h>
 #include <gpanel/gpanel.h>
 #include <milandr/k5600bg1.h>
 
-ARRAY (stack_tcp, 1000);
+ARRAY (stack_udp, 1000);
 ARRAY (stack_console, 1000);
 ARRAY (stack_poll, 1000);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
@@ -22,67 +23,28 @@ k5600bg1_t eth;
 route_t route;
 timer_t timer;
 ip_t ip;
-tcp_socket_t *user_socket;
+udp_socket_t sock;
 unsigned char buf [1024];
 
 gpanel_t display;
 extern gpanel_font_t font_fixed6x8;
 
-static const char *
-state_name (tcp_state_t state)
+static void print_udp_socket (stream_t *stream, udp_socket_t *s)
 {
-	switch (state) {
-	case CLOSED:	  return "CLOSED";	break;
-	case LISTEN:	  return "LISTEN";	break;
-	case SYN_SENT:	  return "SYN_SENT";	break;
-	case SYN_RCVD:	  return "SYN_RCVD";	break;
-	case ESTABLISHED: return "ESTABLISHED";	break;
-	case FIN_WAIT_1:  return "FIN_WAIT_1";	break;
-	case FIN_WAIT_2:  return "FIN_WAIT_2";	break;
-	case CLOSE_WAIT:  return "CLOSE_WAIT";	break;
-	case CLOSING:	  return "CLOSING";	break;
-	case LAST_ACK:	  return "LAST_ACK";	break;
-	case TIME_WAIT:	  return "TIME_WAIT";	break;
-	}
-	return "???";
-}
+	printf (stream, "%u\t\t", s->local_port);
 
-static void print_tcp_socket (stream_t *stream, tcp_socket_t *s)
-{
-	if (s->local_ip[0])
-		printf (stream, "%d.%d.%d.%d\t", s->local_ip[0],
-			s->local_ip[1], s->local_ip[2], s->local_ip[3]);
+	if (s->peer_ip[0])
+		printf (stream, "%d.%d.%d.%d\t", s->peer_ip[0],
+			s->peer_ip[1], s->peer_ip[2], s->peer_ip[3]);
 	else
 		puts (stream, "*\t\t");
 
-	printf (stream, "%u\t", s->local_port);
-
-	if (s->remote_ip[0])
-		printf (stream, "%d.%d.%d.%d\t", s->remote_ip[0],
-			s->remote_ip[1], s->remote_ip[2], s->remote_ip[3]);
+	if (s->peer_port)
+		printf (stream, "%u", s->peer_port);
 	else
-		puts (stream, "*\t\t");
+		puts (stream, "*");
 
-	if (s->remote_port)
-		printf (stream, "%u\t", s->remote_port);
-	else
-		puts (stream, "*\t");
-
-	puts (stream, state_name (s->state));
 	putchar (stream, '\n');
-}
-
-static void print_socket_data (stream_t *stream, tcp_socket_t *s)
-{
-	printf (stream, "User socket: snd_queuelen=%u, ", s->snd_queuelen);
-	printf (stream, "snd_buf=%u, ", s->snd_buf);
-	printf (stream, "snd_lbb=%u, ", s->snd_lbb);
-	printf (stream, "snd_nxt=%u,\n     ", s->snd_nxt);
-	printf (stream, "snd_max=%u, ", s->snd_max);
-	printf (stream, "snd_wnd=%u, ", s->snd_wnd);
-	printf (stream, "cwnd=%u, ", s->cwnd);
-	printf (stream, "mss=%u, ", s->mss);
-	printf (stream, "ssthresh=%u\n", s->ssthresh);
 }
 
 void display_refresh ()
@@ -107,7 +69,6 @@ void display_refresh ()
 void console_task (void *data)
 {
 	int c, display_count = 0;
-	tcp_socket_t *s;
 
 	for (;;) {
 		if (peekchar (&debug) < 0) {
@@ -132,22 +93,15 @@ void console_task (void *data)
 			printf (&debug, "Free memory: %u bytes\n",
 				mem_available (&pool));
 			k5600bg1_debug (&eth, &debug);
-			puts (&debug, "Local address   Port    Peer address    Port    State\n");
-			for (s=ip.tcp_sockets; s; s=s->next)
-				print_tcp_socket (&debug, s);
-			for (s=ip.tcp_closing_sockets; s; s=s->next)
-				print_tcp_socket (&debug, s);
-			for (s=ip.tcp_listen_sockets; s; s=s->next)
-				print_tcp_socket (&debug, s);
-			if (user_socket)
-				print_socket_data (&debug, user_socket);
+			puts (&debug, "Local port      Peer address    Port\n");
+			print_udp_socket (&debug, &sock);
 			putchar (&debug, '\n');
 			break;
 		case 't' & 037:
 			task_print (&debug, 0);
 			task_print (&debug, (task_t*) stack_console);
 			task_print (&debug, (task_t*) stack_poll);
-			task_print (&debug, (task_t*) stack_tcp);
+			task_print (&debug, (task_t*) stack_udp);
 			task_print (&debug, (task_t*) eth.stack);
 			task_print (&debug, (task_t*) ip.stack);
 			putchar (&debug, '\n');
@@ -163,56 +117,52 @@ void poll_task (void *data)
 	}
 }
 
-void tcp_task (void *data)
+void print_packet (buf_t *p, unsigned char *addr, unsigned short port)
 {
-	tcp_socket_t *lsock;
-	unsigned short serv_port = 2222;
-	unsigned char ch;
-	int n;
+#if 1
+/*	debug_printf (" <%d>", p->tot_len);*/
+#else
+	unsigned char *s, c;
 
-	lsock = tcp_listen (&ip, 0, serv_port);
-	if (! lsock) {
-		printf (&debug, "Error on listen, aborted\n");
-		uos_halt (0);
+	debug_printf ("received %d bytes from %d.%d.%d.%d port %d\n",
+		p->tot_len, addr[0], addr[1], addr[2], addr[3], port);
+	debug_printf ("data = \"");
+	for (s=p->payload; s<p->payload+p->tot_len; ++s) {
+		c = *s;
+
+		switch (c) {
+		case '"':	debug_puts ("\\\"");	break;
+		case '\r':	debug_puts ("\\r");	break;
+		case '\n':	debug_puts ("\\n");	break;
+		case '\\':	debug_puts ("\\\\");	break;
+		default:
+			if (c >= ' ' && c < '~')
+				debug_putchar (0, c);
+			else
+				debug_printf ("\\x%02x", c);
+			break;
+		}
 	}
-	/* Добавляем заголовок - длину пакета (LSB). */
-	memset (buf, 0xff, sizeof (buf));
-	buf[0] = (char) sizeof (buf);
-	buf[1] = sizeof (buf) >> 8;
+	debug_printf ("\"\n");
+#endif
+}
+
+void udp_task (void *data)
+{
+	const unsigned serv_port = 7777;
+	buf_t *p;
+	unsigned char addr [4];
+	unsigned short port;
+
+	udp_socket (&sock, &ip, serv_port);
+	printf (&debug, "Server waiting on port %d...\n", serv_port);
+	printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
 	for (;;) {
-		printf (&debug, "Server waiting on port %d...\n", serv_port);
-		printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
-		user_socket = tcp_accept (lsock);
-		if (! user_socket) {
-			printf (&debug, "Error on accept\n");
-			uos_halt (0);
-		}
-		/* Пересылаем данные, пока юзер не отключится. */
-		for (;;) {
-			/* Десять пакетов в секуду. */
-/*			mutex_wait (&timer.decisec);*/
-/*			printf (&debug, "<%d> ", mem_available (&pool));*/
+		p = udp_recvfrom (&sock, addr, &port);
 
-			for (n=0; n<2; ++n) {
-				if (tcp_write (user_socket, buf, sizeof (buf)) < 0) {
-					/*printf (&debug, "tcp_write failed\n");*/
-					goto closed;
-				}
-			}
+		print_packet (p, addr, port);
 
-			/* Обрабатываем команды от пользователя. */
-			for (;;) {
-				n = tcp_read_poll (user_socket, &ch, 1, 1);
-				if (n < 0)
-					goto closed;
-				if (n == 0)
-					break;
-				/*process_command (ch);*/
-			}
-		}
-closed:		tcp_close (user_socket);
-		mem_free (user_socket);
-		user_socket = 0;
+		udp_sendto (&sock, p, addr, port);
 	}
 }
 
@@ -249,8 +199,8 @@ void uos_init (void)
 	unsigned char my_ip[] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth.netif);
 
-	task_create (tcp_task, 0, "tcp", 10,
-		stack_tcp, sizeof (stack_tcp));
+	task_create (udp_task, 0, "udp", 10,
+		stack_udp, sizeof (stack_udp));
 	task_create (poll_task, 0, "poll", 1,
 		stack_poll, sizeof (stack_poll));
 	task_create (console_task, 0, "cons", 20,
