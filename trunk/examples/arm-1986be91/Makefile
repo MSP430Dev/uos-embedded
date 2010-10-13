@@ -3,12 +3,12 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 TEST		= test-udp
-#TESTS		= test-debug.srec test-lcd.srec test-task-lcd.srec
-#TESTS		+= test-timer.srec test-timer-lcd.srec test-uart.srec
-#TESTS		+= test-latency.srec test-tswitch.srec philosophers.srec
-#TESTS		+= test-can.srec tetris.srec
-TESTS           += test-mac.srec test-eth.srec test-tcp.srec test-udp.srec test-telnetd.srec
-OUTS		= $(TESTS:%.srec=%.elf) udpping
+#TESTS		= test-debug.hex test-lcd.hex test-task-lcd.hex
+#TESTS		+= test-timer.hex test-timer-lcd.hex test-uart.hex
+#TESTS		+= test-latency.hex test-tswitch.hex philosophers.hex
+#TESTS		+= test-can.hex tetris.hex
+TESTS           += test-mac.hex test-eth.hex test-tcp.hex test-udp.hex test-telnetd.hex
+OUTS		= $(TESTS:%.hex=%.elf) udpping
 
 # Using MILPROG utility.
 PROG            = milprog
@@ -24,7 +24,7 @@ clean:
 probe:
 		$(PROG)
 
-load:		$(TEST).srec
+load:		$(TEST).hex
 		$(PROG) $<
 
 proxy:

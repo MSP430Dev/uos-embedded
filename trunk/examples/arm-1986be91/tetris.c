@@ -1,5 +1,6 @@
 /*
  * Tetris (C) Copyright 1995, Vadim Antonov
+ * Port to uOS (C) 2010, Serge Vakulenko
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>
