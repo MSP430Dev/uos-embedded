@@ -119,6 +119,18 @@ typedef struct
 #define ARM_AIRCR_SYSRESETREQ	(1 << 2)	/* запрос сброса системы */
 
 /*
+ * Регистр SCB ICSR: управление прерываниями.
+ */
+#define ARM_ICSR_PENDSVSET	(1 << 28)	/* (RW) установка ожидания обслуживания PendSV */
+#define ARM_ICSR_PENDSVCLR	(1 << 27)	/* (WO) сброс ожидания обслуживания PendSV */
+#define ARM_ICSR_PENDSTSET	(1 << 26)	/* (RW) установка ожидания обслуживания SysTick */
+#define ARM_ICSR_PENDSTCLR	(1 << 25)	/* (WO) сброс ожидания обслуживания SysTick */
+#define ARM_ICSR_ISRPENDING	(1 << 22)	/* (RO) есть прерывания, ожидающие обслуживания */
+#define ARM_ICSR_VECTPENDING	(1 << 12)	/* (RO) номер ожидающего исключения */
+#define ARM_ICSR_RETTOBASE	(1 << 11)	/* (RO) есть активные прерванные исключения */
+#define ARM_ICSR_VECTACTIVE	(1 << 1)	/* (RO) номер активного исключения (0 - режим приложения) */
+
+/*
  * Регистр SCB SHCSR: управление и состояние системных обработчиков.
  */
 #define ARM_SHCSR_USGFAULTENA	(1 << 18)  /* разрешение обработки отказов,

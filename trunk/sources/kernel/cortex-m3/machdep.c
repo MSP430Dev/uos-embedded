@@ -70,6 +70,7 @@ _irq_handler_ (void)
 	if (ipsr == 15) {
 		/* Systick interrupt. */
 		irq = 32;
+		ARM_SYSTICK->CTRL &= ~ARM_SYSTICK_CTRL_TICKINT;
 
 	} else if (ipsr >= 16 && ipsr < 48) {
 		irq = ipsr - 16;
@@ -127,7 +128,7 @@ done:
 	/* Load registers R4-R11 and BASEPRI.
 	 * Return from exception. */
 	asm volatile (
-	"mvn.w	lr, #6 \n\t"		/* EXC_RETURN value */
+	"mvn	lr, #6 \n\t"		/* EXC_RETURN value */
 	"pop	{r4-r12} \n\t"
 	"msr	basepri, r12 \n\t"
 	"bx	lr"
@@ -141,7 +142,8 @@ done:
 void arch_intr_allow (int irq)
 {
 	if (irq == 32) {
-		/* Systick interrupt: nothing to do. */
+		/* Systick interrupt. */
+		ARM_SYSTICK->CTRL |= ARM_SYSTICK_CTRL_TICKINT;
 	} else {
 		ARM_NVIC_ISER0 = 1 << irq;
 //debug_printf ("<ISER0:=%x> ", 1 << irq);

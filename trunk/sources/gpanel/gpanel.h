@@ -26,7 +26,7 @@ typedef struct {
 	unsigned row;			/* current row */
 	unsigned col;			/* current column */
 	unsigned c1, c2;		/* utf8 decoder */
-	volatile unsigned *volatile CMD;		/* command register */
+	volatile unsigned *volatile CMD;	/* command register */
 	volatile unsigned *volatile DATA;	/* data register */
 } gpanel_t;
 

@@ -12,6 +12,8 @@
 #include <gpanel/gpanel.h>
 #include <milandr/k5600bg1.h>
 
+#define NO_TIMER
+
 ARRAY (stack_udp, 1000);
 ARRAY (stack_console, 1000);
 ARRAY (stack_poll, 1000);
@@ -47,46 +49,13 @@ static void print_udp_socket (stream_t *stream, udp_socket_t *s)
 	putchar (stream, '\n');
 }
 
-void display_refresh ()
-{
-	unsigned sec = timer_milliseconds (&timer) / 1000;
-	unsigned min = sec / 60;
-	unsigned hour = min / 60;
-	sec -= min*60;
-	min -= hour*60;
-
-k5600bg1_poll (&eth);
-	gpanel_clear (&display, 0);
-k5600bg1_poll (&eth);
-	puts (&display, "Работает 5600ВГ1У.\r\n");
-k5600bg1_poll (&eth);
-	printf (&display, "Время:      %3u:%02u:%02u\r\n", hour, min, sec);
-k5600bg1_poll (&eth);
-	printf (&display, "TX пакетов: %9lu\r\n", eth.netif.out_packets);
-k5600bg1_poll (&eth);
-	printf (&display, "    ошибок: %9lu\r\n", eth.netif.out_errors);
-k5600bg1_poll (&eth);
-	printf (&display, "RX пакетов: %9lu\r\n", eth.netif.in_packets);
-k5600bg1_poll (&eth);
-	printf (&display, "    ошибок: %9lu\r\n", eth.netif.in_errors);
-k5600bg1_poll (&eth);
-	printf (&display, "Прерываний: %9lu\r\n", eth.intr);
-k5600bg1_poll (&eth);
-	printf (&display, "Своб. байтов: %7u\r\n", mem_available (&pool));
-k5600bg1_poll (&eth);
-}
-
 void console_task (void *data)
 {
-	int c, display_count = 0;
+	int c;
 
 	for (;;) {
 		if (peekchar (&debug) < 0) {
 			timer_delay (&timer, 50);
-			if (++display_count == 10) {
-				display_refresh ();
-				display_count = 0;
-			}
 			continue;
 		}
 		c = getchar (&debug);
@@ -122,7 +91,42 @@ void console_task (void *data)
 
 void poll_task (void *data)
 {
+	unsigned last_sec = 0;
+
 	for (;;) {
+		k5600bg1_poll (&eth);
+#ifdef NO_TIMER
+		static unsigned count = 0;
+		unsigned sec = ++count / 100000;
+#else
+		unsigned sec = timer_milliseconds (&timer) / 1000;
+#endif
+		if (sec == last_sec)
+			continue;
+		last_sec = sec;
+
+		unsigned min = sec / 60;
+		unsigned hour = min / 60;
+		sec -= min*60;
+		min -= hour*60;
+		k5600bg1_poll (&eth);
+		gpanel_clear (&display, 0);
+		k5600bg1_poll (&eth);
+		puts (&display, "Работает 5600ВГ1У.\r\n");
+		k5600bg1_poll (&eth);
+		printf (&display, "Время:      %3u:%02u:%02u\r\n", hour, min, sec);
+		k5600bg1_poll (&eth);
+		printf (&display, "TX пакетов: %9lu\r\n", eth.netif.out_packets);
+		k5600bg1_poll (&eth);
+		printf (&display, "    ошибок: %9lu\r\n", eth.netif.out_errors);
+		k5600bg1_poll (&eth);
+		printf (&display, "RX пакетов: %9lu\r\n", eth.netif.in_packets);
+		k5600bg1_poll (&eth);
+		printf (&display, "    ошибок: %9lu\r\n", eth.netif.in_errors);
+		k5600bg1_poll (&eth);
+		printf (&display, "Прерываний: %9lu\r\n", eth.intr);
+		k5600bg1_poll (&eth);
+		printf (&display, "Своб. байтов: %7u\r\n", mem_available (&pool));
 		k5600bg1_poll (&eth);
 	}
 }
@@ -167,11 +171,8 @@ void udp_task (void *data)
 		p = udp_recvfrom (&sock, addr, &port);
 
 		/*print_packet (p, addr, port);*/
-#if 1
+
 		udp_sendto (&sock, p, addr, port);
-#else
-		buf_free (p);
-#endif
 	}
 }
 
@@ -184,7 +185,9 @@ void uos_init (void)
 	extern unsigned __bss_end[], _estack[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
 
+#ifndef NO_TIMER
 	timer_init (&timer, KHZ, 50);
+#endif
 	gpanel_init (&display, &font_fixed6x8);
 	gpanel_clear (&display, 0);
 	puts (&display, "Работает 5600ВГ1У.\r\n\n");
