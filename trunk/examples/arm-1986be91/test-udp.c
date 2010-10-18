@@ -95,12 +95,8 @@ void poll_task (void *data)
 
 	for (;;) {
 		k5600bg1_poll (&eth);
-#ifdef NO_TIMER
-		static unsigned count = 0;
-		unsigned sec = ++count / 100000;
-#else
+
 		unsigned sec = timer_milliseconds (&timer) / 1000;
-#endif
 		if (sec == last_sec)
 			continue;
 		last_sec = sec;

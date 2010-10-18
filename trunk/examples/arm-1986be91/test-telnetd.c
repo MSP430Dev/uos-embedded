@@ -9,17 +9,19 @@
 #include <buf/buf.h>
 #include <timer/timer.h>
 #include <uart/uart.h>
+#include <gpanel/gpanel.h>
 #include <milandr/k5600bg1.h>
 #include <net/route.h>
 #include <net/ip.h>
 #include <net/tcp.h>
 #include <net/telnet.h>
 
-ARRAY (stack_telnet, 1500);
-ARRAY (stack_console, 1500);
-
 #define TASKSZ		1500		/* Task: telnet menu */
 #define MAXSESS		4		/* Up to 4 telnet sessions */
+
+ARRAY (stack_telnet, TASKSZ);
+ARRAY (stack_console, TASKSZ);
+ARRAY (stack_poll, TASKSZ);
 
 task_t *tasktab [MAXSESS];
 stream_t *streamtab [MAXSESS];
@@ -27,6 +29,7 @@ stream_t *streamtab [MAXSESS];
 /*
  * Priorities for tasks.
  */
+#define PRIO_POLL	1
 #define PRIO_SHELL	10
 #define PRIO_CONSOLE	20
 #define PRIO_TELNET	30
@@ -41,6 +44,9 @@ k5600bg1_t eth;
 arp_t *arp;
 route_t route;
 ip_t ip;
+
+gpanel_t display;
+extern gpanel_font_t font_fixed6x8;
 
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
@@ -346,14 +352,52 @@ void start_session (tcp_socket_t *sock)
 	tasktab[n] = task_create (user_shell, stream, "shell", PRIO_SHELL, t, TASKSZ);
 }
 
+void poll_task (void *data)
+{
+	unsigned last_sec = 0;
+
+	for (;;) {
+		k5600bg1_poll (&eth);
+
+		unsigned sec = timer_milliseconds (&timer) / 1000;
+		if (sec == last_sec)
+			continue;
+		last_sec = sec;
+
+		unsigned min = sec / 60;
+		unsigned hour = min / 60;
+		sec -= min*60;
+		min -= hour*60;
+		k5600bg1_poll (&eth);
+		gpanel_clear (&display, 0);
+		k5600bg1_poll (&eth);
+		puts (&display, "Работает 5600ВГ1У.\r\n");
+		k5600bg1_poll (&eth);
+		printf (&display, "Время:      %3u:%02u:%02u\r\n", hour, min, sec);
+		k5600bg1_poll (&eth);
+		printf (&display, "TX пакетов: %9lu\r\n", eth.netif.out_packets);
+		k5600bg1_poll (&eth);
+		printf (&display, "    ошибок: %9lu\r\n", eth.netif.out_errors);
+		k5600bg1_poll (&eth);
+		printf (&display, "RX пакетов: %9lu\r\n", eth.netif.in_packets);
+		k5600bg1_poll (&eth);
+		printf (&display, "    ошибок: %9lu\r\n", eth.netif.in_errors);
+		k5600bg1_poll (&eth);
+		printf (&display, "Прерываний: %9lu\r\n", eth.intr);
+		k5600bg1_poll (&eth);
+		printf (&display, "Своб. байтов: %7u\r\n", mem_available (&pool));
+		k5600bg1_poll (&eth);
+	}
+}
+
 void
-main_console (void *data)
+console_task (void *data)
 {
 	for (;;)
 		user_shell ((stream_t*) &uart);
 }
 
-void main_telnet (void *data)
+void telnet_task (void *data)
 {
 	tcp_socket_t *lsock, *sock;
 	unsigned short serv_port = 23;
@@ -382,6 +426,9 @@ void uos_init (void)
 
 	timer_init (&timer, KHZ, 50);
 	uart_init (&uart, 1, PRIO_UART, KHZ, 115200);
+	gpanel_init (&display, &font_fixed6x8);
+	gpanel_clear (&display, 0);
+	puts (&display, "Работает 5600ВГ1У.\r\n\n");
 
 	/*
 	 * Create a group of two locks: timer and eth.
@@ -402,8 +449,10 @@ void uos_init (void)
 	static unsigned char ip_addr [4] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, ip_addr, 24, &eth.netif);
 
-	task_create (main_console, 0, "console", PRIO_CONSOLE,
+	task_create (console_task, 0, "console", PRIO_CONSOLE,
 		stack_console, sizeof (stack_console));
-	task_create (main_telnet, 0, "telnet", PRIO_TELNET,
+	task_create (poll_task, 0, "poll", PRIO_POLL,
+		stack_poll, sizeof (stack_poll));
+	task_create (telnet_task, 0, "telnet", PRIO_TELNET,
 		stack_telnet, sizeof (stack_telnet));
 }

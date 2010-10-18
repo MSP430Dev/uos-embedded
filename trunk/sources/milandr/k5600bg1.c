@@ -637,5 +637,5 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_init (u);
 
 	/* Create interrupt task. */
-	task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
+//	task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
 }

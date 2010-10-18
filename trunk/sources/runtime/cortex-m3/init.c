@@ -140,15 +140,15 @@ watchdog_alive ()
 static void dump_of_death (unsigned *frame, unsigned ipsr)
 {
 	debug_printf ("r0 = %8x     r5 = %8x     r10 = %8x     pc   = %8x\n",
-		       frame[8],    frame[1],    frame[6],     frame[14]);
+		       frame[9],    frame[1],    frame[6],     frame[15]);
 	debug_printf ("r1 = %8x     r6 = %8x     r11 = %8x     xpsr = %8x\n",
-		       frame[9],    frame[2],    frame[7],     frame[15]);
+		       frame[10],   frame[2],    frame[7],     frame[16]);
 	debug_printf ("r2 = %8x     r7 = %8x     r12 = %8x     ipsr = %8x\n",
-		       frame[10],   frame[3],    frame[12],    ipsr);
-	debug_printf ("r3 = %8x     r8 = %8x     sp  = %8x\n",
-		       frame[11],   frame[4],    frame+16);
+		       frame[11],   frame[3],    frame[13],    ipsr);
+	debug_printf ("r3 = %8x     r8 = %8x     sp  = %8x  basepri = %8x\n",
+		       frame[12],   frame[4],    frame+17,     frame[8]);
 	debug_printf ("r4 = %8x     r9 = %8x     lr  = %8x\n",
-		       frame[0],    frame[5],    frame[13]);
+		       frame[0],    frame[5],    frame[14]);
 
 	/* Reset the system. */
 	debug_printf ("\nReset...\n\n");
@@ -165,7 +165,9 @@ void __attribute__ ((naked))
 _fault_ ()
 {
 	/* Save registers R4-R11 in stack. */
-	asm volatile ("push	{r4-r11}");
+	asm volatile (
+	"mrs	r12, basepri \n\t"
+	"push	{r4-r12}");
 
 	unsigned *frame = arm_get_stack_pointer ();
 	unsigned ipsr = arm_get_ipsr ();
