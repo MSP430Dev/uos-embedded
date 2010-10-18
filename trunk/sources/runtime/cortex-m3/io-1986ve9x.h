@@ -126,9 +126,9 @@ typedef struct
 #define ARM_ICSR_PENDSTSET	(1 << 26)	/* (RW) установка ожидания обслуживания SysTick */
 #define ARM_ICSR_PENDSTCLR	(1 << 25)	/* (WO) сброс ожидания обслуживания SysTick */
 #define ARM_ICSR_ISRPENDING	(1 << 22)	/* (RO) есть прерывания, ожидающие обслуживания */
-#define ARM_ICSR_VECTPENDING	(1 << 12)	/* (RO) номер ожидающего исключения */
+#define ARM_ICSR_VECTPENDING(s)	((s) >> 12 & 0x1ff) /* (RO) номер ожидающего исключения */
 #define ARM_ICSR_RETTOBASE	(1 << 11)	/* (RO) есть активные прерванные исключения */
-#define ARM_ICSR_VECTACTIVE	(1 << 1)	/* (RO) номер активного исключения (0 - режим приложения) */
+#define ARM_ICSR_VECTACTIVE(s)	((s) & 0x1ff)	/* (RO) номер активного исключения (0 - режим приложения) */
 
 /*
  * Регистр SCB SHCSR: управление и состояние системных обработчиков.
@@ -364,21 +364,21 @@ typedef struct
 typedef struct
 {
 	arm_reg_t DR;			/* Данные */
-	arm_reg_t SRCR;			/* Состояние и сброс ошибки приёмника */
+	arm_reg_t RSR;			/* Состояние приёмника и сброс ошибки */
 	unsigned reserved0 [4];
 	arm_reg_t FR;			/* Флаги */
 	unsigned reserved1;
 	arm_reg_t ILPR;			/* Управление ИК-обменом */
 	arm_reg_t IBRD;			/* Делитель скорости */
 	arm_reg_t FBRD;			/* Дробная часть делителя */
-	arm_reg_t LCR_H;		/* Управление линией */
-	arm_reg_t CR;			/* Управление */
+	arm_reg_t LCRH;			/* Управление линией */
+	arm_reg_t CTL;			/* Управление */
 	arm_reg_t IFLS;			/* Порог прерывания FIFO */
-	arm_reg_t IMSC;			/* Маска прерывания */
+	arm_reg_t IM;			/* Маска прерывания */
 	arm_reg_t RIS;			/* Состояние прерываний */
 	arm_reg_t MIS;			/* Состояние прерываний с маскированием */
 	arm_reg_t ICR;			/* Сброс прерывания */
-	arm_reg_t DMACR;		/* Управление DMA */
+	arm_reg_t DMACTL;		/* Управление DMA */
 } UART_t;
 
 typedef struct
@@ -408,12 +408,12 @@ typedef struct
 #define ARM_UART_DR_DATA	0xFF		/* Данные */
 
 /*
- * Регистр UART SRCR: состояние приёмника и сброс ошибки
+ * Регистр UART RSR: состояние приёмника и сброс ошибки
  */
-#define ARM_UART_SRCR_OE	(1 << 3)	/* Переполнение буфера приемника */
-#define ARM_UART_SRCR_BE	(1 << 2)	/* Разрыв линии (break) */
-#define ARM_UART_SRCR_PE	(1 << 1)	/* Ошибка контроля четности */
-#define ARM_UART_SRCR_FE	(1 << 0)	/* Ошибка в структуре кадра */
+#define ARM_UART_RSR_OE		(1 << 3)	/* Переполнение буфера приемника */
+#define ARM_UART_RSR_BE		(1 << 2)	/* Разрыв линии (break) */
+#define ARM_UART_RSR_PE		(1 << 1)	/* Ошибка контроля четности */
+#define ARM_UART_RSR_FE		(1 << 0)	/* Ошибка в структуре кадра */
 
 /*
  * Регистр UART FR: флаги
@@ -435,7 +435,7 @@ typedef struct
 #define ARM_UART_FBRD(mhz,baud)	(((mhz) * 4 / (baud)) & 077)
 
 /*
- * Регистр UART LCR_H: управление линией.
+ * Регистр UART LCRH: управление линией.
  */
 #define ARM_UART_LCRH_SPS	(1 << 7)	/* Фиксация значения бита чётности */
 #define ARM_UART_LCRH_WLEN5	(0 << 5)	/* Длина слова 5 бит */
@@ -449,20 +449,20 @@ typedef struct
 #define ARM_UART_LCRH_BRK	(1 << 0)	/* Разрыв линии (break) */
 
 /*
- * Регистр UART CR: управление.
+ * Регистр UART CTL: управление.
  */
-#define ARM_UART_CR_CTSEN	(1 << 15)	/* Управление потоком данных по CTS */
-#define ARM_UART_CR_RTSEN	(1 << 14)	/* Управление потоком данных по RTS */
-#define ARM_UART_CR_OUT2	(1 << 13)	/* Инверсия сигнала /UARTOut2 */
-#define ARM_UART_CR_OUT1	(1 << 12)	/* Инверсия сигнала /UARTOut1 */
-#define ARM_UART_CR_RTS		(1 << 11)	/* Инверсия сигнала /UARTRTS */
-#define ARM_UART_CR_DTR		(1 << 10)	/* Инверсия сигнала /UARTDTR */
-#define ARM_UART_CR_RXE		(1 << 9)	/* Прием разрешен */
-#define ARM_UART_CR_TXE		(1 << 8)	/* Передача разрешена */
-#define ARM_UART_CR_LBE		(1 << 7)	/* Шлейф разрешен */
-#define ARM_UART_CR_SIRLP	(1 << 2)	/* ИК-обмен с пониженным энергопотреблением */
-#define ARM_UART_CR_SIREN	(1 << 1)	/* Разрешение ИК передачи данных IrDA SIR */
-#define ARM_UART_CR_UARTEN	(1 << 0)	/* Разрешение работы приемопередатчика */
+#define ARM_UART_CTL_CTSEN	(1 << 15)	/* Управление потоком данных по CTS */
+#define ARM_UART_CTL_RTSEN	(1 << 14)	/* Управление потоком данных по RTS */
+#define ARM_UART_CTL_OUT2	(1 << 13)	/* Инверсия сигнала /UARTOut2 */
+#define ARM_UART_CTL_OUT1	(1 << 12)	/* Инверсия сигнала /UARTOut1 */
+#define ARM_UART_CTL_RTS	(1 << 11)	/* Инверсия сигнала /UARTRTS */
+#define ARM_UART_CTL_DTR	(1 << 10)	/* Инверсия сигнала /UARTDTR */
+#define ARM_UART_CTL_RXE	(1 << 9)	/* Прием разрешен */
+#define ARM_UART_CTL_TXE	(1 << 8)	/* Передача разрешена */
+#define ARM_UART_CTL_LBE	(1 << 7)	/* Шлейф разрешен */
+#define ARM_UART_CTL_SIRLP	(1 << 2)	/* ИК-обмен с пониженным энергопотреблением */
+#define ARM_UART_CTL_SIREN	(1 << 1)	/* Разрешение ИК передачи данных IrDA SIR */
+#define ARM_UART_CTL_UARTEN	(1 << 0)	/* Разрешение работы приемопередатчика */
 
 /*
  * Регистр UART IFLS: пороги FIFO.
@@ -497,11 +497,11 @@ typedef struct
 #define ARM_UART_RIS_RIM	(1 << 0)	/* Изменение состояния /UARTRI */
 
 /*
- * Регистр UART DMACR: управление DMA.
+ * Регистр UART DMACTL: управление DMA.
  */
-#define ARM_UART_DMACR_ONERR	(1 << 2)	/* Блокирование при ошибке */
-#define ARM_UART_DMACR_TXE	(1 << 1)	/* Использование ПДП при передаче */
-#define ARM_UART_DMACR_RXE	(1 << 0)	/* Использование ПДП при приеме */
+#define ARM_UART_DMACTL_ONERR	(1 << 2)	/* Блокирование при ошибке */
+#define ARM_UART_DMACTL_TXE	(1 << 1)	/* Использование ПДП при передаче */
+#define ARM_UART_DMACTL_RXE	(1 << 0)	/* Использование ПДП при приеме */
 
 /*------------------------------------------------------
  * Synchronous serial port

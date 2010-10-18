@@ -70,9 +70,9 @@ _init_ (void)
 	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/4, 115200);
 #endif
 	/* Enable UART2, transmiter only. */
-	ARM_UART2->LCR_H = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
-	ARM_UART2->CR = ARM_UART_CR_UARTEN |		// пуск приемопередатчика
-			ARM_UART_CR_TXE;		// передача разрешена
+	ARM_UART2->LCRH = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
+	ARM_UART2->CTL = ARM_UART_CTL_UARTEN |		// пуск приемопередатчика
+			ARM_UART_CTL_TXE;		// передача разрешена
 #endif /* ARM_1986BE9 */
 
 #ifndef EMULATOR /* not needed on emulator */
@@ -101,14 +101,14 @@ _init_ (void)
         ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(16) | /* SysTick */
 			 ARM_SHPR3_PENDSV(16);	/* PendSV */
 
-	ARM_NVIC_IPR(0) = 0x10101010;		/* CAN1, CAN2, USB */
-	ARM_NVIC_IPR(1) = 0x10101010;		/* DMA, UART1, UART2 */
-	ARM_NVIC_IPR(2) = 0x10101010;		/* SSP1, I2C, POWER */
-	ARM_NVIC_IPR(3) = 0x10101010;		/* WWDG, Timer1, Timer2 */
-	ARM_NVIC_IPR(4) = 0x10101010;		/* Timer3, ADC, COMPARATOR */
-	ARM_NVIC_IPR(5) = 0x10101010;		/* SSP2 */
-	ARM_NVIC_IPR(6) = 0x10101010;		/* BACKUP */
-	ARM_NVIC_IPR(7) = 0x10101010;		/* external INT[1:4] */
+	ARM_NVIC_IPR(0) = 0x20202020;		/* CAN1, CAN2, USB */
+	ARM_NVIC_IPR(1) = 0x20202020;		/* DMA, UART1, UART2 */
+	ARM_NVIC_IPR(2) = 0x20202020;		/* SSP1, I2C, POWER */
+	ARM_NVIC_IPR(3) = 0x20202020;		/* WWDG, Timer1, Timer2 */
+	ARM_NVIC_IPR(4) = 0x20202020;		/* Timer3, ADC, COMPARATOR */
+	ARM_NVIC_IPR(5) = 0x20202020;		/* SSP2 */
+	ARM_NVIC_IPR(6) = 0x20202020;		/* BACKUP */
+	ARM_NVIC_IPR(7) = 0x20202020;		/* external INT[1:4] */
 
 	main ();
 }

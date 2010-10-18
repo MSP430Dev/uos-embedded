@@ -12,11 +12,11 @@
 #include <gpanel/gpanel.h>
 #include <milandr/k5600bg1.h>
 
-#define NO_TIMER
+//#define NO_TIMER
 
-ARRAY (stack_udp, 1000);
-ARRAY (stack_console, 1000);
-ARRAY (stack_poll, 1000);
+ARRAY (stack_udp, 1500);
+ARRAY (stack_console, 1500);
+ARRAY (stack_poll, 1500);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;

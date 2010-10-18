@@ -26,10 +26,6 @@
 #   include "linux.h"
 #endif
 
-#if ARM_1986BE9
-#   include "amba-pl010.h"
-#endif
-
 /*
  * Start transmitting a byte.
  * Assume the transmitter is stopped, and the transmit queue is not empty.
@@ -38,13 +34,11 @@
 static bool_t
 uart_transmit_start (uart_t *u)
 {
-//debug_printf ("[%08x] ", ((UART_t*)u->port)->FR);
 	if (u->out_first == u->out_last)
 		mutex_signal (&u->transmitter, 0);
 
 	/* Check that transmitter buffer is busy. */
 	if (! test_transmitter_empty (u->port)) {
-//debug_putchar (0, '`');
 		return 1;
 	}
 
@@ -53,15 +47,11 @@ uart_transmit_start (uart_t *u)
 	    (u->cts_query && u->cts_query (u) == 0)) {
 		/* Disable `transmitter empty' interrupt. */
 		disable_transmit_interrupt (u->port);
-//debug_putchar (0, '#');
 		return 0;
 	}
 
 	/* Send byte. */
-//debug_putchar (0, '<');
 	transmit_byte (u->port, *u->out_first);
-//debug_putchar (0, *u->out_first);
-//debug_putchar (0, '>');
 
 	++u->out_first;
 	if (u->out_first >= u->out_buf + UART_OUTBUFSZ)
@@ -69,7 +59,6 @@ uart_transmit_start (uart_t *u)
 
 	/* Enable `transmitter empty' interrupt. */
 	enable_transmit_interrupt (u->port);
-//debug_putchar (0, '~');
 	return 1;
 }
 
@@ -203,7 +192,6 @@ uart_receiver (void *arg)
 
 	for (;;) {
 		mutex_wait (&u->receiver);
-/*debug_printf ("<%08x> ", *AT91C_DBGU_CSR);*/
 
 #ifdef clear_receive_errors
 		clear_receive_errors (u->port);

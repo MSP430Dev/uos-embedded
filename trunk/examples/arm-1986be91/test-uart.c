@@ -7,7 +7,7 @@
 #include <gpanel/gpanel.h>
 #include "board-1986be91.h"
 
-ARRAY (task, 1000);
+ARRAY (task, 1500);
 uart_t uart;
 gpanel_t display;
 
@@ -17,35 +17,26 @@ extern gpanel_font_t font_fixed6x8;
 
 void hello (void *data)
 {
-	puts (&uart, "\nTesting UART.");
+	int c = '!';
 	for (;;) {
-		printf (&uart, "\nHello, World! ");
-#if 0
-		getchar (&uart);
-#else
-		while (peekchar (&uart) < 0) {
-#if 0
-			static int count;
-			if (++count >= 100) {
-				count = 0;
-				debug_printf ("FR=%04x ", ARM_UART2->FR);
-//				debug_printf ("CR=%04x ", ARM_UART2->CR);
-				debug_printf ("IMSC=%04x ", ARM_UART2->IMSC);
-//				debug_printf ("LCR_H=%04x ", ARM_UART2->LCR_H);
-				debug_printf ("RIS=%04x ", ARM_UART2->RIS);
-				debug_printf ("MIS=%04x ", ARM_UART2->MIS);
+		int n;
+		putchar (&uart, '\r');
+		for (n=0; n<79; n++) {
+			int k;
+			for (k=0; k<50; k++) {
+				putchar (&uart, c);
+				putchar (&uart, '\b');
+			}
+			putchar (&uart, c);
+			if (peekchar (&uart) >= 0) {
+				getchar (&uart);
 				break;
 			}
-#endif
-			if (! joystick_down ())
-				down_pressed = 0;
-			else if (! down_pressed) {
-				down_pressed = 1;
-				printf (&uart, "\nHello, World! ");
-			}
-			mdelay (10);
 		}
-#endif
+		putchar (&uart, '\n');
+		c++;
+		if (c > '~')
+			c = '!';
 	}
 }
 
@@ -59,6 +50,7 @@ void gpanel_putchar (void *arg, short c)
 
 void uos_init (void)
 {
+	debug_printf ("\nTesting UART.\n");
 	buttons_init ();
 
 	/* Use LCD panel for debug output. */

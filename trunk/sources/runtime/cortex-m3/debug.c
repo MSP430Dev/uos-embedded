@@ -70,7 +70,7 @@ debug_getchar (void)
 	arm_intr_disable (&x);
 
 	/* Enable receiver. */
-	ARM_UART2->CR |= ARM_UART_CR_RXE;
+	ARM_UART2->CTL |= ARM_UART_CTL_RXE;
 
 	/* Wait until receive data available. */
 	while (ARM_UART2->FR & ARM_UART_FR_RXFE) {
@@ -100,7 +100,7 @@ debug_peekchar (void)
 	arm_intr_disable (&x);
 
 	/* Enable receiver. */
-	ARM_UART2->CR |= ARM_UART_CR_RXE;
+	ARM_UART2->CTL |= ARM_UART_CTL_RXE;
 
 	/* Wait until receive data available. */
 	if (ARM_UART2->FR & ARM_UART_FR_RXFE) {

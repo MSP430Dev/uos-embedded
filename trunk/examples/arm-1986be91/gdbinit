@@ -1,19 +1,19 @@
-#file test-task.elf
+file test-uart.elf
 target extended-remote localhost:2000
 set remote hardware-breakpoint-limit 6
 set remote hardware-watchpoint-limit 4
 
-monitor soft_reset_halt
+#monitor soft_reset_halt
 #monitor reg sp 0x20008000
 #monitor reg pc 0x080000c0
 #si
 
 #hbreak arch_task_switch
 #hbreak uos_init
-hbreak task_schedule
-hbreak arch_intr_allow
-hbreak timer_handler
-c
+#hbreak task_schedule
+#hbreak arch_intr_allow
+#hbreak timer_handler
+#c
 
 define as
 set $old = $pc

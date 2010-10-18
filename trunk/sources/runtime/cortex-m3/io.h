@@ -56,9 +56,20 @@ arm_intr_disable (int *x)
 	int temp;
 
 	asm volatile (
+#if 0
+	"cpsid	i \n"
+"	mrs	%1, basepri \n"		/* Cortex-M3 mode */
+"	mov	%0, #32 \n"		/* basepri := 16 */
+"	msr	basepri, %0 \n"
+"	nop \n"
+"	nop \n"
+"	nop \n"
+"	cpsie	i"
+#else
 	"mrs	%1, basepri \n"		/* Cortex-M3 mode */
-"	mov	%0, #16 \n"		/* basepri := 16 */
+"	mov	%0, #32 \n"		/* basepri := 16 */
 "	msr	basepri, %0"
+#endif
 	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
 }
 
@@ -98,6 +109,36 @@ unsigned arm_get_ipsr ()
 	"mrs	%0, ipsr"
 	: "=r" (x));
 	return x;
+}
+
+/*
+ * Read BASEPRI register.
+ */
+static inline __attribute__ ((always_inline))
+unsigned arm_get_basepri ()
+{
+	unsigned x;
+
+	asm volatile (
+	"mrs	%0, basepri"
+	: "=r" (x));
+	return x;
+}
+
+static void inline __attribute__ ((always_inline))
+arm_set_basepri (unsigned val)
+{
+	asm volatile (
+	"msr	basepri, %0"
+	: : "r" (val) : "memory", "cc");
+}
+
+static void inline __attribute__ ((always_inline))
+arm_set_control (unsigned val)
+{
+	asm volatile (
+	"msr	control, %0"
+	: : "r" (val) : "memory", "cc");
 }
 
 /*

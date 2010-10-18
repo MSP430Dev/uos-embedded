@@ -11,7 +11,9 @@
 #   if __AVR__
 #      define UART_STACKSZ	0x100		/* 100 enough for AVR */
 #   endif
-#   if defined (__arm__) || defined (__thumb__)
+#   if ARM_CORTEX_M3
+#      define UART_STACKSZ	1000
+#   elif defined (__arm__) || defined (__thumb__)
 #      define UART_STACKSZ	0x200
 #   endif
 #   if MIPS32
