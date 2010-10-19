@@ -1,14 +1,16 @@
 /*
+ * Драйвер UART для 1986ВЕ9x.
  * ARM PrimeCell UART (PL010).
- *
- * TODO: implement fast interrupt handling.
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
+#include <kernel/internal.h>
 #include <uart/uart.h>
 
+#define UART_IRQ(port)	(((port)==ARM_UART1_BASE) ? 6 : 7)
+
 /*
- * Setup baudrate generator.
+ * Установка скорости передачи данных.
  */
 static void inline
 setup_baud_rate (unsigned base, unsigned khz, unsigned long baud)
@@ -54,57 +56,25 @@ setup_baud_rate (unsigned base, unsigned khz, unsigned long baud)
 }
 
 /*
- * Start transmitting a byte.
- * Assume the transmitter is stopped, and the transmit queue is not empty.
- * Return 1 when we are expecting the hardware interrupt.
- */
-static void
-uart_transmit_start (uart_t *u)
-{
-	UART_t *reg = (UART_t*) u->port;
-
-	if (u->out_first == u->out_last)
-		mutex_signal (&u->transmitter, 0);
-
-	/* Check that transmitter buffer is busy. */
-	if (reg->FR & ARM_UART_FR_TXFF) {	// FIFO передатчика полно
-		reg->ICR = ARM_UART_RIS_TX;	// сброс прерывания
-		return;
-	}
-
-	/* Nothing to transmit - stop transmitting. */
-	if (u->out_first == u->out_last) {
-		/* Disable `transmitter empty' interrupt. */
-		reg->ICR = ARM_UART_RIS_TX;	// сброс прерывания
-		return;
-	}
-
-	/* Send byte. */
-	reg->DR = *u->out_first++;
-	if (u->out_first >= u->out_buf + UART_OUTBUFSZ)
-		u->out_first = u->out_buf;
-}
-
-/*
- * Wait for transmitter to finish.
+ * Ожидание окончания передачи данных..
  */
 static void
 uart_fflush (uart_t *u)
 {
 	UART_t *reg = (UART_t*) u->port;
 
-	mutex_lock (&u->transmitter);
+	mutex_lock (&u->receiver);
 
-	/* Check that transmitter is enabled. */
+	/* Проверяем, что передатчик включен. */
 	if (reg->CTL & ARM_UART_CTL_TXE)
 		while (u->out_first != u->out_last)
-			mutex_wait (&u->transmitter);
+			mutex_wait (&u->receiver);
 
-	mutex_unlock (&u->transmitter);
+	mutex_unlock (&u->receiver);
 }
 
 /*
- * Send a byte to the UART transmitter.
+ * Отправка одного байта.
  */
 void
 uart_putchar (uart_t *u, short c)
@@ -112,7 +82,7 @@ uart_putchar (uart_t *u, short c)
 	UART_t *reg = (UART_t*) u->port;
 	unsigned char *newlast;
 
-	mutex_lock (&u->transmitter);
+	mutex_lock (&u->receiver);
 
 	/* Check that transmitter is enabled. */
 	if (reg->CTL & ARM_UART_CTL_TXE) {
@@ -120,22 +90,27 @@ again:		newlast = u->out_last + 1;
 		if (newlast >= u->out_buf + UART_OUTBUFSZ)
 			newlast = u->out_buf;
 		while (u->out_first == newlast)
-			mutex_wait (&u->transmitter);
+			mutex_wait (&u->receiver);
 
 		*u->out_last = c;
 		u->out_last = newlast;
-		uart_transmit_start (u);
+		if (! (reg->FR & ARM_UART_FR_TXFF)) {
+			/* В буфере FIFO передатчика есть место. */
+			reg->DR = *u->out_first++;
+			if (u->out_first >= u->out_buf + UART_OUTBUFSZ)
+				u->out_first = u->out_buf;
+		}
 
 		if (c == '\n') {
 			c = '\r';
 			goto again;
 		}
 	}
-	mutex_unlock (&u->transmitter);
+	mutex_unlock (&u->receiver);
 }
 
 /*
- * Wait for the byte to be received and return it.
+ * Приём одного байта с ожиданием.
  */
 unsigned short
 uart_getchar (uart_t *u)
@@ -156,6 +131,11 @@ uart_getchar (uart_t *u)
 	return c;
 }
 
+/*
+ * Просмотр первого принятого байта, без ожидания.
+ * Байт остаётся в буфере и должен быть извлечён вызовом uart_getchar().
+ * Если буфер пустой, возвращается -1.
+ */
 int
 uart_peekchar (uart_t *u)
 {
@@ -168,38 +148,72 @@ uart_peekchar (uart_t *u)
 }
 
 /*
- * Fast interrupt handler.
- * Assume the transmitter is stopped, and the transmit queue is not empty.
- * Return 1 when we are expecting the hardware interrupt.
+ * Быстрый обработчик прерывания.
+ * Возвращает 0, если требуется послать сигнал мутексу.
+ * Возвращает 1, если прерывание полностью обработано и
+ * нет необходимости беспокоить мутекс.
  */
 static bool_t
-uart_interrupt (uart_t *u)
+uart_interrupt (void *arg)
 {
+	uart_t *u = arg;
 	UART_t *reg = (UART_t*) u->port;
+	bool_t passive = 1;
 
-//debug_printf ("[%08x] ", reg->FR);
-	return 0;
+	/* Приём. */
+	unsigned got_data = 0;
+	while (! (reg->FR & ARM_UART_FR_RXFE)) {
+		/* В буфере FIFO приемника есть данные. */
+		unsigned c = reg->DR;
+
+		unsigned char *newlast = u->in_last + 1;
+		if (newlast >= u->in_buf + UART_INBUFSZ)
+			newlast = u->in_buf;
+
+		/* Если нет места в буфере - теряем данные. */
+		if (u->in_first != newlast) {
+			*u->in_last = c;
+			u->in_last = newlast;
+		}
+		passive = 0;
+	}
+
+	/* Передача. */
+	if (reg->RIS & ARM_UART_RIS_TX) {
+		if (u->out_first != u->out_last) {
+			/* Шлём очередной байт. */
+			reg->DR = *u->out_first;
+			if (++u->out_first >= u->out_buf + UART_OUTBUFSZ)
+				u->out_first = u->out_buf;
+			if (passive)
+				arch_intr_allow (UART_IRQ (u->port));
+		} else {
+			/* Нет данных для передачи - сброс прерывания. */
+			reg->ICR = ARM_UART_RIS_TX;
+			passive = 0;
+		}
+	}
+	return passive;
 }
 
 /*
- * Interrupt task.
+ * Задача обслуживания прерывания от UART.
  */
 static void
 uart_task (void *arg)
 {
 	uart_t *u = arg;
 	UART_t *reg = (UART_t*) u->port;
-	unsigned char c = 0, *newlast;
 
 	/*
 	 * Enable UART.
 	 */
-	mutex_lock_irq (&u->receiver, (u->port==ARM_UART1_BASE) ? 6 : 7,
+	mutex_lock_irq (&u->receiver, UART_IRQ (u->port),
 		uart_interrupt, arg);
 	reg->CTL = 0;
 
 	/* Управление линией */
-	reg->LCRH = ARM_UART_LCRH_WLEN8;	// длина слова 8 бит
+	reg->LCRH = ARM_UART_LCRH_WLEN8 |	// длина слова 8 бит
 		   ARM_UART_LCRH_FEN;		// FIFO
 
 	/* Пороги FIFO */
@@ -216,41 +230,22 @@ uart_task (void *arg)
 	reg->CTL |= ARM_UART_CTL_UARTEN;	// пуск приемопередатчика
 
 	for (;;) {
-		unsigned ris = reg->RIS;
-		if (! (ris & ARM_UART_RIS_RX)) {
-			if (ris & ARM_UART_RIS_TX) {
-				uart_transmit_start (u);
-			}
-
-			mutex_wait (&u->receiver);
-			continue;
-		}
-
-		/* Check that receive data is available,
-		 * and get the received byte. */
-		if (reg->FR & ARM_UART_FR_RXFE) 	// FIFO приемника пусто
-			continue;
-		c = reg->DR;				// данные
-
-		newlast = u->in_last + 1;
-		if (newlast >= u->in_buf + UART_INBUFSZ)
-			newlast = u->in_buf;
-
-		/* Ignore input on buffer overflow. */
-		if (u->in_first == newlast)
-			continue;
-
-		*u->in_last = c;
-		u->in_last = newlast;
+		mutex_wait (&u->receiver);
 	}
 }
 
+/*
+ * Возвращает адрес мутекса, получающего сигналы при приёме новых данных.
+ */
 mutex_t *
 uart_receive_lock (uart_t *u)
 {
 	return &u->receiver;
 }
 
+/*
+ * Stream-интерфейс для UART.
+ */
 static stream_interface_t uart_interface = {
 	.putc = (void (*) (stream_t*, short))		uart_putchar,
 	.getc = (unsigned short (*) (stream_t*))	uart_getchar,
@@ -259,6 +254,13 @@ static stream_interface_t uart_interface = {
 	.receiver = (mutex_t *(*) (stream_t*))		uart_receive_lock,
 };
 
+/*
+ * Инициализация UART:
+ * port	- номер порта, 0 или 1
+ * prio - приоритет задачи обработки прерываний
+ * khz  - опорная частота, кГц
+ * baud - требуемая скорость передачи данных, бит/сек
+ */
 void
 uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 	unsigned long baud)
