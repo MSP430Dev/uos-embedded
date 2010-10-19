@@ -45,10 +45,12 @@ again:
 		continue;
 
 	watchdog_alive ();
+	/*
 	if (c == '\n') {
 		c = '\r';
 		goto again;
 	}
+	*/
 	arm_intr_restore (x);
 }
 

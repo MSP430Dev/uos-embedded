@@ -123,10 +123,12 @@ again:		newlast = u->out_last + 1;
 		u->out_last = newlast;
 		uart_transmit_start (u);
 
+		/*
 		if (c == '\n') {
 			c = '\r';
 			goto again;
 		}
+		*/
 	}
 	mutex_unlock (&u->transmitter);
 }

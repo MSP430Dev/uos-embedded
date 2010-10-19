@@ -271,6 +271,24 @@ typedef struct
 #define ARM_PLL_CONTROL_CPU_MUL(n)	(((n)-1) << 8)	/* Коэффициент умножения для CPU PLL */
 
 /*
+ * Регистр ADC_MCO_CLOCK: управление блоками АЦП
+ */
+#define ARM_ADC_C1_SEL(x)	((x) << 0)	/* Выбор источника для ADC_C1. Возможные значения см. ниже */
+#define ARM_ADC_C2_SEL(x)	((x) << 4)	/* Выбор источника для ADC_C2. Возможные значения см. ниже */
+#define ARM_ADC_C3_SEL(x)	((x) << 8)	/* Выбор источника для ADC_C3. Делитель для ADC_C3 опеределяется из выражения ADC_C3 = ADC_C2/(ADC_C3_SEL+1) */
+#define ARM_ADC_CLK_EN		(1 << 13)	/* Разрешение тактовой частоты */
+/* Возможные источники тактовой частоты для ADC_C1 */
+#define ARM_ADC_CPU_C1		0
+#define ARM_ADC_USB_C1		1
+#define ARM_ADC_CPU_C2		2
+#define ARM_ADC_USB_C2		3
+/* Выбор источника для ADC_C2 */
+#define ARM_ADC_LSE		0
+#define ARM_ADC_LSI		1
+#define ARM_ADC_ADC_C1		2
+#define ARM_ADC_HSI_C1		3
+
+/*
  * Регистр PER_CLOCK: включение тактирования периферийных блоков.
  */
 #define ARM_PER_CLOCK_CAN1	(1 << 0)
@@ -357,6 +375,16 @@ typedef struct
 #define ARM_UART_CLOCK_EN1	(1 << 24)	/* Разрешение тактовой частоты на UART1 */
 #define ARM_UART_CLOCK_BRG2(n)	((n) << 8)	/* Делитель тактовой частоты UART2 */
 #define ARM_UART_CLOCK_BRG1(n)	(n)		/* Делитель тактовой частоты UART1 */
+
+/*
+ * Регистр TIM_CLOCK: управление тактовой частотой таймеров
+ */
+#define ARM_TIM1_BRG(x)		((x) << 0)	/* Делитель тактовой частоты TIM1 */
+#define ARM_TIM2_BRG(x)		((x) << 8)	/* Делитель тактовой частоты TIM2 */
+#define ARM_TIM3_BRG(x)		((x) << 16)	/* Делитель тактовой частоты TIM3 */
+#define ARM_TIM1_CLK_EN		(1 << 24)	/* Разрешение тактовой частоты на TIM1 */
+#define ARM_TIM2_CLK_EN		(1 << 25)	/* Разрешение тактовой частоты на TIM2 */
+#define ARM_TIM3_CLK_EN		(1 << 26)	/* Разрешение тактовой частоты на TIM3 */
 
 /*------------------------------------------------------
  * UART
@@ -579,6 +607,107 @@ typedef struct
 #define ARM_TIMER1		((TIMER_t*) ARM_TIMER1_BASE)
 #define ARM_TIMER2		((TIMER_t*) ARM_TIMER2_BASE)
 #define ARM_TIMER3		((TIMER_t*) ARM_TIMER3_BASE)
+
+/*
+ * Регистр TIM_CNTRL
+ */
+#define ARM_TIM_CNT_EN		(1 << 0)	/* Разрешение работы таймера */
+#define ARM_TIM_ARRB_EN		(1 << 1)	/* Разрешение мгновенного обновления ARR */
+#define ARM_TIM_WR_CMPL		(1 << 2)	/* Окончание записи, при задании нового значения регистров CNT, PSG и ARR */
+#define ARM_TIM_DIR		(1 << 3)	/* Направление счета основного счетчика. Возможные значения см. ниже */
+#define ARM_TIM_FDTS(x)		((x) << 4)	/* Частота семплирования данных FDTS */
+#define ARM_TIM_CNT_MODE(x)	((x) << 6)	/* Режим счета основного счетчика*/
+#define ARM_TIM_EVENT_SEL(x)	((x) << 8)	/* Биты выбора источника событий */
+
+/* Направления счета таймера */
+#define ARM_TIM_DIR_UP		0		/* вверх, от 0 до ARR */
+#define ARM_TIM_DIR_DOWN	1		/* вниз, от ARR до 0 */
+
+/*
+ * Регистры TIM_CHx_CNTRL
+ */
+#define ARM_TIM_CHFLTR(x)	((x) << 0)	/* Где зафиксирован сигнал */
+#define ARM_TIM_CHSEL(x)	((x) << 4)	/* Выбор события по входному каналу */
+#define ARM_TIM_CHPSC(x)	((x) << 6)	/* Предварительный делитель входного канала */
+#define ARM_TIM_OCCE		(1 << 8)	/* Разрешение работы ETR */
+#define ARM_TIM_OCCM(x)		((x) << 9)	/* Формат выработки сигнала REF в режиме ШИМ */
+#define ARM_TIM_BRKEN		(1 << 12)	/* Разрешение сброса по выводу BRK */
+#define ARM_TIM_ETREN		(1 << 13)	/* Разрешения сброса по выводу ETR */
+#define ARM_TIM_WR_CMPL_CCR	(1 << 14)	/* Флаг окончания записи, при задании нового значения регистра CCR */
+#define ARM_TIM_CAP_nPWM	(1 << 15)	/* Режим работы канала Захват или ШИМ: 1 – канал работает в режиме Захват
+						 * 0 – канал работает в режиме ШИМ */
+
+/*
+ * Регистры TIM_CHx_CNTRL1
+ */
+#define ARM_TIM_SELOE(x)	((x) << 0)	/* Режим работы канала на выход */
+#define ARM_TIM_SELO(x)		((x) << 2)	/* Режим работы выхода канала */
+#define ARM_TIM_INV		(1 << 4)	/* Режим выходной инверсии */
+#define ARM_TIM_NSELOE(x)	((x) << 8)	/* Режим работы канала на выход */
+#define ARM_TIM_NSELO(x)	((x) << 10)	/* Режим работы выхода канала */
+#define ARM_TIM_NINV		(1 << 12)	/* Режим выходной инверсии */
+
+/*
+ * Регистры TIM_CHx_CNTRL2
+ */
+#define ARM_TIM_CHSEL1(x)	((x) << 0)	/* Выбор события по входному каналу для CAP1 */
+#define ARM_TIM_CCR1_EN		(1 << 2)	/* Разрешение работы регистра CCR1 */
+#define ARM_TIM_CRRRLD		(1 << 3)	/* Разрешение обновления регистров CCR и CCR1 */
+
+/*
+ * Регистры TIM_CHx_DTG
+ */
+#define ARM_TIM_DTG(x)		((x) << 0)	/* Предварительный делитель частоты DTG */
+#define ARM_TIM_EDTS		(1 << 4)	/* Частота работы DTG */
+#define ARM_TIM_DTGx(x)		((x) << 8)	/* Основной делитель частоты. Задержка DTGdel = DTGx*(DTG+1) */
+
+/*
+ * Регистр TIM_BRKETR_CNTRL
+ */
+#define ARM_TIM_BRK_INV		(1 << 0)	/* Инверсия входа BRK */
+#define ARM_TIM_ETR_INV		(1 << 1)	/* Инверсия входа ETR */
+#define ARM_TIM_ETRPSC(x)	((x) << 2)	/* Асинхронный пред. делитель внешней частоты */
+#define ARM_TIM_ETR_FILTER(x)	((x) << 4)	/* Цифровой фильтр на входе ETR. (Где зафиксирован сигнал) */
+
+/*
+ * Регистр TIM_STATUS
+ */
+#define ARM_TIM_CNT_ZERO_EVENT		(1 << 0)	/* Событие совпадения CNT с нулем */
+#define ARM_TIM_CNT_ARR_EVENT		(1 << 1)	/* Событие совпадения CNT с ARR */
+#define ARM_TIM_ETR_RE_EVENT		(1 << 2)	/* Событие переднего фронта на входе ETR */
+#define ARM_TIM_ETR_FE_EVENT		(1 << 3)	/* Событие заднего фронта на входе ETR */
+#define ARM_TIM_BRK_EVENT		(1 << 4)	/* Триггерированное по PCLK состояние входа BRK, 0 – BRK == 0, 1 – BRK == 1 */
+#define ARM_TIM_CCR_CAP_EVENT(x)	((x) << 5)`	/* Событие переднего фронта на входе CAP каналов таймера */
+#define ARM_TIM_CCR_REF_EVENT(x)	((x) << 9)`	/* Событие переднего фронта на входе REF каналов таймера */
+#define ARM_TIM_CCR_CAP1_EVENT(x)	((x) << 13)`	/* Событие переднего фронта на входе CAP1 каналов таймера */
+
+/*
+ * Регистр TIM_IE
+ */
+#define ARM_TIM_CNT_ZERO_EVENT_IE	(1 << 0)		/* Флаг разрешения прерывания по событию совпадения CNT и нуля */
+#define ARM_TIM_CNT_ARR_EVENT_IE	(1 << 1)		/* Флаг разрешения прерывания по событию совпадения CNT и ARR */
+#define ARM_TIM_ETR_RE_EVENT_IE		(1 << 2)		/* Флаг разрешения прерывания по переднему фронту на входе ETR */
+#define ARM_TIM_ETR_FE_EVENT_IE		(1 << 3)		/* Флаг разрешения прерывания по заднему фронту на входе ETR */
+#define ARM_TIM_CCR_CAP_EVENT_IE(n)	((1 << (n)) << 5)	/* Флаг разрешения прерывания по событию переднего фронта на
+								 * выходе CAP каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CCR_EVENT_IE(n)	((1 << (n)) << 9)	/* Флаг разрешения прерывания по событию переднего фронта на
+								 * выходе REF каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CAP1_EVENT_IE(n)	((1 << (n)) << 13)	/* Флаг разрешения прерывания по событию переднего фронта на
+								 * выходе CAP1 каналов таймера. n - номер канала */
+
+/*
+ * Регистр TIM_DMA_RE
+ */
+#define ARM_TIM_CNT_ZERO_EVENT_RE	(1 << 0)		/* Флаг разрешения запроса DMA по событию совпадения CNT и нуля */
+#define ARM_TIM_CNT_ARR_EVENT_RE	(1 << 1)		/* Флаг разрешения запроса DMA по событию совпадения CNT и ARR */
+#define ARM_TIM_ETR_RE_EVENT_RE		(1 << 2)		/* Флаг разрешения запроса DMA по переднему фронту на входе ETR */
+#define ARM_TIM_ETR_FE_EVENT_RE		(1 << 3)		/* Флаг разрешения запроса DMA по заднему фронту на входе ETR */
+#define ARM_TIM_CCR_CAP_EVENT_RE(n)	((1 << (n)) << 5)	/* Флаг разрешения запроса DMA по событию переднего фронта на
+								 * выходе CAP каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CCR_EVENT_RE(n)	((1 << (n)) << 9)	/* Флаг разрешения запроса DMA по событию переднего фронта на
+								 * выходе REF каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CAP1_EVENT_RE(n)	((1 << (n)) << 13)	/* Флаг разрешения запроса DMA по событию переднего фронта на
+								 * выходе CAP1 каналов таймера. n - номер канала */
 
 /*------------------------------------------------------
  * Battery backup
@@ -1319,6 +1448,91 @@ typedef struct
 #define	CAN_DLC_R0		(1 << 10)	/* Всегда должно быть “0” */
 #define	CAN_DLC_SSR		(1 << 11)	/* Всегда должно быть “1” */
 #define	CAN_DLC_IDE		(1 << 12)	/* Расширенный формат */
+
+/*-----------------------------------
+ * Описание регистров контроллера АЦП
+ */
+typedef struct
+{
+	arm_reg_t ADC1_CFG;
+	arm_reg_t ADC2_CFG;
+	arm_reg_t ADC1_H_LEVEL;  
+	arm_reg_t ADC2_H_LEVEL;
+	arm_reg_t ADC1_L_LEVEL;
+	arm_reg_t ADC2_L_LEVEL;
+	arm_reg_t ADC1_RESULT;
+	arm_reg_t ADC2_RESULT;
+	arm_reg_t ADC1_STATUS;
+	arm_reg_t ADC2_STATUS;
+	arm_reg_t ADC1_CHSEL;
+	arm_reg_t ADC2_CHSEL;
+} ADC_t;
+
+#define ARM_ADC			((ADC_t*) ARM_ADC_BASE)
+
+/*
+ * Регистр ADC1_CFG
+ */
+#define ARM_CFG_REG_ADON	(1 << 0)	/* Включение АЦП */
+#define ARM_CFG_REG_GO		(1 << 1)	/* Начало преобразования. Запись “1” начинает 
+						 * процесс преобразования, сбрасывается автоматически */
+#define ARM_CFG_REG_CLKS	(1 << 2)	/* Выбор источника синхросигнала CLK работы ADC. Возможные значения см. ниже */
+#define ARM_CFG_REG_SAMPLE	(1 << 3)	/* Выбор способа запуска АЦП. Возможные значения см. ниже */
+#define ARM_CFG_REG_CHS(x)	((x) << 4)	/* Номер аналогового канала, по которому поступает сигнал для преобразования */
+#define ARM_CFG_REG_CHCH	(1 << 9)	/* Включение переключения каналов */
+#define ARM_CFG_REG_RNGC	(1 << 10)	/* Разрешение автоматического контролирования уровней */
+#define ARM_CFG_M_REF		(1 << 11)	/* Выбор источника опорных напряжений. Возможные значения см. ниже */
+#define ARM_CFG_REG_DIVCLK(x)	((x) << 12)	/* Выбор коэффициента деления входной частоты. 
+						 * 0000 - CLK, 0001 - CLK/2, ..., 1111 - CLK/32768 */
+#define ARM_CFG_SYNC_CONVER	(1 << 16)	/* Запускает работу двух АЦП одновременно, при этом биты
+						 * конфигурации второго АЦП, такие как Cfg_REG_DIVCLK,
+						 * Cfg_REG_ADON, Cfg_M_REF и Cfg_REG_CHS берутся из
+						 * регистра конфигурации первого */
+#define ARM_TS_EN		(1 << 17)	/* Включение датчика температуры и источника опорного напряжения */
+#define ARM_TS_BUF_EN		(1 << 18)	/* Включение выходного усилителя для датчика температуры и
+						 * источника опорного напряжения */
+#define ARM_SEL_TS		(1 << 19)	/* Включение оцифровки датчика температуры
+						 * Должен использоваться совместно с выбором канала Cfg_REG_CHS = 31 */
+#define ARM_SEL_VREF		(1 << 20)	/* Включение оцифровки источника опорного напряжения на 1.23В */
+#define ARM_TR(x)		((x) << 21)	/* Подстройка опорного напряжения */
+#define ARM_DELAY_GO(x)		((x) << 25)	/* Задержка в тактах перед началом следующего преобразования после завершения
+						 * предыдущего при последовательном переборе каналов */
+#define ARM_DELAY_ADC(x)	((x) << 28)	/* Задержка в тактах между началом преобразования ADC1 и ADC2 при
+						 * ADC последовательном переборе, либо работе на один канал */
+/*
+ * Регистр ADC2_CFG - приведены только те поля, которые отличаются от регистра ADC1_CFG
+ */
+#define ARM_ADC1_OP		(1 << 17)	/* Выбор источника опорного напряжения 1.23В */
+#define ARM_ADC2_OP		(1 << 18)	/* Выбор источника опорного напряжения 1.23В */
+
+/* Источник синхросигнала CLK */
+#define ARM_ADC_CPU_CKL		0
+#define ARM_ADC_ADC_CKL		1
+/* Способы запуска АЦП */
+#define ARM_ADC_START_SINGLE	0	/* одиночный запуск */	
+#define ARM_ADC_START_SEQ	1	/* последовательный, автоматический запуск после завершения предыдущего преобразования */
+/* Выбор источника опорных напряжений */
+#define ARM_ADC_REF_INT		0	/* внутреннее опорное напряжение (от AUcc и AGND) */
+#define ARM_ADC_REF_EXT		1	/* внешнее опорное напряжение (от ADC0_REF+ и ADC1_REF- для ADC1_CFG и 
+					 * от датчика температуры для ADC2_CFG) */
+
+/*
+ * Регистры ADCx_STATUS
+ */
+#define ARM_FLG_REG_OVERWRITE	(1 << 0)	/* Данные в регистре результата были перезаписаны, данный флаг 
+						 * сбрасывается только при записи в регистр флагов */
+#define ARM_FLG_REG_AWOIFEN	(1 << 1)	/* Флаг выставляется, когда результат преобразования выше верней
+						 * или ниже нижней границы автоматического контролирования
+						 * уровней. Очищается считыванием результата из регистра */
+#define ARM_FLG_REG_EOCIF	(1 << 2)	/* Флаг выставляется, когда закончено преобразования и данные еще
+						 * не считаны. Очищается считыванием результата из регистра*/
+#define ARM_AWOIF_IE		(1 << 3)	/* Флаг разрешения генерирования прерывания по событию Flg_REG_AWOIFEN */
+#define ARM_ECOIF_IE		(1 << 4)	/* Флаг разрешения генерирования прерывания по событию Flg_REG_ECOIF */
+
+/*
+ * Регистры ADCx_CHSEL: выбор канала АЦП
+ */
+#define ARM_ADC_CHANNEL(n)	(1 << (n))	/* Номер канала */
 
 
 /* End of Milandr 1986BE9x register definitions.
