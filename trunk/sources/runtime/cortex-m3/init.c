@@ -93,13 +93,15 @@ _init_ (void)
 	/* Set stack to end of internal SRAM. */
 	arm_set_stack_pointer ((void*) (ARM_SRAM_BASE + ARM_SRAM_SIZE));
 
-	/* Initialize priority of exceptions. */
+	/* Initialize priority of exceptions.
+	 * Only faults and SVC are permitted when interrupts are disabled
+	 * (priority level = 0).  All other interrupts have level 32. */
 	ARM_SCB->SHPR1 = ARM_SHPR1_UFAULT(0) |	/* usage fault */
 			 ARM_SHPR1_BFAULT(0) |	/* bus fault */
 			 ARM_SHPR1_MMFAULT(0);	/* memory management fault */
         ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
-        ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(16) | /* SysTick */
-			 ARM_SHPR3_PENDSV(16);	/* PendSV */
+        ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(32) | /* SysTick */
+			 ARM_SHPR3_PENDSV(32);	/* PendSV */
 
 	ARM_NVIC_IPR(0) = 0x20202020;		/* CAN1, CAN2, USB */
 	ARM_NVIC_IPR(1) = 0x20202020;		/* DMA, UART1, UART2 */
