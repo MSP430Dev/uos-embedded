@@ -536,16 +536,16 @@ typedef struct
  */
 typedef struct
 {
-	arm_reg_t SSPCR0;
-	arm_reg_t SSPCR1;
-	arm_reg_t SSPDR;
-	arm_reg_t SSPSR;
-	arm_reg_t SSPCPSR;
-	arm_reg_t SSPIMSC;
-	arm_reg_t SSPRIS;
-	arm_reg_t SSPMIS;
-	arm_reg_t SSPICR;
-	arm_reg_t SSPDMACR;
+	arm_reg_t CR0;			/* Управление 0 */
+	arm_reg_t CR1;			/* Управление 1 */
+	arm_reg_t DR;			/* Буфер данных FIFO */
+	arm_reg_t SR;			/* Состояние */
+	arm_reg_t CPSR;			/* Делитель тактовой частоты */
+	arm_reg_t IM;			/* Маска прерывания */
+	arm_reg_t RIS;			/* Состояние прерываний */
+	arm_reg_t MIS;			/* Состояние прерываний с учётом маскирования */
+	arm_reg_t ICR;			/* Сброс прерываний */
+	arm_reg_t DMACR;		/* Управление DMA */
 } SSP_t;
 
 typedef struct
@@ -564,6 +564,48 @@ typedef struct
 #define ARM_SSP2		((SSP_t*) ARM_SSP2_BASE)
 #define ARM_SSP1TEST		((SSPTEST_t*) (ARM_SSP1_BASE + 0x0FE0))
 #define ARM_SSP2TEST		((SSPTEST_t*) (ARM_SSP2_BASE + 0x0FE0))
+
+/*
+ * Регистр SSP CR0 - управление 0
+ */
+#define ARM_SSP_CR0_SCR(n)	((n) << 8)	/* Скорость обмена */
+#define ARM_SSP_CR0_SPH		(1 << 7)	/* Фаза сигнала CLKOUT */
+#define ARM_SSP_CR0_SPO		(1 << 6)	/* Полярность сигнала CLKOUT */
+#define ARM_SSP_CR0_FRF_SPI	(0 << 4)	/* Протокол SPI фирмы Motorola */
+#define ARM_SSP_CR0_FRF_SSI	(1 << 4)	/* Протокол SSI фирмы Texas Instruments */
+#define ARM_SSP_CR0_FRF_MW	(2 << 4)	/* Протокол Microwire фирмы National Semiconductor */
+#define ARM_SSP_CR0_DSS(n)	((n)-1)		/* Размер данных в битах, 4..16 */
+
+/*
+ * Регистр SSP CR1 - управление 1
+ */
+#define ARM_SSP_CR1_SOD		(1 << 3)	/* Запрет TXD в режиме ведомого */
+#define ARM_SSP_CR1_MS		(1 << 2)	/* Ведомый режим работы */
+#define ARM_SSP_CR1_SSE		(1 << 1)	/* Разрешение работы */
+#define ARM_SSP_CR1_LBM		(1 << 0)	/* Режим шлейфа */
+
+/*
+ * Регистр SSP SR - состояние
+ */
+#define ARM_SSP_SR_BSY		(1 << 4)	/* Идёт передача или приём */
+#define ARM_SSP_SR_RFF		(1 << 3)	/* Буфер FIFO приемника заполнен */
+#define ARM_SSP_SR_RNE		(1 << 2)	/* Буфер FIFO приемника не пуст */
+#define ARM_SSP_SR_TNF		(1 << 1)	/* Буфер FIFO передатчика не заполнен */
+#define ARM_SSP_SR_TFE		(1 << 0)	/* Буфер FIFO передатчика пуст */
+
+/*
+ * Регистры SSP IM, RIS, MIS, ICR - маски и статусы прерывания
+ */
+#define ARM_SSP_IM_TX		(1 << 3)	/* 50% буфера FIFO передатчика */
+#define ARM_SSP_IM_RX		(1 << 2)	/* 50% буфера FIFO приёмника */
+#define ARM_SSP_IM_RT		(1 << 1)	/* Таймаут приёмника */
+#define ARM_SSP_IM_ROR		(1 << 0)	/* Переполнение буфера приёмника */
+
+/*
+ * Регистр SSP DMACR - управление DMA
+ */
+#define ARM_SSP_DMACR_TX	(1 << 1)	/* Использование DMA при передаче */
+#define ARM_SSP_DMACR_RX	(1 << 0)	/* Использование DMA при приёме */
 
 /*------------------------------------------------------
  * Timers
@@ -884,328 +926,20 @@ typedef struct
 // Channel control data structure
 typedef struct
 {
-	arm_reg_t PRIMARY_CH0_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH0_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH0_CONTROL;
-	arm_reg_t PRIMARY_CH0_UNUSED;
+	arm_reg_t SOURCE_END_POINTER;
+	arm_reg_t DEST_END_POINTER;
+	arm_reg_t CONTROL;
+	arm_reg_t UNUSED;
+} DMA_Data_t;
 
-	arm_reg_t PRIMARY_CH1_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH1_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH1_CONTROL;
-	arm_reg_t PRIMARY_CH1_UNUSED;
-
-	arm_reg_t PRIMARY_CH2_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH2_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH2_CONTROL;
-	arm_reg_t PRIMARY_CH2_UNUSED;
-
-	arm_reg_t PRIMARY_CH3_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH3_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH3_CONTROL;
-	arm_reg_t PRIMARY_CH3_UNUSED;
-
-	arm_reg_t PRIMARY_CH4_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH4_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH4_CONTROL;
-	arm_reg_t PRIMARY_CH4_UNUSED;
-
-	arm_reg_t PRIMARY_CH5_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH5_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH5_CONTROL;
-	arm_reg_t PRIMARY_CH5_UNUSED;
-
-	arm_reg_t PRIMARY_CH6_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH6_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH6_CONTROL;
-	arm_reg_t PRIMARY_CH6_UNUSED;
-
-	arm_reg_t PRIMARY_CH7_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH7_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH7_CONTROL;
-	arm_reg_t PRIMARY_CH7_UNUSED;
-
-	arm_reg_t PRIMARY_CH8_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH8_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH8_CONTROL;
-	arm_reg_t PRIMARY_CH8_UNUSED;
-
-	arm_reg_t PRIMARY_CH9_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH9_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH9_CONTROL;
-	arm_reg_t PRIMARY_CH9_UNUSED;
-
-	arm_reg_t PRIMARY_CH10_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH10_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH10_CONTROL;
-	arm_reg_t PRIMARY_CH10_UNUSED;
-
-	arm_reg_t PRIMARY_CH11_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH11_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH11_CONTROL;
-	arm_reg_t PRIMARY_CH11_UNUSED;
-
-	arm_reg_t PRIMARY_CH12_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH12_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH12_CONTROL;
-	arm_reg_t PRIMARY_CH12_UNUSED;
-
-	arm_reg_t PRIMARY_CH13_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH13_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH13_CONTROL;
-	arm_reg_t PRIMARY_CH13_UNUSED;
-
-	arm_reg_t PRIMARY_CH14_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH14_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH14_CONTROL;
-	arm_reg_t PRIMARY_CH14_UNUSED;
-
-	arm_reg_t PRIMARY_CH15_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH15_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH15_CONTROL;
-	arm_reg_t PRIMARY_CH15_UNUSED;
-
-	arm_reg_t PRIMARY_CH16_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH16_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH16_CONTROL;
-	arm_reg_t PRIMARY_CH16_UNUSED;
-
-	arm_reg_t PRIMARY_CH17_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH17_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH17_CONTROL;
-	arm_reg_t PRIMARY_CH17_UNUSED;
-
-	arm_reg_t PRIMARY_CH18_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH18_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH18_CONTROL;
-	arm_reg_t PRIMARY_CH18_UNUSED;
-
-	arm_reg_t PRIMARY_CH19_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH19_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH19_CONTROL;
-	arm_reg_t PRIMARY_CH19_UNUSED;
-
-	arm_reg_t PRIMARY_CH20_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH20_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH20_CONTROL;
-	arm_reg_t PRIMARY_CH20_UNUSED;
-
-	arm_reg_t PRIMARY_CH21_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH21_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH21_CONTROL;
-	arm_reg_t PRIMARY_CH21_UNUSED;
-
-	arm_reg_t PRIMARY_CH22_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH22_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH22_CONTROL;
-	arm_reg_t PRIMARY_CH22_UNUSED;
-
-	arm_reg_t PRIMARY_CH23_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH23_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH23_CONTROL;
-	arm_reg_t PRIMARY_CH23_UNUSED;
-
-	arm_reg_t PRIMARY_CH24_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH24_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH24_CONTROL;
-	arm_reg_t PRIMARY_CH24_UNUSED;
-
-	arm_reg_t PRIMARY_CH25_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH25_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH25_CONTROL;
-	arm_reg_t PRIMARY_CH25_UNUSED;
-
-	arm_reg_t PRIMARY_CH26_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH26_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH26_CONTROL;
-	arm_reg_t PRIMARY_CH26_UNUSED;
-
-	arm_reg_t PRIMARY_CH27_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH27_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH27_CONTROL;
-	arm_reg_t PRIMARY_CH27_UNUSED;
-
-	arm_reg_t PRIMARY_CH28_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH28_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH28_CONTROL;
-	arm_reg_t PRIMARY_CH28_UNUSED;
-
-	arm_reg_t PRIMARY_CH29_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH29_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH29_CONTROL;
-	arm_reg_t PRIMARY_CH29_UNUSED;
-
-	arm_reg_t PRIMARY_CH30_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH30_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH30_CONTROL;
-	arm_reg_t PRIMARY_CH30_UNUSED;
-
-	arm_reg_t PRIMARY_CH31_SOURCE_END_POINTER;
-	arm_reg_t PRIMARY_CH31_DEST_END_POINTER;
-	arm_reg_t PRIMARY_CH31_CONTROL;
-	arm_reg_t PRIMARY_CH31_UNUSED;
+typedef struct
+{
+	DMA_Data_t PRIMARY_CH [32];
 } DMA_PrimaryData_t;
 
 typedef struct
 {
-	arm_reg_t ALT_CH0_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH0_DEST_END_POINTER;
-	arm_reg_t ALT_CH0_CONTROL;
-	arm_reg_t ALT_CH0_UNUSED;
-
-	arm_reg_t ALT_CH1_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH1_DEST_END_POINTER;
-	arm_reg_t ALT_CH1_CONTROL;
-	arm_reg_t ALT_CH1_UNUSED;
-
-	arm_reg_t ALT_CH2_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH2_DEST_END_POINTER;
-	arm_reg_t ALT_CH2_CONTROL;
-	arm_reg_t ALT_CH2_UNUSED;
-
-	arm_reg_t ALT_CH3_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH3_DEST_END_POINTER;
-	arm_reg_t ALT_CH3_CONTROL;
-	arm_reg_t ALT_CH3_UNUSED;
-
-	arm_reg_t ALT_CH4_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH4_DEST_END_POINTER;
-	arm_reg_t ALT_CH4_CONTROL;
-	arm_reg_t ALT_CH4_UNUSED;
-
-	arm_reg_t ALT_CH5_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH5_DEST_END_POINTER;
-	arm_reg_t ALT_CH5_CONTROL;
-	arm_reg_t ALT_CH5_UNUSED;
-
-	arm_reg_t ALT_CH6_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH6_DEST_END_POINTER;
-	arm_reg_t ALT_CH6_CONTROL;
-	arm_reg_t ALT_CH6_UNUSED;
-
-	arm_reg_t ALT_CH7_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH7_DEST_END_POINTER;
-	arm_reg_t ALT_CH7_CONTROL;
-	arm_reg_t ALT_CH7_UNUSED;
-
-	arm_reg_t ALT_CH8_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH8_DEST_END_POINTER;
-	arm_reg_t ALT_CH8_CONTROL;
-	arm_reg_t ALT_CH8_UNUSED;
-
-	arm_reg_t ALT_CH9_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH9_DEST_END_POINTER;
-	arm_reg_t ALT_CH9_CONTROL;
-	arm_reg_t ALT_CH9_UNUSED;
-
-	arm_reg_t ALT_CH10_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH10_DEST_END_POINTER;
-	arm_reg_t ALT_CH10_CONTROL;
-	arm_reg_t ALT_CH10_UNUSED;
-
-	arm_reg_t ALT_CH11_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH11_DEST_END_POINTER;
-	arm_reg_t ALT_CH11_CONTROL;
-	arm_reg_t ALT_CH11_UNUSED;
-
-	arm_reg_t ALT_CH12_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH12_DEST_END_POINTER;
-	arm_reg_t ALT_CH12_CONTROL;
-	arm_reg_t ALT_CH12_UNUSED;
-
-	arm_reg_t ALT_CH13_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH13_DEST_END_POINTER;
-	arm_reg_t ALT_CH13_CONTROL;
-	arm_reg_t ALT_CH13_UNUSED;
-
-	arm_reg_t ALT_CH14_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH14_DEST_END_POINTER;
-	arm_reg_t ALT_CH14_CONTROL;
-	arm_reg_t ALT_CH14_UNUSED;
-
-	arm_reg_t ALT_CH15_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH15_DEST_END_POINTER;
-	arm_reg_t ALT_CH15_CONTROL;
-	arm_reg_t ALT_CH15_UNUSED;
-
-	arm_reg_t ALT_CH16_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH16_DEST_END_POINTER;
-	arm_reg_t ALT_CH16_CONTROL;
-	arm_reg_t ALT_CH16_UNUSED;
-
-	arm_reg_t ALT_CH17_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH17_DEST_END_POINTER;
-	arm_reg_t ALT_CH17_CONTROL;
-	arm_reg_t ALT_CH17_UNUSED;
-
-	arm_reg_t ALT_CH18_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH18_DEST_END_POINTER;
-	arm_reg_t ALT_CH18_CONTROL;
-	arm_reg_t ALT_CH18_UNUSED;
-
-	arm_reg_t ALT_CH19_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH19_DEST_END_POINTER;
-	arm_reg_t ALT_CH19_CONTROL;
-	arm_reg_t ALT_CH19_UNUSED;
-
-	arm_reg_t ALT_CH20_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH20_DEST_END_POINTER;
-	arm_reg_t ALT_CH20_CONTROL;
-	arm_reg_t ALT_CH20_UNUSED;
-
-	arm_reg_t ALT_CH21_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH21_DEST_END_POINTER;
-	arm_reg_t ALT_CH21_CONTROL;
-	arm_reg_t ALT_CH21_UNUSED;
-
-	arm_reg_t ALT_CH22_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH22_DEST_END_POINTER;
-	arm_reg_t ALT_CH22_CONTROL;
-	arm_reg_t ALT_CH22_UNUSED;
-
-	arm_reg_t ALT_CH23_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH23_DEST_END_POINTER;
-	arm_reg_t ALT_CH23_CONTROL;
-	arm_reg_t ALT_CH23_UNUSED;
-
-	arm_reg_t ALT_CH24_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH24_DEST_END_POINTER;
-	arm_reg_t ALT_CH24_CONTROL;
-	arm_reg_t ALT_CH24_UNUSED;
-
-	arm_reg_t ALT_CH25_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH25_DEST_END_POINTER;
-	arm_reg_t ALT_CH25_CONTROL;
-	arm_reg_t ALT_CH25_UNUSED;
-
-	arm_reg_t ALT_CH26_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH26_DEST_END_POINTER;
-	arm_reg_t ALT_CH26_CONTROL;
-	arm_reg_t ALT_CH26_UNUSED;
-
-	arm_reg_t ALT_CH27_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH27_DEST_END_POINTER;
-	arm_reg_t ALT_CH27_CONTROL;
-	arm_reg_t ALT_CH27_UNUSED;
-
-	arm_reg_t ALT_CH28_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH28_DEST_END_POINTER;
-	arm_reg_t ALT_CH28_CONTROL;
-	arm_reg_t ALT_CH28_UNUSED;
-
-	arm_reg_t ALT_CH29_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH29_DEST_END_POINTER;
-	arm_reg_t ALT_CH29_CONTROL;
-	arm_reg_t ALT_CH29_UNUSED;
-
-	arm_reg_t ALT_CH30_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH30_DEST_END_POINTER;
-	arm_reg_t ALT_CH30_CONTROL;
-	arm_reg_t ALT_CH30_UNUSED;
-
-	arm_reg_t ALT_CH31_SOURCE_END_POINTER;
-	arm_reg_t ALT_CH31_DEST_END_POINTER;
-	arm_reg_t ALT_CH31_CONTROL;
-	arm_reg_t ALT_CH31_UNUSED;
+	DMA_Data_t ALT_CH [32];
 } DMA_AltData_t;
 
 #define ARM_DMA                	((DMA_Controller_t*) ARM_DMA_BASE)
@@ -1456,7 +1190,7 @@ typedef struct
 {
 	arm_reg_t ADC1_CFG;
 	arm_reg_t ADC2_CFG;
-	arm_reg_t ADC1_H_LEVEL;  
+	arm_reg_t ADC1_H_LEVEL;
 	arm_reg_t ADC2_H_LEVEL;
 	arm_reg_t ADC1_L_LEVEL;
 	arm_reg_t ADC2_L_LEVEL;
@@ -1474,7 +1208,7 @@ typedef struct
  * Регистр ADC1_CFG
  */
 #define ARM_CFG_REG_ADON	(1 << 0)	/* Включение АЦП */
-#define ARM_CFG_REG_GO		(1 << 1)	/* Начало преобразования. Запись “1” начинает 
+#define ARM_CFG_REG_GO		(1 << 1)	/* Начало преобразования. Запись “1” начинает
 						 * процесс преобразования, сбрасывается автоматически */
 #define ARM_CFG_REG_CLKS	(1 << 2)	/* Выбор источника синхросигнала CLK работы ADC. Возможные значения см. ниже */
 #define ARM_CFG_REG_SAMPLE	(1 << 3)	/* Выбор способа запуска АЦП. Возможные значения см. ниже */
@@ -1482,7 +1216,7 @@ typedef struct
 #define ARM_CFG_REG_CHCH	(1 << 9)	/* Включение переключения каналов */
 #define ARM_CFG_REG_RNGC	(1 << 10)	/* Разрешение автоматического контролирования уровней */
 #define ARM_CFG_M_REF		(1 << 11)	/* Выбор источника опорных напряжений. Возможные значения см. ниже */
-#define ARM_CFG_REG_DIVCLK(x)	((x) << 12)	/* Выбор коэффициента деления входной частоты. 
+#define ARM_CFG_REG_DIVCLK(x)	((x) << 12)	/* Выбор коэффициента деления входной частоты.
 						 * 0000 - CLK, 0001 - CLK/2, ..., 1111 - CLK/32768 */
 #define ARM_CFG_SYNC_CONVER	(1 << 16)	/* Запускает работу двух АЦП одновременно, при этом биты
 						 * конфигурации второго АЦП, такие как Cfg_REG_DIVCLK,
@@ -1509,17 +1243,17 @@ typedef struct
 #define ARM_ADC_CPU_CKL		0
 #define ARM_ADC_ADC_CKL		1
 /* Способы запуска АЦП */
-#define ARM_ADC_START_SINGLE	0	/* одиночный запуск */	
+#define ARM_ADC_START_SINGLE	0	/* одиночный запуск */
 #define ARM_ADC_START_SEQ	1	/* последовательный, автоматический запуск после завершения предыдущего преобразования */
 /* Выбор источника опорных напряжений */
 #define ARM_ADC_REF_INT		0	/* внутреннее опорное напряжение (от AUcc и AGND) */
-#define ARM_ADC_REF_EXT		1	/* внешнее опорное напряжение (от ADC0_REF+ и ADC1_REF- для ADC1_CFG и 
+#define ARM_ADC_REF_EXT		1	/* внешнее опорное напряжение (от ADC0_REF+ и ADC1_REF- для ADC1_CFG и
 					 * от датчика температуры для ADC2_CFG) */
 
 /*
  * Регистры ADCx_STATUS
  */
-#define ARM_FLG_REG_OVERWRITE	(1 << 0)	/* Данные в регистре результата были перезаписаны, данный флаг 
+#define ARM_FLG_REG_OVERWRITE	(1 << 0)	/* Данные в регистре результата были перезаписаны, данный флаг
 						 * сбрасывается только при записи в регистр флагов */
 #define ARM_FLG_REG_AWOIFEN	(1 << 1)	/* Флаг выставляется, когда результат преобразования выше верней
 						 * или ниже нижней границы автоматического контролирования
