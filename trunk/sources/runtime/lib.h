@@ -53,6 +53,7 @@ extern void longjmp (jmp_buf, int);
  * Debugging console interface.
  */
 extern struct _stream_t debug;
+extern bool_t debug_onlcr;
 void debug_putchar (void *arg, short c);
 void debug_putc (char c);
 unsigned short debug_getchar (void);

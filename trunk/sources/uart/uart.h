@@ -12,7 +12,7 @@
 #      define UART_STACKSZ	0x100		/* 100 enough for AVR */
 #   endif
 #   if ARM_CORTEX_M3
-#      define UART_STACKSZ	1000
+#      define UART_STACKSZ	1		/* unused */
 #   elif defined (__arm__) || defined (__thumb__)
 #      define UART_STACKSZ	0x200
 #   endif
@@ -54,6 +54,7 @@ typedef struct _uart_t {
 	mutex_t transmitter;
 	mutex_t receiver;
 	small_uint_t port;
+	bool_t onlcr;
 	unsigned int khz;
 	unsigned char out_buf [UART_OUTBUFSZ];
 	unsigned char *out_first, *out_last;

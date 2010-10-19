@@ -12,6 +12,8 @@
 #  define UBRR UBRR1L
 #endif
 
+bool_t debug_onlcr = 1;
+
 static int debug_char;
 
 /*
@@ -38,7 +40,7 @@ again:
 	while (! testb (UDRE, USR))
 		continue;
 
-	if (c == '\n') {
+	if (debug_onlcr && c == '\n') {
 		c = '\r';
 		goto again;
 	}

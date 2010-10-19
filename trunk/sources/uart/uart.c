@@ -123,8 +123,7 @@ again:		newlast = u->out_last + 1;
 		u->out_last = newlast;
 		uart_transmit_start (u);
 
-		/*
-		if (c == '\n') {
+		if (u->onlcr && c == '\n') {
 			c = '\r';
 			goto again;
 		}
@@ -260,6 +259,7 @@ uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 	u->in_first = u->in_last = u->in_buf;
 	u->out_first = u->out_last = u->out_buf;
 	u->khz = khz;
+	u->onlcr = 1;
 #if ARM_1986BE9
 	u->port = (port == 0) ? ARM_UART1_BASE : ARM_UART2_BASE;
 #else

@@ -10,52 +10,6 @@
 #define UART_IRQ(port)	(((port)==ARM_UART1_BASE) ? 6 : 7)
 
 /*
- * Установка скорости передачи данных.
- */
-static void inline
-setup_baud_rate (unsigned base, unsigned khz, unsigned long baud)
-{
-	UART_t *reg = (UART_t*) base;
-
-	reg->CTL &= ~ARM_UART_CTL_UARTEN;		// останов приемопередатчика
-	if (base == ARM_UART1_BASE) {
-		ARM_RSTCLK->UART_CLOCK &= ~(ARM_UART_CLOCK_EN1 | ARM_UART_CLOCK_BRG1(7));
-
-		/* Set pins and clock for UART1. */
-		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOA;	// вкл. тактирования PORTA
-		ARM_GPIOA->FUNC |= ARM_FUNC_REDEF(6) |		// переопределенная функция для
-				   ARM_FUNC_REDEF(7);		// PA6(UART1_RXD) и PA7(UART1_TXD)
-		ARM_GPIOA->ANALOG |= 0xC0;			// цифровые выводы
-		ARM_GPIOA->PWR &= ~(ARM_PWR_MASK(6) || ARM_PWR_MASK(7));
-		ARM_GPIOA->PWR |= ARM_PWR_SLOW(6) | ARM_PWR_SLOW(7);
-		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART1;	// вкл. тактирования UART1
-	} else {
-		/* Pins and clock for UART2 already initialized by _init_(). */
-		ARM_RSTCLK->UART_CLOCK &= ~(ARM_UART_CLOCK_EN2 | ARM_UART_CLOCK_BRG2(7));
-	}
-#ifdef SETUP_HCLK_HSI
-	// HCLK (8 МГц)
-	if (base == ARM_UART1_BASE) {
-		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN1 | ARM_UART_CLOCK_BRG1(0);
-	} else {
-		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN2 | ARM_UART_CLOCK_BRG2(0);
-	}
-	reg->IBRD = ARM_UART_IBRD (8000000, baud);
-	reg->FBRD = ARM_UART_FBRD (8000000, baud);
-#else
-	// HCLK/4 (KHZ/4)
-	if (base == ARM_UART1_BASE) {
-		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN1 | ARM_UART_CLOCK_BRG1(2);
-	} else {
-		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN2 | ARM_UART_CLOCK_BRG2(2);
-	}
-	reg->IBRD = ARM_UART_IBRD (khz*1000/4, baud);
-	reg->FBRD = ARM_UART_FBRD (khz*1000/4, baud);
-#endif
-	reg->CTL |= ARM_UART_CTL_UARTEN;		// пуск приемопередатчика
-}
-
-/*
  * Ожидание окончания передачи данных..
  */
 static void
@@ -101,7 +55,7 @@ again:		newlast = u->out_last + 1;
 				u->out_first = u->out_buf;
 		}
 
-		if (c == '\n') {
+		if (u->onlcr && c == '\n') {
 			c = '\r';
 			goto again;
 		}
@@ -161,7 +115,6 @@ uart_interrupt (void *arg)
 	bool_t passive = 1;
 
 	/* Приём. */
-	unsigned got_data = 0;
 	while (! (reg->FR & ARM_UART_FR_RXFE)) {
 		/* В буфере FIFO приемника есть данные. */
 		unsigned c = reg->DR;
@@ -185,53 +138,14 @@ uart_interrupt (void *arg)
 			reg->DR = *u->out_first;
 			if (++u->out_first >= u->out_buf + UART_OUTBUFSZ)
 				u->out_first = u->out_buf;
-			if (passive)
-				arch_intr_allow (UART_IRQ (u->port));
 		} else {
 			/* Нет данных для передачи - сброс прерывания. */
 			reg->ICR = ARM_UART_RIS_TX;
 			passive = 0;
 		}
 	}
+	arch_intr_allow (UART_IRQ (u->port));
 	return passive;
-}
-
-/*
- * Задача обслуживания прерывания от UART.
- */
-static void
-uart_task (void *arg)
-{
-	uart_t *u = arg;
-	UART_t *reg = (UART_t*) u->port;
-
-	/*
-	 * Enable UART.
-	 */
-	mutex_lock_irq (&u->receiver, UART_IRQ (u->port),
-		uart_interrupt, arg);
-	reg->CTL = 0;
-
-	/* Управление линией */
-	reg->LCRH = ARM_UART_LCRH_WLEN8 |	// длина слова 8 бит
-		   ARM_UART_LCRH_FEN;		// FIFO
-
-	/* Пороги FIFO */
-	reg->IFLS = ARM_UART_IFLS_RX_1_8 |	// приём: 1/8 буфера
-		  ARM_UART_IFLS_TX_1_8;		// передача: 1/8 буфера
-
-	/* Управление */
-	reg->CTL = ARM_UART_CTL_RXE |		// приём разрешен
-		ARM_UART_CTL_TXE;		// передача разрешена
-	reg->ICR = ~0;				// сброс прерывания
-	reg->DMACTL = 0;			// управление DMA
-	reg->IM = ARM_UART_RIS_TX |		// прерывания от передатчика
-		ARM_UART_RIS_RX;		// от приемника
-	reg->CTL |= ARM_UART_CTL_UARTEN;	// пуск приемопередатчика
-
-	for (;;) {
-		mutex_wait (&u->receiver);
-	}
 }
 
 /*
@@ -269,12 +183,69 @@ uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 	u->in_first = u->in_last = u->in_buf;
 	u->out_first = u->out_last = u->out_buf;
 	u->khz = khz;
+	u->onlcr = 1;
 	u->port = (port == 0) ? ARM_UART1_BASE : ARM_UART2_BASE;
 
-	/* Setup baud rate generator. */
-	setup_baud_rate (u->port, u->khz, baud);
+	/*
+	 * Enable UART.
+	 */
+	UART_t *reg = (UART_t*) u->port;
+	mutex_lock_irq (&u->receiver, UART_IRQ (u->port), uart_interrupt, u);
 
-	/* Create uart task. */
-	task_create (uart_task, u, "uart", prio,
-		u->rstack, sizeof (u->rstack));
+	/*
+	 * Установка скорости передачи данных.
+	 */
+	reg->CTL = 0;						// останов приемопередатчика
+	if (port == 0) {
+		ARM_RSTCLK->UART_CLOCK &= ~(ARM_UART_CLOCK_EN1 | ARM_UART_CLOCK_BRG1(7));
+
+		/* Set pins and clock for UART1. */
+		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOA;	// вкл. тактирования PORTA
+		ARM_GPIOA->FUNC |= ARM_FUNC_REDEF(6) |		// переопределенная функция для
+				   ARM_FUNC_REDEF(7);		// PA6(UART1_RXD) и PA7(UART1_TXD)
+		ARM_GPIOA->ANALOG |= 0xC0;			// цифровые выводы
+		ARM_GPIOA->PWR &= ~(ARM_PWR_MASK(6) || ARM_PWR_MASK(7));
+		ARM_GPIOA->PWR |= ARM_PWR_SLOW(6) | ARM_PWR_SLOW(7);
+		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART1;	// вкл. тактирования UART1
+	} else {
+		/* Pins and clock for UART2 already initialized by _init_(). */
+		ARM_RSTCLK->UART_CLOCK &= ~(ARM_UART_CLOCK_EN2 | ARM_UART_CLOCK_BRG2(7));
+	}
+#ifdef SETUP_HCLK_HSI
+	// HCLK (8 МГц)
+	if (port == 0) {
+		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN1 | ARM_UART_CLOCK_BRG1(0);
+	} else {
+		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN2 | ARM_UART_CLOCK_BRG2(0);
+	}
+	reg->IBRD = ARM_UART_IBRD (8000000, baud);
+	reg->FBRD = ARM_UART_FBRD (8000000, baud);
+#else
+	// HCLK/4 (KHZ/4)
+	if (port == 0) {
+		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN1 | ARM_UART_CLOCK_BRG1(2);
+	} else {
+		ARM_RSTCLK->UART_CLOCK |= ARM_UART_CLOCK_EN2 | ARM_UART_CLOCK_BRG2(2);
+	}
+	reg->IBRD = ARM_UART_IBRD (khz*1000/4, baud);
+	reg->FBRD = ARM_UART_FBRD (khz*1000/4, baud);
+#endif
+	/* Управление линией */
+	reg->LCRH = ARM_UART_LCRH_WLEN8 |	// длина слова 8 бит
+		   ARM_UART_LCRH_FEN;		// FIFO
+
+	/* Пороги FIFO */
+	reg->IFLS = ARM_UART_IFLS_RX_1_8 |	// приём: 1/8 буфера
+		  ARM_UART_IFLS_TX_1_8;		// передача: 1/8 буфера
+
+	/* Управление */
+	reg->CTL = ARM_UART_CTL_RXE |		// приём разрешен
+		ARM_UART_CTL_TXE;		// передача разрешена
+	reg->ICR = ~0;				// сброс прерывания
+	reg->DMACTL = 0;			// управление DMA
+	reg->IM = ARM_UART_RIS_TX |		// прерывания от передатчика
+		ARM_UART_RIS_RX;		// от приемника
+	reg->CTL |= ARM_UART_CTL_UARTEN;	// пуск приемопередатчика
+
+	mutex_unlock (&u->receiver);
 }

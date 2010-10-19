@@ -1,5 +1,7 @@
 #include <runtime/lib.h>
 
+bool_t debug_onlcr = 1;
+
 static int debug_char = -1;
 
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
@@ -26,7 +28,7 @@ again:
 		continue;
 
 /*	watchdog_alive ();*/
-	if (c == '\n') {
+	if (debug_onlcr && c == '\n') {
 		c = '\r';
 		goto again;
 	}

@@ -1,5 +1,7 @@
 #include <runtime/lib.h>
 
+bool_t debug_onlcr = 1;
+
 static int debug_char = -1;
 
 static void (*hook) (void *arg, short c);
@@ -45,12 +47,10 @@ again:
 		continue;
 
 	watchdog_alive ();
-	/*
-	if (c == '\n') {
+	if (debug_onlcr && c == '\n') {
 		c = '\r';
 		goto again;
 	}
-	*/
 	arm_intr_restore (x);
 }
 
