@@ -525,7 +525,7 @@ handle_interrupt (k5600bg1_t *u)
 	unsigned active = 0;
 	chip_select (1);
 	u->intr_flags = ETH_REG->INT_SRC;
-//debug_printf ("<%x> ", u->intr_flags);
+/*debug_printf ("<%x>", u->intr_flags);*/
 	for (;;) {
 		unsigned desc_rx = ETH_RXDESC[u->rn].CTRL;
 		if (desc_rx & DESC_RX_RDY)
@@ -571,6 +571,7 @@ handle_interrupt (k5600bg1_t *u)
 			buf_free (p);
 		}
 	}
+	ARM_NVIC_ICPR0 = 1 << K5600BG1_IRQ;
 	chip_select (0);
 	return active;
 }
@@ -603,6 +604,7 @@ interrupt_task (void *arg)
 		/* Wait for the interrupt. */
 		mutex_wait (&u->netif.lock);
 		++u->intr;
+//debug_printf ("(%d)", u->intr);
 		handle_interrupt (u);
 	}
 }
@@ -637,5 +639,5 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	chip_init (u);
 
 	/* Create interrupt task. */
-//	task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
+	task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
 }

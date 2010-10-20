@@ -13,7 +13,7 @@
 
 ARRAY (stack_tcp, 1000);
 ARRAY (stack_console, 1000);
-ARRAY (stack_poll, 1000);
+//ARRAY (stack_poll, 1000);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
@@ -94,14 +94,14 @@ void display_refresh ()
 	min -= hour*60;
 
 	gpanel_clear (&display, 0);
-	puts (&display, "Работает 5600ВГ1У.\r\n");
-	printf (&display, "Время:      %3u:%02u:%02u\r\n", hour, min, sec);
-	printf (&display, "TX пакетов: %9lu\r\n", eth.netif.out_packets);
-	printf (&display, "    ошибок: %9lu\r\n", eth.netif.out_errors);
-	printf (&display, "RX пакетов: %9lu\r\n", eth.netif.in_packets);
-	printf (&display, "    ошибок: %9lu\r\n", eth.netif.in_errors);
-	printf (&display, "Прерываний: %9lu\r\n", eth.intr);
-	printf (&display, "Своб. байтов: %7u\r\n", mem_available (&pool));
+	puts (&display, "--Работает 5600ВГ1У--\r\n");
+	printf (&display, "Время теста:%3u:%02u:%02u\r\n", hour, min, sec);
+	printf (&display, " TX пакетов:%9lu\r\n", eth.netif.out_packets);
+	printf (&display, "     ошибок:%9lu\r\n", eth.netif.out_errors);
+	printf (&display, " RX пакетов:%9lu\r\n", eth.netif.in_packets);
+	printf (&display, "     ошибок:%9lu\r\n", eth.netif.in_errors);
+	printf (&display, " Прерываний:%9lu\r\n", eth.intr);
+	printf (&display, "Своб.байтов:%9u\r\n", mem_available (&pool));
 }
 
 void console_task (void *data)
@@ -146,7 +146,7 @@ void console_task (void *data)
 		case 't' & 037:
 			task_print (&debug, 0);
 			task_print (&debug, (task_t*) stack_console);
-			task_print (&debug, (task_t*) stack_poll);
+//			task_print (&debug, (task_t*) stack_poll);
 			task_print (&debug, (task_t*) stack_tcp);
 			task_print (&debug, (task_t*) eth.stack);
 			task_print (&debug, (task_t*) ip.stack);
@@ -156,12 +156,14 @@ void console_task (void *data)
 	}
 }
 
+#if 0
 void poll_task (void *data)
 {
 	for (;;) {
 		k5600bg1_poll (&eth);
 	}
 }
+#endif
 
 void tcp_task (void *data)
 {
@@ -228,7 +230,7 @@ void uos_init (void)
 	timer_init (&timer, KHZ, 50);
 	gpanel_init (&display, &font_fixed6x8);
 	gpanel_clear (&display, 0);
-	puts (&display, "Работает 5600ВГ1У.\r\n\n");
+	puts (&display, "Testing TCP.\r\n");
 
 	/*
 	 * Create a group of two locks: timer and eth.
@@ -251,8 +253,8 @@ void uos_init (void)
 
 	task_create (tcp_task, 0, "tcp", 10,
 		stack_tcp, sizeof (stack_tcp));
-	task_create (poll_task, 0, "poll", 1,
-		stack_poll, sizeof (stack_poll));
+//	task_create (poll_task, 0, "poll", 1,
+//		stack_poll, sizeof (stack_poll));
 	task_create (console_task, 0, "cons", 20,
 		stack_console, sizeof (stack_console));
 }
