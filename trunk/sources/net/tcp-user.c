@@ -120,21 +120,35 @@ tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 		mutex_unlock (&s->lock);
 		return -1;
 	}
+	mutex_group_t *g = 0;
+	ARRAY (group, sizeof(mutex_group_t) + 2 * sizeof(mutex_slot_t));
+
 	while (tcp_enqueue (s, (void*) arg, len, 0, 0, 0) == 0) {
-		/* Не удалось поставить пакет в очередь - мало памяти.
-		 * Каждые 100 мсек делаем повторную попытку. */
+		/* Не удалось поставить пакет в очередь - мало памяти. */
+		if (! g) {
+			memset (group, 0, sizeof(group));
+			g = mutex_group_init (group, sizeof(group));
+			mutex_group_add (g, &s->lock);
+			mutex_group_add (g, &s->ip->timer->decisec);
+			mutex_group_listen (g);
+		}
+		/* Каждые 100 мсек делаем повторную попытку. */
 		mutex_unlock (&s->lock);
-		mutex_wait (&s->ip->timer->decisec);
+		mutex_group_wait (g, 0, 0);
 		mutex_lock (&s->lock);
 
 		/* Проверим, не закрылось ли соединение. */
 		if (s->state != SYN_SENT && s->state != SYN_RCVD &&
 		    s->state != ESTABLISHED /*&& s->state != CLOSE_WAIT*/) {
 			mutex_unlock (&s->lock);
+			if (g)
+				mutex_group_unlisten (g);
 			return -1;
 		}
 	}
 	mutex_unlock (&s->lock);
+	if (g)
+		mutex_group_unlisten (g);
 
 	mutex_lock (&s->ip->lock);
 	tcp_output (s);

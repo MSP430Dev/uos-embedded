@@ -193,7 +193,6 @@ void tcp_task (void *data)
 		for (;;) {
 			/* Десять пакетов в секуду. */
 /*			mutex_wait (&timer.decisec);*/
-/*			printf (&debug, "<%d> ", mem_available (&pool));*/
 
 			for (n=0; n<2; ++n) {
 				if (tcp_write (user_socket, buf, sizeof (buf)) < 0) {
@@ -251,10 +250,10 @@ void uos_init (void)
 	unsigned char my_ip[] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth.netif);
 
-	task_create (tcp_task, 0, "tcp", 10,
+	task_create (tcp_task, 0, "tcp", 20,
 		stack_tcp, sizeof (stack_tcp));
 //	task_create (poll_task, 0, "poll", 1,
 //		stack_poll, sizeof (stack_poll));
-	task_create (console_task, 0, "cons", 20,
+	task_create (console_task, 0, "cons", 10,
 		stack_console, sizeof (stack_console));
 }

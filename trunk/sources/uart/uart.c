@@ -127,7 +127,6 @@ again:		newlast = u->out_last + 1;
 			c = '\r';
 			goto again;
 		}
-		*/
 	}
 	mutex_unlock (&u->transmitter);
 }

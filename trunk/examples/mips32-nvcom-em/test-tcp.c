@@ -29,6 +29,7 @@ route_t route;
 timer_t timer;
 ip_t ip;
 tcp_socket_t *user_socket;
+unsigned char buf [1024];
 
 static const char *
 state_name (tcp_state_t state)
@@ -157,7 +158,7 @@ void tcp_task (void *data)
 {
 	tcp_socket_t *lsock;
 	unsigned short serv_port = 2222;
-	unsigned char ch, buf [512];
+	unsigned char ch;
 	int n;
 
 	lsock = tcp_listen (&ip, 0, serv_port);
@@ -226,10 +227,6 @@ uos_valid_memory_address (void *ptr)
 
 void uos_init (void)
 {
-	unsigned char my_ip[] = { 192, 168, 20, 222 };
-	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
-	mutex_group_t *g;
-
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
 	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
 
@@ -266,7 +263,7 @@ void uos_init (void)
 	/*
 	 * Create a group of two locks: timer and eth.
 	 */
-	g = mutex_group_init (group, sizeof(group));
+	mutex_group_t *g = mutex_group_init (group, sizeof(group));
 	mutex_group_add (g, &eth->netif.lock);
 	mutex_group_add (g, &timer.decisec);
 
@@ -276,13 +273,16 @@ void uos_init (void)
 	/*
 	 * Create interface eth0
 	 */
+	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
 	eth_init (eth, "eth0", 80, &pool, arp, my_macaddr);
+
+	unsigned char my_ip[] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
 
-	task_create (tcp_task, 0, "tcp", 10,
+	task_create (tcp_task, 0, "tcp", 20,
 		stack_tcp, sizeof (stack_tcp));
 //	task_create (poll_task, 0, "poll", 1,
 //		stack_poll, sizeof (stack_poll));
-	task_create (console_task, 0, "cons", 20,
+	task_create (console_task, 0, "cons", 10,
 		stack_console, sizeof (stack_console));
 }
