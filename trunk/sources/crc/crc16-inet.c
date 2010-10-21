@@ -13,6 +13,7 @@
 unsigned short
 crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 {
+	/*debug_printf ("crc16_inet (sum=%#04x, len=%d)", sum, len);*/
 #if __AVR__
 	/* Taken from Liquorice.
 	 * Copyright (C) 2000 David J. Hudson <dave@humbug.demon.co.uk> */
@@ -103,38 +104,13 @@ crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 		: "0" (sum), "1" (tmp1)
 		: "ax");
 	}
-#elif defined (__arm__) || defined (__thumb__)
-	/*
-	 * Optimized for ARM/Thumb, little endian.
-	 */
-	unsigned long longsum, longlen;
-
-	longsum = sum;
-	longlen = len;
-	if ((int) buf & 1) {
-		/* get first non-aligned byte */
-		longsum += *buf++;
-		longsum = (longsum >> 8) + ((unsigned char) longsum << 8);
-		--longlen;
-	}
-
-	for (; longlen>1; longlen-=2, buf+=2)
-		longsum += *(unsigned short*) buf;
-
-	if (longlen & 1) {
-		/* add up any odd byte */
-		longsum += *buf;
-		longsum = (longsum >> 8) + ((unsigned char) longsum << 8);
-	}
-	/* Build cyclic sum. */
-	longsum = (longsum >> 16) + (unsigned short) longsum;
-	sum = longsum;
-	if (longsum & 0x10000)
-		++sum;
 #else
-	unsigned long longsum;
+	/*
+	 * Optimized for 32-bit architectures: ARM/Thumb and MIPS.
+	 */
+	unsigned long longsum = sum;
+	unsigned long longlen = len;
 
-	longsum = sum;
 	if ((int) buf & 1) {
 		/* get first non-aligned byte */
 #if HTONS(1) == 1
@@ -143,13 +119,13 @@ crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 		longsum += *buf++;
 #endif
 		longsum = (longsum >> 8) + ((unsigned char) longsum << 8);
-		--len;
+		--longlen;
 	}
 
-	for (; len>1; len-=2, buf+=2)
+	for (; longlen>1; longlen-=2, buf+=2)
 		longsum += *(unsigned short*) buf;
 
-	if (len & 1) {
+	if (longlen & 1) {
 		/* add up any odd byte */
 #if HTONS(1) == 1
 		longsum += *buf << 8;
@@ -164,7 +140,7 @@ crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 	if (longsum & 0x10000)
 		++sum;
 #endif
-	/*debug_printf (" -> 0x%04x\n", sum);*/
+	/*debug_printf (" -> %#04x\n", sum);*/
 	return sum;
 }
 
@@ -174,6 +150,9 @@ crc16_inet_header (unsigned char *src, unsigned char *dest,
 {
 	unsigned short sum;
 
+	/*debug_printf ("crc16_inet_header (src=%#02x.%#02x.%#02x.%#02x, dest=%#02x.%#02x.%#02x.%#02x, proto=%#02x, proto_len=%#02x)",
+		src[0], src[1], src[2], src[3], dest[0],
+		dest[1], dest[2], dest[3], proto, proto_len);*/
 #if __AVR__
 	/* Sum `proto' and `proto_len'. */
 	sum = proto_len;
@@ -260,6 +239,7 @@ crc16_inet_header (unsigned char *src, unsigned char *dest,
 	if (longsum & 0x10000)
 		++sum;
 #endif
+	/*debug_printf (" -> %#04x\n", sum);*/
 	return sum;
 }
 

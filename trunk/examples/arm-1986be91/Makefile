@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-uart
+TEST		= test-telnetd
 #TESTS		= test-debug.hex test-lcd.hex test-task-lcd.hex tetris.hex
 #TESTS		+= test-timer.hex test-timer-lcd.hex test-latency.hex test-tswitch.hex
 #TESTS		+= test-uart.hex phil-uart.hex phil-lcd.hex

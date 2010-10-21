@@ -16,7 +16,7 @@
 #include <net/tcp.h>
 #include <net/telnet.h>
 
-#define TASKSZ		1500		/* Task: telnet menu */
+#define TASKSZ		1000		/* Task: telnet menu */
 #define MAXSESS		4		/* Up to 4 telnet sessions */
 
 ARRAY (stack_telnet, TASKSZ);
@@ -68,7 +68,7 @@ mem_cmd (stream_t *stream)
 			task_print (stream, (task_t*) tasktab[n]);
 	task_print (stream, (task_t*) ip.stack);
 	task_print (stream, (task_t*) eth.stack);
-	task_print (stream, (task_t*) uart.rstack);
+	//task_print (stream, (task_t*) uart.rstack);
 
 	putchar (stream, '\n');
 }
@@ -357,8 +357,6 @@ void poll_task (void *data)
 	unsigned last_sec = 0;
 
 	for (;;) {
-		k5600bg1_poll (&eth);
-
 		unsigned sec = timer_milliseconds (&timer) / 1000;
 		if (sec == last_sec)
 			continue;
@@ -368,25 +366,16 @@ void poll_task (void *data)
 		unsigned hour = min / 60;
 		sec -= min*60;
 		min -= hour*60;
-		k5600bg1_poll (&eth);
 		gpanel_clear (&display, 0);
-		k5600bg1_poll (&eth);
-		puts (&display, "Работает 5600ВГ1У.\r\n");
-		k5600bg1_poll (&eth);
-		printf (&display, "Время:      %3u:%02u:%02u\r\n", hour, min, sec);
-		k5600bg1_poll (&eth);
-		printf (&display, "TX пакетов: %9lu\r\n", eth.netif.out_packets);
-		k5600bg1_poll (&eth);
-		printf (&display, "    ошибок: %9lu\r\n", eth.netif.out_errors);
-		k5600bg1_poll (&eth);
-		printf (&display, "RX пакетов: %9lu\r\n", eth.netif.in_packets);
-		k5600bg1_poll (&eth);
-		printf (&display, "    ошибок: %9lu\r\n", eth.netif.in_errors);
-		k5600bg1_poll (&eth);
-		printf (&display, "Прерываний: %9lu\r\n", eth.intr);
-		k5600bg1_poll (&eth);
-		printf (&display, "Своб. байтов: %7u\r\n", mem_available (&pool));
-		k5600bg1_poll (&eth);
+		puts (&display, "--Работает 5600ВГ1У--\r\n");
+		printf (&display, "Время теста:%3u:%02u:%02u\r\n", hour, min, sec);
+		printf (&display, " TX пакетов:%9lu\r\n", eth.netif.out_packets);
+		printf (&display, "     ошибок:%9lu\r\n", eth.netif.out_errors);
+		printf (&display, " RX пакетов:%9lu\r\n", eth.netif.in_packets);
+		printf (&display, "     ошибок:%9lu\r\n", eth.netif.in_errors);
+		printf (&display, " Прерываний:%9lu\r\n", eth.intr);
+		printf (&display, "Своб.байтов:%9u\r\n", mem_available (&pool));
+		timer_delay (&timer, 500);
 	}
 }
 

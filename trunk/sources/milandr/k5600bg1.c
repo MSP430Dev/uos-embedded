@@ -309,6 +309,8 @@ chip_copyin (unsigned char *data, volatile unsigned *chipbuf, unsigned bytes)
 		if (chipbuf >= ETH_RXBUF + RXBUF_BYTES/2)
 			chipbuf = ETH_RXBUF;
 	}
+	if (bytes > 0)
+		*data = *chipbuf;
 }
 
 static void
@@ -356,6 +358,10 @@ transmit_packet (k5600bg1_t *u, buf_t *p)
 	}
 
 	unsigned len = p->tot_len;
+	if (odd) {
+		buf++;
+		len++;
+	}
 	while (len < 60) {
 		*buf++ = 0;
 		len += 2;
