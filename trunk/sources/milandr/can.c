@@ -199,12 +199,11 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
 	/* Проверяем, что есть свободный буфер для передачи. */
-	int i = arm_count_leading_zeroes (reg->TX & ALL_TBUFS);
-	if (i >= NTBUF)
+	int i = 31 - NRBUF - arm_count_leading_zeroes (reg->TX & ALL_TBUFS);
+	if (i < 0)
 		return 0;
 
 	/* Нашли свободный буфер. */
-	i = NRBUF + NTBUF - 1 - i;
 	if (reg->BUF_CON[i] & CAN_BUF_CON_TX_REQ) {
 		/* Такого не может быть. */
 		debug_printf ("can_output: tx buffer busy\n");
