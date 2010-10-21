@@ -3,7 +3,7 @@
 #include <milandr/can.h>
 
 #define NRBUF		16		/* number of receive buffers */
-#define NTBUF		16		/* number of transmit buffers */
+#define NTBUF		2		/* number of transmit buffers */
 
 #define ALL_RBUFS	((1 << NRBUF) - 1)
 #define ALL_TBUFS	(((1 << NTBUF) - 1) << NRBUF)
@@ -199,8 +199,8 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
 	/* Проверяем, что есть свободный буфер для передачи. */
-	int i = 31 - NRBUF - arm_count_leading_zeroes (reg->TX & ALL_TBUFS);
-	if (i < 0)
+	int i = 31 - arm_count_leading_zeroes (reg->TX & ALL_TBUFS);
+	if (i < NRBUF)
 		return 0;
 
 	/* Нашли свободный буфер. */
