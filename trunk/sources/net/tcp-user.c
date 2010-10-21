@@ -52,7 +52,7 @@ tcp_connect (ip_t *ip, unsigned char *ipaddr, unsigned short port)
 	tcp_socket_t *s;
 	unsigned long optdata;
 
-	tcp_debug (CONST("tcp_connect to port %u\n"), port);
+	tcp_debug ("tcp_connect to port %u\n", port);
 	if (ipaddr == 0)
 		return 0;
 	mutex_lock (&ip->lock);
@@ -106,14 +106,14 @@ tcp_connect (ip_t *ip, unsigned char *ipaddr, unsigned short port)
 int
 tcp_write (tcp_socket_t *s, const void *arg, unsigned short len)
 {
-	tcp_debug (CONST("tcp_write(s=%p, arg=%p, len=%u)\n"),
+	tcp_debug ("tcp_write(s=%p, arg=%p, len=%u)\n",
 		(void*) s, arg, len);
 	mutex_lock (&s->lock);
 
 	if (s->state != SYN_SENT && s->state != SYN_RCVD &&
 	    s->state != ESTABLISHED /*&& s->state != CLOSE_WAIT*/) {
 		mutex_unlock (&s->lock);
-		tcp_debug (CONST("tcp_write() called in invalid state\n"));
+		tcp_debug ("tcp_write() called in invalid state\n");
 		return -1;
 	}
 	if (len == 0) {
@@ -154,7 +154,7 @@ tcp_read_poll (tcp_socket_t *s, void *arg, unsigned short len, int nonblock)
 	char *buf;
 	int n;
 
-	tcp_debug (CONST("tcp_read(s=%p, arg=%p, len=%u)\n"),
+	tcp_debug ("tcp_read(s=%p, arg=%p, len=%u)\n",
 		(void*) s, arg, len);
 	if (len == 0) {
 		return -1;
@@ -164,7 +164,7 @@ tcp_read_poll (tcp_socket_t *s, void *arg, unsigned short len, int nonblock)
 		if (s->state != SYN_SENT && s->state != SYN_RCVD &&
 		    s->state != ESTABLISHED) {
 			mutex_unlock (&s->lock);
-			tcp_debug (CONST("tcp_read() called in invalid state\n"));
+			tcp_debug ("tcp_read() called in invalid state\n");
 			return -1;
 		}
 		if (nonblock) {
@@ -175,7 +175,7 @@ tcp_read_poll (tcp_socket_t *s, void *arg, unsigned short len, int nonblock)
 	}
 	p = tcp_queue_get (s);
 
-	tcp_debug (CONST("tcp_read: received %u bytes, wnd %u (%u).\n"),
+	tcp_debug ("tcp_read: received %u bytes, wnd %u (%u).\n",
 	       p->tot_len, s->rcv_wnd, TCP_WND - s->rcv_wnd);
 	mutex_unlock (&s->lock);
 
@@ -238,7 +238,7 @@ tcp_socket_t *tcp_listen (ip_t *ip, unsigned char *ipaddr,
 	if (port == 0) {
 		port = tcp_new_port (ip);
 	}
-	tcp_debug (CONST("tcp_listen: port %u\n"), port);
+	tcp_debug ("tcp_listen: port %u\n", port);
 
 	/* Check if the address already is in use. */
 	for (cs = ip->tcp_listen_sockets; cs != 0; cs = cs->next) {
@@ -288,7 +288,7 @@ again:
 	for (;;) {
 		if (s->state != LISTEN) {
 			mutex_unlock (&s->lock);
-			tcp_debug (CONST("tcp_accept: called in invalid state\n"));
+			tcp_debug ("tcp_accept: called in invalid state\n");
 			return 0;
 		}
 		if (! tcp_queue_is_empty (s)) {
@@ -306,7 +306,7 @@ again:
 	mutex_lock (&s->ip->lock);
 	ns = tcp_alloc (s->ip);
 	if (ns == 0) {
-		tcp_debug (CONST("tcp_accept: could not allocate PCB\n"));
+		tcp_debug ("tcp_accept: could not allocate PCB\n");
 		++s->ip->tcp_in_discards;
 		mutex_unlock (&s->ip->lock);
 		buf_free (p);
@@ -355,7 +355,7 @@ tcp_close (tcp_socket_t *s)
 {
 	mutex_lock (&s->lock);
 
-	tcp_debug (CONST("tcp_close: state=%S\n"),
+	tcp_debug ("tcp_close: state=%S\n",
 		tcp_state_name (s->state));
 
 	switch (s->state) {
@@ -449,7 +449,7 @@ tcp_abort (tcp_socket_t *s)
 		tcp_segments_free (s->unsent);
 	}
 
-	tcp_debug (CONST("tcp_abort: sending RST\n"));
+	tcp_debug ("tcp_abort: sending RST\n");
 	tcp_rst (ip, seqno, ackno, local_ip, remote_ip,
 		local_port, remote_port);
 	mutex_unlock (&ip->lock);

@@ -10,7 +10,7 @@ buf_queue_get (buf_queue_t *q)
 	assert (q->tail >= q->queue);
 	assert (q->tail < q->queue + q->size);
 	if (q->count == 0) {
-		/*debug_printf (CONST("buf_queue_get: returned 0\n"));*/
+		/*debug_printf ("buf_queue_get: returned 0\n");*/
 		return 0;
 	}
 	assert (*q->tail != 0);
@@ -23,7 +23,7 @@ buf_queue_get (buf_queue_t *q)
 		q->tail += q->size;
 	--q->count;
 
-	/*debug_printf (CONST("buf_queue_get: returned 0x%04x\n"), p);*/
+	/*debug_printf ("buf_queue_get: returned 0x%04x\n", p);*/
 	return p;
 }
 
@@ -32,7 +32,7 @@ buf_queue_put (buf_queue_t *q, buf_t *p)
 {
 	buf_t **head;
 
-	/*debug_printf (CONST("buf_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n"), p, q->count, q->head);*/
+	/*debug_printf ("buf_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n", p, q->count, q->head);*/
 
 	/* Must be called ONLY when queue is not full. */
 	assert (q->count < q->size);
@@ -45,7 +45,7 @@ buf_queue_put (buf_queue_t *q, buf_t *p)
 	/* Put the packet in. */
 	*head = p;
 	++q->count;
-	/*debug_printf (CONST("    on return count = %d, head = 0x%04x\n"), q->count, q->head);*/
+	/*debug_printf ("    on return count = %d, head = 0x%04x\n", q->count, q->head);*/
 }
 
 void

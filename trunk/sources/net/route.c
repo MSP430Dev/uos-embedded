@@ -104,7 +104,7 @@ void route_setup (ip_t *ip, route_t *r, unsigned char *ipaddr,
 				continue;
 
 			best = s;
-			/* debug_printf (CONST("route iface match: %d.%d.%d.%d with %d.%d.%d.%d / %d\n"),
+			/* debug_printf ("route iface match: %d.%d.%d.%d with %d.%d.%d.%d / %d\n",
 				gateway[0], gateway[1], gateway[2], gateway[3],
 				s->ipaddr[0], s->ipaddr[1], s->ipaddr[2], s->ipaddr[3],
 				s->masklen); */
@@ -116,7 +116,7 @@ void route_setup (ip_t *ip, route_t *r, unsigned char *ipaddr,
 	memcpy (r->broadcast, &bcast, 4);
 	net = HTONL (net);
 	memcpy (r->netaddr, &net, 4);
-	/* debug_printf (CONST("route: setup net %d.%d.%d.%d bcast %d.%d.%d.%d\n"),
+	/* debug_printf ("route: setup net %d.%d.%d.%d bcast %d.%d.%d.%d\n",
 		r->netaddr[0], r->netaddr[1], r->netaddr[2], r->netaddr[3],
 		r->broadcast[0], r->broadcast[1], r->broadcast[2], r->broadcast[3]); */
 }
@@ -179,7 +179,7 @@ netif_t *route_lookup (ip_t *ip, unsigned char *ipaddr,
 			continue;
 
 		best = r;
-		/* debug_printf (CONST("route match: %d.%d.%d.%d with %d.%d.%d.%d / %d\n"),
+		/* debug_printf ("route match: %d.%d.%d.%d with %d.%d.%d.%d / %d\n",
 			ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
 			r->ipaddr[0], r->ipaddr[1], r->ipaddr[2], r->ipaddr[3],
 			r->masklen); */
@@ -240,7 +240,7 @@ unsigned char *route_lookup_ipaddr (ip_t *ip, unsigned char *ipaddr,
 	route_t *r, *best;
 
 	best = 0;
-	/* debug_printf (CONST("route: lookup ipaddr %d.%d.%d.%d for %s\n"),
+	/* debug_printf ("route: lookup ipaddr %d.%d.%d.%d for %s\n",
 		ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], netif->name); */
 	for (r=ip->route; r; r=r->next) {
 		/* Search through all interface records. */
@@ -256,7 +256,7 @@ unsigned char *route_lookup_ipaddr (ip_t *ip, unsigned char *ipaddr,
 			continue;
 
 		best = r;
-		/* debug_printf (CONST("route match: %d.%d.%d.%d with %d.%d.%d.%d / %d\n"),
+		/* debug_printf ("route match: %d.%d.%d.%d with %d.%d.%d.%d / %d\n",
 			ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
 			r->ipaddr[0], r->ipaddr[1], r->ipaddr[2], r->ipaddr[3],
 			r->masklen); */
@@ -264,7 +264,7 @@ unsigned char *route_lookup_ipaddr (ip_t *ip, unsigned char *ipaddr,
 	if (! best)
 		return 0;
 
-	/* debug_printf (CONST("route_lookup returned %d.%d.%d.%d\n"),
+	/* debug_printf ("route_lookup returned %d.%d.%d.%d\n",
 		best->ipaddr[0], best->ipaddr[1], best->ipaddr[2], best->ipaddr[3]); */
 	return best->ipaddr;
 }

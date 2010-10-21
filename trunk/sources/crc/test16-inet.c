@@ -35,7 +35,7 @@ crc16_inet (unsigned short sum, unsigned const char *buf, unsigned short len)
 	if (swap_flag) {
 		sum = sum << 8 | sum >> 8;
 	}
-	/*debug_printf (CONST(" -> 0x%04x\n"), sum);*/
+	/*debug_printf (" -> 0x%04x\n", sum);*/
 	return sum;
 }
 

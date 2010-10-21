@@ -27,12 +27,12 @@ tcp_slowtmr (ip_t *ip)
 
 	++ip->tcp_ticks;
 	/* if (s == 0)
-		tcp_debug (CONST("tcp_slowtmr: no active sockets\n")); */
+		tcp_debug ("tcp_slowtmr: no active sockets\n"); */
 
 	/* Steps through all of the active PCBs. */
 	prev = 0;
 	for (s=ip->tcp_sockets; s; s=s->next) {
-		/* tcp_debug (CONST("tcp_slowtmr: processing active sockets\n")); */
+		/* tcp_debug ("tcp_slowtmr: processing active sockets\n"); */
 		mutex_lock (&s->lock);
 		assert (s->state != CLOSED);
 		assert (s->state != LISTEN);
@@ -41,15 +41,15 @@ tcp_slowtmr (ip_t *ip)
 
 		if (s->state == SYN_SENT && s->nrtx == TCP_SYNMAXRTX) {
 			++s_remove;
-			tcp_debug (CONST("tcp_slowtmr: max SYN retries reached\n"));
+			tcp_debug ("tcp_slowtmr: max SYN retries reached\n");
 		} else if (s->nrtx == TCP_MAXRTX) {
 			++s_remove;
-			tcp_debug (CONST("tcp_slowtmr: max DATA retries reached\n"));
+			tcp_debug ("tcp_slowtmr: max DATA retries reached\n");
 		} else {
 			++s->rtime;
 			if (s->unacked != 0 && s->rtime >= s->rto) {
 				/* Time for a retransmission. */
-				tcp_debug (CONST("tcp_slowtmr: rtime %u s->rto %u\n"),
+				tcp_debug ("tcp_slowtmr: rtime %u s->rto %u\n",
 					s->rtime, s->rto);
 
 				/* Double retransmission time-out unless we are trying to
@@ -68,7 +68,7 @@ tcp_slowtmr (ip_t *ip)
 					s->ssthresh = s->mss * 2;
 				}
 				s->cwnd = s->mss;
-				tcp_debug (CONST("tcp_slowtmr: cwnd %u ssthresh %u\n"),
+				tcp_debug ("tcp_slowtmr: cwnd %u ssthresh %u\n",
 					s->cwnd, s->ssthresh);
 			}
 		}
@@ -76,7 +76,7 @@ tcp_slowtmr (ip_t *ip)
 		if (ip->tcp_ticks - s->tmr > TCP_STUCK_TIMEOUT / TCP_SLOW_INTERVAL) {
 			if (s->state == SYN_RCVD) {
 				++s_remove;
-				tcp_debug (CONST("tcp_slowtmr: removing s stuck in %S\n"),
+				tcp_debug ("tcp_slowtmr: removing s stuck in %S\n",
 					tcp_state_name (s->state));
 			} else if (s->state == FIN_WAIT_1 ||
 			    s->state == FIN_WAIT_2 || s->state == CLOSING) {
@@ -143,7 +143,7 @@ tcp_fasttmr (ip_t *ip)
 	/* send delayed ACKs */
 	for (s=ip->tcp_sockets; s; s=s->next) {
 		if (s->flags & TF_ACK_DELAY) {
-			tcp_debug (CONST("tcp_fasttmr: delayed ACK\n"));
+			tcp_debug ("tcp_fasttmr: delayed ACK\n");
 			tcp_ack_now (s);
 			s->flags &= ~(TF_ACK_DELAY | TF_ACK_NOW);
 		}
@@ -225,14 +225,14 @@ tcp_alloc (ip_t *ip)
 void
 tcp_socket_purge (tcp_socket_t *s)
 {
-	tcp_debug (CONST("tcp_socket_purge\n"));
+	tcp_debug ("tcp_socket_purge\n");
 	if (s->unsent != 0) {
-		tcp_debug (CONST("tcp_socket_purge: not all data sent\n"));
+		tcp_debug ("tcp_socket_purge: not all data sent\n");
 		tcp_segments_free (s->unsent);
 		s->unsent = 0;
 	}
 	if (s->unacked != 0) {
-		tcp_debug (CONST("tcp_socket_purge: data left on ->unacked\n"));
+		tcp_debug ("tcp_socket_purge: data left on ->unacked\n");
 		tcp_segments_free (s->unacked);
 		s->unacked = 0;
 	}
@@ -276,7 +276,7 @@ tcp_queue_get (tcp_socket_t *q)
 	buf_t *p;
 
 	if (q->count == 0) {
-		/*tcp_debug (CONST("tcp_queue_get: returned 0\n"));*/
+		/*tcp_debug ("tcp_queue_get: returned 0\n");*/
 		return 0;
 	}
 	assert (q->head >= q->queue);
@@ -297,7 +297,7 @@ tcp_queue_get (tcp_socket_t *q)
 	if (q->rcv_wnd > TCP_WND) {
 		q->rcv_wnd = TCP_WND;
 	}
-	/*tcp_debug (CONST("tcp_queue_get: returned 0x%04x\n"), p);*/
+	/*tcp_debug ("tcp_queue_get: returned 0x%04x\n", p);*/
 	return p;
 }
 
@@ -306,7 +306,7 @@ tcp_queue_put (tcp_socket_t *q, buf_t *p)
 {
 	buf_t **tail;
 
-	/*tcp_debug (CONST("tcp_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n"), p, q->count, q->head);*/
+	/*tcp_debug ("tcp_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n", p, q->count, q->head);*/
 
 	/* Must be called ONLY when queue is not full. */
 	assert (q->count < SOCKET_QUEUE_SIZE);
@@ -322,7 +322,7 @@ tcp_queue_put (tcp_socket_t *q, buf_t *p)
 	/* Put the packet in. */
 	*tail = p;
 	++q->count;
-	/*tcp_debug (CONST("    on return count = %d, head = 0x%04x\n"), q->count, q->head);*/
+	/*tcp_debug ("    on return count = %d, head = 0x%04x\n", q->count, q->head);*/
 }
 
 void
@@ -348,18 +348,18 @@ tcp_queue_free (tcp_socket_t *q)
 void
 tcp_debug_print_header (tcp_hdr_t *tcphdr)
 {
-	debug_printf (CONST("TCP header:\n"));
-	debug_printf (CONST("+-------------------------------+\n"));
-	debug_printf (CONST("|      %04x     |      %04x     | (src port, dest port)\n"),
+	debug_printf ("TCP header:\n");
+	debug_printf ("+-------------------------------+\n");
+	debug_printf ("|      %04x     |      %04x     | (src port, dest port)\n",
 		tcphdr->src, tcphdr->dest);
-	debug_printf (CONST("+-------------------------------+\n"));
-	debug_printf (CONST("|            %08lu           | (seq no)\n"),
+	debug_printf ("+-------------------------------+\n");
+	debug_printf ("|            %08lu           | (seq no)\n",
 		tcphdr->seqno);
-	debug_printf (CONST("+-------------------------------+\n"));
-	debug_printf (CONST("|            %08lu           | (ack no)\n"),
+	debug_printf ("+-------------------------------+\n");
+	debug_printf ("|            %08lu           | (ack no)\n",
 		tcphdr->ackno);
-	debug_printf (CONST("+-------------------------------+\n"));
-	debug_printf (CONST("| %2u |    |%u%u%u%u%u|    %5u      | (offset, flags ("),
+	debug_printf ("+-------------------------------+\n");
+	debug_printf ("| %2u |    |%u%u%u%u%u|    %5u      | (offset, flags (",
 		tcphdr->offset,
 		tcphdr->flags >> 5 & 1,
 		tcphdr->flags >> 4 & 1,
@@ -369,61 +369,61 @@ tcp_debug_print_header (tcp_hdr_t *tcphdr)
 		tcphdr->flags & 1,
 		tcphdr->wnd);
 	tcp_debug_print_flags (tcphdr->flags);
-	debug_printf (CONST("), win)\n"));
-	debug_printf (CONST("+-------------------------------+\n"));
-	debug_printf (CONST("|    0x%04x     |     %5u     | (chksum, urgp)\n"),
+	debug_printf ("), win)\n");
+	debug_printf ("+-------------------------------+\n");
+	debug_printf ("|    0x%04x     |     %5u     | (chksum, urgp)\n",
 		NTOHS (tcphdr->chksum), NTOHS (tcphdr->urgp));
-	debug_printf (CONST("+-------------------------------+\n"));
+	debug_printf ("+-------------------------------+\n");
 }
 
 const char *
 tcp_state_name (tcp_state_t state)
 {
 	switch (state) {
-	case CLOSED:	  return CONST("CLOSED");	break;
-	case LISTEN:	  return CONST("LISTEN");	break;
-	case SYN_SENT:	  return CONST("SYN_SENT");	break;
-	case SYN_RCVD:	  return CONST("SYN_RCVD");	break;
-	case ESTABLISHED: return CONST("ESTABLISHED");	break;
-	case FIN_WAIT_1:  return CONST("FIN_WAIT_1");	break;
-	case FIN_WAIT_2:  return CONST("FIN_WAIT_2");	break;
-	case CLOSE_WAIT:  return CONST("CLOSE_WAIT");	break;
-	case CLOSING:	  return CONST("CLOSING");	break;
-	case LAST_ACK:	  return CONST("LAST_ACK");	break;
-	case TIME_WAIT:	  return CONST("TIME_WAIT");	break;
+	case CLOSED:	  return "CLOSED";	break;
+	case LISTEN:	  return "LISTEN";	break;
+	case SYN_SENT:	  return "SYN_SENT";	break;
+	case SYN_RCVD:	  return "SYN_RCVD";	break;
+	case ESTABLISHED: return "ESTABLISHED";	break;
+	case FIN_WAIT_1:  return "FIN_WAIT_1";	break;
+	case FIN_WAIT_2:  return "FIN_WAIT_2";	break;
+	case CLOSE_WAIT:  return "CLOSE_WAIT";	break;
+	case CLOSING:	  return "CLOSING";	break;
+	case LAST_ACK:	  return "LAST_ACK";	break;
+	case TIME_WAIT:	  return "TIME_WAIT";	break;
 	}
-	return CONST("???");
+	return "???";
 }
 
 void
 tcp_debug_print_flags (unsigned char flags)
 {
-	if (flags & TCP_FIN) debug_printf (CONST(" FIN"));
-	if (flags & TCP_SYN) debug_printf (CONST(" SYN"));
-	if (flags & TCP_RST) debug_printf (CONST(" RST"));
-	if (flags & TCP_PSH) debug_printf (CONST(" PSH"));
-	if (flags & TCP_ACK) debug_printf (CONST(" ACK"));
-	if (flags & TCP_URG) debug_printf (CONST(" URG"));
+	if (flags & TCP_FIN) debug_printf (" FIN");
+	if (flags & TCP_SYN) debug_printf (" SYN");
+	if (flags & TCP_RST) debug_printf (" RST");
+	if (flags & TCP_PSH) debug_printf (" PSH");
+	if (flags & TCP_ACK) debug_printf (" ACK");
+	if (flags & TCP_URG) debug_printf (" URG");
 }
 
 void
 tcp_debug_print_sockets (ip_t *ip)
 {
 	tcp_socket_t *s;
-	const char *fmt = CONST("Local port %u, foreign port %u "
-			        "snd_nxt %lu rcv_nxt %lu state %S\n");
+	const char *fmt = "Local port %u, foreign port %u "
+			  "snd_nxt %lu rcv_nxt %lu state %S\n";
 
-	debug_printf (CONST("Active PCB states:\n"));
+	debug_printf ("Active PCB states:\n");
 	for (s=ip->tcp_sockets; s; s=s->next) {
 		debug_printf (fmt, s->local_port, s->remote_port,
 			s->snd_nxt, s->rcv_nxt, tcp_state_name (s->state));
 	}
-	debug_printf (CONST("Listen PCB states:\n"));
+	debug_printf ("Listen PCB states:\n");
 	for (s=ip->tcp_listen_sockets; s; s=s->next) {
 		debug_printf (fmt, s->local_port, s->remote_port,
 			s->snd_nxt, s->rcv_nxt, tcp_state_name (s->state));
 	}
-	debug_printf (CONST("TIME-WAIT PCB states:\n"));
+	debug_printf ("TIME-WAIT PCB states:\n");
 	for (s=ip->tcp_closing_sockets; s; s=s->next) {
 		debug_printf (fmt, s->local_port, s->remote_port,
 			s->snd_nxt, s->rcv_nxt, tcp_state_name (s->state));

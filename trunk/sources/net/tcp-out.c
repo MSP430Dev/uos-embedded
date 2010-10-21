@@ -32,13 +32,13 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 	void *ptr;
 	unsigned char queuelen;
 
-	tcp_debug (CONST("tcp_enqueue(s=%p, arg=%p, len=%u, flags=%x) queuelen = %u\n"),
+	tcp_debug ("tcp_enqueue(s=%p, arg=%p, len=%u, flags=%x) queuelen = %u\n",
 		(void*) s, arg, len, flags, s->snd_queuelen);
 	left = len;
 	ptr = arg;
 	/* fail on too much data */
 	if (len > s->snd_buf) {
-		tcp_debug (CONST("tcp_enqueue: too much data (len=%u > snd_buf=%u)\n"),
+		tcp_debug ("tcp_enqueue: too much data (len=%u > snd_buf=%u)\n",
 			len, s->snd_buf);
 		return 0;
 	}
@@ -48,7 +48,7 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 	queue = 0;
 	queuelen = s->snd_queuelen;
 	if (queuelen >= TCP_SND_QUEUELEN) {
-		tcp_debug (CONST("tcp_enqueue: too long queue %u (max %u)\n"),
+		tcp_debug ("tcp_enqueue: too long queue %u (max %u)\n",
 			queuelen, TCP_SND_QUEUELEN);
 		return 0;
 	}
@@ -73,7 +73,7 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 		/* Allocate memory for tcp_segment, and fill in fields. */
 		seg = mem_alloc (s->ip->pool, sizeof (tcp_segment_t));
 		if (seg == 0) {
-			tcp_debug (CONST("tcp_enqueue: cannot allocate tcp_segment\n"));
+			tcp_debug ("tcp_enqueue: cannot allocate tcp_segment\n");
 			goto memerr;
 		}
 
@@ -91,7 +91,7 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 		seg->p = buf_alloc (s->ip->pool, optdata ? optlen : seglen,
 			16 + IP_HLEN + TCP_HLEN);
 		if (seg->p == 0) {
-			tcp_debug (CONST("tcp_enqueue: could not allocate %u bytes\n"),
+			tcp_debug ("tcp_enqueue: could not allocate %u bytes\n",
 				optdata ? optlen : seglen);
 			goto memerr;
 		}
@@ -104,7 +104,7 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 
 		/* Build TCP header. */
 		if (! buf_add_header (seg->p, TCP_HLEN)) {
-			tcp_debug (CONST("tcp_enqueue: no room for TCP header\n"));
+			tcp_debug ("tcp_enqueue: no room for TCP header\n");
 			goto memerr;
 		}
 		seg->tcphdr = (tcp_hdr_t*) seg->p->payload;
@@ -124,7 +124,7 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 		} else {
 			seg->tcphdr->offset = 5 << 4;
 		}
-		tcp_debug (CONST("tcp_enqueue: queueing %lu:%lu (flags 0x%x)\n"),
+		tcp_debug ("tcp_enqueue: queueing %lu:%lu (flags 0x%x)\n",
 			NTOHL (seg->tcphdr->seqno),
 			NTOHL (seg->tcphdr->seqno) + TCP_TCPLEN (seg),
 			flags);
@@ -157,7 +157,7 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 		useg->len += queue->len;
 		useg->next = queue->next;
 
-		tcp_debug (CONST("tcp_enqueue: chaining, new len %u\n"),
+		tcp_debug ("tcp_enqueue: chaining, new len %u\n",
 			useg->len);
 		if (seg == queue) {
 			seg = 0;
@@ -176,7 +176,7 @@ tcp_enqueue (tcp_socket_t *s, void *arg, unsigned short len,
 	s->snd_lbb += len;
 	s->snd_buf -= len;
 	s->snd_queuelen = queuelen;
-	tcp_debug (CONST("tcp_enqueue: done, queuelen = %d\n"),
+	tcp_debug ("tcp_enqueue: done, queuelen = %d\n",
 		s->snd_queuelen);
 	if (s->snd_queuelen != 0) {
 		assert (s->unacked != 0 || s->unsent != 0);
@@ -197,7 +197,7 @@ memerr:
 	if (s->snd_queuelen != 0) {
 		assert (s->unacked != 0 || s->unsent != 0);
 	}
-	tcp_debug (CONST("tcp_enqueue: %d (with mem err)\n"),
+	tcp_debug ("tcp_enqueue: %d (with mem err)\n",
 		s->snd_queuelen);
 	return 0;
 }
@@ -242,7 +242,7 @@ tcp_output_segment (tcp_segment_t *seg, tcp_socket_t *s)
 	if (TCP_SEQ_LT (s->snd_max, s->snd_nxt)) {
 		s->snd_max = s->snd_nxt;
 	}
-	tcp_debug (CONST("tcp_output_segment: %lu:%lu, snd_nxt = %u\n"),
+	tcp_debug ("tcp_output_segment: %lu:%lu, snd_nxt = %u\n",
 		HTONL (seg->tcphdr->seqno),
 		HTONL (seg->tcphdr->seqno) + seg->len, s->snd_nxt);
 
@@ -305,10 +305,10 @@ tcp_output (tcp_socket_t *s)
 		s->flags &= ~(TF_ACK_DELAY | TF_ACK_NOW);
 		p = buf_alloc (s->ip->pool, TCP_HLEN, 16 + IP_HLEN);
 		if (p == 0) {
-			tcp_debug (CONST("tcp_output: (ACK) could not allocate buf\n"));
+			tcp_debug ("tcp_output: (ACK) could not allocate buf\n");
 			return 0;
 		}
-		tcp_debug (CONST("tcp_output: sending ACK for %lu\n"),
+		tcp_debug ("tcp_output: sending ACK for %lu\n",
 			s->rcv_nxt);
 
 		tcphdr = (tcp_hdr_t*) p->payload;
@@ -330,13 +330,13 @@ tcp_output (tcp_socket_t *s)
 		return 1;
 	}
 	if (seg == 0) {
-		tcp_debug (CONST("tcp_output: nothing to send, snd_wnd %lu, cwnd %lu, wnd %lu, ack %lu\n"),
+		tcp_debug ("tcp_output: nothing to send, snd_wnd %lu, cwnd %lu, wnd %lu, ack %lu\n",
 			s->snd_wnd, s->cwnd, wnd, s->lastack);
 	}
 
 	while (seg != 0 &&
 	    NTOHL (seg->tcphdr->seqno) - s->lastack + seg->len <= wnd) {
-		tcp_debug (CONST("tcp_output: snd_wnd %lu, cwnd %lu, wnd %lu, effwnd %lu, seq %lu, ack %lu\n"),
+		tcp_debug ("tcp_output: snd_wnd %lu, cwnd %lu, wnd %lu, effwnd %lu, seq %lu, ack %lu\n",
 			s->snd_wnd, s->cwnd, wnd,
 			NTOHL (seg->tcphdr->seqno) + seg->len - s->lastack,
 			NTOHL (seg->tcphdr->seqno), s->lastack);
@@ -377,7 +377,7 @@ tcp_rst (ip_t *ip, unsigned long seqno, unsigned long ackno,
 
 	p = buf_alloc (ip->pool, TCP_HLEN, 16 + IP_HLEN);
 	if (p == 0) {
-		tcp_debug (CONST("tcp_rst: could not allocate memory\n"));
+		tcp_debug ("tcp_rst: could not allocate memory\n");
 		return;
 	}
 
@@ -397,7 +397,7 @@ tcp_rst (ip_t *ip, unsigned long seqno, unsigned long ackno,
 
 	++ip->tcp_out_datagrams;
 	ip_output (ip, p, remote_ip, local_ip, IP_PROTO_TCP);
-	tcp_debug (CONST("tcp_rst: seqno %lu ackno %lu.\n"), seqno, ackno);
+	tcp_debug ("tcp_rst: seqno %lu ackno %lu.\n", seqno, ackno);
 }
 
 void
@@ -419,7 +419,7 @@ tcp_rexmit (tcp_socket_t *s)
 	s->unacked = 0;
 
 	s->snd_nxt = NTOHL (s->unsent->tcphdr->seqno);
-	tcp_debug (CONST("tcp_rexmit: snd_nxt = %u\n"), s->snd_nxt);
+	tcp_debug ("tcp_rexmit: snd_nxt = %u\n", s->snd_nxt);
 
 	++s->nrtx;
 

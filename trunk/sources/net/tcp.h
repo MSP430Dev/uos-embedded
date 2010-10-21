@@ -264,14 +264,14 @@ void tcp_queue_free (tcp_socket_t *q);
 static inline int
 tcp_queue_is_full (tcp_socket_t *q)
 {
-	/*debug_printf (CONST("tcp_queue_is_full: returned %d\n"), (q->count == SOCKET_QUEUE_SIZE));*/
+	/*debug_printf ("tcp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
 	return (q->count == SOCKET_QUEUE_SIZE);
 }
 
 static inline int
 tcp_queue_is_empty (tcp_socket_t *q)
 {
-	/*debug_printf (CONST("tcp_queue_is_full: returned %d\n"), (q->count == SOCKET_QUEUE_SIZE));*/
+	/*debug_printf ("tcp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
 	return (q->count == 0);
 }
 

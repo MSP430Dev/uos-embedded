@@ -24,7 +24,7 @@ udp_queue_get (udp_socket_t *q, unsigned char *paddr,
 	udp_socket_queue_t *head;
 
 	if (q->count == 0) {
-		/*debug_printf (CONST("udp_queue_get: returned 0\n"));*/
+		/*debug_printf ("udp_queue_get: returned 0\n");*/
 		return 0;
 	}
 	assert (q->head >= q->queue);
@@ -45,21 +45,21 @@ udp_queue_get (udp_socket_t *q, unsigned char *paddr,
 	if (q->head >= q->queue + SOCKET_QUEUE_SIZE)
 		q->head = q->queue;
 
-	/*debug_printf (CONST("udp_queue_get: returned 0x%04x\n"), p);*/
+	/*debug_printf ("udp_queue_get: returned 0x%04x\n", p);*/
 	return p;
 }
 
 static bool_t
 udp_queue_is_full (udp_socket_t *q)
 {
-	/*debug_printf (CONST("udp_queue_is_full: returned %d\n"), (q->count == SOCKET_QUEUE_SIZE));*/
+	/*debug_printf ("udp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
 	return (q->count == SOCKET_QUEUE_SIZE);
 }
 
 static bool_t
 udp_queue_is_empty (udp_socket_t *q)
 {
-	/*debug_printf (CONST("udp_queue_is_full: returned %d\n"), (q->count == SOCKET_QUEUE_SIZE));*/
+	/*debug_printf ("udp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
 	return (q->count == 0);
 }
 
@@ -69,7 +69,7 @@ udp_queue_put (udp_socket_t *q, buf_t *p,
 {
 	udp_socket_queue_t *tail;
 
-	/*debug_printf (CONST("udp_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n"), p, q->count, q->head);*/
+	/*debug_printf ("udp_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n", p, q->count, q->head);*/
 
 	/* Must be called ONLY when queue is not full. */
 	assert (q->count < SOCKET_QUEUE_SIZE);
@@ -87,7 +87,7 @@ udp_queue_put (udp_socket_t *q, buf_t *p,
 	tail->port = port;
 	memcpy (tail->addr, addr, 4);
 	++q->count;
-	/*debug_printf (CONST("    on return count = %d, head = 0x%04x\n"), q->count, q->head);*/
+	/*debug_printf ("    on return count = %d, head = 0x%04x\n", q->count, q->head);*/
 }
 
 /*
@@ -106,7 +106,7 @@ udp_input (ip_t *ip, buf_t *p, netif_t *inp, ip_hdr_t *iph)
 
 	if (p->tot_len < sizeof(udp_hdr_t)) {
 		/* Bad UDP packet received. */
-		/*debug_printf (CONST("udp_input: too short packet (hlen=%d bytes)\n"), p->tot_len);*/
+		/*debug_printf ("udp_input: too short packet (hlen=%d bytes)\n", p->tot_len);*/
 drop:
 		++ip->udp_in_errors;
 		buf_free (p);
@@ -252,10 +252,10 @@ udp_sendto (udp_socket_t *s, buf_t *p, unsigned char *dest, unsigned short port)
 		buf_free (p);
 		return 0;
 	}
-	/* debug_printf (CONST("udp_sendto: %d bytes to %d.%d.%d.%d port %d netif %s\n"),
+	/* debug_printf ("udp_sendto: %d bytes to %d.%d.%d.%d port %d netif %s\n",
 		p->tot_len, dest[0], dest[1], dest[2], dest[3], port,
 		netif->name); */
-	/* debug_printf (CONST("    local %d.%d.%d.%d port %d, gateway %d.%d.%d.%d\n"),
+	/* debug_printf ("    local %d.%d.%d.%d port %d, gateway %d.%d.%d.%d\n",
 		local_ip[0], local_ip[1], local_ip[2], local_ip[3],
 		s->local_port,
 		gateway[0], gateway[1], gateway[2], gateway[3]); */

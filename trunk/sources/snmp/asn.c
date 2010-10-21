@@ -220,16 +220,16 @@ asn_parse (mem_pool_t *pool, unsigned char **input, unsigned *insz)
 		return 0;
 #if 0
 	asn_print_type (type);
-	debug_printf (CONST(" %d bytes of %d: %02x"), len, sz, inp[0]);
+	debug_printf (" %d bytes of %d: %02x", len, sz, inp[0]);
 	{
 		unsigned i;
 
 		for (i=1; i<len; ++i)
-			debug_printf (CONST("-%02x"), inp[i]);
+			debug_printf ("-%02x", inp[i]);
 		if (len < sz) {
-			debug_printf (CONST("\nRest: %02x"), inp[len]);
+			debug_printf ("\nRest: %02x", inp[len]);
 			for (i=len+1; i<sz; ++i)
-				debug_printf (CONST("-%02x"), inp[i]);
+				debug_printf ("-%02x", inp[i]);
 		}
 	}
 	debug_putchar (0, '\n');
