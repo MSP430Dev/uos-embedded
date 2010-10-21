@@ -4,16 +4,10 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <uart/uart.h>
-#include <gpanel/gpanel.h>
 #include "board-1986be91.h"
 
-ARRAY (task, 1500);
+ARRAY (task, 1000);
 uart_t uart;
-gpanel_t display;
-
-unsigned down_pressed = 0;
-
-extern gpanel_font_t font_fixed6x8;
 
 void hello (void *data)
 {
@@ -30,6 +24,8 @@ void hello (void *data)
 			putchar (&uart, c);
 			if (peekchar (&uart) >= 0) {
 				getchar (&uart);
+				puts (&uart, "\nTesting UART, press any key to continue...");
+				getchar (&uart);
 				break;
 			}
 		}
@@ -40,24 +36,9 @@ void hello (void *data)
 	}
 }
 
-/*
- * Redirect debug output.
- */
-void gpanel_putchar (void *arg, short c)
-{
-	putchar ((stream_t*) arg, c);
-}
-
 void uos_init (void)
 {
 	debug_printf ("\nTesting UART.\n");
-	buttons_init ();
-
-	/* Use LCD panel for debug output. */
-	gpanel_init (&display, &font_fixed6x8);
-	gpanel_clear (&display, 0);
-	debug_redirect (gpanel_putchar, &display);
-	debug_printf ("Testing UART.\n");
 
 	/* Using UART2. */
 	uart_init (&uart, 1, 90, KHZ, 115200);

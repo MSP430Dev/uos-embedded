@@ -235,8 +235,8 @@ uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 		   ARM_UART_LCRH_FEN;		// FIFO
 
 	/* Пороги FIFO */
-	reg->IFLS = ARM_UART_IFLS_RX_1_8 |	// приём: 1/8 буфера
-		  ARM_UART_IFLS_TX_1_8;		// передача: 1/8 буфера
+	reg->IFLS = ARM_UART_IFLS_RX_1_2 |	// приём от половины буфера
+		  ARM_UART_IFLS_TX_1_2;		// передача от половины буфера
 
 	/* Управление */
 	reg->CTL = ARM_UART_CTL_RXE |		// приём разрешен
@@ -244,7 +244,8 @@ uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 	reg->ICR = ~0;				// сброс прерывания
 	reg->DMACTL = 0;			// управление DMA
 	reg->IM = ARM_UART_RIS_TX |		// прерывания от передатчика
-		ARM_UART_RIS_RX;		// от приемника
+		ARM_UART_RIS_RX |		// от приемника
+		ARM_UART_RIS_RT;		// таймаут приема данных
 	reg->CTL |= ARM_UART_CTL_UARTEN;	// пуск приемопередатчика
 
 	mutex_unlock (&u->receiver);
