@@ -3,7 +3,7 @@
 #include <milandr/can.h>
 
 #define NRBUF		16		/* number of receive buffers */
-#define NTBUF		2		/* number of transmit buffers */
+#define NTBUF		1		/* number of transmit buffers */
 
 #define ALL_RBUFS	((1 << NRBUF) - 1)
 #define ALL_TBUFS	(((1 << NTBUF) - 1) << NRBUF)
@@ -88,20 +88,31 @@ static void can_setup_timing (can_t *c, int kbitsec)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
-	/* Разбиваем битовый интервал на 20 квантов:
+	/* Изначально разбиваем битовый интервал на 10 квантов:
 	 * 1) Первый квант - всегда - сегмент синхронизации.
-	 * 2) Три кванта - сегмент компенсации задержки распространения (PSEG).
-	 * 3) Восемь квантов - сегмент фазы 1 (SEG1).
-	 * 4) Восемь квантов - сегмент фазы 2 (SEG2).
+	 * 2) Второй квант - сегмент компенсации задержки распространения (PSEG).
+	 * 3) Четыре кванта - сегмент фазы 1 (SEG1).
+	 * 4) Четыре кванта - сегмент фазы 2 (SEG2).
+	 * Такое разбиение совместно с SJW = 4 обеспечивает наибольшее возможное расхождение часов устройств
+	 * (так написано в рекомендациях BOSCH)
 	 */
-	unsigned brp = ((KHZ / kbitsec + 10) / 20) - 1;
-	c->kbitsec = (KHZ / (brp + 1) + 10) / 20;
+	/* Рассчитываем значение делителя частоты исходя из того, что битовый интервал разбит на 10 квантов */
+	unsigned brp = (KHZ / kbitsec / 10) - 1;
+	/* Из-за дискретности brp, его значение может быть слишком грубым. 
+	 * Посчитаем, сколько реально квантов получится при таком brp?
+         */
+	unsigned nq = KHZ / (brp + 1) / kbitsec;
+	/* Если квантов больше, чем 10, то за счет разницы увеличим сегмент компенсации
+	 * задержки распространения. Тем самым "подстроимся" под необходимую частоту
+	 */
+	unsigned pseg = 1 + (nq - 10);
+	c->kbitsec = kbitsec;
 
-	/* Максимальное отклонение фронта (SJW) - четыре кванта. */
 	reg->BITTMNG = CAN_BITTMNG_SB | CAN_BITTMNG_SJW (4) |
-		CAN_BITTMNG_SEG2 (8) | CAN_BITTMNG_SEG1 (8) |
-		CAN_BITTMNG_PSEG (3) | CAN_BITTMNG_BRP (brp);
-/*debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, c->kbitsec, brp, reg->BITTMNG);*/
+		CAN_BITTMNG_SEG2 (4) | CAN_BITTMNG_SEG1 (4) |
+		CAN_BITTMNG_PSEG (pseg) | CAN_BITTMNG_BRP (brp);
+
+debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, KHZ / (brp + 1) / nq, brp, reg->BITTMNG);
 }
 
 /*
@@ -344,6 +355,7 @@ static void can_handle_interrupt (can_t *c)
 				continue;
 			if (bufcon & CAN_BUF_CON_OVER_WR) {
 				/* Сообщение перезаписано */
+debug_printf ("OVERWRITE!\n");
 				c->in_discards++;
 				reg->BUF_CON[i] = bufcon &
 					~(CAN_BUF_CON_RX_FULL |
