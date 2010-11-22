@@ -79,7 +79,8 @@
   mkdir /src/gcc-arm
   cd /src/gcc-arm
   /src/gcc-4.4.4/configure --target=arm-elf --prefix=/usr/local/arm444 \
-    --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
+    --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp \
+    --with-float=soft
   make
 }}}
 
