@@ -1,6 +1,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <milandr/can.h>
+#include <kernel/internal.h>
 
 #define NRBUF		16		/* number of receive buffers */
 #define NTBUF		1		/* number of transmit buffers */
@@ -301,14 +302,16 @@ void can_input (can_t *c, can_frame_t *fr)
 	mutex_unlock (&c->lock);
 }
 
-static void can_handle_interrupt (can_t *c)
+static bool_t can_handle_interrupt (void *arg)
 {
+	can_t *c = (can_t *)arg;
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+	bool_t ok = 0;
 
 	unsigned status = reg->STATUS;
 	reg->STATUS = 0;
 //debug_printf ("can interrupt: STATUS = %08x\n", status);
-
+#if 0
 	c->rec = CAN_STATUS_REC (status);
 	if (status & CAN_STATUS_REC8)
 		c->rec += 256;
@@ -320,10 +323,12 @@ static void can_handle_interrupt (can_t *c)
 	if (status & CAN_STATUS_BUS_OFF) {
 		/* Шина CAN отвалилась, требуется перезапуск. */
 		debug_printf ("can interrupt: BUS OFF\n");
+		ok = 1;
 	}
 	if (status & CAN_STATUS_ID_LOWER) {
 		/* При передаче был проигран арбитраж */
 		c->out_collisions++;
+		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_ACK) {
 		/* Ошибка подтверждения приема */
@@ -332,20 +337,24 @@ static void can_handle_interrupt (can_t *c)
 	if (status & CAN_STATUS_ERR_FRAME) {
 		/* Ошибка формата принимаемого пакета */
 		c->in_frame_errors++;
+		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_CRC) {
 		/* Ошибка контрольной суммы принимаемого пакета */
 		c->in_crc_errors++;
+		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_BITSTUFF) {
 		/* Ошибка контрольной суммы принимаемого пакета */
 		c->in_bitstuff_errors++;
+		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_BIT) {
 		/* Ошибка передаваемых битов пакета */
 		c->out_bit_errors++;
+		ok = 1;
 	}
-
+#endif
 	/* Есть ли буферы с принятым сообщением. */
 	if (status & CAN_STATUS_RX_READY) {
 		unsigned i;
@@ -355,11 +364,12 @@ static void can_handle_interrupt (can_t *c)
 				continue;
 			if (bufcon & CAN_BUF_CON_OVER_WR) {
 				/* Сообщение перезаписано */
-debug_printf ("OVERWRITE!\n");
+//debug_printf ("OVERWRITE!\n");
 				c->in_discards++;
 				reg->BUF_CON[i] = bufcon &
 					~(CAN_BUF_CON_RX_FULL |
 					CAN_BUF_CON_OVER_WR);
+				ok = 0;
 				continue;
 			}
 			CAN_BUF_t *buf = &reg->BUF[i];
@@ -373,10 +383,12 @@ debug_printf ("OVERWRITE!\n");
 
 			if (CAN_DLC_LEN (fr.dlc) > 8) {
 				c->in_errors++;
+				ok = 1;
 				continue;
 			}
 			if (can_queue_is_full (&c->inq)) {
 				c->in_discards++;
+				ok = 1;
 				continue;
 			}
 			/* Пакет успешно принят. */
@@ -390,25 +402,10 @@ debug_printf ("OVERWRITE!\n");
 		/* Оставляем маску только для активных буферов. */
 		reg->INT_TX = ~reg->TX & ALL_TBUFS;
 	}
-}
 
-/*
- * Receive interrupt task.
- */
-static void can_task (void *arg)
-{
-	can_t *c = arg;
-	int irq = (c->port == 0) ? 0 : 1;
+	arch_intr_allow (c->port);
 
-	mutex_lock_irq (&c->lock, irq, 0, 0);
-	for (;;) {
-		/* Wait for interrupt. */
-		mutex_wait (&c->lock);
-
-		/* Process all interrupts. */
-		++c->intr;
-		can_handle_interrupt (c);
-	}
+	return ok;
 }
 
 /*
@@ -420,7 +417,7 @@ void can_init (can_t *c, int port, int prio, unsigned kbitsec)
 	can_queue_init (&c->inq);
 	can_setup (c, kbitsec);
 
-	/* Create interrupt task. */
-	task_create (can_task, c, "can", prio,
-		c->stack, sizeof (c->stack));
+	int irq = (port == 0) ? 0 : 1;
+	mutex_lock_irq (&c->lock, irq, can_handle_interrupt, c);
+	mutex_unlock (&c->lock);
 }

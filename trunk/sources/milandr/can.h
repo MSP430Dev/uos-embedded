@@ -2,13 +2,6 @@
 #define __CAN_H_
 
 /*
- * Stack size for the task of CAN interrupt handler.
-*/
-#ifndef CAN_STACKSZ
-#   define CAN_STACKSZ		1000
-#endif
-
-/*
  * CAN data packet.
  */
 typedef struct __attribute__((__packed__)) _can_frame_t {
@@ -64,8 +57,6 @@ typedef struct _can_t {
 	unsigned long out_collisions;	/* lost arbitrage */
 	unsigned long out_nacks;	/* no ack */
 	unsigned long out_bit_errors;	/* transmit bit errors */
-
-	ARRAY (stack, CAN_STACKSZ);	 /* task stack */
 } can_t;
 
 /*
