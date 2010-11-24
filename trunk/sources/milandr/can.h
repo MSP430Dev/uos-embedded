@@ -62,10 +62,12 @@ typedef struct _can_t {
 /*
  * User level API.
  */
-void can_init (can_t *c, int port, int prio, unsigned kbitsec);
+void can_init (can_t *c, int port, unsigned kbitsec);
 void can_set_speed (can_t *c, unsigned kbitsec);
 void can_set_loop (can_t *c, int on);
 void can_output (can_t *c, const can_frame_t *fr);
 void can_input (can_t *c, can_frame_t *fr);
+void can_stop (can_t *c);		/* sets given channel disabled (channel is enabled after can_init()) */
+void can_start (can_t *c);		/* sets given channel enabled (needed to call only after can_stop()) */
 
 #endif /* !__CAN_H_ */

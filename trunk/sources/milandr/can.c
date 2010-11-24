@@ -302,11 +302,29 @@ void can_input (can_t *c, can_frame_t *fr)
 	mutex_unlock (&c->lock);
 }
 
+/* 
+ * Sets given channel disabled (channel is enabled after can_init())
+ */
+void can_stop (can_t *c)
+{
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+	reg->CONTROL &= ~CAN_CONTROL_EN;
+	reg->STATUS = 0;
+}
+
+/* 
+ * Sets given channel enabled (needed to call only after can_stop())
+ */
+void can_start (can_t *c)
+{
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+	reg->CONTROL |= CAN_CONTROL_EN;
+}
+
 static bool_t can_handle_interrupt (void *arg)
 {
 	can_t *c = (can_t *)arg;
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
-	bool_t ok = 0;
 
 	unsigned status = reg->STATUS;
 	reg->STATUS = 0;
@@ -323,12 +341,10 @@ static bool_t can_handle_interrupt (void *arg)
 	if (status & CAN_STATUS_BUS_OFF) {
 		/* Шина CAN отвалилась, требуется перезапуск. */
 		debug_printf ("can interrupt: BUS OFF\n");
-		ok = 1;
 	}
 	if (status & CAN_STATUS_ID_LOWER) {
 		/* При передаче был проигран арбитраж */
 		c->out_collisions++;
-		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_ACK) {
 		/* Ошибка подтверждения приема */
@@ -337,22 +353,18 @@ static bool_t can_handle_interrupt (void *arg)
 	if (status & CAN_STATUS_ERR_FRAME) {
 		/* Ошибка формата принимаемого пакета */
 		c->in_frame_errors++;
-		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_CRC) {
 		/* Ошибка контрольной суммы принимаемого пакета */
 		c->in_crc_errors++;
-		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_BITSTUFF) {
 		/* Ошибка контрольной суммы принимаемого пакета */
 		c->in_bitstuff_errors++;
-		ok = 1;
 	}
 	if (status & CAN_STATUS_ERR_BIT) {
 		/* Ошибка передаваемых битов пакета */
 		c->out_bit_errors++;
-		ok = 1;
 	}
 #endif
 	/* Есть ли буферы с принятым сообщением. */
@@ -369,7 +381,6 @@ static bool_t can_handle_interrupt (void *arg)
 				reg->BUF_CON[i] = bufcon &
 					~(CAN_BUF_CON_RX_FULL |
 					CAN_BUF_CON_OVER_WR);
-				ok = 0;
 				continue;
 			}
 			CAN_BUF_t *buf = &reg->BUF[i];
@@ -377,18 +388,24 @@ static bool_t can_handle_interrupt (void *arg)
 			fr.id = buf->ID;
 			fr.dlc = buf->DLC;
 			fr.data[0] = buf->DATAL;
+			if (fr.data[0] == 0)
+				fr.data[0] = buf->DATAL;
+			if (fr.data[0] == 0)
+				fr.data[0] = buf->DATAL;
 			fr.data[1] = buf->DATAH;
+			if (fr.data[1] == 0)
+				fr.data[1] = buf->DATAH;
+			if (fr.data[1] == 0)
+				fr.data[1] = buf->DATAH;
 /*debug_printf ("can rx: %08x-%08x-%08x-%08x\n", fr.id, fr.dlc, fr.data[0], fr.data[1]);*/
 			reg->BUF_CON[i] = bufcon & ~CAN_BUF_CON_RX_FULL;
 
 			if (CAN_DLC_LEN (fr.dlc) > 8) {
 				c->in_errors++;
-				ok = 1;
 				continue;
 			}
 			if (can_queue_is_full (&c->inq)) {
 				c->in_discards++;
-				ok = 1;
 				continue;
 			}
 			/* Пакет успешно принят. */
@@ -405,13 +422,13 @@ static bool_t can_handle_interrupt (void *arg)
 
 	arch_intr_allow (c->port);
 
-	return ok;
+	return 0;
 }
 
 /*
  * Set up the CAN driver.
  */
-void can_init (can_t *c, int port, int prio, unsigned kbitsec)
+void can_init (can_t *c, int port, unsigned kbitsec)
 {
 	c->port = port;
 	can_queue_init (&c->inq);
