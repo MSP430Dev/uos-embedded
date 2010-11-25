@@ -9,6 +9,10 @@
 #   include <runtime/mips32/io-nvcom01.h>
 #   include <runtime/mips32/io-elvees.h>
 #endif
+#ifdef ELVEES_NVCOM02
+#   include <runtime/mips32/io-nvcom02.h>
+#   include <runtime/mips32/io-elvees.h>
+#endif
 
 /*
  * Offsets of register values in saved context.
@@ -64,6 +68,9 @@
  */
 #ifdef ELVEES_NVCOM01
 #   define MIPS_FSPACE		24	/* for Elvees NVCom-01 */
+#endif
+#ifdef ELVEES_NVCOM02
+#   define MIPS_FSPACE		24	/* TODO: for Elvees NVCom-02 */
 #endif
 #ifndef MIPS_FSPACE
 #   define MIPS_FSPACE		16	/* default minimum */

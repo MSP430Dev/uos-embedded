@@ -14,7 +14,7 @@ void __attribute ((noreturn))_init_ (void)
 {
 	unsigned *src, *dest, *limit;
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 	unsigned int divisor;
 
 	/* Clear CAUSE register. Use special irq vector. */
@@ -30,6 +30,10 @@ void __attribute ((noreturn))_init_ (void)
 		| ST_IM_MCU
 #endif
 #ifdef ELVEES_NVCOM01
+		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2
+#endif
+#ifdef ELVEES_NVCOM02
+		/* TODO */
 		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2
 #endif
 		);
@@ -91,6 +95,23 @@ void __attribute ((noreturn))_init_ (void)
 	 * Setup all essential system registers.
 	 */
 #ifdef ELVEES_NVCOM01
+	/* Clock: enable only core. */
+	MC_CLKEN = MC_CLKEN_CORE;
+
+	/* Clock multiply from CLKIN to KHZ. */
+	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
+		   MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
+
+	/* Fixed mapping. */
+	MC_CSR = MC_CSR_FM;
+
+	MC_MASKR0 = 0;
+	MC_MASKR1 = 0;
+	MC_MASKR2 = 0;
+#endif
+
+#ifdef ELVEES_NVCOM02
+	/* TODO */
 	/* Clock: enable only core. */
 	MC_CLKEN = MC_CLKEN_CORE;
 
@@ -183,6 +204,10 @@ void __attribute ((noreturn))_init_ (void)
 #ifdef ELVEES_NVCOM01
 	divisor = MC_DL_BAUD (KHZ * 1000, 115200);
 #endif
+#ifdef ELVEES_NVCOM02
+	/* TODO */
+	divisor = MC_DL_BAUD (KHZ * 1000, 115200);
+#endif
 
 	MC_LCR = MC_LCR_8BITS | MC_LCR_DLAB;
 	MC_DLM = divisor >> 8;
@@ -201,7 +226,7 @@ void __attribute ((noreturn))_init_ (void)
 	(void) MC_RBR;
 	(void) MC_IIR;
 
-#endif /* ELVEES_MC24 or ELVEES_NVCOM01 */
+#endif /* ELVEES_MC24 or ELVEES_NVCOM01 or ELVEES_NVCOM02 */
 
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
@@ -226,7 +251,7 @@ uos_valid_memory_address (void *ptr)
 {
 	unsigned address = (unsigned) ptr;
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 	/* Internal SRAM. */
 	if (address >= (unsigned) &__data_start &&
 	    address < (unsigned) _estack)
@@ -238,7 +263,7 @@ uos_valid_memory_address (void *ptr)
 		return 1;
 #endif /* BOOT_SRAM_SIZE */
 
-#endif /* ELVEES_MC24 or ELVEES_NVCOM01 */
+#endif /* ELVEES_MC24 or ELVEES_NVCOM01 or ELVEES_NVCOM02 */
 	return 0;
 }
 

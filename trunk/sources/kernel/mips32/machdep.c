@@ -234,6 +234,35 @@ _arch_interrupt_ (void)
 		} else
 			break;
 #endif
+#ifdef ELVEES_NVCOM02
+		/* TODO */
+		/* Read readme-nvcom01.txt for interrupt numbers. */
+		if (pending & ST_IM_COMPARE) {
+			/* Use number 30 for COMPARE interrupt. */
+			irq = 30;
+			status &= ~ST_IM_COMPARE;
+			mips32_write_c0_register (C0_STATUS, status);
+		} else if (pending & ST_IM_QSTR0) {
+			/* QSTR0 interrupt: 0..31. */
+			irq = 31 - mips32_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			if (irq < 0)
+				break;
+			MC_MASKR0 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR1) {
+			/* QSTR1 interrupt: 32..35. */
+			irq = 32 + 31 - mips32_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			if (irq < 32)
+				break;
+			MC_MASKR1 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR2) {
+			/* QSTR2 interrupt: 36..51. */
+			irq = 36 + 31 - mips32_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			if (irq < 36)
+				break;
+			MC_MASKR2 &= ~(1 << irq);
+		} else
+			break;
+#endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
 
@@ -319,6 +348,24 @@ arch_intr_allow (int irq)
 		/* QSTR2 interrupt: 36..51. */
 		MC_MASKR2 |= 1 << (irq-36);
 /*debug_printf ("enable irq %d, MASKR2=%#x\n", irq, MC_MASKR2);*/
+	}
+#endif
+#ifdef ELVEES_NVCOM02
+	/* TODO */
+	if (irq == 30) {
+		/* Use irq number 30 for COMPARE interrupt. */
+		unsigned status = mips32_read_c0_register (C0_STATUS);
+		status |= ST_IM_COMPARE;
+		mips32_write_c0_register (C0_STATUS, status);
+	} else if (irq < 32) {
+		/* QSTR0 interrupt: 0..31. */
+		MC_MASKR0 |= 1 << irq;
+	} else if (irq < 32+4) {
+		/* QSTR1 interrupt: 32..35. */
+		MC_MASKR1 |= 1 << (irq-32);
+	} else {
+		/* QSTR2 interrupt: 36..51. */
+		MC_MASKR2 |= 1 << (irq-36);
 	}
 #endif
 }

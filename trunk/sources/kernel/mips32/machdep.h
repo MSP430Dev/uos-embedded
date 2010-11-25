@@ -40,6 +40,13 @@
 #define ARCH_INTERRUPTS		(32+4+16)
 #endif
 
+#ifdef ELVEES_NVCOM02
+/*
+ * TODO
+ */
+#define ARCH_INTERRUPTS		(32+4+16)
+#endif
+
 /*
  * Type for saving task stack context.
  */

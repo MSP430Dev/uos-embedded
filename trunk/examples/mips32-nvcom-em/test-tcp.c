@@ -250,7 +250,8 @@ void uos_init (void)
 	MC_SDRCSR = 1;				/* Initialize SDRAM */
         udelay (2);
 
-#if 1
+#if 0
+	/* Используем внешнюю память SRAM. */
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 #else
 	/* Используем только внутреннюю память CRAM.

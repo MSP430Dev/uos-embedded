@@ -4,7 +4,7 @@ bool_t debug_onlcr = 1;
 
 static int debug_char = -1;
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01)
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 /*
  * Send a byte to the UART transmitter, with interrupts disabled.
  */
