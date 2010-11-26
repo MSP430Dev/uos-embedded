@@ -22,7 +22,7 @@ typedef struct __attribute__((__packed__)) _can_frame_t {
 /*
  * Queue of CAN packets.
  */
-#define CAN_QUEUE_SIZE		16	/* max number of packets in queue */
+#define CAN_QUEUE_SIZE		64	/* max number of packets in queue */
 
 typedef struct _can_queue_t {
 	unsigned count;
@@ -69,5 +69,6 @@ void can_output (can_t *c, const can_frame_t *fr);
 void can_input (can_t *c, can_frame_t *fr);
 void can_stop (can_t *c);		/* sets given channel disabled (channel is enabled after can_init()) */
 void can_start (can_t *c);		/* sets given channel enabled (needed to call only after can_stop()) */
+void can_set_filter (can_t *c, unsigned mask, unsigned pattern);
 
 #endif /* !__CAN_H_ */

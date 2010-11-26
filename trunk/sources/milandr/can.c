@@ -4,7 +4,7 @@
 #include <kernel/internal.h>
 
 #define NRBUF		16		/* number of receive buffers */
-#define NTBUF		1		/* number of transmit buffers */
+#define NTBUF		16		/* number of transmit buffers */
 
 #define ALL_RBUFS	((1 << NRBUF) - 1)
 #define ALL_TBUFS	(((1 << NTBUF) - 1) << NRBUF)
@@ -211,8 +211,8 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
 	/* Проверяем, что есть свободный буфер для передачи. */
-	int i = 31 - arm_count_leading_zeroes (reg->TX & ALL_TBUFS);
-	if (i < NRBUF)
+	int i = 32 - arm_count_leading_zeroes (~(reg->TX & ALL_TBUFS));
+	if (i < NRBUF || i >= NRBUF + NTBUF)
 		return 0;
 
 	/* Нашли свободный буфер. */
@@ -240,6 +240,7 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 
 	/* Разрешение прерывания от передающего буфера. */
 	reg->INT_TX |= 1 << i;
+
 	return 1;
 }
 
@@ -308,8 +309,10 @@ void can_input (can_t *c, can_frame_t *fr)
 void can_stop (can_t *c)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+	mutex_lock (&c->lock);
 	reg->CONTROL &= ~CAN_CONTROL_EN;
 	reg->STATUS = 0;
+	mutex_unlock (&c->lock);
 }
 
 /* 
@@ -318,7 +321,22 @@ void can_stop (can_t *c)
 void can_start (can_t *c)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+	mutex_lock (&c->lock);
 	reg->CONTROL |= CAN_CONTROL_EN;
+	mutex_unlock (&c->lock);
+}
+
+void can_set_filter (can_t *c, unsigned mask, unsigned pattern)
+{
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+	int i;
+
+	mutex_lock (&c->lock);
+	for (i = 0; i < NRBUF; ++i) {
+		reg->MASK[i].MASK = mask;
+		reg->MASK[i].FILTER = pattern;
+	}
+	mutex_unlock (&c->lock);
 }
 
 static bool_t can_handle_interrupt (void *arg)
@@ -386,7 +404,15 @@ static bool_t can_handle_interrupt (void *arg)
 			CAN_BUF_t *buf = &reg->BUF[i];
 			can_frame_t fr;
 			fr.id = buf->ID;
+			if (fr.id == 0)
+				fr.id = buf->ID;
+			if (fr.id == 0)
+				fr.id = buf->ID;
 			fr.dlc = buf->DLC;
+			if (fr.dlc == 0)
+				fr.dlc = buf->DLC;
+			if (fr.dlc == 0)
+				fr.dlc = buf->DLC;
 			fr.data[0] = buf->DATAL;
 			if (fr.data[0] == 0)
 				fr.data[0] = buf->DATAL;
