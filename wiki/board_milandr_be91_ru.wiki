@@ -64,7 +64,7 @@ milprog demo1986be91.hex
  * test-eth.c - Проверка драйвера Ethernet для контроллера 5600ВГ1У.
  * test-udp.c - Проверка протокола UDP с контроллером Ethernet 5600ВГ1У.
  * test-tcp.c - Проверка протокола TCP с контроллером Ethernet 5600ВГ1У.
- * test-telnetd.c- Проверка протокола Telnet с контроллером Ethernet 5600ВГ1У.
+ * test-telnetd.c - Проверка протокола Telnet с контроллером Ethernet 5600ВГ1У.
 
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-debug.c test-debug.c]
 - Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
