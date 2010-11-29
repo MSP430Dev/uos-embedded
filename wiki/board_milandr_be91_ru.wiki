@@ -66,8 +66,6 @@ milprog tetris.hex
 milprog demo1986be91.hex
 }}}
 
-= Тесты =
-
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-debug.c test-debug.c]
 - Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
 Программа циклически выдаёт на консоль UART строку "Hello, World!" и ждёт нажатия клавиши.
