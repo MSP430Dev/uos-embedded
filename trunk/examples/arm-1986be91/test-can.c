@@ -147,7 +147,6 @@ again:
 			task_print (&debug, (task_t*) stack_console);
 			task_print (&debug, (task_t*) stack_receive);
 			task_print (&debug, (task_t*) stack_transmit);
-			task_print (&debug, (task_t*) can.stack);
 			putchar (&debug, '\n');
 			continue;
 		}
@@ -177,7 +176,7 @@ void uos_init (void)
 
 	timer_init (&timer, KHZ, 10);
 
-	can_init (&can, 1, 90, 1000);
+	can_init (&can, 1, 1000);
 
 	task_create (task_receive, 0, "rcv", 30,
 		stack_receive, sizeof (stack_receive));

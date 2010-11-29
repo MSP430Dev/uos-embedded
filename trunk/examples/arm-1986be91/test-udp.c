@@ -1,5 +1,5 @@
 /*
- * Testing TCP protocol: server side.
+ * Testing UDP protocol: server side.
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>

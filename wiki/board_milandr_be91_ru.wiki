@@ -37,83 +37,186 @@
 ||  1 (вправо) ||  1  (вправо) || 0х1000 0000 (внешняя память) || JTAG заблокирован ||
 
 = Примеры uOS =
-В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em examples/mips32-mc24em]
-находятся примеры сборки uOS для MC-24EM. Их можно скомпилировать командой "make". Загрузить готовые бинарные файлы в плату можно утилитой [http://code.google.com/p/mcprog/ mcprog], например:
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91 examples/arm-1986be91]
+находятся примеры сборки uOS для 1986ВЕ91Т. Их можно скомпилировать командой "make". Загрузить готовые бинарные файлы в плату можно утилитой [http://code.google.com/p/milprog/ milprog], например:
 {{{
-mcprog -w test_tcl.bin
-}}} 
+milprog tetris.hex
+}}}
+В файле `demo1986be91.hex` находится код фирменного примера Миландр, поставляемого с платой. Хагрузить его в плату можно командой:
+{{{
+milprog demo1986be91.hex
+}}}
 
 = Тесты =
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_debug.c test_debug.c]
-- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
-Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
+ * test-debug.c - Проверка runtime-библиотеки и отладочной печати.
+ * test-lcd.c - Проверка драйвера графического индикатора MT-12864J.
+ * tetris.c - Игра "Тетрис" на экране LCD.
+ * test-task-lcd.c - Проверка переключения задач.
+ * test-timer.c - Проверка драйвера таймера с выводом на UART.
+ * test-timer-lcd.c - Проверка драйвера таймера с выводом на экран LCD.
+ * test-uart.c - Проверка драйвера UART.
+ * phil-lcd.c - Пять обедающих философов с выводом на экран LCD.
+ * phil-uart.c - Пять обедающих философов с выводом на UART.
+ * test-tswitch.c - Измерение времени переключения задач.
+ * test-latency.c - Измерение времени входа в обработчик прерывания.
+ * test-can.c - Проверка драйвера CAN.
+ * test-mac.c - Проверка приёма пакетов Ethernet контроллером 5600ВГ1У.
+ * test-eth.c - Проверка драйвера Ethernet для контроллера 5600ВГ1У.
+ * test-udp.c - Проверка протокола UDP с контроллером Ethernet 5600ВГ1У.
+ * test-tcp.c - Проверка протокола TCP с контроллером Ethernet 5600ВГ1У.
+ * test-telnetd.c
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_task.c test_task.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-debug.c test-debug.c]
+- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
+Программа циклически выдаёт на консоль UART строку "Hello, World!" и ждёт нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-lcd.c test-lcd.c]
+- Проверка драйвера графического индикатора MT-12864J. Микроядро отсутствует.
+Программа выдаёт на экран LCD текст, рисует прямоугольники и окружности.
+Кнопками LEFT и RIGHT можно переключать варианты теста.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/tetris.c tetris.c]
+- Игра "Тетрис" на экране LCD. Микроядро uOS не используется.
+Кнопка LEFT вращает падающую фигуру, кнопки UP и DOWN сдвигают её влево-вправо, кнопка RIGHT роняет фигуру.
+При заполнении стакана игра начинается заново.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-task-lcd.c test-task-lcd.c]
 - Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
 общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
+Вывод производится на экран LCD.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_timer.c test_timer.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-timer.c test-timer.c]
 - Проверка драйвера таймера. Одна задача: программа пользователя, которая
-каждые 100 миллисекунд печатает строку на консоли.
+каждые 100 миллисекунд печатает строку на консоли UART.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_uart.c test_uart.c]
-- Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
-циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-timer-lcd.c test-timer-lcd.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+выдаёт на экран LCD время в секундах с момента старта системы.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/philosophers.c philosophers.c]
-- Пять обедающих философов. Шесть задач: драйвер UART и пять задач философов.
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-uart.c test-uart.c]
+- Проверка драйвера UART. Одна задача: программа пользователя,
+циклически выдающая строки по 79 символов с последовательными кодами.
+Нажатие любой клавиши временно пристанавливает работу теста.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_ram.c test_ram.c]
-- Проверка внешней оперативной памяти SDRAM. Задача пользователя с простым диалоговым меню.
-Позволяет запускать:
- * Тест адресных сигналов (бегущая единица). Запись данных по специально подобранным адресам и проверка.
- * Тест одного адреса. Циклическая запись по фиксированному адресу данных AAAA и 5555, с проверкой.
- * Тест всей внешней памяти. Запись данных AAAA и 5555, с проверкой.
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/phil-uart.c phil-uart.c]
+- [http://en.wikipedia.org/wiki/Dining_philosophers Пять обедающих философов] (пять задач). Вывод на UART.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/phil-lcd.c phil-lcd.c]
+- [http://en.wikipedia.org/wiki/Dining_philosophers Пять обедающих философов] (пять задач). Вывод картинки на экран LCD.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-tswitch.c test-tswitch.c]
+- Измерение времени переключения задач. Выдача на экран LCD.
+Две задачи: консольная (с приоритетом 1) и измерительная (с более высоким приоритетом 2).
+Измерительная задача ожидает сообщения на мутексе.
+Консольная задача посылает сообщение, содержащее значение текущего времени (аппаратный таймер SysTick).
+Происходит переключение задач, и измерительная задача фиксирует задержку переключения.
+Затем консольная задача печатает полученное значение на экране LCD.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-latency.c test-latency.c]
+- Измерение времени входа в прерывание. Выдача на экран LCD.
+Для прерывания от аппаратного таймера SysTick устанавливается быстрый обработчик.
+Каждыу 100 миллисекунд обработчик замеряет время, потраченное на вход в обработчик
+(разница между начальным значением таймера LOAD и текущим значением VAL).
+Консольная задача печатает полученное значение на экране LCD.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-can.c test-can.c]
+- Проверка драйвера CAN. Управление производится посредством текстового меню на консоли UART.
+Позволяет передавать и принимать пакеты CAN. Можно устанавливать режим шлейфа,
+замыкающий выход передатчика обратно на вход приёмника. Диалоговое меню:
 {{{
-Testing memory on MC-24EM board
-Generator 8.0 MHz, CPU clock 80.0 MHz
-  CSR    = 000100A1
-  CSCON0 = 00B000F8
-  CSCON3 = 00080000
-  SDRCON = 00072710
+Testing CAN
 
-  1. Test SRAM address signals
-  2. Test SRAM address BFCAAAA8
-  3. Test all SRAM (1024 kbytes)
-  4. Test SDRAM address signals
-  5. Test SDRAM address A2AAAAA8
-  6. Test SDRAM address A5555554
-  7. Test all SDRAM (128 Mbytes)
+Transmit: 2 packets, 0 collisions, 0 errors
+Receive: 2 packets, 0 errors, 0 lost
+
+  1. Transmit 1 packet
+  2. Transmit 2 packets
+  3. Transmit 100 packets
+  4. Run send/receive test
+  5. Local loopback: Enabled
 
 Command: _
 }}}
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_tcl.c test_tcl.c]
-- Проверка реализации встроенного языка TCL. Выдаёт диалоговое приглашение:
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-mac.c test-mac.c]
+- Проверка приёма пакетов Ethernet контроллером 5600ВГ1У.
+Используется фиксированный MAC-адрес 00:09:94:F1:F2:F3.
+Управление производится посредством текстового меню на консоли UART.
+Тест ожидает приёма пакетов Ethernet и печатает их на консоли.
+При нажатии клавиши <Enter> печатается содержимое аппаратных регистров контроллера 5600ВГ1У.
+По команде ^T выдаётся список задач и количество свободной памяти.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-eth.c test-eth.c]
+- Проверка драйвера Ethernet для контроллера 5600ВГ1У. Позволяет передавать и принимать Ethernet-данные
+с разным размером пакетов. Можно устанавливать режим шлейфа, замыкающий
+выход передатчика обратно на вход приёмника.
+Используется фиксированный MAC-адрес 00:09:94:F1:F2:F3.
+При нажатии ^E печатается содержимое аппаратных регистров контроллера 5600ВГ1У.
+По команде ^T выдаётся список задач.
+Диалоговое меню:
 {{{
-Embedded TCL
-~~~~~~~~~~~~
-Free static memory: 956812 bytes
-Free dynamic memory: 134217728 bytes
+Testing Ethernet
 
-Enter "help" for a list of commands
+Free memory: 12072 bytes
+Ethernet: Cable OK, Full Duplex, 100 interrupts
+Transmit: 100 packets, 0 collisions, 0 errors
+Receive: 0 packets, 0 errors, 0 lost
 
-% _
+  1. Transmit 1 packet
+  2. Transmit 2 packets
+  3. Transmit 8 packets
+  4. Run send/receive test
+  5. Packet size: 1500 bytes
+  6. Local loopback: Disabled
+
+Command: _
 }}}
-В качестве примера реализованы три дополнительные команды:
-|| loop var first limit {incr} command  || Цикл от var:=first до limit с шаком incr ||
-|| echo {arg...}                        || Выдача аргументов через пробел ||
-|| mem                                  || Выдача количества свободной памяти и списка задач ||
 
-Пример списка задач:
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-udp.c test-udp.c]
+- Проверка протокола UDP с контроллером Ethernet 5600ВГ1У.
+Используется фиксированный MAC-адрес 00:09:94:F1:F2:F3 и фиксированный IP-адрес 192.168.20.222.
+Статистика работы драйвера Ethernet отображается на экране LCD.
+На консоли UART можно получить дополнительную информацию: при нажатии
+клавиши <Enter> печатается статистика драйвера, содержимое аппаратных регистров контроллера 5600ВГ1У
+и состояние сокета UDP, а по команде ^T выдаётся список задач.
+Тест ожидает приёма пакетов UDP на порту 7777, затем отправляет их обратно отправителю.
+Для генерации потока тестовых пакетов следует использовать утилиту
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/udpping.c udpping.c], например:
 {{{
-% mem
+% udpping -r 500000 192.168.20.222
+}}}
+Здесь 500000 - желаемый темп передачи, бит/сек.
 
-Task     Address          Prio   Stack          Space    Msg    Ticks
-idle     b80001dc         0      b8007f10       1       (nil)   20
-console  b800032c        *20     b8000770       748     (nil)   365
-uartr    b8000ba4         90     b8000eb8       676     (nil)   402
-        Waiting for 0xb8000b30
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-tcp.c test-tcp.c]
+- Проверка протокола TCP с контроллером Ethernet 5600ВГ1У.
+Используется фиксированный MAC-адрес 00:09:94:F1:F2:F3 и фиксированный IP-адрес 192.168.20.222.
+Статистика работы драйвера Ethernet отображается на экране LCD.
+На консоли UART можно получить дополнительную информацию: при нажатии
+клавиши <Enter> печатается статистика драйвера, содержимое аппаратных регистров контроллера 5600ВГ1У
+и состояние сокетов TCP, а по команде ^T выдаётся список задач.
+Тест ожидает соединения TCP на порту 2222. При появлении соединения начинается отправка данных:
+первые два байта - длина записи (1024 lsb), затем 1022 байта FF и т.д.
+Для приёма потока данных следует использовать утилиту
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/linux386/tcp-receiver.c tcp-receiver.c], например:
+{{{
+% tcp-receiver 192.168.20.222
+}}}
 
-% _
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-telnetd.c test-telnetd.c]
+- Проверка протокола Telnet с контроллером Ethernet 5600ВГ1У.
+Используется фиксированный MAC-адрес 00:09:94:F1:F2:F3 и фиксированный IP-адрес 192.168.20.222.
+Статистика работы драйвера Ethernet отображается на экране LCD.
+На консоли UART или через Telnet можно получить дополнительную информацию, введя команды:
+ * mem - список задач и количество свободной памяти.
+ * eth - состояние и статистикф драйвера Ethernet, а также аппаратные регистры контроллера 5600ВГ1У.
+ * ip  - статистика протокола IP.
+ * arp - таблица протокола ARP.
+ * tcp - статистика протокола TCP.
+ * icmp - статистика протокола ICMP.
+ * sock - состояние сокетов TCP.
+Тест ожидает соединения Telnet на порту 23. Разрешается до 4-х одновременных telnet-сеансов.
+Для соединения можно использовать утилиту [http://www.chiark.greenend.org.uk/~sgtatham/putty/ Putty]
+или стандартную утилиту telnet:
+{{{
+% telnet 192.168.20.222
 }}}
