@@ -38,16 +38,7 @@
 
 = Примеры uOS =
 В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91 examples/arm-1986be91]
-находятся примеры сборки uOS для 1986ВЕ91Т. Их можно скомпилировать командой "make". Загрузить готовые бинарные файлы в плату можно утилитой [http://code.google.com/p/milprog/ milprog], например:
-{{{
-milprog tetris.hex
-}}}
-В файле `demo1986be91.hex` находится код фирменного примера Миландр, поставляемого с платой. Хагрузить его в плату можно командой:
-{{{
-milprog demo1986be91.hex
-}}}
-
-= Тесты =
+находятся примеры сборки uOS для 1986ВЕ91Т. Их можно скомпилировать командой "make". 
  * test-debug.c - Проверка runtime-библиотеки и отладочной печати.
  * test-lcd.c - Проверка драйвера графического индикатора MT-12864J.
  * tetris.c - Игра "Тетрис" на экране LCD.
@@ -65,6 +56,17 @@ milprog demo1986be91.hex
  * test-udp.c - Проверка протокола UDP с контроллером Ethernet 5600ВГ1У.
  * test-tcp.c - Проверка протокола TCP с контроллером Ethernet 5600ВГ1У.
  * test-telnetd.c - Проверка протокола Telnet с контроллером Ethernet 5600ВГ1У.
+
+Загрузить готовые бинарные файлы в плату можно утилитой [http://code.google.com/p/milprog/ milprog], например:
+{{{
+milprog tetris.hex
+}}}
+В файле `demo1986be91.hex` находится код фирменного примера Миландр, поставляемого с платой. Загрузить его в плату можно командой:
+{{{
+milprog demo1986be91.hex
+}}}
+
+= Тесты =
 
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/arm-1986be91/test-debug.c test-debug.c]
 - Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
