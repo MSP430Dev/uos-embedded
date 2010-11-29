@@ -35,3 +35,85 @@
 ||  1 (вправо) ||  0           || 0х0800 0000 (flash-память)   || JTAG A ||
 ||  0          ||  1  (вправо) || 0х1000 0000 (внешняя память) || JTAG B ||
 ||  1 (вправо) ||  1  (вправо) || 0х1000 0000 (внешняя память) || JTAG заблокирован ||
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em examples/mips32-mc24em]
+находятся примеры сборки uOS для MC-24EM. Их можно скомпилировать командой "make". Загрузить готовые бинарные файлы в плату можно утилитой [http://code.google.com/p/mcprog/ mcprog], например:
+{{{
+mcprog -w test_tcl.bin
+}}} 
+
+= Тесты =
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_debug.c test_debug.c]
+- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
+Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_task.c test_task.c]
+- Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
+общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_timer.c test_timer.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+каждые 100 миллисекунд печатает строку на консоли.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_uart.c test_uart.c]
+- Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
+циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/philosophers.c philosophers.c]
+- Пять обедающих философов. Шесть задач: драйвер UART и пять задач философов.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_ram.c test_ram.c]
+- Проверка внешней оперативной памяти SDRAM. Задача пользователя с простым диалоговым меню.
+Позволяет запускать:
+ * Тест адресных сигналов (бегущая единица). Запись данных по специально подобранным адресам и проверка.
+ * Тест одного адреса. Циклическая запись по фиксированному адресу данных AAAA и 5555, с проверкой.
+ * Тест всей внешней памяти. Запись данных AAAA и 5555, с проверкой.
+{{{
+Testing memory on MC-24EM board
+Generator 8.0 MHz, CPU clock 80.0 MHz
+  CSR    = 000100A1
+  CSCON0 = 00B000F8
+  CSCON3 = 00080000
+  SDRCON = 00072710
+
+  1. Test SRAM address signals
+  2. Test SRAM address BFCAAAA8
+  3. Test all SRAM (1024 kbytes)
+  4. Test SDRAM address signals
+  5. Test SDRAM address A2AAAAA8
+  6. Test SDRAM address A5555554
+  7. Test all SDRAM (128 Mbytes)
+
+Command: _
+}}}
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24em/test_tcl.c test_tcl.c]
+- Проверка реализации встроенного языка TCL. Выдаёт диалоговое приглашение:
+{{{
+Embedded TCL
+~~~~~~~~~~~~
+Free static memory: 956812 bytes
+Free dynamic memory: 134217728 bytes
+
+Enter "help" for a list of commands
+
+% _
+}}}
+В качестве примера реализованы три дополнительные команды:
+|| loop var first limit {incr} command  || Цикл от var:=first до limit с шаком incr ||
+|| echo {arg...}                        || Выдача аргументов через пробел ||
+|| mem                                  || Выдача количества свободной памяти и списка задач ||
+
+Пример списка задач:
+{{{
+% mem
+
+Task     Address          Prio   Stack          Space    Msg    Ticks
+idle     b80001dc         0      b8007f10       1       (nil)   20
+console  b800032c        *20     b8000770       748     (nil)   365
+uartr    b8000ba4         90     b8000eb8       676     (nil)   402
+        Waiting for 0xb8000b30
+
+% _
+}}}
