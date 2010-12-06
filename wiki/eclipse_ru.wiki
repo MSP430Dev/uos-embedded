@@ -8,7 +8,7 @@
  * [http://www.eclipse.org/dsdp/tm/ TM] - Target Management - управление целевой платформой. Он же RSE - Remote System Explorer. [http://wiki.eclipse.org/TM_and_RSE_FAQ TM и RSE в вопросах и ответах].
  * [http://www.eclipse.org/dsdp/dd/ DD] - Device Debugging - удалённая отладка.
 
-= Установка =
+= Установка и настройка =
 
 Можно настроить Eclipse как отладчик для MIPS32 через [http://code.google.com/p/mcprog/wiki/mcremote_ru mcremote]. 
 
