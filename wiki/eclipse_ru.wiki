@@ -12,15 +12,16 @@
 
 Можно настроить Eclipse как отладчик для MIPS32 через [http://code.google.com/p/mcprog/wiki/mcremote_ru mcremote]. 
 
- # Устанавливаем основную оболочку Eclipse. Под Ubuntu это делается командой "sudo apt-get install eclipse".
- # Вызываем Eclipse и из меню выполняем команду "Help / Install new software..." Появится окошко установки дополнительных пакетов. Жмём "Add..." в верхнем правом углу. Заполняем:
+1. Устанавливаем основную оболочку Eclipse. Под Ubuntu это делается командой "sudo apt-get install eclipse".
+
+2. Вызываем Eclipse и из меню выполняем команду "Help / Install new software..." Появится окошко установки дополнительных пакетов. Жмём "Add..." в верхнем правом углу. Заполняем:
 {{{
        Name: CDT Galileo
        Location: http://download.eclipse.org/tools/cdt/releases/galileo
 }}}
 Жмём "OK". Из списка "CDT Optional Features" выбираем "Eclipse C/C++ GDB Hardware Debugging". Жмём "Next>" и дальше до завершения установки и перевызова Eclipse.
 
- # Выполняем команду "Run / Debug Configurations..." В появившемся окошке слева выбираем "GDB Hardware Debugging". Справа ставим:
+3. Выполняем команду "Run / Debug Configurations..." В появившемся окошке слева выбираем "GDB Hardware Debugging". Справа ставим:
 {{{
        Name = gdbproxy
 }}}
@@ -37,7 +38,7 @@
        Verbose console mode = нет
        Use remote target = нет
 }}}
-   На вкладке "Startup":
+На вкладке "Startup":
 {{{
        Reset and Delay (seconds) = 0
        Halt = да
