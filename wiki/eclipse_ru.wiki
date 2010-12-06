@@ -8,6 +8,51 @@
  * [http://www.eclipse.org/dsdp/tm/ TM] - Target Management - управление целевой платформой. Он же RSE - Remote System Explorer. [http://wiki.eclipse.org/TM_and_RSE_FAQ TM и RSE в вопросах и ответах].
  * [http://www.eclipse.org/dsdp/dd/ DD] - Device Debugging - удалённая отладка.
 
+= Установка =
+
+Можно настроить Eclipse как отладчик для MIPS32 через [http://code.google.com/p/mcprog/wiki/mcremote_ru mcremote]. 
+
+ - Устанавливаем основную оболочку Eclipse. Под Ubuntu это делается командой "sudo apt-get install eclipse".
+
+ - Вызываем Eclipse и из меню выполняем команду "Help / Install new software..."
+   Появится окошко установки дополнительных пакетов.
+   Жмём "Add..." в верхнем правом углу. Заполняем:
+       Name: CDT Galileo
+       Location: http://download.eclipse.org/tools/cdt/releases/galileo
+   Жмём "OK".
+   Из списка "CDT Optional Features" выбираем "Eclipse C/C++ GDB
+Hardware Debugging".
+   Жмём "Next>" и дальше до завершения установки и перевызова Eclipse.
+
+ - Выполняем команду "Run / Debug Configurations..."
+   В появившемся окошке слева выбираем "GDB Hardware Debugging".
+   Справа ставим:
+       Name = gdbproxy
+   На вкладке "Main":
+       Project = имя-без-пробелов
+       Build Configuration = Use Active
+       C/C++ Application = /полный/путь/к/проекту/программа.elf
+   На вкладке "Debugger":
+       GDB Command = /usr/local/bin/mipsel-elf32-gdb
+       Command Set = Standard
+       Verbose console mode = нет
+       Use remote target = нет
+   На вкладке "Startup":
+       Reset and Delay (seconds) = 0
+       Halt = да
+       Initialization Commands =
+           set debug xml
+           set heuristic-fence-post 4
+           set remotetimeout 15
+           cd /полный/путь/к/проекту/
+           file программа.elf
+           target extended-remote localhost:2000
+       Load image = нет
+       Load symbols = нет
+       Resume = да
+
+После этого по команде "Run / Debug" или F11 будет запускаться отладчик. Предварительно надо вручную запустить mcremote.
+
 = Ссылки =
 
  * [http://www.eclipse.org/home/categories/embedded_device.php Страница о разработке встроенных систем] на сайте eclipse.org.
