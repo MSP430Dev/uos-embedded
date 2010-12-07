@@ -99,7 +99,7 @@ static void can_setup_timing (can_t *c, int kbitsec)
 	 */
 	/* Рассчитываем значение делителя частоты исходя из того, что битовый интервал разбит на 10 квантов */
 	unsigned brp = (KHZ / kbitsec / 10) - 1;
-	/* Из-за дискретности brp, его значение может быть слишком грубым. 
+	/* Из-за дискретности brp, его значение может быть слишком грубым.
 	 * Посчитаем, сколько реально квантов получится при таком brp?
          */
 	unsigned nq = KHZ / (brp + 1) / kbitsec;
@@ -138,7 +138,7 @@ static void can_setup (can_t *c, int kbitsec)
 
 		/* Быстрый фронт. */
 		ARM_GPIOC->PWR = (ARM_GPIOC->PWR &
-			~(ARM_PWR_MASK(8) || ARM_PWR_MASK(9))) |
+			~(ARM_PWR_MASK(8) | ARM_PWR_MASK(9))) |
 			ARM_PWR_FAST(8) | ARM_PWR_FAST(9);
 
 		/* Разрешение тактовой частоты на CAN1, источник HCLK. */
@@ -159,7 +159,7 @@ static void can_setup (can_t *c, int kbitsec)
 
 		/* Быстрый фронт. */
 		ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
-			~(ARM_PWR_MASK(9) || ARM_PWR_MASK(15))) |
+			~(ARM_PWR_MASK(9) | ARM_PWR_MASK(15))) |
 			ARM_PWR_FAST(9) | ARM_PWR_FAST(15);
 
 		/* Разрешение тактовой частоты на CAN2, источник HCLK. */
@@ -303,7 +303,7 @@ void can_input (can_t *c, can_frame_t *fr)
 	mutex_unlock (&c->lock);
 }
 
-/* 
+/*
  * Sets given channel disabled (channel is enabled after can_init())
  */
 void can_stop (can_t *c)
@@ -315,7 +315,7 @@ void can_stop (can_t *c)
 	mutex_unlock (&c->lock);
 }
 
-/* 
+/*
  * Sets given channel enabled (needed to call only after can_stop())
  */
 void can_start (can_t *c)
