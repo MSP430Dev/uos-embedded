@@ -377,6 +377,20 @@ typedef struct
 #define ARM_UART_CLOCK_BRG1(n)	(n)		/* Делитель тактовой частоты UART1 */
 
 /*
+ * Регистр SSP_CLOCK: управление тактовой частотой SSP
+ * Делитель тактовой частоты:
+ *	0 - HCLK
+ *	1 - HCLK/2
+ *	2 - HCLK/4
+ *	...
+ *	7 - HCLK/128
+ */
+#define ARM_SSP_CLOCK_EN2	(1 << 25)	/* Разрешение тактовой частоты на SSP2 */
+#define ARM_SSP_CLOCK_EN1	(1 << 24)	/* Разрешение тактовой частоты на SSP1 */
+#define ARM_SSP_CLOCK_BRG2(n)	((n) << 8)	/* Делитель тактовой частоты SSP2 */
+#define ARM_SSP_CLOCK_BRG1(n)	(n)		/* Делитель тактовой частоты SSP1 */
+
+/*
  * Регистр TIM_CLOCK: управление тактовой частотой таймеров
  */
 #define ARM_TIM1_BRG(x)		((x) << 0)	/* Делитель тактовой частоты TIM1 */

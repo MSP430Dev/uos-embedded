@@ -27,15 +27,15 @@ typedef struct _spi_t {
 
 	unsigned long out_packets;	/* transmitted packets */
 	unsigned long in_packets;	/* received packets */
-	unsigned long in_errors;	/* receive errors */
 	unsigned long in_discards;	/* ignored packets, due to lack of memory */
 } spi_t;
 
 /*
  * User level API.
  */
-void spi_init (spi_t *c, int port, unsigned kbitsec);
-void spi_output (spi_t *c, const spi_frame_t *fr);
-void spi_input (spi_t *c, spi_frame_t *fr);
+void spi_init (spi_t *c, int port, int master,
+	int bits_per_word, unsigned nsec_per_bit);
+void spi_output (spi_t *c, unsigned word);
+void spi_input (spi_t *c, unsigned *word);
 
 #endif /* !__SPI_H_ */

@@ -36,7 +36,7 @@ inline int joystick_right (void)
         return (~ARM_GPIOC->DATA & ALL_BUTTONS) == MASK_RIGHT;
 }
 
-inline int joystick_pressed (void)
+inline int joystick_select (void)
 {
         return (~ARM_GPIOC->DATA & ALL_BUTTONS) == MASK_SEL;
 }
