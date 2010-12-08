@@ -36,6 +36,7 @@ typedef struct _spi_t {
 void spi_init (spi_t *c, int port, int master,
 	int bits_per_word, unsigned nsec_per_bit);
 void spi_output (spi_t *c, unsigned word);
-void spi_input (spi_t *c, unsigned *word);
+int spi_input (spi_t *c, unsigned *word);
+void spi_input_wait (spi_t *c, unsigned *word);
 
 #endif /* !__SPI_H_ */

@@ -14,12 +14,20 @@ spi_t spi;
 void send_receive (unsigned sent)
 {
 	unsigned received;
+	int retry;
 
 	printf (&debug, "'%c' ", sent);
 	spi_output (&spi, sent);
-	printf (&debug, "- ");
-	spi_input (&spi, &received);
-	printf (&debug, "'%c'\n", received);
+	udelay (20);
+	for (retry=0; retry<3; ++retry) {
+		printf (&debug, "- ");
+		if (spi_input (&spi, &received)) {
+			printf (&debug, "'%c'\n", received);
+			return;
+		}
+		udelay (100);
+	}
+	printf (&debug, "failed.\n");
 }
 
 /*

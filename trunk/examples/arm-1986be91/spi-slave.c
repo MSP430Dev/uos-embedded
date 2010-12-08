@@ -37,7 +37,7 @@ void uos_init (void)
 	unsigned word = '?';
 	for (;;) {
 		spi_output (&spi, word);
-		spi_input (&spi, &word);
+		spi_input_wait (&spi, &word);
 		printf (&debug, "'%c'\n", word);
 	}
 }

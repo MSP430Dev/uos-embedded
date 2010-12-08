@@ -252,8 +252,25 @@ void spi_output (spi_t *c, unsigned word)
 
 /*
  * Fetch received word.
+ * Returns 0 when no data is avaiable.
  */
-void spi_input (spi_t *c, unsigned *word)
+int spi_input (spi_t *c, unsigned *word)
+{
+	int reply = 0;
+
+	mutex_lock (&c->lock);
+	if (! spi_queue_is_empty (&c->inq)) {
+		*word = spi_queue_get (&c->inq);
+		reply = 1;
+	}
+	mutex_unlock (&c->lock);
+	return reply;
+}
+
+/*
+ * Wait for word received.
+ */
+void spi_input_wait (spi_t *c, unsigned *word)
 {
 	mutex_lock (&c->lock);
 	while (spi_queue_is_empty (&c->inq)) {
@@ -273,13 +290,13 @@ static bool_t spi_handle_interrupt (void *arg)
 	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
 
 	unsigned sr = reg->SR;
-debug_printf ("spi interrupt: SR = %04x\n", sr);
+//debug_printf ("spi interrupt: SR = %04x\n", sr);
 
 	/* Извлекаем данные из приёмного FIFO. */
 	while (sr & ARM_SSP_SR_RNE) {
 		unsigned word = reg->DR;
 		sr = reg->SR;
-debug_printf ("spi rx: %04x\n", word);
+debug_printf ("<%04x> ", word);
 		if (spi_queue_is_full (&c->inq)) {
 			c->in_discards++;
 			continue;
@@ -324,7 +341,7 @@ void spi_init (spi_t *c, int port, int master,
 	reg->CR1 = c->master ? 0 : ARM_SSP_CR1_MS;
 	reg->CPSR = 2;
 	reg->DMACR = 0;
-	reg->IM = ARM_SSP_IM_RX;
+	reg->IM = ARM_SSP_IM_RX | ARM_SSP_IM_RT;
 	reg->CR1 |= ARM_SSP_CR1_SSE;
 
 	/* Подключение к нужному номеру прерывания. */
