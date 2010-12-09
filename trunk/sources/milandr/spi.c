@@ -175,10 +175,22 @@ static void spi_setup_ssp1 ()
 		  ARM_PWR_MASK(11) | ARM_PWR_MASK(12))) |
 		ARM_PWR_FAST(9) | ARM_PWR_FAST(10) |
 		ARM_PWR_FAST(11) | ARM_PWR_FAST(12);
+
 //#elif defined (SSP1_ON_PORTB)
-// TODO
+	/* Альтернативная функция:
+	 * PB12	- SSP1_FSS
+	 * PB13	- SSP1_CLK
+	 * PB14	- SSP1_RXD
+	 * PB15	- SSP1_TXD */
+	/* TODO */
+
 //#elif defined (SSP1_ON_PORTF)
-// TODO
+	/* Альтернативная функция:
+	 * PF0 - SSP1_TXD
+	 * PF1 - SSP1_CLK
+	 * PF2 - SSP1_FSS
+	 * PF3 - SSP1_RXD */
+	/* TODO */
 #else
 #   error "SSP1_ON_PORTx not defined"
 #endif
@@ -219,12 +231,30 @@ static void spi_setup_ssp2 ()
 		  ARM_PWR_MASK(5) | ARM_PWR_MASK(6))) |
 		ARM_PWR_FAST(2) | ARM_PWR_FAST(3) |
 		ARM_PWR_FAST(5) | ARM_PWR_FAST(6);
+
 //#elif defined (SSP2_ON_PORTB)
-// TODO
+	/* Переопределённая функция:
+	 * PB12	- SSP2_FSS
+	 * PB13	- SSP2_CLK
+	 * PB14	- SSP2_RXD
+	 * PB15	- SSP2_TXD */
+	/* TODO */
+
 //#elif defined (SSP2_ON_PORTC)
-// TODO
+	/* Переопределённая функция:
+	 * PC0 - SSP2_FSS
+	 * PC1 - SSP2_CLK
+	 * PC2 - SSP2_RXD
+	 * PC3 - SSP2_TXD */
+	/* TODO */
+
 //#elif defined (SSP2_ON_PORTF)
-// TODO
+	/* Переопределённая функция:
+	 * PF12	- SSP2_FSS
+	 * PF13	- SSP2_CLK
+	 * PF14	- SSP2_RXD
+	 * PF15	- SSP2_TXD */
+	/* TODO */
 #else
 #   error "SSP2_ON_PORTx not defined"
 #endif
