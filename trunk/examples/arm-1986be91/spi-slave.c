@@ -11,33 +11,57 @@
 gpanel_t display;
 spi_t spi;
 
+ARRAY (stack_console, 1000);
+
 /*
- * Redirect debug output.
+ * Отображение состояния теста на LCD.
  */
-void gpanel_putchar (void *arg, short c)
+void display_refresh (unsigned sent, unsigned received)
 {
-	putchar ((stream_t*) arg, c);
+	gpanel_clear (&display, 0);
+	printf (&display, " SPI slave: 5600ВГ1У\r\n");
+	printf (&display, "   Частота: %d.%d МГц\r\n", KHZ/1000, KHZ/100%10);
+	printf (&display, "  Передано: %lu\r\n", spi.out_packets);
+	printf (&display, "   Принято: %lu\r\n", spi.in_packets);
+	printf (&display, "  Потеряно: %lu\r\n", spi.in_discards);
+	printf (&display, "Прерываний: %lu\r\n", spi.intr);
+	if (sent != ~0) {
+		printf (&display, "Отправлено: '%c'\r\n", sent);
+		if (received != ~0)
+			printf (&display, "   Обратно: '%c'\r\n", received);
+		else
+			printf (&display, "   Обратно: ---\r\n");
+	}
+}
+
+/*
+ * Задача принимает слово по SPI и отправляет его обратно
+ * в следующей транзакции.
+ */
+void task_console (void *data)
+{
+	unsigned sent = '?';
+	unsigned received;
+	for (;;) {
+		spi_output (&spi, sent);
+		spi_input_wait (&spi, &received);
+		display_refresh (sent, received);
+		sent = received;
+	}
 }
 
 void uos_init (void)
 {
 	buttons_init ();
 
-	/* Use LCD panel for debug output. */
+	/* Use LCD panel for display. */
 	extern gpanel_font_t font_fixed6x8;
 	gpanel_init (&display, &font_fixed6x8);
-	gpanel_clear (&display, 0);
-	debug_redirect (gpanel_putchar, &display);
-	printf (&debug, "Testing SPI slave.\n");
+	display_refresh (~0, ~0);
 
-	/* SPI2 slave, 16-bit words, at 1 Mbit/sec. */
-	spi_init (&spi, 1, 0, 16, 1000);
+	/* SPI2, 16-bit words, slave. */
+	spi_init (&spi, 1, 16, 0);
 
-	/* Poll buttons. */
-	unsigned word = '?';
-	for (;;) {
-		spi_output (&spi, word);
-		spi_input_wait (&spi, &word);
-		printf (&debug, "'%c'\n", word);
-	}
+	task_create (task_console, 0, "console", 10,
+		stack_console, sizeof (stack_console));
 }

@@ -251,6 +251,29 @@ void spi_output (spi_t *c, unsigned word)
 }
 
 /*
+ * Извлекаем данные из приёмного FIFO.
+ */
+static void receive_data (spi_t *c)
+{
+	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
+	unsigned sr = reg->SR;
+
+	while (sr & ARM_SSP_SR_RNE) {
+		unsigned word = reg->DR;
+//debug_printf ("<%04x> ", word);
+		sr = reg->SR;
+
+		if (spi_queue_is_full (&c->inq)) {
+			c->in_discards++;
+			continue;
+		}
+		/* Пакет успешно принят. */
+		c->in_packets++;
+		spi_queue_put (&c->inq, word);
+	}
+}
+
+/*
  * Fetch received word.
  * Returns 0 when no data is avaiable.
  */
@@ -259,6 +282,7 @@ int spi_input (spi_t *c, unsigned *word)
 	int reply = 0;
 
 	mutex_lock (&c->lock);
+	receive_data (c);
 	if (! spi_queue_is_empty (&c->inq)) {
 		*word = spi_queue_get (&c->inq);
 		reply = 1;
@@ -273,6 +297,7 @@ int spi_input (spi_t *c, unsigned *word)
 void spi_input_wait (spi_t *c, unsigned *word)
 {
 	mutex_lock (&c->lock);
+	receive_data (c);
 	while (spi_queue_is_empty (&c->inq)) {
 		/* Ждём приёма пакета. */
 		mutex_wait (&c->lock);
@@ -287,24 +312,9 @@ void spi_input_wait (spi_t *c, unsigned *word)
 static bool_t spi_handle_interrupt (void *arg)
 {
 	spi_t *c = (spi_t*) arg;
-	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
 
-	unsigned sr = reg->SR;
-//debug_printf ("spi interrupt: SR = %04x\n", sr);
-
-	/* Извлекаем данные из приёмного FIFO. */
-	while (sr & ARM_SSP_SR_RNE) {
-		unsigned word = reg->DR;
-		sr = reg->SR;
-debug_printf ("<%04x> ", word);
-		if (spi_queue_is_full (&c->inq)) {
-			c->in_discards++;
-			continue;
-		}
-		/* Пакет успешно принят. */
-		c->in_packets++;
-		spi_queue_put (&c->inq, word);
-	}
+	c->intr++;
+	receive_data (c);
 	arch_intr_allow (c->port);
 	return 0;
 }
@@ -312,12 +322,11 @@ debug_printf ("<%04x> ", word);
 /*
  * Set up the SPI driver.
  */
-void spi_init (spi_t *c, int port, int master,
-	int bits_per_word, unsigned nsec_per_bit)
+void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit)
 {
 	/* Инициализация структуры данных драйвера. */
 	c->port = port;
-	c->master = master;
+	c->master = (nsec_per_bit > 0);
 	spi_queue_init (&c->inq);
 
 	/* Выбор соответствующего интерфейса SSP и
@@ -336,10 +345,17 @@ void spi_init (spi_t *c, int port, int master,
 
 	/* Инициализация всех регистров данного интерфейса SSP.
 	 * Ловим прерывания от приёмника. */
-	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (bits_per_word) |
-		ARM_SSP_CR0_SCR ((KHZ * nsec_per_bit + 1000000) / 2000000);
-	reg->CR1 = c->master ? 0 : ARM_SSP_CR1_MS;
-	reg->CPSR = 2;
+	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (bits_per_word);
+	if (c->master) {
+		/* Режим master. */
+		reg->CR0 |= ARM_SSP_CR0_SCR ((KHZ * nsec_per_bit + 1000000) / 2000000);
+		reg->CR1 = 0;
+		reg->CPSR = 2;
+	} else {
+		/* Режим slave. */
+		reg->CR1 = ARM_SSP_CR1_MS;
+		reg->CPSR = 12;
+	}
 	reg->DMACR = 0;
 	reg->IM = ARM_SSP_IM_RX | ARM_SSP_IM_RT;
 	reg->CR1 |= ARM_SSP_CR1_SSE;
