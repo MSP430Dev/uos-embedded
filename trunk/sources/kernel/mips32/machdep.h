@@ -1,7 +1,7 @@
 /*
  * Machine-dependent uOS declarations for MIPS32.
  *
- * Copyright (C) 2000-2005 Serge Vakulenko, <vak@cronyx.ru>
+ * Copyright (C) 2008-2010 Serge Vakulenko, <serge@vak.ru>
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or

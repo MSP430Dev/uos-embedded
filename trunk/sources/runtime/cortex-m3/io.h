@@ -1,5 +1,23 @@
+/*
+ * CPU-dependent inline routines for Cortex-M3 architecture.
+ *
+ * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ *
+ * This file is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * You can redistribute this file and/or modify it under the terms of the GNU
+ * General Public License (GPL) as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your discretion) any later version.
+ * See the accompanying file "COPYING.txt" for more details.
+ *
+ * As a special exception to the GPL, permission is granted for additional
+ * uses of the text contained in this file.  See the accompanying file
+ * "COPY-UOS.txt" for details.
+ */
 #ifdef ARM_1986BE9
-#	include <runtime/cortex-m3/io-1986ve9x.h>
+#   include <runtime/cortex-m3/io-1986ve9x.h>
 #endif
 
 /*
@@ -56,20 +74,9 @@ arm_intr_disable (int *x)
 	int temp;
 
 	asm volatile (
-#if 0
-	"cpsid	i \n"
-"	mrs	%1, basepri \n"		/* Cortex-M3 mode */
-"	mov	%0, #32 \n"		/* basepri := 16 */
-"	msr	basepri, %0 \n"
-"	nop \n"
-"	nop \n"
-"	nop \n"
-"	cpsie	i"
-#else
 	"mrs	%1, basepri \n"		/* Cortex-M3 mode */
 "	mov	%0, #32 \n"		/* basepri := 16 */
 "	msr	basepri, %0"
-#endif
 	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
 }
 

@@ -1,6 +1,20 @@
 /*
  * Ethernet controller driver for Milandr 5600ВГ1.
- * Copyright (c) 2010 Serge Vakulenko.
+ *
+ * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ *
+ * This file is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * You can redistribute this file and/or modify it under the terms of the GNU
+ * General Public License (GPL) as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your discretion) any later version.
+ * See the accompanying file "COPYING.txt" for more details.
+ *
+ * As a special exception to the GPL, permission is granted for additional
+ * uses of the text contained in this file.  See the accompanying file
+ * "COPY-UOS.txt" for details.
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
@@ -476,13 +490,13 @@ receive_packet (k5600bg1_t *u, unsigned desc_rx, unsigned len, unsigned ptr)
 	}
 	if (desc_rx & (DESC_RX_EF | DESC_RX_CRC_ERR | DESC_RX_SMB_ERR)) {
 		/* Invalid frame */
-debug_printf ("receive_data: failed, desc_rx=%b\n", desc_rx, DESC_RX_BITS);
+/*debug_printf ("receive_data: failed, desc_rx=%b\n", desc_rx, DESC_RX_BITS);*/
 		++u->netif.in_errors;
 		return;
 	}
 	if (len < 4 || len > K5600BG1_MTU) {
 		/* Skip this frame */
-debug_printf ("receive_data: bad length %d bytes, desc_rx=%b\n", len, desc_rx, DESC_RX_BITS);
+/*debug_printf ("receive_data: bad length %d bytes, desc_rx=%b\n", len, desc_rx, DESC_RX_BITS);*/
 		++u->netif.in_errors;
 		return;
 	}
@@ -501,7 +515,7 @@ debug_printf ("              RXBF HEAD:TAIL=%04x:%04x\n", ETH_REG->RXBF_HEAD, ET
 	buf_t *p = buf_alloc (u->pool, len, 2);
 	if (! p) {
 		/* Could not allocate a buf - skip received frame */
-debug_printf ("receive_data: ignore packet - out of memory\n");
+/*debug_printf ("receive_data: ignore packet - out of memory\n");*/
 		++u->netif.in_discards;
 		return;
 	}

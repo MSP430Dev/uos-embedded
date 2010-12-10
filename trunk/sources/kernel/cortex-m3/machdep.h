@@ -1,7 +1,7 @@
 /*
- * Machine-dependent uOS declarations for: ARM7TDMI (Samsung S3C4530A), GCC.
+ * Machine-dependent uOS declarations for Cortex-M3, GCC.
  *
- * Copyright (C) 2000-2005 Serge Vakulenko, <vak@cronyx.ru>
+ * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or

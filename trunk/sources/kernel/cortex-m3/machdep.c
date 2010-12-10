@@ -1,7 +1,7 @@
 /*
  * Machine-dependent part of uOS for: ARM Cortex-M3, GCC.
  *
- * Copyright (C) 2010 Serge Vakulenko, <vak@cronyx.ru>
+ * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -78,7 +78,7 @@ _irq_handler_ (void)
 //debug_putchar (0, '@'+irq);
 	} else {
 		/* Cannot happen. */
-debug_printf ("<interrupt with ipsr==0> ");
+//debug_printf ("<interrupt with ipsr==0> ");
 		goto done;
 	}
 
@@ -86,7 +86,7 @@ debug_printf ("<interrupt with ipsr==0> ");
 	mutex_irq_t *h = &mutex_irq [irq];
 	if (! h->lock) {
 		/* Cannot happen. */
-debug_printf ("<unexpected interrupt> ");
+//debug_printf ("<unexpected interrupt> ");
 		goto done;
 	}
 
