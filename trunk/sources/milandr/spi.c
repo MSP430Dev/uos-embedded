@@ -283,13 +283,15 @@ void spi_output (spi_t *c, unsigned word)
 /*
  * Извлекаем данные из приёмного FIFO.
  */
-static void receive_data (spi_t *c)
+static int receive_data (spi_t *c)
 {
 	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
 	unsigned sr = reg->SR;
+	int nwords = 0;
 
 	while (sr & ARM_SSP_SR_RNE) {
 		unsigned word = reg->DR;
+		nwords++;
 //debug_printf ("<%04x> ", word);
 		sr = reg->SR;
 
@@ -301,6 +303,7 @@ static void receive_data (spi_t *c)
 		c->in_packets++;
 		spi_queue_put (&c->inq, word);
 	}
+	return nwords;
 }
 
 /*
@@ -312,7 +315,10 @@ int spi_input (spi_t *c, unsigned *word)
 	int reply = 0;
 
 	mutex_lock (&c->lock);
-	receive_data (c);
+	if (receive_data (c)) {
+		/* Шлём сигнал для передатчика. */
+		mutex_signal (&c->lock, 0);
+	}
 	if (! spi_queue_is_empty (&c->inq)) {
 		*word = spi_queue_get (&c->inq);
 		reply = 1;
@@ -327,7 +333,10 @@ int spi_input (spi_t *c, unsigned *word)
 void spi_input_wait (spi_t *c, unsigned *word)
 {
 	mutex_lock (&c->lock);
-	receive_data (c);
+	if (receive_data (c)) {
+		/* Шлём сигнал для передатчика. */
+		mutex_signal (&c->lock, 0);
+	}
 	while (spi_queue_is_empty (&c->inq)) {
 		/* Ждём приёма пакета. */
 		mutex_wait (&c->lock);
@@ -378,13 +387,17 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit)
 	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (bits_per_word);
 	if (c->master) {
 		/* Режим master. */
-		reg->CR0 |= ARM_SSP_CR0_SCR ((KHZ * nsec_per_bit + 1000000) / 2000000);
+		unsigned divisor = (KHZ * nsec_per_bit + 1000000) / 2000000;
+		reg->CR0 |= ARM_SSP_CR0_SCR (divisor);
 		reg->CR1 = 0;
 		reg->CPSR = 2;
+		c->kbps = (KHZ / divisor + 1) / 2;
 	} else {
-		/* Режим slave. */
+		/* Режим slave.
+		 * Максимальная частота равна KHZ/12. */
 		reg->CR1 = ARM_SSP_CR1_MS;
 		reg->CPSR = 12;
+		c->kbps = (KHZ + 6) / 12;
 	}
 	reg->DMACR = 0;
 	reg->IM = ARM_SSP_IM_RX | ARM_SSP_IM_RT;

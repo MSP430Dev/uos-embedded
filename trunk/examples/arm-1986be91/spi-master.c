@@ -9,11 +9,11 @@
 #include "board-1986be91.h"
 
 /*
- * Темп передачи в наносекундах на бит.
- * Скорость интерфейса SPI должна быть как минимум в 12 раз ниже
- * частоты процессора KHZ - так сказано в спецификации микросхемы.
+ * Скорость передачи в килобитах в секунду.
+ * Должна быть как минимум в 12 раз ниже частоты
+ * процессора KHZ - так сказано в спецификации микросхемы.
  */
-#define NSEC_PER_BIT	1000
+#define KBIT_PER_SEC	4000
 
 gpanel_t display;
 spi_t spi;
@@ -27,17 +27,17 @@ void display_refresh (unsigned sent, unsigned received)
 {
 	gpanel_clear (&display, 0);
 	printf (&display, "SPI мастер: 5600ВГ1У\r\n");
-	printf (&display, "   Частота: %d.%d МГц\r\n", KHZ/1000, KHZ/100%10);
+	printf (&display, " Процессор: %d.%d МГц\r\n", KHZ/1000, KHZ/100%10);
+	printf (&display, "  Кбит/сек: %d\r\n", spi.kbps);
 	printf (&display, "  Передано: %lu\r\n", spi.out_packets);
 	printf (&display, "   Принято: %lu\r\n", spi.in_packets);
-	printf (&display, "  Потеряно: %lu\r\n", spi.in_discards);
 	printf (&display, "Прерываний: %lu\r\n", spi.intr);
 	if (sent != ~0) {
 		printf (&display, "Отправлено: '%c'\r\n", sent);
-		if (received != ~0)
+		if (received >= ' ' && received <= '~')
 			printf (&display, "   Обратно: '%c'\r\n", received);
 		else
-			printf (&display, "   Обратно: ---\r\n");
+			printf (&display, "   Обратно: %04x\r\n", received);
 	}
 }
 
@@ -51,7 +51,7 @@ void send_receive (unsigned sent)
 	spi_output (&spi, sent);
 
 	/* Ждём в течение 16 битовых интервалов. */
-	udelay (1 + 16 * NSEC_PER_BIT / 1000);
+	udelay (1 + 16 * 1000 / KBIT_PER_SEC);
 	if (! spi_input (&spi, &received))
 		received = ~0;
 	display_refresh (sent, received);
@@ -122,10 +122,10 @@ void uos_init (void)
 	/* Use LCD panel for display. */
 	extern gpanel_font_t font_fixed6x8;
 	gpanel_init (&display, &font_fixed6x8);
-	display_refresh (~0, ~0);
 
 	/* SPI2, 16-bit words, master at 1 Mbit/sec. */
-	spi_init (&spi, 1, 16, NSEC_PER_BIT);
+	spi_init (&spi, 1, 16, 1000000 / KBIT_PER_SEC);
+	display_refresh (~0, ~0);
 
 	task_create (task_console, 0, "console", 10,
 		stack_console, sizeof (stack_console));

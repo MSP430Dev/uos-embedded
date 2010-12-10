@@ -20,6 +20,7 @@ typedef struct _spi_t {
 
 	unsigned port;			/* port number */
 	unsigned master;		/* master or slave */
+	unsigned kbps;			/* kbits per second */
 	spi_queue_t inq;		/* queue of received packets */
 
 	/* Statistics. */

@@ -20,10 +20,10 @@ void display_refresh (unsigned sent, unsigned received)
 {
 	gpanel_clear (&display, 0);
 	printf (&display, " SPI slave: 5600ВГ1У\r\n");
-	printf (&display, "   Частота: %d.%d МГц\r\n", KHZ/1000, KHZ/100%10);
+	printf (&display, " Процессор: %d.%d МГц\r\n", KHZ/1000, KHZ/100%10);
+	printf (&display, "  Кбит/сек: %d\r\n", spi.kbps);
 	printf (&display, "  Передано: %lu\r\n", spi.out_packets);
 	printf (&display, "   Принято: %lu\r\n", spi.in_packets);
-	printf (&display, "  Потеряно: %lu\r\n", spi.in_discards);
 	printf (&display, "Прерываний: %lu\r\n", spi.intr);
 	if (sent != ~0) {
 		printf (&display, "Отправлено: '%c'\r\n", sent);
@@ -57,10 +57,10 @@ void uos_init (void)
 	/* Use LCD panel for display. */
 	extern gpanel_font_t font_fixed6x8;
 	gpanel_init (&display, &font_fixed6x8);
-	display_refresh (~0, ~0);
 
 	/* SPI2, 16-bit words, slave. */
 	spi_init (&spi, 1, 16, 0);
+	display_refresh (~0, ~0);
 
 	task_create (task_console, 0, "console", 10,
 		stack_console, sizeof (stack_console));
