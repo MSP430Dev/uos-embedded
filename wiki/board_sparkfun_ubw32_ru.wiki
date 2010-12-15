@@ -49,11 +49,11 @@
 начинает мигать зелёный светодиод - работает UBW32 Firmware.
 При этом в компьютере появляется USB-устройство со следующими параметрами:
 {{{
-ID 04d8:000a Microchip Technology, Inc. CDC RS-232 Emulation Demo
+ID 04d8:000a
 
-  bInterfaceClass         2 Communications
-  idVendor           0x04d8 Microchip Technology, Inc.
-  idProduct          0x000a CDC RS-232 Emulation Demo
+bInterfaceClass         2 Communications
+idVendor           0x04d8 Microchip Technology, Inc.
+idProduct          0x000a CDC RS-232 Emulation Demo
 }}}
 UBW32 Firmware реализует интерфейс виртуального COM-порта.
 Например, в Линуксе с ним можно работать через устройство /dev/ttyACM0.
@@ -92,11 +92,11 @@ OK
 светодиоды, и мигать белый и зелёный светодиоды.
 Плата будет видна в компьютере как USB-устройство со следующими параметрами:
 {{{
-ID 04d8:003c Microchip Technology, Inc.
+ID 04d8:003c
 
-  bInterfaceClass         3 Human Interface Device
-  idVendor           0x04d8 Microchip Technology, Inc.
-  idProduct          0x003c USB HID Bootloader
+bInterfaceClass         3 Human Interface Device
+idVendor           0x04d8 Microchip Technology, Inc.
+idProduct          0x003c USB HID Bootloader
 }}}
 
 = Утилита ubw32 =
