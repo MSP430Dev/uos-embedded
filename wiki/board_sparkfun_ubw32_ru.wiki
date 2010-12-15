@@ -50,7 +50,8 @@
 При этом в компьютере появляется USB-устройство со следующими параметрами:
 {{{
 ID 04d8:000a Microchip Technology, Inc. CDC RS-232 Emulation Demo
-  bDeviceClass            2 Communications
+
+  bInterfaceClass         2 Communications
   idVendor           0x04d8 Microchip Technology, Inc.
   idProduct          0x000a CDC RS-232 Emulation Demo
 }}}
@@ -93,7 +94,7 @@ OK
 {{{
 ID 04d8:003c Microchip Technology, Inc.
 
-  bDeviceClass            0 (Defined at Interface level)
+  bInterfaceClass         3 Human Interface Device
   idVendor           0x04d8 Microchip Technology, Inc.
   idProduct          0x003c USB HID Bootloader
 }}}
