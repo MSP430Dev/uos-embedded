@@ -88,7 +88,7 @@ _arch_task_switch_ ()
 #ifdef ARCH_HAVE_FPU
 	if (task_current->fpu_state != ~0) {
 		/* Save FPU state. */
-		task_current->fpu_state = mips32_read_fpu_control (C1_FCSR);
+		task_current->fpu_state = mips_read_fpu_control (C1_FCSR);
 
 		asm volatile ("addi	$sp, $sp, -%0" : : "i" (32 * 4));
 		asm volatile ("sdc1	$0, %0 ($sp)" : : "i" (0 * 4 + MIPS_FSPACE));
@@ -110,12 +110,12 @@ _arch_task_switch_ ()
 	}
 #endif
 	/* Save current task stack. */
-	task_current->stack_context = mips32_get_stack_pointer ();
+	task_current->stack_context = mips_get_stack_pointer ();
 
 	task_current = target;
 
 	/* Switch to the new task. */
-	mips32_set_stack_pointer (task_current->stack_context);
+	mips_set_stack_pointer (task_current->stack_context);
 
 #ifdef ARCH_HAVE_FPU
 	if (task_current->fpu_state != ~0) {
@@ -138,7 +138,7 @@ _arch_task_switch_ ()
 		asm volatile ("ldc1	$30, %0 ($sp)" : : "i" (30 * 4 + MIPS_FSPACE));
 		asm volatile ("addi	$sp, $sp, %0" : : "i" (32 * 4));
 
-		mips32_write_fpu_control (C1_FCSR, task_current->fpu_state);
+		mips_write_fpu_control (C1_FCSR, task_current->fpu_state);
 	}
 #endif
 	/* Restore registers. */
@@ -169,7 +169,7 @@ _arch_interrupt_ (void)
 	 * адреса EPC, если прерывание произошло в слоте перехода
 	 * команд BC1T/BC1F. При этом признак BD в регистре Cause
 	 * не установлен. */
-	unsigned *sp = mips32_get_stack_pointer ();
+	unsigned *sp = mips_get_stack_pointer ();
 	unsigned epc = sp[CONTEXT_PC+4] - 4;
 	if ((*(unsigned*)epc & 0xffe00000) == 0x45000000) {
 		/* Была команда перехода FPU - откатываемся. */
@@ -178,8 +178,8 @@ _arch_interrupt_ (void)
 #endif
 	for (;;) {
 		/* Get the current irq number */
-		unsigned status = mips32_read_c0_register (C0_STATUS);
-		unsigned cause = mips32_read_c0_register (C0_CAUSE);
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		unsigned cause = mips_read_c0_register (C0_CAUSE);
 		unsigned pending = status & cause & 0xff00;
 		if (! pending)
 			break;
@@ -187,7 +187,7 @@ _arch_interrupt_ (void)
 		/* Read readme-mc24.txt for interrupt numbers. */
 		if (pending & ST_IM_MCU) {
 			/* Internal interrupt: 0..31. */
-			irq = 31 - mips32_count_leading_zeroes (MC_QSTR & MC_MASKR);
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR & MC_MASKR);
 /*debug_printf ("<%d>", irq);*/
 			if (irq < 0)
 				break;
@@ -195,11 +195,11 @@ _arch_interrupt_ (void)
 			MC_MASKR &= ~(1 << irq);
 		} else {
 			/* External irq: 32..38. */
-			irq = 55 - mips32_count_leading_zeroes (pending);
+			irq = 55 - mips_count_leading_zeroes (pending);
 /*debug_printf ("[%d-%08x-%08x]", irq, status, cause);*/
 			/* Disable the external irq, to avoid loops */
 			status &= ~(0x100 << (irq & 7));
-			mips32_write_c0_register (C0_STATUS, status);
+			mips_write_c0_register (C0_STATUS, status);
 		}
 #endif
 #ifdef ELVEES_NVCOM01
@@ -208,25 +208,25 @@ _arch_interrupt_ (void)
 			/* Use number 30 for COMPARE interrupt. */
 			irq = 30;
 			status &= ~ST_IM_COMPARE;
-			mips32_write_c0_register (C0_STATUS, status);
+			mips_write_c0_register (C0_STATUS, status);
 /*debug_printf ("<C>", irq);*/
 		} else if (pending & ST_IM_QSTR0) {
 			/* QSTR0 interrupt: 0..31. */
-			irq = 31 - mips32_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
 			if (irq < 0)
 				break;
 			MC_MASKR0 &= ~(1 << irq);
 /*debug_printf ("<%d>", irq);*/
 		} else if (pending & ST_IM_QSTR1) {
 			/* QSTR1 interrupt: 32..35. */
-			irq = 32 + 31 - mips32_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			irq = 32 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
 			if (irq < 32)
 				break;
 			MC_MASKR1 &= ~(1 << irq);
 /*debug_printf ("[%d]", irq);*/
 		} else if (pending & ST_IM_QSTR2) {
 			/* QSTR2 interrupt: 36..51. */
-			irq = 36 + 31 - mips32_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			irq = 36 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
 			if (irq < 36)
 				break;
 			MC_MASKR2 &= ~(1 << irq);
@@ -241,22 +241,22 @@ _arch_interrupt_ (void)
 			/* Use number 30 for COMPARE interrupt. */
 			irq = 30;
 			status &= ~ST_IM_COMPARE;
-			mips32_write_c0_register (C0_STATUS, status);
+			mips_write_c0_register (C0_STATUS, status);
 		} else if (pending & ST_IM_QSTR0) {
 			/* QSTR0 interrupt: 0..31. */
-			irq = 31 - mips32_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
 			if (irq < 0)
 				break;
 			MC_MASKR0 &= ~(1 << irq);
 		} else if (pending & ST_IM_QSTR1) {
 			/* QSTR1 interrupt: 32..35. */
-			irq = 32 + 31 - mips32_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			irq = 32 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
 			if (irq < 32)
 				break;
 			MC_MASKR1 &= ~(1 << irq);
 		} else if (pending & ST_IM_QSTR2) {
 			/* QSTR2 interrupt: 36..51. */
-			irq = 36 + 31 - mips32_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			irq = 36 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
 			if (irq < 36)
 				break;
 			MC_MASKR2 &= ~(1 << irq);
@@ -324,17 +324,17 @@ arch_intr_allow (int irq)
 /*debug_printf ("enable irq %d, MASKR=%#x\n", irq, MC_MASKR);*/
 	} else {
 		/* External irq: 32..38. */
-		unsigned status = mips32_read_c0_register (C0_STATUS);
+		unsigned status = mips_read_c0_register (C0_STATUS);
 		status |= 0x100 << (irq & 7);
-		mips32_write_c0_register (C0_STATUS, status);
+		mips_write_c0_register (C0_STATUS, status);
 	}
 #endif
 #ifdef ELVEES_NVCOM01
 	if (irq == 30) {
 		/* Use irq number 30 for COMPARE interrupt. */
-		unsigned status = mips32_read_c0_register (C0_STATUS);
+		unsigned status = mips_read_c0_register (C0_STATUS);
 		status |= ST_IM_COMPARE;
-		mips32_write_c0_register (C0_STATUS, status);
+		mips_write_c0_register (C0_STATUS, status);
 /*debug_printf ("enable irq %d, status=%#x\n", irq, status);*/
 	} else if (irq < 32) {
 		/* QSTR0 interrupt: 0..31. */
@@ -354,9 +354,9 @@ arch_intr_allow (int irq)
 	/* TODO */
 	if (irq == 30) {
 		/* Use irq number 30 for COMPARE interrupt. */
-		unsigned status = mips32_read_c0_register (C0_STATUS);
+		unsigned status = mips_read_c0_register (C0_STATUS);
 		status |= ST_IM_COMPARE;
-		mips32_write_c0_register (C0_STATUS, status);
+		mips_write_c0_register (C0_STATUS, status);
 	} else if (irq < 32) {
 		/* QSTR0 interrupt: 0..31. */
 		MC_MASKR0 |= 1 << irq;
@@ -450,7 +450,7 @@ arch_fpu_control (task_t *t, unsigned int mode, unsigned int mask)
 
 	/* Get current FPU mode. */
 	if (t == task_current)
-		old = mips32_read_fpu_control (C1_FCSR);
+		old = mips_read_fpu_control (C1_FCSR);
 	else
 		old = t->fpu_state;
 
@@ -462,7 +462,7 @@ arch_fpu_control (task_t *t, unsigned int mode, unsigned int mask)
 		}
 		mode |= old & ~mask;
 		if (t == task_current)
-			mips32_write_fpu_control (C1_FCSR, mode);
+			mips_write_fpu_control (C1_FCSR, mode);
 		t->fpu_state = mode;
 	}
 

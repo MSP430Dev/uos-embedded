@@ -16,25 +16,25 @@
 Замена прошивки производится через порт JTAG, посредством утилиты [http://code.google.com/p/mcprog/wiki/Home_ru mcprog] и адаптера [http://multicore.ru/index.php?id=54 JTAG-EPP].
 
 = Примеры uOS =
-В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24-itmvt examples/mips32-mc24-itmvt]
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-itmvt examples/mips-mc24-itmvt]
 находятся примеры сборки uOS для ПКБИ.
 
 = Тесты =
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24-itmvt/test_debug.c test_debug.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-itmvt/test_debug.c test_debug.c]
 - Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
 Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24-itmvt/test_task.c test_task.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-itmvt/test_task.c test_task.c]
 - Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
 общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24-itmvt/test_timer.c test_timer.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-itmvt/test_timer.c test_timer.c]
 - Проверка драйвера таймера. Одна задача: программа пользователя, которая
 каждые 100 миллисекунд печатает строку на консоли.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24-itmvt/test_uart.c test_uart.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-itmvt/test_uart.c test_uart.c]
 - Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
 циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips32-mc24-itmvt/philosophers.c philosophers.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-itmvt/philosophers.c philosophers.c]
 - Пять обедающих философов. Шесть задач: драйвер UART и пять задач философов.

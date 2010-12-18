@@ -36,11 +36,11 @@ void __attribute ((noreturn))_init_ (void)
 	unsigned int divisor;
 
 	/* Clear CAUSE register. Use special irq vector. */
-	mips32_write_c0_register (C0_CAUSE, CA_IV);
+	mips_write_c0_register (C0_CAUSE, CA_IV);
 
 	/* Initialize STATUS register: CP0 usable, ROM vectors used,
 	 * internal interrupts enabled, master interrupt disable. */
-	mips32_write_c0_register (C0_STATUS, ST_BEV | ST_CU0
+	mips_write_c0_register (C0_STATUS, ST_BEV | ST_CU0
 #ifdef ARCH_HAVE_FPU
 		| ST_CU1
 #endif
@@ -58,11 +58,11 @@ void __attribute ((noreturn))_init_ (void)
 
 #if defined (ENABLE_ICACHE) || defined (ENABLE_DCACHE)
 	/* Enable cache for kseg0 segment. */
-	mips32_write_c0_register (C0_CONFIG, 3);
+	mips_write_c0_register (C0_CONFIG, 3);
 	MC_CSR |= MC_CSR_FLUSH_I | MC_CSR_FLUSH_D;
 #else
 	/* Disable cache for kseg0 segment. */
-	mips32_write_c0_register (C0_CONFIG, 2);
+	mips_write_c0_register (C0_CONFIG, 2);
 #endif
 #ifdef ENABLE_ICACHE
 	/* Jump to cached kseg0 segment. */
@@ -74,39 +74,39 @@ void __attribute ((noreturn))_init_ (void)
 
 #ifdef ARCH_HAVE_FPU
 	/* Clear all FPU registers. */
-	mips32_write_fpu_control (C1_FCSR, 0);
-	mips32_write_fpu_register (0, 0);
-	mips32_write_fpu_register (1, 0);
-	mips32_write_fpu_register (2, 0);
-	mips32_write_fpu_register (3, 0);
-	mips32_write_fpu_register (4, 0);
-	mips32_write_fpu_register (5, 0);
-	mips32_write_fpu_register (6, 0);
-	mips32_write_fpu_register (7, 0);
-	mips32_write_fpu_register (8, 0);
-	mips32_write_fpu_register (9, 0);
-	mips32_write_fpu_register (10, 0);
-	mips32_write_fpu_register (11, 0);
-	mips32_write_fpu_register (12, 0);
-	mips32_write_fpu_register (13, 0);
-	mips32_write_fpu_register (14, 0);
-	mips32_write_fpu_register (15, 0);
-	mips32_write_fpu_register (16, 0);
-	mips32_write_fpu_register (17, 0);
-	mips32_write_fpu_register (18, 0);
-	mips32_write_fpu_register (19, 0);
-	mips32_write_fpu_register (20, 0);
-	mips32_write_fpu_register (21, 0);
-	mips32_write_fpu_register (22, 0);
-	mips32_write_fpu_register (23, 0);
-	mips32_write_fpu_register (24, 0);
-	mips32_write_fpu_register (25, 0);
-	mips32_write_fpu_register (26, 0);
-	mips32_write_fpu_register (27, 0);
-	mips32_write_fpu_register (28, 0);
-	mips32_write_fpu_register (29, 0);
-	mips32_write_fpu_register (30, 0);
-	mips32_write_fpu_register (31, 0);
+	mips_write_fpu_control (C1_FCSR, 0);
+	mips_write_fpu_register (0, 0);
+	mips_write_fpu_register (1, 0);
+	mips_write_fpu_register (2, 0);
+	mips_write_fpu_register (3, 0);
+	mips_write_fpu_register (4, 0);
+	mips_write_fpu_register (5, 0);
+	mips_write_fpu_register (6, 0);
+	mips_write_fpu_register (7, 0);
+	mips_write_fpu_register (8, 0);
+	mips_write_fpu_register (9, 0);
+	mips_write_fpu_register (10, 0);
+	mips_write_fpu_register (11, 0);
+	mips_write_fpu_register (12, 0);
+	mips_write_fpu_register (13, 0);
+	mips_write_fpu_register (14, 0);
+	mips_write_fpu_register (15, 0);
+	mips_write_fpu_register (16, 0);
+	mips_write_fpu_register (17, 0);
+	mips_write_fpu_register (18, 0);
+	mips_write_fpu_register (19, 0);
+	mips_write_fpu_register (20, 0);
+	mips_write_fpu_register (21, 0);
+	mips_write_fpu_register (22, 0);
+	mips_write_fpu_register (23, 0);
+	mips_write_fpu_register (24, 0);
+	mips_write_fpu_register (25, 0);
+	mips_write_fpu_register (26, 0);
+	mips_write_fpu_register (27, 0);
+	mips_write_fpu_register (28, 0);
+	mips_write_fpu_register (29, 0);
+	mips_write_fpu_register (30, 0);
+	mips_write_fpu_register (31, 0);
 #endif
 
 	/*
@@ -323,7 +323,7 @@ void _exception_handler_ (unsigned int context[])
 
 	debug_printf ("\n\n*** 0x%08x: exception ", context [CONTEXT_PC]);
 
-	cause = mips32_read_c0_register (C0_CAUSE);
+	cause = mips_read_c0_register (C0_CAUSE);
 	switch (cause >> 2 & 31) {
 	case 0:	code = "Interrupt"; break;
 	case 1: code = "TLB Modification"; break;
@@ -345,8 +345,8 @@ void _exception_handler_ (unsigned int context[])
 	else
 		debug_printf ("%d\n", cause >> 2 & 31);
 
-	badvaddr = mips32_read_c0_register (C0_BADVADDR);
-	config = mips32_read_c0_register (C0_CONFIG);
+	badvaddr = mips_read_c0_register (C0_BADVADDR);
+	config = mips_read_c0_register (C0_CONFIG);
 	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x\n",
 		cause, badvaddr, config);
 
@@ -359,9 +359,9 @@ void _pagefault_handler_ (unsigned int context[])
 
 	debug_printf ("\n\n*** 0x%08x: page fault\n", context [CONTEXT_PC]);
 
-	cause = mips32_read_c0_register (C0_CAUSE);
-	badvaddr = mips32_read_c0_register (C0_BADVADDR);
-	config = mips32_read_c0_register (C0_CONFIG);
+	cause = mips_read_c0_register (C0_CAUSE);
+	badvaddr = mips_read_c0_register (C0_BADVADDR);
+	config = mips_read_c0_register (C0_CONFIG);
 	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x\n",
 		cause, badvaddr, config);
 

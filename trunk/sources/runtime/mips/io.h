@@ -17,16 +17,16 @@
  * "COPY-UOS.txt" for details.
  */
 #ifdef ELVEES_MC24
-#   include <runtime/mips32/io-mc24.h>
-#   include <runtime/mips32/io-elvees.h>
+#   include <runtime/mips/io-mc24.h>
+#   include <runtime/mips/io-elvees.h>
 #endif
 #ifdef ELVEES_NVCOM01
-#   include <runtime/mips32/io-nvcom01.h>
-#   include <runtime/mips32/io-elvees.h>
+#   include <runtime/mips/io-nvcom01.h>
+#   include <runtime/mips/io-elvees.h>
 #endif
 #ifdef ELVEES_NVCOM02
-#   include <runtime/mips32/io-nvcom02.h>
-#   include <runtime/mips32/io-elvees.h>
+#   include <runtime/mips/io-nvcom02.h>
+#   include <runtime/mips/io-elvees.h>
 #endif
 
 /*
@@ -97,7 +97,7 @@
  * Set value of stack pointer register.
  */
 static void inline __attribute__ ((always_inline))
-mips32_set_stack_pointer (void *x)
+mips_set_stack_pointer (void *x)
 {
 	asm volatile (
 	"move	$sp, %0"
@@ -108,7 +108,7 @@ mips32_set_stack_pointer (void *x)
  * Get value of stack pointer register.
  */
 static inline __attribute__ ((always_inline))
-void *mips32_get_stack_pointer ()
+void *mips_get_stack_pointer ()
 {
 	void *x;
 
@@ -121,7 +121,7 @@ void *mips32_get_stack_pointer ()
 /*
  * Read C0 coprocessor register.
  */
-#define mips32_read_c0_register(reg)				\
+#define mips_read_c0_register(reg)				\
 ({ int __value;							\
 	asm volatile (						\
 	"mfc0	%0, $%1"					\
@@ -132,7 +132,7 @@ void *mips32_get_stack_pointer ()
 /*
  * Write C0 coprocessor register.
  */
-#define mips32_write_c0_register(reg, value)			\
+#define mips_write_c0_register(reg, value)			\
 do {								\
 	asm volatile (						\
 	"mtc0	%z0, $%1 \n	nop \n	nop \n	nop"		\
@@ -142,7 +142,7 @@ do {								\
 /*
  * Read FPU (C1 coprocessor) register.
  */
-#define mips32_read_fpu_register(reg)				\
+#define mips_read_fpu_register(reg)				\
 ({ int __value;							\
 	asm volatile (						\
 	"mfc1	%0, $%1"					\
@@ -153,7 +153,7 @@ do {								\
 /*
  * Write FPU (C1 coprocessor) register.
  */
-#define mips32_write_fpu_register(reg, value)			\
+#define mips_write_fpu_register(reg, value)			\
 do {								\
 	asm volatile (						\
 	"mtc1	%z0, $%1"					\
@@ -163,7 +163,7 @@ do {								\
 /*
  * Read FPU control register.
  */
-#define mips32_read_fpu_control(reg)				\
+#define mips_read_fpu_control(reg)				\
 ({ int __value;							\
 	asm volatile (						\
 	"cfc1	%0, $%1"					\
@@ -174,7 +174,7 @@ do {								\
 /*
  * Write FPU control register.
  */
-#define mips32_write_fpu_control(reg, value)			\
+#define mips_write_fpu_control(reg, value)			\
 do {								\
 	asm volatile (						\
 	"ctc1	%z0, $%1"					\
@@ -186,7 +186,7 @@ do {								\
  * saving the interrupt state into the supplied variable.
  */
 static void inline __attribute__ ((always_inline))
-mips32_intr_disable (int *x)
+mips_intr_disable (int *x)
 {
 	/* This must be atomic operation.
 	 * On MIPS1 this could be done only using system call exception. */
@@ -200,31 +200,31 @@ mips32_intr_disable (int *x)
  * Restore the hardware interrupt mode using the saved interrupt state.
  */
 static void inline __attribute__ ((always_inline))
-mips32_intr_restore (int x)
+mips_intr_restore (int x)
 {
 	int status;
 
-	status = mips32_read_c0_register (C0_STATUS);
-	mips32_write_c0_register (C0_STATUS, status | (x & ST_IE));
+	status = mips_read_c0_register (C0_STATUS);
+	mips_write_c0_register (C0_STATUS, status | (x & ST_IE));
 }
 
 /*
  * Enable hardware interrupts.
  */
 static void inline __attribute__ ((always_inline))
-mips32_intr_enable ()
+mips_intr_enable ()
 {
 	int status;
 
-	status = mips32_read_c0_register (C0_STATUS);
-	mips32_write_c0_register (C0_STATUS, status | ST_IE);
+	status = mips_read_c0_register (C0_STATUS);
+	mips_write_c0_register (C0_STATUS, status | ST_IE);
 }
 
 /*
  * Count a number of leading (most significant) zero bits in a word.
  */
 static int inline __attribute__ ((always_inline))
-mips32_count_leading_zeroes (unsigned x)
+mips_count_leading_zeroes (unsigned x)
 {
 	int n;
 
@@ -239,12 +239,12 @@ mips32_count_leading_zeroes (unsigned x)
  * Translate virtual address to physical one
  */
 static unsigned int inline
-mips32_virtual_addr_to_physical (unsigned int virt)
+mips_virtual_addr_to_physical (unsigned int virt)
 {
 	unsigned segment_desc = virt >> 28;
 	if (segment_desc <= 0x7) {
 		// kuseg
-		if (mips32_read_c0_register(C0_STATUS) & ST_ERL) {
+		if (mips_read_c0_register(C0_STATUS) & ST_ERL) {
 			// ERL == 1, адрес не меняется
 			return virt;
 		} else {

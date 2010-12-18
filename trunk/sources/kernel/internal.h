@@ -34,7 +34,7 @@
 #	include <kernel/i386/machdep.h>
 #endif
 #if MIPS32
-#	include <kernel/mips32/machdep.h>
+#	include <kernel/mips/machdep.h>
 #endif
 #if MSP430
 #	include <kernel/msp430/machdep.h>

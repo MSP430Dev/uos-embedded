@@ -189,8 +189,6 @@ void test_task ()
 			}
 		}
 		k5600bg1_poll (&eth);
-//if (ARM_GPIOB->DATA >> 10 & 1) debug_printf ("!");
-//else debug_printf (".");
 	}
 }
 

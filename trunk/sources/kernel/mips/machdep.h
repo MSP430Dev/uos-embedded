@@ -55,13 +55,13 @@ typedef void *arch_stack_t;
 static inline arch_stack_t
 arch_get_stack_pointer ()
 {
-	return mips32_get_stack_pointer ();
+	return mips_get_stack_pointer ();
 }
 
 static inline void
 arch_set_stack_pointer (arch_stack_t sp)
 {
-	mips32_set_stack_pointer (sp);
+	mips_set_stack_pointer (sp);
 }
 
 /*
@@ -93,13 +93,13 @@ void arch_task_switch (task_t *target);
 static inline void
 arch_intr_disable (arch_state_t *x)
 {
-	mips32_intr_disable (x);
+	mips_intr_disable (x);
 }
 
 static inline void
 arch_intr_restore (arch_state_t x)
 {
-	mips32_intr_restore (x);
+	mips_intr_restore (x);
 }
 
 /*
@@ -134,7 +134,7 @@ arch_intr_unbind (int irq)
 static inline void
 arch_idle ()
 {
-	mips32_intr_enable ();
+	mips_intr_enable ();
 	for (;;) {
 		asm volatile (
 			".set mips4 \n"
