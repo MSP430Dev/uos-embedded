@@ -17,7 +17,7 @@
 # uses of the text contained in this file.  See the accompanying file
 # "COPY-UOS.txt" for details.
 #
-#include <runtime/mips32/io.h>
+#include <runtime/mips/io.h>
 
 		.section .init
 		.set	noreorder

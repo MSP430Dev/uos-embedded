@@ -12,7 +12,7 @@ void task (void *arg)
 {
 	unsigned count0;
 
-	count_task = mips32_read_c0_register (C0_COUNT);
+	count_task = mips_read_c0_register (C0_COUNT);
 	count0 = *(unsigned*) 0xb8400000;
 	for (;;) {
 		debug_printf ("Hello from `%s'!\n", arg);
@@ -29,7 +29,7 @@ void task (void *arg)
 
 void uos_init (void)
 {
-	count_init = mips32_read_c0_register (C0_COUNT);
+	count_init = mips_read_c0_register (C0_COUNT);
 
 	task_create (task, "task", "task", 1, task_space, sizeof (task_space));
 }

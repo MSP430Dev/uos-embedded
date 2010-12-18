@@ -303,7 +303,7 @@ uartx_test_irq ()
 	UARTX_IER (1) = 0;
 	UARTX_IER (2) = 0;
 	udelay (10);
-	cause = mips32_read_c0_register (C0_CAUSE);
+	cause = mips_read_c0_register (C0_CAUSE);
 	if (cause & CA_IP_IRQ2) {
 		debug_printf ("uartx error: incorrect /IRQ2, cause=%08x\n",
 			cause);
@@ -314,7 +314,7 @@ uartx_test_irq ()
 	UARTX_IER (1) = ~0;
 	UARTX_IER (2) = ~0;
 	udelay (10);
-	cause = mips32_read_c0_register (C0_CAUSE);
+	cause = mips_read_c0_register (C0_CAUSE);
 	if (! (cause & CA_IP_IRQ2)) {
 		debug_printf ("uartx error: no /IRQ2, cause=%08x\n",
 			cause);
@@ -325,7 +325,7 @@ uartx_test_irq ()
 	UARTX_IER (1) = 0;
 	UARTX_IER (2) = 0;
 	udelay (10);
-	cause = mips32_read_c0_register (C0_CAUSE);
+	cause = mips_read_c0_register (C0_CAUSE);
 	if (cause & CA_IP_IRQ2) {
 		debug_printf ("uartx error: unexpected /IRQ2, cause=%08x\n",
 			cause);

@@ -33,7 +33,7 @@ void console (void *arg)
 	unsigned t0;
 
 	for (;;) {
-		t0 = mips32_read_c0_register (C0_COUNT);
+		t0 = mips_read_c0_register (C0_COUNT);
 		mutex_signal (&mailbox, (void*) t0);
 
 		debug_puts ("\33[H");
@@ -69,7 +69,7 @@ void receiver (void *arg)
 
 	for (;;) {
 		t0 = (unsigned) mutex_wait (&mailbox);
-		t1 = mips32_read_c0_register (C0_COUNT);
+		t1 = mips_read_c0_register (C0_COUNT);
 
 		/* Вычисляем количество тактов, затраченных на вход в прерывание. */
 		latency = t1 - t0;
