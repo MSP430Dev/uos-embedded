@@ -109,26 +109,29 @@ idProduct          0x003c USB HID Bootloader
 Конфигурационные регистры, устанвливаемые загрузчиком:
 || *DEVCFG0* ||
 || CP       = OFF     || Code Protect                  || Общая защита кода отключена. ||
-|| BWP      = OFF     || Boot Flash Write Protect	   || Защита flash-памяти загрузки отключена. ||
+|| BWP      = OFF     || Boot Flash Write Protect      || Защита flash-памяти загрузки отключена. ||
 || PWP      = OFF     || Program Flash Write Protect   || Защита flash-памяти программы отключена. ||
-|| ICESEL   = ICS_PGx2|| ICE Channel Select			   || Отладчик подключается к сигналам PGC2/PGD2. ||
-|| DEBUG    = OFF     || Background Debugger Enable	   || Фоновый отладчик отключен. ||
+|| ICESEL   = ICS_PGx2|| ICE Channel Select	       || Отладчик подключается к сигналам PGC2/PGD2. ||
+|| DEBUG    = OFF     || Background Debugger Enable    || Фоновый отладчик отключен. ||
 || *DEVCFG1* ||
-|| FWDTEN   = OFF     || Watchdog Timer Enable		   || Сторожевой таймер отключен. ||
-|| WDTPS    = PS1     || Watchdog Timer Postscale	   || 1:1 ||
+|| FWDTEN   = OFF     || Watchdog Timer Enable	       || Сторожевой таймер отключен. ||
+|| WDTPS    = PS1     || Watchdog Timer Postscale      || 1:1 ||
 || FCKSM    = CSECME  || Fail Safe Clock Switching Mode|| ||
-|| FPBDIV   = DIV_1   || Peripheral Clock divisor	   || PBCLK = SYSCLK / 1 ||
-|| OSCIOFNC = OFF     || CLKO Enable				   || Выход CLKO отключен. ||
-|| POSCMOD  = HS      || Primary Oscillator			   || Основной генератор в режиме HS. ||
+|| FPBDIV   = DIV_1   || Peripheral Clock divisor      || PBCLK = SYSCLK / 1 ||
+|| OSCIOFNC = OFF     || CLKO Enable		       || Выход CLKO отключен. ||
+|| POSCMOD  = HS      || Primary Oscillator	       || Основной генератор в режиме HS. ||
 || IESO     = ON      || Internal/External Switch-over || Двухскоростной старт. ||
 || FSOSCEN  = OFF     || Secondary Oscillator Enable   || Вторичный генератор отключен. ||
-|| FNOSC    = PRIPLL  || Oscillator Selection		   || Основной генератор с ФАПЧ.||
+|| FNOSC    = PRIPLL  || Oscillator Selection	       || Основной генератор с ФАПЧ.||
 || *DEVCFG2* ||
-|| FPLLODIV = DIV_1   || PLL Output Divider			   || 1:1 делитель выхода ФАПЧ. ||
-|| UPLLEN   = ON      || USB PLL Enable				   || Включена ФАПЧ USB. ||
-|| UPLLIDIV = DIV_2   || USB PLL Input Divider		   || 1:2 делитель ФАПЧ USB. ||
-|| FPLLMUL  = MUL_20  || PLL Multiplier				   || 20x умножитель ФАПЧ USB. ||
-|| FPLLIDIV = DIV_2   || PLL Input Divider			   || 1:2 делитель входа ФАПЧ. ||
+|| FPLLODIV = DIV_1   || PLL Output Divider	       || 1:1 делитель выхода ФАПЧ. ||
+|| UPLLEN   = ON      || USB PLL Enable		       || Включена ФАПЧ USB. ||
+|| UPLLIDIV = DIV_2   || USB PLL Input Divider	       || 1:2 делитель ФАПЧ USB. ||
+|| FPLLMUL  = MUL_20  || PLL Multiplier		       || 20x умножитель ФАПЧ USB. ||
+|| FPLLIDIV = DIV_2   || PLL Input Divider	       || 1:2 делитель входа ФАПЧ. ||
+
+Для программы пользователя загрузчик выделяет диапазон адресов `9d005000-9d07ffff`.
+Стартует программа с адреса `9d006000`.
 
 Фил Бургес разработал для Linux и Mac OS X простую утилиту
 [http://www.paintyourdragon.com/uc/ubw32/index.html ubw32],
