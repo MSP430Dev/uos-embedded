@@ -16,6 +16,9 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+#ifdef PIC32MX
+#   include <runtime/mips/io-pic32mx.h>
+#endif
 #ifdef ELVEES_MC24
 #   include <runtime/mips/io-mc24.h>
 #   include <runtime/mips/io-elvees.h>
@@ -236,7 +239,8 @@ mips_count_leading_zeroes (unsigned x)
 }
 
 /*
- * Translate virtual address to physical one
+ * Translate virtual address to physical one.
+ * Only for fixed mapping.
  */
 static unsigned int inline
 mips_virtual_addr_to_physical (unsigned int virt)
@@ -245,32 +249,20 @@ mips_virtual_addr_to_physical (unsigned int virt)
 	if (segment_desc <= 0x7) {
 		// kuseg
 		if (mips_read_c0_register(C0_STATUS) & ST_ERL) {
-			// ERL == 1, адрес не меняется
+			// ERL == 1, no mapping
 			return virt;
 		} else {
-			// ERL == 0, выясняем тип адресации
-			if (MC_CSR & MC_CSR_FM) {
-				// Тип адресации Fixed-mapped
-				return (virt + 0x40000000);
-			} else {
-				// Тип адресации TLB - адрес определяется по TLB
-				return virt;
-			}
+			// Assume fixed-mapped
+			return (virt + 0x40000000);
 		}
 	} else {
-		// kseg0, или kseg1, или kseg2, или kseg3
+		// kseg0, or kseg1, or kseg2, or kseg3
 		if (segment_desc <= 0xb) {
-			// kseg0 или kseg1, сбрасываем три старших разряда
+			// kseg0 или kseg1, cut bits A[31:29].
 			return (virt & 0x1fffffff);
 		} else {
-			// kseg2 или kseg3, выясняем тип адресации
-			if (MC_CSR & MC_CSR_FM) {
-				// Тип адресации Fixed-mapped - адрес не меняется
-				return virt;
-			} else {
-				// Тип адресации TLB - адрес определяется по TLB
-				return virt;
-			}
+			// Fixed-mapped - no mapping
+			return virt;
 		}
 	}
 }

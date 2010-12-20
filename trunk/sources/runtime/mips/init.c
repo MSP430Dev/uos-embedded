@@ -269,18 +269,27 @@ uos_valid_memory_address (void *ptr)
 {
 	unsigned address = (unsigned) ptr;
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 	/* Internal SRAM. */
 	if (address >= (unsigned) &__data_start &&
 	    address < (unsigned) _estack)
 		return 1;
 
+#if defined (PIC32MX)
+	/* Boot flash. */
+	if (address >= 0xbfc00000 && address < 0xbfc03000)
+		return 1;
+
+	/* Program flash. */
+	if (address >= 0x9d000000 && address < 0x9d080000)
+		return 1;
+#endif /* PIC32MX */
+
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 #ifdef BOOT_SRAM_SIZE
 	/* Boot SRAM. */
 	if (address >= 0xbfc00000 && address < 0xbfc00000+BOOT_SRAM_SIZE)
 		return 1;
 #endif /* BOOT_SRAM_SIZE */
-
 #endif /* ELVEES_MC24 or ELVEES_NVCOM01 or ELVEES_NVCOM02 */
 	return 0;
 }
@@ -353,6 +362,7 @@ void _exception_handler_ (unsigned int context[])
 	dump_of_death (context);
 }
 
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 void _pagefault_handler_ (unsigned int context[])
 {
 	unsigned int cause, badvaddr, config;
@@ -367,3 +377,4 @@ void _pagefault_handler_ (unsigned int context[])
 
 	dump_of_death (context);
 }
+#endif /* ELVEES_MC24 or ELVEES_NVCOM01 or ELVEES_NVCOM02 */
