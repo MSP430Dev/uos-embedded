@@ -19,13 +19,13 @@
 #
 #include <runtime/mips/io.h>
 
-		.section .init
 		.set	noreorder
 		.set	mips32
 
 #---------------------------------------
 # Reset vector at 0x9D006000
 #
+		.section .init
 		.org	0
 _reset_vector_:	.globl	_reset_vector_
 
@@ -35,77 +35,10 @@ _reset_vector_:	.globl	_reset_vector_
 		lui	$gp, 0x8000			# Set global pointer (delay slot)
 
 #---------------------------------------
-# Macro: save all registers in stack
-#
-		.macro SAVE_REGS
-		addi	$sp, -CONTEXT_WORDS*4		# Allocate space for register
-
-		.set	noat
-		sw	$1, (CONTEXT_R1 * 4) ($sp)	# Save general registers
-		sw	$2, (CONTEXT_R2 * 4) ($sp)
-		sw	$3, (CONTEXT_R3 * 4) ($sp)
-		sw	$4, (CONTEXT_R4 * 4) ($sp)
-		sw	$5, (CONTEXT_R5 * 4) ($sp)
-		sw	$6, (CONTEXT_R6 * 4) ($sp)
-		sw	$7, (CONTEXT_R7 * 4) ($sp)
-		sw	$8, (CONTEXT_R8 * 4) ($sp)
-		sw	$9, (CONTEXT_R9 * 4) ($sp)
-		sw	$10, (CONTEXT_R10 * 4) ($sp)
-		sw	$11, (CONTEXT_R11 * 4) ($sp)
-		sw	$12, (CONTEXT_R12 * 4) ($sp)
-		sw	$13, (CONTEXT_R13 * 4) ($sp)
-		sw	$14, (CONTEXT_R14 * 4) ($sp)
-		sw	$15, (CONTEXT_R15 * 4) ($sp)
-		sw	$16, (CONTEXT_R16 * 4) ($sp)
-		sw	$17, (CONTEXT_R17 * 4) ($sp)
-		sw	$18, (CONTEXT_R18 * 4) ($sp)
-		sw	$19, (CONTEXT_R19 * 4) ($sp)
-		sw	$20, (CONTEXT_R20 * 4) ($sp)
-		sw	$21, (CONTEXT_R21 * 4) ($sp)
-		sw	$22, (CONTEXT_R22 * 4) ($sp)
-		sw	$23, (CONTEXT_R23 * 4) ($sp)
-		sw	$24, (CONTEXT_R24 * 4) ($sp)
-		sw	$25, (CONTEXT_R25 * 4) ($sp)
-		# Skip $26 - K0
-		# Skip $27 - K1
-		sw	$28, (CONTEXT_GP * 4) ($sp)
-		# Skip $29 - SP
-		sw	$30, (CONTEXT_FP * 4) ($sp)
-		sw	$31, (CONTEXT_RA * 4) ($sp)
-		.set	at
-
-		mfhi	$a0				# Save special registers
-		sw	$a0, (CONTEXT_HI * 4) ($sp)
-
-		mflo	$a0
-		sw	$a0, (CONTEXT_LO * 4) ($sp)
-
-		mfc0	$a0, $C0_EPC
-		sw	$a0, (CONTEXT_PC * 4) ($sp)
-
-		mfc0	$a0, $C0_STATUS
-		sw	$a0, (CONTEXT_STATUS * 4) ($sp)
-		.endm
-
-		.section .exception
-		.set	noreorder
-		.set	mips32
-
-#---------------------------------------
-# Hangle exceptions
-#
-exception:
-		SAVE_REGS				# Save all registers in stack
-		move	$a0, $sp			# Arg0: pointer to saved state
-		addi	$sp, -MIPS_FSPACE		# Make an arg frame
-
-		.extern _exception_handler_
-		j	_exception_handler_		# Jump to C code, no return
-		lui	$gp, 0x8000			# Set global pointer (delay slot)
-
-#---------------------------------------
 # Restore CPU state and return from interrupt
-
+#
+		.section .exception
+		.org	0
 _restore_regs_: .globl _restore_regs_
 		addi	$sp, MIPS_FSPACE		# Remove an arg frame
 
@@ -166,7 +99,6 @@ _restore_regs_: .globl _restore_regs_
 
 		# Return from exception
 		.set mips3
-		sync					# settle things down
 		eret					# PC <= EPC; EXL <= 0
 		nop					# just to be safe
 		.set mips0
@@ -176,29 +108,56 @@ _restore_regs_: .globl _restore_regs_
 #
 		.org	0x200
 _exception_vector_: .globl _exception_vector_
+		addi	$sp, -CONTEXT_WORDS*4		# Allocate space for registers
 
-		mfc0	$k0, $C0_CAUSE			# Get CAUSE
-		andi	$k0, CA_EXC_CODE		# Extract exception code
-		li	$k1, CA_Sys			# Is it syscall?
-		bne	$k1, $k0, exception		# No - jump to handler.
-		nop					# (delay slot)
+		.set	noat
+		sw	$1, (CONTEXT_R1 * 4) ($sp)	# Save general registers
+		sw	$2, (CONTEXT_R2 * 4) ($sp)
+		sw	$3, (CONTEXT_R3 * 4) ($sp)
+		sw	$4, (CONTEXT_R4 * 4) ($sp)
+		sw	$5, (CONTEXT_R5 * 4) ($sp)
+		sw	$6, (CONTEXT_R6 * 4) ($sp)
+		sw	$7, (CONTEXT_R7 * 4) ($sp)
+		sw	$8, (CONTEXT_R8 * 4) ($sp)
+		sw	$9, (CONTEXT_R9 * 4) ($sp)
+		sw	$10, (CONTEXT_R10 * 4) ($sp)
+		sw	$11, (CONTEXT_R11 * 4) ($sp)
+		sw	$12, (CONTEXT_R12 * 4) ($sp)
+		sw	$13, (CONTEXT_R13 * 4) ($sp)
+		sw	$14, (CONTEXT_R14 * 4) ($sp)
+		sw	$15, (CONTEXT_R15 * 4) ($sp)
+		sw	$16, (CONTEXT_R16 * 4) ($sp)
+		sw	$17, (CONTEXT_R17 * 4) ($sp)
+		sw	$18, (CONTEXT_R18 * 4) ($sp)
+		sw	$19, (CONTEXT_R19 * 4) ($sp)
+		sw	$20, (CONTEXT_R20 * 4) ($sp)
+		sw	$21, (CONTEXT_R21 * 4) ($sp)
+		sw	$22, (CONTEXT_R22 * 4) ($sp)
+		sw	$23, (CONTEXT_R23 * 4) ($sp)
+		sw	$24, (CONTEXT_R24 * 4) ($sp)
+		sw	$25, (CONTEXT_R25 * 4) ($sp)
+		# Skip $26 - K0
+		# Skip $27 - K1
+		sw	$28, (CONTEXT_GP * 4) ($sp)
+		# Skip $29 - SP
+		sw	$30, (CONTEXT_FP * 4) ($sp)
+		sw	$31, (CONTEXT_RA * 4) ($sp)
+		.set	at
 
-		mfc0	$k0, $C0_EPC			# Get EPC
-		add	$k0, 4				# Return to next instruction
-		mtc0	$k0, $C0_EPC			# Put EPC back
+		mfhi	$a0				# Save special registers
+		sw	$a0, (CONTEXT_HI * 4) ($sp)
 
-		#
-		# Инструкция SYSCALL: чтение регистра STATUS и запрет прерываний.
-		#
-		mfc0	$a0, $C0_STATUS			# Get SR
-		li	$k0, -1 - ST_IE			# Prepare bitmask
-		and	$k0, $a0			# Clear IE bit
-		mtc0	$k0, $C0_STATUS			# Put SR back
-		xori	$a0, ST_EXL			# Clear EXL for user
+		mflo	$a0
+		sw	$a0, (CONTEXT_LO * 4) ($sp)
 
-		# Return from exception
-		.set mips3
-		sync					# Settle things down
-		eret					# PC <= EPC; EXL <= 0
-		nop					# just to be safe
-		.set mips0
+		mfc0	$a0, $C0_EPC
+		sw	$a0, (CONTEXT_PC * 4) ($sp)
+
+		mfc0	$a0, $C0_STATUS
+		sw	$a0, (CONTEXT_STATUS * 4) ($sp)
+
+		addi	$sp, -MIPS_FSPACE		# Make an arg frame
+
+		.extern _irq_handler_
+		j	_irq_handler_			# Jump to C code, no return
+		lui	$gp, 0x8000			# Set global pointer (delay slot)

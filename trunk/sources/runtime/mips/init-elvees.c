@@ -294,6 +294,7 @@ uos_valid_memory_address (void *ptr)
 	return 0;
 }
 
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 static void dump_of_death (unsigned int context[])
 {
 	debug_printf ("                t0 = %8x   s0 = %8x   t8 = %8x   lo = %8x\n",
@@ -362,7 +363,6 @@ void _exception_handler_ (unsigned int context[])
 	dump_of_death (context);
 }
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 void _pagefault_handler_ (unsigned int context[])
 {
 	unsigned int cause, badvaddr, config;

@@ -22,70 +22,59 @@
 /*--------------------------------------
  * Coprocessor 0 registers.
  */
-#define C0_INDEX	0	/* индекс доступа к TLB */
-#define C0_RANDOM	1	/* индекс TLB для команды Write Random */
-#define C0_ENTRYLO0	2	/* строки для чётных страниц TLB */
-#define C0_ENTRYLO1	3	/* строки для нечётных страниц TLB */
-#define C0_CONTEXT	4	/* указатель на таблицу PTE */
-#define C0_PAGEMASK	5	/* маска размера страниц TLB */
-#define C0_WIRED	6	/* граница привязанных строк TLB */
-#define C0_BADVADDR	8	/* виртуальный адрес последнего исключения */
-#define C0_COUNT	9	/* таймер */
-#define C0_ENTRYHI	10	/* информация соответствия виртуального адреса */
-#define C0_COMPARE	11	/* предельное значение для прерывания по таймеру */
-#define C0_STATUS	12	/* режимы функционирования процессора */
-#define C0_CAUSE	13	/* причина последнего исключения */
-#define C0_EPC		14	/* адрес возврата из исключения */
-#define C0_PRID		15	/* идентификатор процессора */
-#define C0_CONFIG	16	/* информация о возможностях процессора */
-#define C0_LLADDR	17	/* физический адрес последней команды LL */
-#define C0_ERROREPC	30	/* адрес возврата из исключения ошибки */
+#define C0_HWRENA	7	/* Enable RDHWR in non-privileged mode */
+#define C0_BADVADDR	8	/* Virtual address of last exception */
+#define C0_COUNT	9	/* Processor cycle count */
+#define C0_COMPARE	11	/* Timer interrupt control */
+#define C0_STATUS	12	/* Processor status and control */
+#define C0_CAUSE	13	/* Cause of last exception */
+#define C0_EPC		14	/* Program counter at last exception */
+#define C0_PRID_EBASE	15	/* Processor identification; exception base address */
+#define C0_CONFIG	16	/* Configuration */
+#define C0_DEBUG	23	/* Debug control and status */
+#define C0_DEPC		24	/* Program counter at last debug exception */
+#define C0_ERROREPC	30	/* Program counter at last error */
+#define C0_DESAVE	31	/* Debug handler scratchpad register */
 
 /*
  * Status register.
  */
-#define ST_IE		0x00000001	/* разрешение прерываний */
-#define ST_EXL		0x00000002	/* уровень исключения */
-#define ST_ERL		0x00000004	/* уровень ошибки */
-#define ST_UM		0x00000010	/* режим пользователя */
-#define ST_IM_SW0	0x00000100	/* программное прерывание 0 */
-#define ST_IM_SW1	0x00000200	/* программное прерывание 1 */
-
-#define ST_NMI		0x00080000	/* причина сброса - NMI */
-#define ST_TS		0x00200000	/* TLB-закрытие системы */
-#define ST_BEV		0x00400000	/* размещение векторов: начальная загрузка */
-
-#define ST_CU0		0x10000000	/* разрешение сопроцессора 0 */
-#define ST_CU1		0x20000000	/* разрешение сопроцессора 1 (FPU) */
+#define ST_CU0		0x10000000	/* Access to coprocessor 0 allowed (in user mode) */
+#define ST_RP		0x08000000	/* Enable reduced power mode */
+#define ST_RE		0x02000000	/* Reverse endianness (in user mode) */
+#define ST_BEV		0x00400000	/* Exception vectors: bootstrap */
+#define ST_SR		0x00100000	/* Soft reset */
+#define ST_NMI		0x00080000	/* NMI reset */
+#define ST_IPL(x)	((x) << 10)	/* Current interrupt priority level */
+#define ST_UM		0x00000010	/* User mode */
+#define ST_ERL		0x00000004	/* Error level */
+#define ST_EXL		0x00000002	/* Exception level */
+#define ST_IE		0x00000001	/* Interrupt enable */
 
 /*
  * Сause register.
  */
-#define CA_EXC_CODE	0x0000007c	/* код исключения */
-#define CA_Int		0		/* прерывание */
-#define CA_Mod		(1 << 2)	/* TLB-исключение модификации */
-#define CA_TLBL		(2 << 2)	/* TLB-исключение, загрузка или вызов команды */
-#define CA_TLBS		(3 << 2)	/* TLB-исключение, сохранение */
-#define CA_AdEL		(4 << 2)	/* ошибка адресации, загрузка или вызов команды */
-#define CA_AdES		(5 << 2)	/* ошибка адресации, сохранение */
-#define CA_Sys		(8 << 2)	/* системное исключение */
-#define CA_Bp		(9 << 2)	/* breakpoint */
-#define CA_RI		(10 << 2)	/* зарезервированная команда */
-#define CA_CpU		(11 << 2)	/* недоступность сопроцессора */
-#define CA_Ov		(12 << 2)	/* целочисленное переполнение */
-#define CA_Tr		(13 << 2)	/* trap */
-#define CA_MCheck	(24 << 2)	/* аппаратный контроль */
+#define CA_BD		0x80000000	/* Exception occured in delay slot */
+#define CA_TI		0x40000000	/* Timer interrupt is pending */
+#define CA_CE		0x30000000	/* Coprocessor exception */
+#define CA_DC		0x08000000	/* Disable COUNT register */
+#define CA_IV		0x00800000	/* Use special interrupt vector 0x200 */
+#define CA_RIPL(r)	((r)>>10 & 63)	/* Requested interrupt priority level */
+#define CA_IP1		0x00020000	/* Request software interrupt 1 */
+#define CA_IP0		0x00010000	/* Request software interrupt 0 */
+#define CA_EXC_CODE	0x0000007c	/* Exception code */
 
-#define CA_ID		0x00000080	/* прерывание от блока отладки OnCD */
-#define CA_IP_SW0	0x00000100	/* программное прерывание 0 */
-#define CA_IP_SW1	0x00000200	/* программное прерывание 1 */
-#define CA_IP_IRQ0	0x00000400	/* внешнее прерывание 0 */
-#define CA_IP_IRQ1	0x00000800	/* внешнее прерывание 1 */
-#define CA_IP_IRQ2	0x00001000	/* внешнее прерывание 2 */
-#define CA_IP_IRQ3	0x00002000	/* внешнее прерывание 3 */
-#define CA_IP_MCU	0x00008000	/* от внутренних устройств микроконтроллера */
-#define CA_IV		0x00800000	/* 1 - используется спец.вектор 0x200 */
-#define CA_BD		0x80000000	/* исключение в слоте задержки перехода */
+#define CA_Int		0		/* Interrupt */
+#define CA_AdEL		(4 << 2)	/* Address error, load or instruction fetch */
+#define CA_AdES		(5 << 2)	/* Address error, store */
+#define CA_IBE		(6 << 2)	/* Bus error, instruction fetch */
+#define CA_DBE		(7 << 2)	/* Bus error, load or store */
+#define CA_Sys		(8 << 2)	/* Syscall */
+#define CA_Bp		(9 << 2)	/* Breakpoint */
+#define CA_RI		(10 << 2)	/* Reserved instruction */
+#define CA_CPU		(11 << 2)	/* Coprocessor unusable */
+#define CA_Ov		(12 << 2)	/* Arithmetic overflow */
+#define CA_Tr		(13 << 2)	/* Trap */
 
 /*--------------------------------------
  * Peripheral registers.
@@ -174,5 +163,12 @@
 #define PIC32_USTA_UTXISEL_EMP	0x00008000 /* ...the transmit buffer becomes empty */
 #define PIC32_USTA_ADDR		0x00FF0000 /* Automatic Address Mask */
 #define PIC32_USTA_ADM_EN	0x01000000 /* Automatic Address Detect */
+
+/*
+ * Compute the 16-bit baud rate divisor, given
+ * the oscillator frequency and baud rate.
+ * Round to the nearest integer.
+ */
+#define PIC32_BRG_BAUD(fr,bd)	((((fr)/8 + (bd)) / (bd) / 2) - 1)
 
 #endif /* _IO_PIC32MX_H */
