@@ -19,8 +19,13 @@ $(OUTS) $(TESTS): startup.o libuos.a
 clean:
 		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
 
-load:		$(TEST).srec
-		ubw32 -write $(TEST).srec -reset
+hex:		$(TESTS)
+		for srec in $(TESTS); do \
+			$(OBJCOPY) -O ihex -I srec $$srec `basename $$srec .srec`.hex; \
+		done
+
+load:		$(TEST).hex
+		ubw32 -write $(TEST).hex -reset
 
 include $(OS)/sources/rules.mak
 
