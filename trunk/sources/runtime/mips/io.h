@@ -191,12 +191,17 @@ do {								\
 static void inline __attribute__ ((always_inline))
 mips_intr_disable (int *x)
 {
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 	/* This must be atomic operation.
 	 * On MIPS1 this could be done only using system call exception. */
 	asm volatile (
 	"syscall \n"
 "	move	%0, $a0"
 	: "=r" (*x) : "K" (C0_STATUS) : "a0");
+#else
+	*x = mips_read_c0_register (C0_STATUS);
+	asm volatile ("di");
+#endif
 }
 
 /*
@@ -205,10 +210,14 @@ mips_intr_disable (int *x)
 static void inline __attribute__ ((always_inline))
 mips_intr_restore (int x)
 {
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 	int status;
 
 	status = mips_read_c0_register (C0_STATUS);
 	mips_write_c0_register (C0_STATUS, status | (x & ST_IE));
+#else
+	mips_write_c0_register (C0_STATUS, x);
+#endif
 }
 
 /*
@@ -217,10 +226,14 @@ mips_intr_restore (int x)
 static void inline __attribute__ ((always_inline))
 mips_intr_enable ()
 {
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 	int status;
 
 	status = mips_read_c0_register (C0_STATUS);
 	mips_write_c0_register (C0_STATUS, status | ST_IE);
+#else
+	asm volatile ("ei");
+#endif
 }
 
 /*

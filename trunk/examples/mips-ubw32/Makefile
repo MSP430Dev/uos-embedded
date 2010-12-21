@@ -2,9 +2,9 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-debug
+TEST		= test-leds
 TESTS		= $(TEST).srec
-TESTS		+= test-debug.srec #test-task.srec #test-timer.srec test-uart.srec
+TESTS		+= test-debug.srec test-leds.srec #test-task.srec #test-timer.srec test-uart.srec
 #TESTS		+= philosophers.srec test-ram.srec #test-tcl.srec
 #TESTS           += test-latency.srec test-tswitch.srec
 #TESTS           += test-fpu.srec
@@ -20,7 +20,7 @@ clean:
 		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
 
 load:		$(TEST).srec
-		mcprog $(TEST).srec
+		ubw32 -write $(TEST).srec -reset
 
 include $(OS)/sources/rules.mak
 

@@ -81,7 +81,7 @@
  */
 #define PIC32_R(a)		*(volatile unsigned*)(0xBF800000 + (a))
 
-/*
+/*--------------------------------------
  * UART registers.
  */
 #define U1MODE		PIC32_R (0x6000) /* Mode */
@@ -170,5 +170,140 @@
  * Round to the nearest integer.
  */
 #define PIC32_BRG_BAUD(fr,bd)	((((fr)/8 + (bd)) / (bd) / 2) - 1)
+
+/*--------------------------------------
+ * Port A-G registers.
+ */
+#define TRISA		PIC32_R (0x86000) /* Port A: mask of inputs */
+#define TRISACLR	PIC32_R (0x86004)
+#define TRISASET	PIC32_R (0x86008)
+#define TRISAINV	PIC32_R (0x8600C)
+#define PORTA		PIC32_R (0x86010) /* Port A: read inputs, write outputs */
+#define PORTACLR	PIC32_R (0x86014)
+#define PORTASET	PIC32_R (0x86018)
+#define PORTAINV	PIC32_R (0x8601C)
+#define LATA		PIC32_R (0x86020) /* Port A: read/write outputs */
+#define LATACLR		PIC32_R (0x86024)
+#define LATASET		PIC32_R (0x86028)
+#define LATAINV		PIC32_R (0x8602C)
+#define ODCA		PIC32_R (0x86030) /* Port A: open drain configuration */
+#define ODCACLR		PIC32_R (0x86034)
+#define ODCASET		PIC32_R (0x86038)
+#define ODCAINV		PIC32_R (0x8603C)
+
+#define TRISB		PIC32_R (0x86040) /* Port B: mask of inputs */
+#define TRISBCLR	PIC32_R (0x86044)
+#define TRISBSET	PIC32_R (0x86048)
+#define TRISBINV	PIC32_R (0x8604C)
+#define PORTB		PIC32_R (0x86050) /* Port B: read inputs, write outputs */
+#define PORTBCLR	PIC32_R (0x86054)
+#define PORTBSET	PIC32_R (0x86058)
+#define PORTBINV	PIC32_R (0x8605C)
+#define LATB		PIC32_R (0x86060) /* Port B: read/write outputs */
+#define LATBCLR		PIC32_R (0x86064)
+#define LATBSET		PIC32_R (0x86068)
+#define LATBINV		PIC32_R (0x8606C)
+#define ODCB		PIC32_R (0x86070) /* Port B: open drain configuration */
+#define ODCBCLR		PIC32_R (0x86074)
+#define ODCBSET		PIC32_R (0x86078)
+#define ODCBINV		PIC32_R (0x8607C)
+
+#define TRISC		PIC32_R (0x86080) /* Port C: mask of inputs */
+#define TRISCCLR	PIC32_R (0x86084)
+#define TRISCSET	PIC32_R (0x86088)
+#define TRISCINV	PIC32_R (0x8608C)
+#define PORTC		PIC32_R (0x86090) /* Port C: read inputs, write outputs */
+#define PORTCCLR	PIC32_R (0x86094)
+#define PORTCSET	PIC32_R (0x86098)
+#define PORTCINV	PIC32_R (0x8609C)
+#define LATC		PIC32_R (0x860A0) /* Port C: read/write outputs */
+#define LATCCLR		PIC32_R (0x860A4)
+#define LATCSET		PIC32_R (0x860A8)
+#define LATCINV		PIC32_R (0x860AC)
+#define ODCC		PIC32_R (0x860B0) /* Port C: open drain configuration */
+#define ODCCCLR		PIC32_R (0x860B4)
+#define ODCCSET		PIC32_R (0x860B8)
+#define ODCCINV		PIC32_R (0x860BC)
+
+#define TRISD		PIC32_R (0x860C0) /* Port D: mask of inputs */
+#define TRISDCLR	PIC32_R (0x860C4)
+#define TRISDSET	PIC32_R (0x860C8)
+#define TRISDINV	PIC32_R (0x860CC)
+#define PORTD		PIC32_R (0x860D0) /* Port D: read inputs, write outputs */
+#define PORTDCLR	PIC32_R (0x860D4)
+#define PORTDSET	PIC32_R (0x860D8)
+#define PORTDINV	PIC32_R (0x860DC)
+#define LATD		PIC32_R (0x860E0) /* Port D: read/write outputs */
+#define LATDCLR		PIC32_R (0x860E4)
+#define LATDSET		PIC32_R (0x860E8)
+#define LATDINV		PIC32_R (0x860EC)
+#define ODCD		PIC32_R (0x860F0) /* Port D: open drain configuration */
+#define ODCDCLR		PIC32_R (0x860F4)
+#define ODCDSET		PIC32_R (0x860F8)
+#define ODCDINV		PIC32_R (0x860FC)
+
+#define TRISE		PIC32_R (0x86100) /* Port E: mask of inputs */
+#define TRISECLR	PIC32_R (0x86104)
+#define TRISESET	PIC32_R (0x86108)
+#define TRISEINV	PIC32_R (0x8610C)
+#define PORTE		PIC32_R (0x86110) /* Port E: read inputs, write outputs */
+#define PORTECLR	PIC32_R (0x86114)
+#define PORTESET	PIC32_R (0x86118)
+#define PORTEINV	PIC32_R (0x8611C)
+#define LATE		PIC32_R (0x86120) /* Port E: read/write outputs */
+#define LATECLR		PIC32_R (0x86124)
+#define LATESET		PIC32_R (0x86128)
+#define LATEINV		PIC32_R (0x8612C)
+#define ODCE		PIC32_R (0x86130) /* Port E: open drain configuration */
+#define ODCECLR		PIC32_R (0x86134)
+#define ODCESET		PIC32_R (0x86138)
+#define ODCEINV		PIC32_R (0x8613C)
+
+#define TRISF		PIC32_R (0x86140) /* Port F: mask of inputs */
+#define TRISFCLR	PIC32_R (0x86144)
+#define TRISFSET	PIC32_R (0x86148)
+#define TRISFINV	PIC32_R (0x8614C)
+#define PORTF		PIC32_R (0x86150) /* Port F: read inputs, write outputs */
+#define PORTFCLR	PIC32_R (0x86154)
+#define PORTFSET	PIC32_R (0x86158)
+#define PORTFINV	PIC32_R (0x8615C)
+#define LATF		PIC32_R (0x86160) /* Port F: read/write outputs */
+#define LATFCLR		PIC32_R (0x86164)
+#define LATFSET		PIC32_R (0x86168)
+#define LATFINV		PIC32_R (0x8616C)
+#define ODCF		PIC32_R (0x86170) /* Port F: open drain configuration */
+#define ODCFCLR		PIC32_R (0x86174)
+#define ODCFSET		PIC32_R (0x86178)
+#define ODCFINV		PIC32_R (0x8617C)
+
+#define TRISG		PIC32_R (0x86180) /* Port G: mask of inputs */
+#define TRISGCLR	PIC32_R (0x86184)
+#define TRISGSET	PIC32_R (0x86188)
+#define TRISGINV	PIC32_R (0x8618C)
+#define PORTG		PIC32_R (0x86190) /* Port G: read inputs, write outputs */
+#define PORTGCLR	PIC32_R (0x86194)
+#define PORTGSET	PIC32_R (0x86198)
+#define PORTGINV	PIC32_R (0x8619C)
+#define LATG		PIC32_R (0x861A0) /* Port G: read/write outputs */
+#define LATGCLR		PIC32_R (0x861A4)
+#define LATGSET		PIC32_R (0x861A8)
+#define LATGINV		PIC32_R (0x861AC)
+#define ODCG		PIC32_R (0x861B0) /* Port G: open drain configuration */
+#define ODCGCLR		PIC32_R (0x861B4)
+#define ODCGSET		PIC32_R (0x861B8)
+#define ODCGINV		PIC32_R (0x861BC)
+
+#define CNCON		PIC32_R (0x861C0) /* Interrupt-on-change control */
+#define CNCONCLR	PIC32_R (0x861C4)
+#define CNCONSET	PIC32_R (0x861C8)
+#define CNCONINV	PIC32_R (0x861CC)
+#define CNEN		PIC32_R (0x861D0) /* Input change interrupt enable */
+#define CNENCLR		PIC32_R (0x861D4)
+#define CNENSET		PIC32_R (0x861D8)
+#define CNENINV		PIC32_R (0x861DC)
+#define CNPUE		PIC32_R (0x861E0) /* Input pin pull-up enable */
+#define CNPUECLR	PIC32_R (0x861E4)
+#define CNPUESET	PIC32_R (0x861E8)
+#define CNPUEINV	PIC32_R (0x861EC)
 
 #endif /* _IO_PIC32MX_H */
