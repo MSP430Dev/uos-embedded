@@ -163,8 +163,7 @@ state according to the definition in the USB specification.
 /** CONSTANTS ******************************************************/
 
 /* Device Descriptor */
-ROM USB_DEVICE_DESCRIPTOR device_dsc=
-{
+ROM USB_DEVICE_DESCRIPTOR device_dsc = {
     0x12,                   // Size of this descriptor in bytes
     USB_DESCRIPTOR_DEVICE,  // DEVICE descriptor type
     0x0200,                 // USB Spec Release Number in BCD format
@@ -268,36 +267,49 @@ ROM BYTE configDescriptor1[]={
 
 
 //Language code string descriptor
-ROM struct{BYTE bLength;BYTE bDscType;WORD string[1];}sd000={
-sizeof(sd000),USB_DESCRIPTOR_STRING,{0x0409}};
+ROM struct {
+	BYTE bLength;
+	BYTE bDscType;
+	WORD string[1];
+} sd000 = {
+	sizeof(sd000),
+	USB_DESCRIPTOR_STRING,
+	{ 0x0409 }
+};
 
 //Manufacturer string descriptor
-ROM struct{BYTE bLength;BYTE bDscType;WORD string[25];}sd001={
-sizeof(sd001),USB_DESCRIPTOR_STRING,
-{'M','i','c','r','o','c','h','i','p',' ',
-'T','e','c','h','n','o','l','o','g','y',' ','I','n','c','.'
+ROM struct {
+	BYTE bLength;
+	BYTE bDscType;
+	WORD string[25];
+} sd001 = {
+	sizeof(sd001),
+	USB_DESCRIPTOR_STRING,
+{	'M','i','c','r','o','c','h','i','p',' ',
+	'T','e','c','h','n','o','l','o','g','y',' ','I','n','c','.'
 }};
 
 //Product string descriptor
-ROM struct{BYTE bLength;BYTE bDscType;WORD string[25];}sd002={
-sizeof(sd002),USB_DESCRIPTOR_STRING,
-{'C','D','C',' ','R','S','-','2','3','2',' ',
-'E','m','u','l','a','t','i','o','n',' ','D','e','m','o'}
-};
+ROM struct {
+	BYTE bLength;
+	BYTE bDscType;
+	WORD string[25];
+} sd002 = {
+	sizeof(sd002),USB_DESCRIPTOR_STRING,
+{	'C','D','C',' ','R','S','-','2','3','2',' ',
+	'E','m','u','l','a','t','i','o','n',' ','D','e','m','o'
+}};
 
 //Array of configuration descriptors
-ROM BYTE *ROM USB_CD_Ptr[]=
-{
-    (ROM BYTE *ROM)&configDescriptor1
-};
-//Array of string descriptors
-ROM BYTE *ROM USB_SD_Ptr[USB_NUM_STRING_DESCRIPTORS]=
-{
-    (ROM BYTE *ROM)&sd000,
-    (ROM BYTE *ROM)&sd001,
-    (ROM BYTE *ROM)&sd002
+ROM BYTE *ROM USB_CD_Ptr[] = {
+	(ROM BYTE *ROM) &configDescriptor1
 };
 
-//#pragma code
+//Array of string descriptors
+ROM BYTE *ROM USB_SD_Ptr[USB_NUM_STRING_DESCRIPTORS] = {
+	(ROM BYTE *ROM) &sd000,
+	(ROM BYTE *ROM) &sd001,
+	(ROM BYTE *ROM) &sd002
+};
+
 #endif
-/** EOF usb_descriptors.c ****************************************************/

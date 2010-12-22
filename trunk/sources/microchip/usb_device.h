@@ -627,8 +627,7 @@ This defintions is a return value of the function USBGetDeviceState(). */
         while(1)
         {
             USBDeviceTasks();
-            if((USBGetDeviceState() \< CONFIGURED_STATE) ||
-               (USBIsDeviceSuspended() == TRUE))
+            if((USBGetDeviceState() \< CONFIGURED_STATE) || USBIsDeviceSuspended())
             {
                 //Either the device is not configured or we are suspended
                 //  so we don't want to do execute any application code
@@ -772,8 +771,7 @@ void USBDeviceInit(void);
         while(1)
         {
             USBDeviceTasks();
-            if((USBGetDeviceState() \< CONFIGURED_STATE) ||
-               (USBIsDeviceSuspended() == TRUE))
+            if((USBGetDeviceState() \< CONFIGURED_STATE) || USBIsDeviceSuspended())
             {
                 //Either the device is not configured or we are suspended
                 //  so we don't want to do execute any application code
@@ -831,8 +829,7 @@ void USBDeviceInit(void);
            while(1)
            {
                USBDeviceTasks();
-               if((USBGetDeviceState() \< CONFIGURED_STATE) ||
-                  (USBIsDeviceSuspended() == TRUE))
+               if((USBGetDeviceState() \< CONFIGURED_STATE) || USBIsDeviceSuspended())
                {
                    //Either the device is not configured or we are suspended
                    //  so we don't want to do execute any application code
@@ -853,8 +850,8 @@ void USBDeviceInit(void);
     FALSE -  this device is not suspended.
   Remarks:
     None
-  ***************************************************************************/
-#define USBIsDeviceSuspended() USBSuspendControl
+ */
+#define USBIsDeviceSuspended() (U1PWRC & PIC32_U1PWRC_USUSPEND)
 
 
 void USBSoftDetach(void);
@@ -1182,7 +1179,7 @@ void USBCBInitEP(void);
     Typical Usage:
     <code>
     if((USBDeviceState == CONFIGURED_STATE)
-        &amp;&amp; (USBIsDeviceSuspended() == TRUE)
+        &amp;&amp; USBIsDeviceSuspended()
         &amp;&amp; (USBGetRemoteWakeupStatus() == TRUE))
     {
         if(ButtonPressed)

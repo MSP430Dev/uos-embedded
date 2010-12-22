@@ -1,5 +1,4 @@
-/******************************************************************************
-
+/*
     USB Hardware Abstraction Layer (HAL)  (Header File)
 
 Summary:
@@ -13,50 +12,15 @@ Description:
     compiled to work on different USB microcontrollers, such as PIC18 and PIC24.
     The USB related special function registers and bit names are generally very
     similar between the device families, but small differences in naming exist.
-    
+
     In order to make the same set of firmware work accross the device families,
     when modifying SFR contents, a slightly abstracted name is used, which is
     then "mapped" to the appropriate real name in the usb_hal_picxx.h header.
-    
-    Make sure to include the correct version of the usb_hal_picxx.h file for 
+
+    Make sure to include the correct version of the usb_hal_picxx.h file for
     the microcontroller family which will be used.
-
-    This file is located in the "\<Install Directory\>\\Microchip\\Include\\USB"
-    directory.
-    
-    When including this file in a new project, this file can either be
-    referenced from the directory in which it was installed or copied
-    directly into the user application folder. If the first method is
-    chosen to keep the file located in the folder in which it is installed
-    then include paths need to be added so that the library and the
-    application both know where to reference each others files. If the
-    application folder is located in the same folder as the Microchip
-    folder (like the current demo folders), then the following include
-    paths need to be added to the application's project:
-    
-    ..\\Include
-    
-    ..\\..\\Include
-    
-    ..\\..\\MicrochipInclude
-    
-    ..\\..\\\<Application Folder\>
-    
-    ..\\..\\..\\\<Application Folder\>
-    
-    If a different directory structure is used, modify the paths as
-    required. An example using absolute paths instead of relative paths
-    would be the following:
-    
-    C:\\Microchip Solutions\\Microchip\\Include
-    
-    C:\\Microchip Solutions\\My Demo Application 
-
-
-*******************************************************************************/
-//DOM-IGNORE-BEGIN
-/******************************************************************************
-
+*/
+/*
  File Description:
 
  This file defines the interface to the USB hardware abstraction layer.
@@ -65,11 +29,11 @@ Description:
  Dependancies:    none
  Processor:       PIC18, PIC24, or PIC32 USB Microcontrollers
  Hardware:        The code is natively intended to be used on the following
-     				hardware platforms: PICDEM™ FS USB Demo Board, 
-     				PIC18F87J50 FS USB Plug-In Module, or
-     				Explorer 16 + PIC24 USB PIM.  The firmware may be
-     				modified for use on other USB platforms by editing the
-     				HardwareProfile.h file.
+   		  hardware platforms: PICDEM™ FS USB Demo Board,
+     		  PIC18F87J50 FS USB Plug-In Module, or
+     		  Explorer 16 + PIC24 USB PIM.  The firmware may be
+     		  modified for use on other USB platforms by editing the
+     		  HardwareProfile.h file.
  Compiler:        Microchip C18 (for PIC18) or C30 (for PIC24)
  Company:         Microchip Technology, Inc.
 
@@ -92,58 +56,47 @@ Description:
  PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
  IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
  CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
- Change History:
-
-
- *************************************************************************/
+ */
 
 #if !defined(USB_HAL_PIC32_H)
 #define USB_HAL_PIC32_H
 
-#define USBSetBDTAddress(addr)         U1BDTP1 = (((unsigned int)addr)/256);
-#define USBPowerModule() U1PWRCbits.USBPWR = 1;
-#define USBPingPongBufferReset U1CONbits.PPBRST
+#define USBTransactionCompleteIE	(U1IE & PIC32_U1I_TRN)
+#define USBTransactionCompleteIF	(U1IR & PIC32_U1I_TRN)
+#define USBTransactionCompleteIFReg	(BYTE*)&U1IR
+#define USBTransactionCompleteIFBitNum	3
 
-#define USBTransactionCompleteIE U1IEbits.TRNIE
-#define USBTransactionCompleteIF U1IRbits.TRNIF
-#define USBTransactionCompleteIFReg (BYTE*)&U1IR
-#define USBTransactionCompleteIFBitNum 3
+#define USBResetIE			(U1IE & PIC32_U1I_URST)
+#define USBResetIF			(U1IR & PIC32_U1I_URST)
+#define USBResetIFReg			(BYTE*)&U1IR
+#define USBResetIFBitNum		0
 
-#define USBResetIE  U1IEbits.URSTIE
-#define USBResetIF  U1IRbits.URSTIF
-#define USBResetIFReg (BYTE*)&U1IR
-#define USBResetIFBitNum 0
+#define USBIdleIE			(U1IE & PIC32_U1I_IDLE)
+#define USBIdleIF			(U1IR & PIC32_U1I_IDLE)
+#define USBIdleIFReg			(BYTE*)&U1IR
+#define USBIdleIFBitNum			4
 
-#define USBIdleIE U1IEbits.IDLEIE
-#define USBIdleIF U1IRbits.IDLEIF
-#define USBIdleIFReg (BYTE*)&U1IR
-#define USBIdleIFBitNum 4
+#define USBActivityIE			(U1OTGIE & PIC32_U1OTGI_ACTV)
+#define USBActivityIF			(U1OTGIR & PIC32_U1OTGI_ACTV)
+#define USBActivityIFReg		(BYTE*)&U1OTGIR
+#define USBActivityIFBitNum		4
 
-#define USBActivityIE U1OTGIEbits.ACTVIE
-#define USBActivityIF U1OTGIRbits.ACTVIF
-#define USBActivityIFReg (BYTE*)&U1OTGIR
-#define USBActivityIFBitNum 4
+#define USBSOFIE			(U1IE & PIC32_U1I_SOF)
+#define USBSOFIF			(U1IR & PIC32_U1I_SOF)
+#define USBSOFIFReg			(BYTE*)&U1IR
+#define USBSOFIFBitNum			2
 
-#define USBSOFIE U1IEbits.SOFIE
-#define USBSOFIF U1IRbits.SOFIF
-#define USBSOFIFReg (BYTE*)&U1IR
-#define USBSOFIFBitNum 2
+#define USBStallIE			(U1IE & PIC32_U1I_STALL)
+#define USBStallIF			(U1IR & PIC32_U1I_STALL)
+#define USBStallIFReg			(BYTE*)&U1IR
+#define USBStallIFBitNum		7
 
-#define USBStallIE U1IEbits.STALLIE
-#define USBStallIF U1IRbits.STALLIF
-#define USBStallIFReg (BYTE*)&U1IR
-#define USBStallIFBitNum 7
+#define USBErrorIE			(U1IE & PIC32_U1I_UERR)
+#define USBErrorIF			(U1IR & PIC32_U1I_UERR)
+#define USBErrorIFReg			(BYTE*)&U1IR
+#define USBErrorIFBitNum		1
 
-#define USBErrorIE U1IEbits.UERRIE
-#define USBErrorIF U1IRbits.UERRIF
-#define USBErrorIFReg (BYTE*)&U1IR
-#define USBErrorIFBitNum 1
-
-#define USBSE0Event 0// U1IRbits.URSTIF//  U1CONbits.SE0
-#define USBSuspendControl U1PWRCbits.USUSPEND
-#define USBPacketDisable U1CONbits.PKTDIS
-#define USBResumeControl U1CONbits.RESUME
+//#define USBResumeControl		U1CONbits.RESUME
 
 /* Buffer Descriptor Status Register Initialization Parameters */
 
@@ -162,7 +115,7 @@ Description:
 #define _STAT_MASK  0xFC
 
 // Buffer Descriptor Status Register layout.
-typedef union __attribute__ ((packed)) _BD_STAT 
+typedef union __attribute__ ((packed)) _BD_STAT
 {
     struct __attribute__ ((packed)){
         unsigned            :2;
@@ -234,7 +187,7 @@ typedef union _POINTER
         //byte bUpper;
     };
     WORD _word;                         // bLow & bHigh
-    
+
     //pFunc _pFunc;                       // Usage: ptr.pFunc(); Init: ptr.pFunc = &<Function>;
 
     BYTE* bRam;                         // Ram byte pointer: 2 bytes pointer pointing
@@ -250,14 +203,14 @@ typedef union _POINTER
     //rom far word* fwRom;
 } POINTER;
 
- //******** Depricated: v2.2 - will be removed at some point of time ***
+ //* Depricated: v2.2 - will be removed at some point of time ***
 #define _LS         0x00            // Use Low-Speed USB Mode
 #define _FS         0x00            // Use Full-Speed USB Mode
 #define _TRINT      0x00            // Use internal transceiver
 #define _TREXT      0x00            // Use external transceiver
 #define _PUEN       0x00            // Use internal pull-up resistor
 #define _OEMON      0x00            // Use SIE output indicator
-//**********************************************************************
+//*
 
 #define USB_PULLUP_ENABLE 0x10
 #define USB_PULLUP_DISABLE 0x00
@@ -268,35 +221,35 @@ typedef union _POINTER
 #define USB_FULL_SPEED 0x00
 //USB_LOW_SPEED not currently supported in PIC24F USB products
 
-//#define USB_PING_PONG__NO_PING_PONG         0x00    //0b00
-//#define USB_PING_PONG__EP0_OUT_ONLY         0x01    //0b01
-#define USB_PING_PONG__FULL_PING_PONG       0x02    //0b10
-//#define USB_PING_PONG__ALL_BUT_EP0          0x03    //0b11
+//#define USB_PING_PONG__NO_PING_PONG	0x00
+//#define USB_PING_PONG__EP0_OUT_ONLY	0x01
+#define USB_PING_PONG__FULL_PING_PONG	0x02
+//#define USB_PING_PONG__ALL_BUT_EP0	0x03
 
-#define ConvertToPhysicalAddress(a) KVA_TO_PA(a)
+#define ConvertToPhysicalAddress(a) mips_virtual_addr_to_physical((unsigned)a)
 
-/****************************************************************
+/*
     Function:
         void USBModuleDisable(void)
-        
+
     Description:
         This macro is used to disable the USB module
-        
+
     Parameters:
         None
-        
+
     Return Values:
         None
-        
+
     Remarks:
         None
-        
-  ****************************************************************/
+
+  */
 #define USBModuleDisable() {\
-    U1CON = 0;\
-    U1IE = 0;\
-    U1OTGIE = 0;\
-    U1PWRCbits.USBPWR = 1;\
-    USBDeviceState = DETACHED_STATE;\
-}    
+	U1CON = 0;\
+	U1IE = 0;\
+	U1OTGIE = 0;\
+	U1PWR |= PIC32_U1PWR_USBPWR;\
+	USBDeviceState = DETACHED_STATE;\
+}
 #endif

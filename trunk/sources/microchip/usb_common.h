@@ -1,94 +1,33 @@
-/******************************************************************************
-
+/*
   Common USB Library Definitions (Header File)
 
-Summary:
-    This file defines data types, constants, and macros that are common to
-    multiple layers of the Microchip USB Firmware Stack.
+  This file defines data types, constants, and macros that are common to
+  multiple layers of the Microchip USB Firmware Stack.
 
-Description:
-    This file defines data types, constants, and macros that are common to
-    multiple layers of the Microchip USB Firmware Stack.
+  The software supplied herewith by Microchip Technology Incorporated
+  (the “Company”) for its PICmicro® Microcontroller is intended and
+  supplied to you, the Company’s customer, for use solely and
+  exclusively on Microchip PICmicro Microcontroller products. The
+  software is owned by the Company and/or its supplier, and is
+  protected under applicable copyright laws. All rights are reserved.
+  Any use in violation of the foregoing restrictions may subject the
+  user to criminal sanctions under applicable laws, as well as to
+  civil liability for the breach of the terms and conditions of this
+  license.
 
-    This file is located in the "\<Install Directory\>\\Microchip\\Include\\USB"
-    directory.
-
-    When including this file in a new project, this file can either be
-    referenced from the directory in which it was installed or copied
-    directly into the user application folder. If the first method is
-    chosen to keep the file located in the folder in which it is installed
-    then include paths need to be added so that the library and the
-    application both know where to reference each others files. If the
-    application folder is located in the same folder as the Microchip
-    folder (like the current demo folders), then the following include
-    paths need to be added to the application's project:
-
-    ..\\Include
-
-    ..\\..\\Include
-
-    ..\\..\\MicrochipInclude
-
-    ..\\..\\\<Application Folder\>
-
-    ..\\..\\..\\\<Application Folder\>
-
-    If a different directory structure is used, modify the paths as
-    required. An example using absolute paths instead of relative paths
-    would be the following:
-
-    C:\\Microchip Solutions\\Microchip\\Include
-
-    C:\\Microchip Solutions\\My Demo Application
-*******************************************************************************/
-//DOM-IGNORE-BEGIN
-/*******************************************************************************
-
-* FileName:        usb_common.h
-* Dependencies:    See included files, below.
-* Processor:       PIC18/PIC24/PIC32MX microcontrollers with USB module
-* Compiler:        C18 v3.13+/C30 v2.01+/C32 v0.00.18+
-* Company:         Microchip Technology, Inc.
-
-Software License Agreement
-
-The software supplied herewith by Microchip Technology Incorporated
-(the “Company”) for its PICmicro® Microcontroller is intended and
-supplied to you, the Company’s customer, for use solely and
-exclusively on Microchip PICmicro Microcontroller products. The
-software is owned by the Company and/or its supplier, and is
-protected under applicable copyright laws. All rights are reserved.
-Any use in violation of the foregoing restrictions may subject the
-user to criminal sanctions under applicable laws, as well as to
-civil liability for the breach of the terms and conditions of this
-license.
-
-THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
-WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
-TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
-IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
-CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-Author          Date       Comments
---------------------------------------------------------------------------------
-BC/KO          15-Oct-2007 First release
-
-Change History:
-
-*******************************************************************************/
-//DOM-IGNORE-END
-
-
-//DOM-IGNORE-BEGIN
+  THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+  WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+  TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+  PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+  IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+  CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ */
 #ifndef _USB_COMMON_H_
 #define _USB_COMMON_H_
-//DOM-IGNORE-END
 
 #include <limits.h>
 #include "GenericTypeDefs.h"
 #include "usb_config.h"
-
 
 // *****************************************************************************
 // *****************************************************************************
@@ -348,9 +287,9 @@ typedef enum
 
     EVENT_PRINTER_BASE  = 400,      // Offset for Printer class events
 
-    EVENT_CDC_BASE  = 500,          // Offset for CDC class events
+    EVENT_CDC_BASE	= 500,      // Offset for CDC class events
 
-	EVENT_USER_BASE     = 10000,    // Add integral values to this event number
+    EVENT_USER_BASE     = 10000,    // Add integral values to this event number
                                     // to create user-defined events.
 
     // There was a transfer error on the USB.  The data associated with this

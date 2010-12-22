@@ -1,18 +1,8 @@
 /*
-  File Information:
-    FileName:       usb_function_cdc.c
-    Dependencies:   See INCLUDES section
-    Processor:      PIC18 or PIC24 USB Microcontrollers
-    Hardware:       The code is natively intended to be used on the following
-                    hardware platforms: PICDEM™ FS USB Demo Board,
-                    PIC18F87J50 FS USB Plug-In Module, or
-                    Explorer 16 + PIC24 USB PIM.  The firmware may be
-                    modified for use on other USB platforms by editing the
-                    HardwareProfile.h file.
-    Complier:   Microchip C18 (for PIC18) or C30 (for PIC24)
-    Company:        Microchip Technology, Inc.
-
-    Software License Agreement:
+    This file contains all of functions, macros, definitions, variables,
+    datatypes, etc. that are required for usage with the CDC function
+    driver. This file should be included in projects that use the CDC
+    \function driver.
 
     The software supplied herewith by Microchip Technology Incorporated
     (the “Company”) for its PIC® Microcontroller is intended and
@@ -31,68 +21,14 @@
     PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
     IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
     CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-  Summary:
-    This file contains all of functions, macros, definitions, variables,
-    datatypes, etc. that are required for usage with the CDC function
-    driver. This file should be included in projects that use the CDC
-    \function driver.
-
-
-
-    This file is located in the "\<Install Directory\>\\Microchip\\USB\\CDC
-    Device Driver" directory.
-  Description:
-    USB CDC Function Driver File
-
-    This file contains all of functions, macros, definitions, variables,
-    datatypes, etc. that are required for usage with the CDC function
-    driver. This file should be included in projects that use the CDC
-    \function driver.
-
-    This file is located in the "\<Install Directory\>\\Microchip\\USB\\CDC
-    Device Driver" directory.
-
-    When including this file in a new project, this file can either be
-    referenced from the directory in which it was installed or copied
-    directly into the user application folder. If the first method is
-    chosen to keep the file located in the folder in which it is installed
-    then include paths need to be added so that the library and the
-    application both know where to reference each others files. If the
-    application folder is located in the same folder as the Microchip
-    folder (like the current demo folders), then the following include
-    paths need to be added to the application's project:
-
-    ..\\Include
-
-    ..\\..\\Include
-
-    ..\\..\\Microchip\\Include
-
-    ..\\..\\\<Application Folder\>
-
-    ..\\..\\..\\\<Application Folder\>
-
-    If a different directory structure is used, modify the paths as
-    required. An example using absolute paths instead of relative paths
-    would be the following:
-
-    C:\\Microchip Solutions\\Microchip\\Include
-
-    C:\\Microchip Solutions\\My Demo Application
-  */
-
-/** I N C L U D E S */
+ */
 #include "GenericTypeDefs.h"
 #include "Compiler.h"
 #include "usb_config.h"
 #include <microchip/usb_device.h>
 #include <microchip/usb_function_cdc.h>
-#include "HardwareProfile.h"
 
 #ifdef USB_USE_CDC
-
-/** V A R I A B L E S ******************************************************* */
 
 volatile CDC_NOTICE cdc_notice;
 volatile unsigned char cdc_data_rx[CDC_DATA_OUT_EP_SIZE];
@@ -129,13 +65,9 @@ BYTE_VAL dummy_encapsulated_cmd_response[dummy_length];
 CTRL_TRF_RETURN USB_CDC_SET_LINE_CODING_HANDLER(CTRL_TRF_PARAMS);
 #endif
 
-/** P R I V A T E  P R O T O T Y P E S */
 void USBCDCSetLineCoding(void);
 
-/** D E C L A R A T I O N S */
-
-/** C L A S S  S P E C I F I C  R E Q */
-/******************************************************************************
+/*
  	Function:
  		void USBCheckCDCRequest(void)
 
@@ -647,8 +579,7 @@ void putrsUSBUSART(const ROM char *data)
         while(1)
         {
             USBDeviceTasks();
-            if((USBGetDeviceState() \< CONFIGURED_STATE) ||
-               (USBIsDeviceSuspended() == TRUE))
+            if((USBGetDeviceState() \< CONFIGURED_STATE) || USBIsDeviceSuspended())
             {
                 //Either the device is not configured or we are suspended
                 //  so we don't want to do execute any application code
