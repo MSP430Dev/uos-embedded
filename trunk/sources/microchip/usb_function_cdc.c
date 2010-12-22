@@ -22,7 +22,6 @@
  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  */
 #include <runtime/lib.h>
-#include "Compiler.h"
 #include "usb_config.h"
 #include <microchip/usb_device.h>
 #include <microchip/usb_function_cdc.h>
@@ -467,7 +466,7 @@ void putsUSBUSART(char *data)
 
 /**************************************************************************
   Function:
-        void putrsUSBUSART(const ROM char *data)
+        void putrsUSBUSART (const char *data)
 
   Summary:
     putrsUSBUSART writes a string of data to the USB including the null
@@ -500,15 +499,15 @@ void putsUSBUSART(char *data)
     255 BYTEs.
 
   Input:
-    const ROM char *data -  null\-terminated string of constant data. If a
-                            null character is not found, 255 BYTEs of data
-                            will be transferred to the host.
+    const char *data -  null\-terminated string of constant data. If a
+                        null character is not found, 255 BYTEs of data
+                        will be transferred to the host.
 
   */
-void putrsUSBUSART(const ROM char *data)
+void putrsUSBUSART(const char *data)
 {
     unsigned char len;
-    const ROM char *pData;
+    const char *pData;
 
     /*
      * User should have checked that cdc_trf_state is in CDC_TX_READY state

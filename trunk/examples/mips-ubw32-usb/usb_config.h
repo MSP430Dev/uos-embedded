@@ -30,15 +30,15 @@
 #define USB_MAX_NUM_INT     	1   // For tracking Alternate Setting
 
 //Device descriptor - if these two definitions are not defined then
-//  a ROM USB_DEVICE_DESCRIPTOR variable by the exact name of device_dsc
+//  a const USB_DEVICE_DESCRIPTOR variable by the exact name of device_dsc
 //  must exist.
 #define USB_USER_DEVICE_DESCRIPTOR &device_dsc
-#define USB_USER_DEVICE_DESCRIPTOR_INCLUDE extern ROM USB_DEVICE_DESCRIPTOR device_dsc
+#define USB_USER_DEVICE_DESCRIPTOR_INCLUDE extern const USB_DEVICE_DESCRIPTOR device_dsc
 
 //Configuration descriptors - if these two definitions do not exist then
 //  a const unsigned char *const variable named exactly USB_CD_Ptr[] must exist.
 #define USB_USER_CONFIG_DESCRIPTOR USB_CD_Ptr
-#define USB_USER_CONFIG_DESCRIPTOR_INCLUDE extern const unsigned char *ROM USB_CD_Ptr[]
+#define USB_USER_CONFIG_DESCRIPTOR_INCLUDE extern const unsigned char *const USB_CD_Ptr[]
 
 //Make sure only one of the below "#define USB_PING_PONG_MODE"
 //is uncommented.

@@ -21,7 +21,6 @@
  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  */
 #include <runtime/lib.h>
-#include "Compiler.h"
 #include <microchip/usb_ch9.h>
 #include <microchip/usb.h>
 #include <microchip/usb_device.h>
@@ -31,10 +30,8 @@
     #include <microchip/usb_function_msd.h>
 #endif
 
-#if defined(__C32__)
-    #if (USB_PING_PONG_MODE != USB_PING_PONG__FULL_PING_PONG)
-        #error "PIC32 only supports full ping pong mode.  A different mode other than full ping pong is selected in the usb_config.h file."
-    #endif
+#if (USB_PING_PONG_MODE != USB_PING_PONG__FULL_PING_PONG)
+    #error "PIC32 only supports full ping pong mode.  A different mode other than full ping pong is selected in the usb_config.h file."
 #endif
 
 //#define DEBUG_MODE
@@ -614,13 +611,7 @@ void USBCtrlEPService(void)
     if((USTATcopy & USTAT_EP0_PP_MASK) == USTAT_EP0_OUT_EVEN)
     {
 		//Point to the EP0 OUT buffer of the buffer that arrived
-        #if defined(__18CXX)
-            pBDTEntryEP0OutCurrent = (volatile BDT_ENTRY*)&BDT[(USTATcopy & USTAT_EP_MASK)>>1];
-        #elif defined(__C30__) || defined(__C32__)
-            pBDTEntryEP0OutCurrent = (volatile BDT_ENTRY*)&BDT[(USTATcopy & USTAT_EP_MASK)>>2];
-        #else
-            #error "unimplemented"
-        #endif
+        pBDTEntryEP0OutCurrent = (volatile BDT_ENTRY*)&BDT[(USTATcopy & USTAT_EP_MASK)>>2];
 
 		//Set the next out to the current out packet
         pBDTEntryEP0OutNext = pBDTEntryEP0OutCurrent;
@@ -1025,11 +1016,8 @@ void USBCheckStdRequest(void)
 void USBStdFeatureReqHandler(void)
 {
     BDT_ENTRY *p;
-    #if defined(__C32__)
-        uint32_t* pUEP;
-    #else
-        unsigned int* pUEP;
-    #endif
+    uint32_t* pUEP;
+
 #ifdef	USB_SUPPORT_OTG
     if ((SetupPkt.bFeature == OTG_FEATURE_B_HNP_ENABLE)&&
         (SetupPkt.Recipient == RCPT_DEV))
@@ -1098,12 +1086,8 @@ void USBStdFeatureReqHandler(void)
         {
 			//If it was not a SET_FEATURE
 			//point to the appropriate UEP register
-            #if defined(__C32__)
-                pUEP = (uint32_t*)(&U1EP0);
-                pUEP += (SetupPkt.EPNum*4);
-            #else
-                pUEP = (unsigned int*)(&U1EP0+SetupPkt.EPNum);
-            #endif
+            pUEP = (uint32_t*)(&U1EP0);
+            pUEP += (SetupPkt.EPNum*4);
 
 			//Clear the STALL bit in the UEP register
             *pUEP &= ~UEP_STALL;
@@ -1479,19 +1463,7 @@ void USBCtrlTrfTxService(void)
     /*
      * Next, load the number of bytes to send to BC9..0 in buffer descriptor
      */
-    #if defined(__18CXX)
-        pBDTEntryIn[0]->STAT.BC9 = 0;
-        pBDTEntryIn[0]->STAT.BC8 = 0;
-    #endif
-
-    #if defined(__18CXX) || defined(__C30__)
-        pBDTEntryIn[0]->STAT.Val |= byteToSend.byte.HB;
-        pBDTEntryIn[0]->CNT = byteToSend.byte.LB;
-    #elif defined(__C32__)
-        pBDTEntryIn[0]->CNT = byteToSend;
-    #else
-        #error "Not defined for this compiler"
-    #endif
+    pBDTEntryIn[0]->CNT = byteToSend;
 
     /*
      * Subtract the number of bytes just about to be sent from the total.
@@ -1757,11 +1729,7 @@ void USBEnableEndpoint (unsigned char ep, unsigned char options)
     {
         unsigned int* p;
 
-        #if defined(__C32__)
-            p = (unsigned int*)(&U1EP0+(4*ep));
-        #else
-            p = (unsigned int*)(&U1EP0+ep);
-        #endif
+        p = (unsigned int*)(&U1EP0+(4*ep));
         *p = options;
     }
 

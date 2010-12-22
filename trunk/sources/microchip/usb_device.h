@@ -27,7 +27,6 @@
 #ifndef USBDEVICE_H
 #define USBDEVICE_H
 
-#include "Compiler.h"
 #include <microchip/usb_ch9.h>
 #include <microchip/usb_hal.h>
 #include "usb_config.h" //This file needs to be included after the
@@ -349,78 +348,29 @@ This defintions is a return value of the function USBGetDeviceState(). */
 #define CONFIGURED_STATE        0x20
 
 /* UCFG Initialization Parameters */
-#if defined(__18CXX)
-    #if defined(UCFG_VAL)
-        //This has been depricated in v2.2 - it will be removed in future releases
-        #define SetConfigurationOptions() {U1CNFG1 = UCFG_VAL;}	//UCFG_VAL defined in usb_config.h
-    #else
-        #define SetConfigurationOptions()   {\
-                                                U1CNFG1 = USB_PULLUP_OPTION | USB_TRANSCEIVER_OPTION | USB_SPEED_OPTION | USB_PING_PONG_MODE;\
-                                            }
-    #endif
-
-#elif defined(__C30__)
-   #if defined(UCFG_VAL)
-        //This has been depricated in v2.2 - it will be removed in future releases
-        #define SetConfigurationOptions() {U1CNFG1 = UCFG_VAL;}	//UCFG_VAL defined in usb_config.h
-    #else
-        #define SetConfigurationOptions()   {\
-                                                U1CNFG1 = USB_PING_PONG_MODE;\
-                                                U1CNFG2 = USB_TRANSCEIVER_OPTION | USB_SPEED_OPTION | USB_PULLUP_OPTION;\
-                                            }
-    #endif
-
-    #if defined(USB_SPEED_OPTION) && (USB_SPEED_OPTION != USB_FULL_SPEED)
-        #error "Low speed operation in device mode is not currently supported in the PIC24F family devices."
-    #endif
-#elif defined(__C32__)
-    #define SetConfigurationOptions()   {U1CNFG1 = 0;}
-#endif
-//#define _UTEYE      0x80            // Use Eye-Pattern test
+#define SetConfigurationOptions()   {U1CNFG1 = 0;}
 
 /* UEPn Initialization Parameters */
-#if defined (__18CXX)
-    #define EP_CTRL     0x06            // Cfg Control pipe for this ep
-    #define EP_OUT      0x0C            // Cfg OUT only pipe for this ep
-    #define EP_IN       0x0A            // Cfg IN only pipe for this ep
-    #define EP_OUT_IN   0x0E            // Cfg both OUT & IN pipes for this ep
-                                    // Handshake should be disable for isoch
+#define EP_CTRL		0x0C	// Cfg Control pipe for this ep
+#define EP_OUT		0x18	// Cfg OUT only pipe for this ep
+#define EP_IN		0x14	// Cfg IN only pipe for this ep
+#define EP_OUT_IN	0x1C	// Cfg both OUT & IN pipes for this ep
+#define HSHK_EN		0x01	// Enable handshake packet
+				// Handshake should be disable for isoch
 
-    #define USB_HANDSHAKE_ENABLED   0x10
-    #define USB_HANDSHAKE_DISABLED  0x00
+#define USB_HANDSHAKE_ENABLED   0x01
+#define USB_HANDSHAKE_DISABLED  0x00
 
-    #define USB_OUT_ENABLED         0x04
-    #define USB_OUT_DISABLED        0x00
+#define USB_OUT_ENABLED         0x08
+#define USB_OUT_DISABLED        0x00
 
-    #define USB_IN_ENABLED          0x02
-    #define USB_IN_DISABLED         0x00
+#define USB_IN_ENABLED          0x04
+#define USB_IN_DISABLED         0x00
 
-    #define USB_ALLOW_SETUP         0x00
-    #define USB_DISALLOW_SETUP      0x08
+#define USB_ALLOW_SETUP         0x00
+#define USB_DISALLOW_SETUP      0x10
 
-    #define USB_STALL_ENDPOINT      0x01
-#elif defined(__C30__) || defined(__C32__)
-    #define EP_CTRL     0x0C            // Cfg Control pipe for this ep
-    #define EP_OUT      0x18            // Cfg OUT only pipe for this ep
-    #define EP_IN       0x14            // Cfg IN only pipe for this ep
-    #define EP_OUT_IN   0x1C            // Cfg both OUT & IN pipes for this ep
-    #define HSHK_EN     0x01            // Enable handshake packet
-                                    // Handshake should be disable for isoch
-
-    #define USB_HANDSHAKE_ENABLED   0x01
-    #define USB_HANDSHAKE_DISABLED  0x00
-
-    #define USB_OUT_ENABLED         0x08
-    #define USB_OUT_DISABLED        0x00
-
-    #define USB_IN_ENABLED          0x04
-    #define USB_IN_DISABLED         0x00
-
-    #define USB_ALLOW_SETUP         0x00
-    #define USB_DISALLOW_SETUP      0x10
-
-    #define USB_STALL_ENDPOINT      0x02
-#endif
+#define USB_STALL_ENDPOINT      0x02
 
 //USB_HANDLE is a pointer to an entry in the BDT.  This pointer can be used
 //  to read the length of the last transfer, the status of the last transfer,
@@ -1543,15 +1493,11 @@ void USBClearInterruptFlag(unsigned char* reg, unsigned char flag);
 
     Remarks:
         None
+ */
 
- *******************************************************************/
-#if defined(__18CXX)
-    #define USBClearInterruptRegister(reg) reg = 0;
-#elif  defined(__C30__) || defined(__C32__)
-    #define USBClearInterruptRegister(reg) reg = 0xFF;
-#endif
+#define USBClearInterruptRegister(reg) reg = 0xFF;
 
-/********************************************************************
+/*
     Function:
         void USBStallEndpoint(unsigned char ep, unsigned char dir)
 
@@ -1570,8 +1516,7 @@ void USBClearInterruptFlag(unsigned char* reg, unsigned char flag);
 
     Remarks:
         None
-
- *******************************************************************/
+ */
 void USBStallEndpoint(unsigned char ep, unsigned char dir);
 
 #if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
@@ -1720,17 +1665,10 @@ void USBStallEndpoint(unsigned char ep, unsigned char dir);
     #define BD(ep,dir,pp) (4*(ep+dir+(((ep==0)&&(dir==0))?pp:2)))
 
 #elif (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)
-    #if defined (__18CXX) || defined(__C30__)
-        #define USB_NEXT_EP0_OUT_PING_PONG 0x0004
-        #define USB_NEXT_EP0_IN_PING_PONG 0x0004
-        #define USB_NEXT_PING_PONG 0x0004
-    #elif defined(__C32__)
-        #define USB_NEXT_EP0_OUT_PING_PONG 0x0008
-        #define USB_NEXT_EP0_IN_PING_PONG 0x0008
-        #define USB_NEXT_PING_PONG 0x0008
-    #else
-        #error "Not defined for this compiler"
-    #endif
+    #define USB_NEXT_EP0_OUT_PING_PONG 0x0008
+    #define USB_NEXT_EP0_IN_PING_PONG 0x0008
+    #define USB_NEXT_PING_PONG 0x0008
+
     #define EP0_OUT_EVEN    0
     #define EP0_OUT_ODD     1
     #define EP0_IN_EVEN     2
@@ -1798,13 +1736,7 @@ void USBStallEndpoint(unsigned char ep, unsigned char dir);
 
     #define EP(ep,dir,pp) (4*ep+2*dir+pp)
 
-    #if defined (__18CXX) || defined(__C30__)
-        #define BD(ep,dir,pp) (4*(4*ep+2*dir+pp))
-    #elif defined(__C32__)
-        #define BD(ep,dir,pp) (8*(4*ep+2*dir+pp))
-    #else
-        #error "Not defined for this compiler"
-    #endif
+    #define BD(ep,dir,pp) (8*(4*ep+2*dir+pp))
 
 #elif (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0)
     #define USB_NEXT_EP0_OUT_PING_PONG 0x0000

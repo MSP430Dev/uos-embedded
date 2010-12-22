@@ -19,7 +19,6 @@
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>
-#include "Compiler.h"
 #include "usb_config.h"
 #include <microchip/usb.h>
 #include <microchip/usb_function_cdc.h>

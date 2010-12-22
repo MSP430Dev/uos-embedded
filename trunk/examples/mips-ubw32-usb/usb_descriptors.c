@@ -136,7 +136,6 @@
 #define __USB_DESCRIPTORS_C
 
 #include <runtime/lib.h>
-#include "Compiler.h"
 #include "usb_config.h"
 #include <microchip/usb.h>
 #include <microchip/usb_function_cdc.h>
@@ -144,7 +143,7 @@
 /*
  * Device Descriptor
  */
-ROM USB_DEVICE_DESCRIPTOR device_dsc = {
+const USB_DEVICE_DESCRIPTOR device_dsc = {
 	0x12,			// Size of this descriptor in bytes
 	USB_DESCRIPTOR_DEVICE,  // DEVICE descriptor type
 	0x0200,                 // USB Spec Release Number in BCD format
@@ -250,7 +249,7 @@ const unsigned char configDescriptor1[] =
 /*
  * Language code string descriptor
  */
-ROM struct {
+const struct {
 	unsigned char bLength;
 	unsigned char bDscType;
 	uint16_t string[1];
@@ -263,7 +262,7 @@ ROM struct {
 /*
  * Manufacturer string descriptor
  */
-ROM struct {
+const struct {
 	unsigned char bLength;
 	unsigned char bDscType;
 	uint16_t string[25];
@@ -277,7 +276,7 @@ ROM struct {
 /*
  * Product string descriptor
  */
-ROM struct {
+const struct {
 	unsigned char bLength;
 	unsigned char bDscType;
 	uint16_t string[25];
