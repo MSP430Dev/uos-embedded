@@ -1,73 +1,43 @@
-/*******************************************************************************
-
-    USB OTG (Header File)
-
-Description:
-    This file provides the interface for a USB OTG
-    application.
-
-    This header file must be included after the application-specific
-    usb_config.h file, as usb_config.h configures parts of this file.
-
-Summary:
-    This file provides the interface for a USB OTG
-    application.
-
-*******************************************************************************/
-//DOM-IGNORE-BEGIN
-/******************************************************************************
-
-* FileName:        usb_otg.h
-* Dependencies:    None
-* Processor:       PIC24/dsPIC30/dsPIC33/PIC32MX
-* Compiler:        C30 v2.01/C32 v0.00.18
-* Company:         Microchip Technology, Inc.
-
-Software License Agreement
-
-The software supplied herewith by Microchip Technology Incorporated
-(the “Company”) for its PICmicro® Microcontroller is intended and
-supplied to you, the Company’s customer, for use solely and
-exclusively on Microchip PICmicro Microcontroller products. The
-software is owned by the Company and/or its supplier, and is
-protected under applicable copyright laws. All rights are reserved.
-Any use in violation of the foregoing restrictions may subject the
-user to criminal sanctions under applicable laws, as well as to
-civil liability for the breach of the terms and conditions of this
-license.
-
-THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
-WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
-TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
-IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
-CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-Author          Date    Comments
---------------------------------------------------------------------------------
-MR       9-04-2008 First release
-
-*******************************************************************************/
-
+/*
+ * USB OTG (Header File)
+ *
+ * This file provides the interface for a USB OTG application.
+ *
+ * This header file must be included after the application-specific
+ * usb_config.h file, as usb_config.h configures parts of this file.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PICmicro® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PICmicro Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this
+ * license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+*/
 #ifndef __USBOTG_H__
 #define __USBOTG_H__
-//DOM-IGNORE-END
 
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: OTG Firmware Version
-// *****************************************************************************
-// *****************************************************************************
+//
 
 #define USB_OTG_FW_MAJOR_VER   1       // Firmware version, major release number.
 #define USB_OTG_FW_MINOR_VER   0       // Firmware version, minor release number.
 #define USB_OTG_FW_DOT_VER     0       // Firmware version, dot release number.
 
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: USB Constants
-// *****************************************************************************
-// *****************************************************************************
+//
 
 //OTG Events
 #define OTG_EVENT_DISCONNECT                0
@@ -109,11 +79,9 @@ MR       9-04-2008 First release
 #define DELAY_VBUS_SETTLE          500
 #define DELAY_TA_AIDL_BDIS        255
 
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: HNP Event Flow
-// *****************************************************************************
-// *****************************************************************************
+//
 /*
 // *****************************************************************************
                                 (A becomes Device, B becomes Host)
@@ -188,7 +156,7 @@ void USBOTGInitializeDeviceStack();
 
 /****************************************************************************
   Function:
- BOOL USBOTGRoleSwitch()
+ bool_t USBOTGRoleSwitch()
 
   Description:
     This function returns whether a role switch occurred or not.  This is used by the main application function
@@ -201,12 +169,12 @@ void USBOTGInitializeDeviceStack();
     None
 
   Return Values:
-    BOOL - TRUE or FALSE
+    bool_t - TRUE or FALSE
 
   Remarks:
     None
   ***************************************************************************/
-BOOL USBOTGRoleSwitch();
+bool_t USBOTGRoleSwitch();
 
 
 /****************************************************************************
@@ -257,7 +225,7 @@ void USBOTGInitialize();
 
 /****************************************************************************
   Function:
-   void USBOTGSelectRole(BOOL role)
+   void USBOTGSelectRole(bool_t role)
 
   Description:
     This function initiates a role switch via the Host Negotiation Protocol (HNP).
@@ -267,7 +235,7 @@ void USBOTGInitialize();
     None
 
   Parameters:
-    BOOL role - ROLE_DEVICE or ROLE_HOST
+    bool_t role - ROLE_DEVICE or ROLE_HOST
 
   Return Values:
     None
@@ -275,13 +243,13 @@ void USBOTGInitialize();
   Remarks:
     None
   ***************************************************************************/
-void USBOTGSelectRole(BOOL role);
+void USBOTGSelectRole(bool_t role);
 
 
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGHnpIsEnabled()
+  bool_t USBOTGHnpIsEnabled()
 
   Description:
     This function returns TRUE if HNP is enabled, FALSE otherwise
@@ -290,7 +258,7 @@ void USBOTGSelectRole(BOOL role);
     None
 
   Parameters:
-    BOOL - TRUE or FALSE
+    bool_t - TRUE or FALSE
 
   Return Values:
     None
@@ -298,14 +266,14 @@ void USBOTGSelectRole(BOOL role);
   Remarks:
     None
   ***************************************************************************/
-BOOL USBOTGHnpIsEnabled();
+bool_t USBOTGHnpIsEnabled();
 //DOM-IGNORE-END
 
 
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGHnpIsActive()
+  bool_t USBOTGHnpIsActive()
 
   Description:
     This function returns TRUE if HNP is active, FALSE otherwise.
@@ -314,7 +282,7 @@ BOOL USBOTGHnpIsEnabled();
     None
 
   Parameters:
-    BOOL - TRUE or FALSE
+    bool_t - TRUE or FALSE
 
   Return Values:
     None
@@ -326,13 +294,13 @@ BOOL USBOTGHnpIsEnabled();
     HNP will become active on the peripheral side when it receives a bus idle condition
     and HNP was enabled by a SET_FEATURE(b_hnp_enable) from the host
   ***************************************************************************/
-BOOL USBOTGHnpIsActive();
+bool_t USBOTGHnpIsActive();
 //DOM-IGNORE-END
 
 
 /****************************************************************************
   Function:
-  void USBOTGSession(BYTE Value)
+  void USBOTGSession (unsigned char Value)
 
   Description:
     This function starts, ends, or toggles a VBUS session.
@@ -349,7 +317,7 @@ BOOL USBOTGHnpIsActive();
   Remarks:
   This function should only be called by an A-side Host
   ***************************************************************************/
-BOOL USBOTGSession(BYTE Value);
+bool_t USBOTGSession (unsigned char Value);
 
 
 //DOM-IGNORE-BEGIN
@@ -499,7 +467,7 @@ void USBOTGDisableSupportHnp();
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGSrpIsActive()
+  bool_t USBOTGSrpIsActive()
 
   Description:
     This function returns TRUE if SRP is active, FALSE otherwise
@@ -508,7 +476,7 @@ void USBOTGDisableSupportHnp();
     None
 
   Parameters:
-    BOOL - TRUE or FALSE
+    bool_t - TRUE or FALSE
 
   Return Values:
     None
@@ -516,7 +484,7 @@ void USBOTGDisableSupportHnp();
   Remarks:
     None
   ***************************************************************************/
-BOOL USBOTGSrpIsActive();
+bool_t USBOTGSrpIsActive();
 //DOM-IGNORE-END
 
 //DOM-IGNORE-BEGIN
@@ -545,7 +513,7 @@ void USBOTGDeactivateHnp();
 
 /****************************************************************************
   Function:
-  BYTE USBOTGCurrentRoleIs()
+  unsigned char USBOTGCurrentRoleIs()
 
   Description:
     This function returns whether the current role is ROLE_HOST or ROLE_DEVICE
@@ -557,18 +525,18 @@ void USBOTGDeactivateHnp();
     None
 
   Return Values:
-    BYTE  - ROLE_HOST or ROLE_DEVICE
+    unsigned char  - ROLE_HOST or ROLE_DEVICE
 
   Remarks:
     None
   ***************************************************************************/
-BYTE USBOTGCurrentRoleIs();
+unsigned char USBOTGCurrentRoleIs();
 
 
 
 /****************************************************************************
   Function:
-  BYTE USBOTGDefaultRoleIs()
+  unsigned char USBOTGDefaultRoleIs()
 
   Description:
     This function returns whether the default role is ROLE_HOST or ROLE_DEVICE
@@ -580,7 +548,7 @@ BYTE USBOTGCurrentRoleIs();
     None
 
   Return Values:
-    BYTE  - ROLE_HOST or ROLE_DEVICE
+    unsigned char  - ROLE_HOST or ROLE_DEVICE
 
   Remarks:
     If using a Micro AB USB OTG Cable, the A-side plug of the cable when plugged in
@@ -593,7 +561,7 @@ BYTE USBOTGCurrentRoleIs();
     Both of these items can be easily configured using the USB Config Tool which will automatically
     generate the apropriate information for your application
   ***************************************************************************/
-BYTE USBOTGDefaultRoleIs();
+unsigned char USBOTGDefaultRoleIs();
 
 
 /****************************************************************************
@@ -616,13 +584,13 @@ BYTE USBOTGDefaultRoleIs();
   Remarks:
     This function should only be called by a B side Device.
   ***************************************************************************/
-BOOL USBOTGRequestSession();
+bool_t USBOTGRequestSession();
 
 
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-   BOOL USBOTGGetSessionStatus()
+   bool_t USBOTGGetSessionStatus()
 
   Description:
     This function gets a session status.  The function will return
@@ -640,7 +608,7 @@ BOOL USBOTGRequestSession();
   Remarks:
 
   ***************************************************************************/
-BOOL USBOTGGetSessionStatus();
+bool_t USBOTGGetSessionStatus();
 //DOM-IGNORE-END
 
 
@@ -671,7 +639,7 @@ void USBOTGDischargeVBus();
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  void USB_OTGEventHandler ( BYTE address, BYTE event, void *data, DWORD size )
+  void USB_OTGEventHandler (unsigned char address, unsigned char event, void *data, uint32_t size)
 
   Description:
     This function is the event handler used by both the Host and Device stacks for calling the OTG layer
@@ -681,7 +649,7 @@ void USBOTGDischargeVBus();
     None
 
   Parameters:
-    BYTE event -
+    unsigned char event -
                  OTG_EVENT_SRP_DPLUS_HIGH
                  OTG_EVENT_SRP_DPLUS_LOW
                  OTG_EVENT_SRP_VBUS_HIGH
@@ -697,14 +665,14 @@ void USBOTGDischargeVBus();
   Remarks:
     None
   ***************************************************************************/
-void USB_OTGEventHandler ( BYTE address, BYTE event, void *data, DWORD size );
+void USB_OTGEventHandler (unsigned char address, unsigned char event, void *data, uint32_t size);
 //DOM-IGNORE-END
 
 
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  void USBOTGDelayMs(WORD time)
+  void USBOTGDelayMs(uint16_t time)
 
   Description:
     This function will delay a given amount of time in milliseconds determined by the time parameter
@@ -714,16 +682,16 @@ void USB_OTGEventHandler ( BYTE address, BYTE event, void *data, DWORD size );
     USB Module Must Be Enabled Prior To Calling This Function (U1PWRCbits.USBPWR = 1)
 
   Parameters:
-    WORD time - The time to delay in milliseconds
+    uint16_t time - The time to delay in milliseconds
 
   Return Values:
-    BOOL - TRUE  - Time Not Expired
+    bool_t - TRUE  - Time Not Expired
                 FALSE - Time Expired
 
   Remarks:
     Assumes USB Interrupt Is Disabled
   ***************************************************************************/
-void USBOTGDelayMs(WORD time);
+void USBOTGDelayMs(uint16_t time);
 //DOM-IGNORE-END
 
 
@@ -731,7 +699,7 @@ void USBOTGDelayMs(WORD time);
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGIsHNPTimeOutExpired()
+  bool_t USBOTGIsHNPTimeOutExpired()
 
   Description:
     This function decrements HNPTimeOut and checks to see if HNPTimeOut has expired.  This function
@@ -744,20 +712,20 @@ void USBOTGDelayMs(WORD time);
     None
 
   Return Values:
-    BOOL - TRUE - Time Expired
+    bool_t - TRUE - Time Expired
                 FALSE - Time Not Expired
 
   Remarks:
   HNPTimeOut value should be > 0
   ***************************************************************************/
-BOOL USBOTGIsHNPTimeOutExpired();
+bool_t USBOTGIsHNPTimeOutExpired();
 //DOM-IGNORE-END
 
 
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGGetHNPTimeOutFlag()
+  bool_t USBOTGGetHNPTimeOutFlag()
 
   Description:
     This function returns the HNPTimeOutFlag.  This flag is used for timing the TB_ASE0_BRST USB OTG
@@ -770,19 +738,19 @@ BOOL USBOTGIsHNPTimeOutExpired();
     None
 
   Return Values:
-    BOOL - TRUE or FALSE
+    bool_t - TRUE or FALSE
 
   Remarks:
     None
   ***************************************************************************/
-BOOL USBOTGGetHNPTimeOutFlag();
+bool_t USBOTGGetHNPTimeOutFlag();
 //DOM-IGNORE-END
 
 
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGIsSRPTimeOutExpired()
+  bool_t USBOTGIsSRPTimeOutExpired()
 
   Description:
     This function decrements SRPTimeOut and checks to see if SRPTimeOut has expired.  This function
@@ -795,13 +763,13 @@ BOOL USBOTGGetHNPTimeOutFlag();
     None
 
   Return Values:
-    BOOL - TRUE - Time Expired
+    bool_t - TRUE - Time Expired
                 FALSE - Time Not Expired
 
   Remarks:
   HNPTimeOut value should be > 0
   ***************************************************************************/
-BOOL USBOTGIsSRPTimeOutExpired();
+bool_t USBOTGIsSRPTimeOutExpired();
 //DOM-IGNORE-END
 
 
@@ -809,7 +777,7 @@ BOOL USBOTGIsSRPTimeOutExpired();
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGGetSRPTimeOutFlag()
+  bool_t USBOTGGetSRPTimeOutFlag()
 
   Description:
     This function returns the SRPTimeOutFlag.  This flag is used for timing the TA_WAIT_BCON USB OTG
@@ -822,12 +790,12 @@ BOOL USBOTGIsSRPTimeOutExpired();
     None
 
   Return Values:
-    BOOL - TRUE or FALSE
+    bool_t - TRUE or FALSE
 
   Remarks:
     None
   ***************************************************************************/
-BOOL USBOTGGetSRPTimeOutFlag();
+bool_t USBOTGGetSRPTimeOutFlag();
 //DOM-IGNORE-END
 
 
@@ -859,7 +827,7 @@ void USBOTGClearSRPTimeOutFlag();
 //DOM-IGNORE-BEGIN
 /****************************************************************************
   Function:
-  BOOL USBOTGSRPIsReady()
+  bool_t USBOTGSRPIsReady()
 
   Description:
     This function returns the value of SRPReady.  This flag is set after the B-device finishes SRP
@@ -872,12 +840,12 @@ void USBOTGClearSRPTimeOutFlag();
     None
 
   Return Values:
-    BOOL - TRUE or FALSE
+    bool_t - TRUE or FALSE
 
   Remarks:
     None
   ***************************************************************************/
-BOOL USBOTGSRPIsReady();
+bool_t USBOTGSRPIsReady();
 //DOM-IGNORE-END
 
 

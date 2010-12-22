@@ -26,7 +26,6 @@
 #define _USB_COMMON_H_
 
 #include <limits.h>
-#include "GenericTypeDefs.h"
 #include "usb_config.h"
 
 // *****************************************************************************
@@ -113,14 +112,14 @@ and properties of the data transfer.
 
 typedef union
 {
-    BYTE    bitmap;
+    unsigned char bitmap;
     struct
     {
-        BYTE ep_num:    4;
-        BYTE zero_pkt:  1;
-        BYTE dts:       1;
-        BYTE force_dts: 1;
-        BYTE direction: 1;
+        unsigned ep_num:    4;
+        unsigned zero_pkt:  1;
+        unsigned dts:       1;
+        unsigned force_dts: 1;
+        unsigned direction: 1;
     }field;
 
 } TRANSFER_FLAGS;
@@ -174,7 +173,7 @@ This macro can be used with the above bitmap constants to initialize a
 TRANSFER_FLAGS value.  It provides the correct data type to avoid compiler
 warnings.
 */
-#define XFLAGS(f) ((TRANSFER_FLAGS)((BYTE)(f)))             // Initialization Macro
+#define XFLAGS(f) ((TRANSFER_FLAGS)((unsigned char)(f)))             // Initialization Macro
 
 
 // *****************************************************************************
@@ -310,9 +309,9 @@ direction, and actual size of the transfer.
 
 typedef struct _transfer_event_data
 {
-    TRANSFER_FLAGS  flags;          // Transfer flags (see above)
-    UINT32          size;           // Actual number of bytes transferred
-    BYTE            pid;            // Packet ID
+    TRANSFER_FLAGS  flags;	// Transfer flags (see above)
+    uint32_t        size;	// Actual number of bytes transferred
+    unsigned char   pid;	// Packet ID
 
 } USB_TRANSFER_EVENT_DATA;
 
@@ -327,8 +326,8 @@ event has occured, indicating that a change in Vbus power is being requested.
 
 typedef struct _vbus_power_data
 {
-    BYTE            port;           // Physical port number
-    BYTE            current;        // Current in 2mA units
+    unsigned char port;		// Physical port number
+    unsigned char current;	// Current in 2mA units
 } USB_VBUS_POWER_EVENT_DATA;
 
 
@@ -349,7 +348,7 @@ stalled (ie. bit 0 = EP0, bit 1 = EP1, etc.)
 
 /*******************************************************************************
     Function:
-        BOOL <Event-handling Function Name> ( USB_EVENT event,
+        bool_t <Event-handling Function Name> ( USB_EVENT event,
               void *data, unsigned int size )
 
     Description:
@@ -384,7 +383,7 @@ stalled (ie. bit 0 = EP0, bit 1 = EP1, etc.)
 
 *******************************************************************************/
 
-typedef BOOL (*USB_EVENT_HANDLER) ( USB_EVENT event, void *data, unsigned int size );
+typedef bool_t (*USB_EVENT_HANDLER) ( USB_EVENT event, void *data, unsigned int size );
 
 
 // *****************************************************************************
@@ -395,7 +394,7 @@ typedef BOOL (*USB_EVENT_HANDLER) ( USB_EVENT event, void *data, unsigned int si
 
 /****************************************************************************
     Function:
-        BOOL USBInitialize ( unsigned long flags )
+        bool_t USBInitialize ( unsigned long flags )
 
     Summary:
         This interface initializes the variables of the USB host stack.
@@ -427,7 +426,7 @@ typedef BOOL (*USB_EVENT_HANDLER) ( USB_EVENT event, void *data, unsigned int si
             #else
                 #define USBInitialize(f) \
                         (USBDEVInitialize(f) && USBHostInit(f)) ? \
-                        TRUE : FALSE
+                        1 : 0
             #endif
         #else
             #define USBInitialize(f) USBDEVInitialize(f)

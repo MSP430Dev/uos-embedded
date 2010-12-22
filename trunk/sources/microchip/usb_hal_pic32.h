@@ -1,99 +1,72 @@
 /*
-    USB Hardware Abstraction Layer (HAL)  (Header File)
-
-Summary:
-    This file abstracts the hardware interface.  The USB stack firmware can be
-    compiled to work on different USB microcontrollers, such as PIC18 and PIC24.
-    The USB related special function registers and bit names are generally very
-    similar between the device families, but small differences in naming exist.
-
-Description:
-    This file abstracts the hardware interface.  The USB stack firmware can be
-    compiled to work on different USB microcontrollers, such as PIC18 and PIC24.
-    The USB related special function registers and bit names are generally very
-    similar between the device families, but small differences in naming exist.
-
-    In order to make the same set of firmware work accross the device families,
-    when modifying SFR contents, a slightly abstracted name is used, which is
-    then "mapped" to the appropriate real name in the usb_hal_picxx.h header.
-
-    Make sure to include the correct version of the usb_hal_picxx.h file for
-    the microcontroller family which will be used.
-*/
-/*
- File Description:
-
- This file defines the interface to the USB hardware abstraction layer.
-
- Filename:        usb_hal.h
- Dependancies:    none
- Processor:       PIC18, PIC24, or PIC32 USB Microcontrollers
- Hardware:        The code is natively intended to be used on the following
-   		  hardware platforms: PICDEM™ FS USB Demo Board,
-     		  PIC18F87J50 FS USB Plug-In Module, or
-     		  Explorer 16 + PIC24 USB PIM.  The firmware may be
-     		  modified for use on other USB platforms by editing the
-     		  HardwareProfile.h file.
- Compiler:        Microchip C18 (for PIC18) or C30 (for PIC24)
- Company:         Microchip Technology, Inc.
-
- Software License Agreement:
-
- The software supplied herewith by Microchip Technology Incorporated
- (the “Company”) for its PICmicro® Microcontroller is intended and
- supplied to you, the Company’s customer, for use solely and
- exclusively on Microchip PICmicro Microcontroller products. The
- software is owned by the Company and/or its supplier, and is
- protected under applicable copyright laws. All rights are reserved.
- Any use in violation of the foregoing restrictions may subject the
- user to criminal sanctions under applicable laws, as well as to
- civil liability for the breach of the terms and conditions of this
- license.
-
- THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
- WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
- TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
- IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
- CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ * USB Hardware Abstraction Layer (HAL)  (Header File)
+ *
+ * This file abstracts the hardware interface.  The USB stack firmware can be
+ * compiled to work on different USB microcontrollers, such as PIC18 and PIC24.
+ * The USB related special function registers and bit names are generally very
+ * similar between the device families, but small differences in naming exist.
+ *
+ * In order to make the same set of firmware work accross the device families,
+ * when modifying SFR contents, a slightly abstracted name is used, which is
+ * then "mapped" to the appropriate real name in the usb_hal_picxx.h header.
+ *
+ * Make sure to include the correct version of the usb_hal_picxx.h file for
+ * the microcontroller family which will be used.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PICmicro® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PICmicro Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this
+ * license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  */
-
-#if !defined(USB_HAL_PIC32_H)
+#ifndef USB_HAL_PIC32_H
 #define USB_HAL_PIC32_H
 
 #define USBTransactionCompleteIE	(U1IE & PIC32_U1I_TRN)
 #define USBTransactionCompleteIF	(U1IR & PIC32_U1I_TRN)
-#define USBTransactionCompleteIFReg	(BYTE*)&U1IR
+#define USBTransactionCompleteIFReg	(unsigned char*)&U1IR
 #define USBTransactionCompleteIFBitNum	3
 
 #define USBResetIE			(U1IE & PIC32_U1I_URST)
 #define USBResetIF			(U1IR & PIC32_U1I_URST)
-#define USBResetIFReg			(BYTE*)&U1IR
+#define USBResetIFReg			(unsigned char*)&U1IR
 #define USBResetIFBitNum		0
 
 #define USBIdleIE			(U1IE & PIC32_U1I_IDLE)
 #define USBIdleIF			(U1IR & PIC32_U1I_IDLE)
-#define USBIdleIFReg			(BYTE*)&U1IR
+#define USBIdleIFReg			(unsigned char*)&U1IR
 #define USBIdleIFBitNum			4
 
 #define USBActivityIE			(U1OTGIE & PIC32_U1OTGI_ACTV)
 #define USBActivityIF			(U1OTGIR & PIC32_U1OTGI_ACTV)
-#define USBActivityIFReg		(BYTE*)&U1OTGIR
+#define USBActivityIFReg		(unsigned char*)&U1OTGIR
 #define USBActivityIFBitNum		4
 
 #define USBSOFIE			(U1IE & PIC32_U1I_SOF)
 #define USBSOFIF			(U1IR & PIC32_U1I_SOF)
-#define USBSOFIFReg			(BYTE*)&U1IR
+#define USBSOFIFReg			(unsigned char*)&U1IR
 #define USBSOFIFBitNum			2
 
 #define USBStallIE			(U1IE & PIC32_U1I_STALL)
 #define USBStallIF			(U1IR & PIC32_U1I_STALL)
-#define USBStallIFReg			(BYTE*)&U1IR
+#define USBStallIFReg			(unsigned char*)&U1IR
 #define USBStallIFBitNum		7
 
 #define USBErrorIE			(U1IE & PIC32_U1I_UERR)
 #define USBErrorIF			(U1IR & PIC32_U1I_UERR)
-#define USBErrorIFReg			(BYTE*)&U1IR
+#define USBErrorIFReg			(unsigned char*)&U1IR
 #define USBErrorIFBitNum		1
 
 //#define USBResumeControl		U1CONbits.RESUME
@@ -137,7 +110,7 @@ typedef union __attribute__ ((packed)) _BD_STAT
         unsigned            :2;
         unsigned    PID     :4;         //Packet Identifier
     };
-    WORD           Val;
+    uint16_t        Val;
 } BD_STAT;
 
 // BDT Entry Layout
@@ -146,17 +119,17 @@ typedef union __attribute__ ((packed))__BDT
     struct __attribute__ ((packed))
     {
         BD_STAT     STAT;
-        WORD       CNT:10;
-        BYTE*       ADR;                      //Buffer Address
+        unsigned    CNT:10;
+        unsigned char *ADR;		//Buffer Address
     };
     struct __attribute__ ((packed))
     {
-        DWORD       res  :16;
-        DWORD       count:10;
+        unsigned    res  :16;
+        unsigned    count:10;
     };
-    DWORD           w[2];
-    WORD            v[4];
-    QWORD           Val;
+    uint32_t	    w[2];
+    uint16_t        v[4];
+    uint64_t        Val;
 } BDT_ENTRY;
 
 
@@ -172,7 +145,7 @@ typedef union __attribute__ ((packed))__BDT
 
 typedef union
 {
-    WORD UEP[16];
+    uint16_t UEP[16];
 } _UEP;
 
 #define UEP_STALL 0x0002
@@ -182,25 +155,18 @@ typedef union _POINTER
 {
     struct
     {
-        BYTE bLow;
-        BYTE bHigh;
+        unsigned char bLow;
+        unsigned char bHigh;
         //byte bUpper;
     };
-    WORD _word;                         // bLow & bHigh
+    uint16_t _word;		// bLow & bHigh
 
-    //pFunc _pFunc;                       // Usage: ptr.pFunc(); Init: ptr.pFunc = &<Function>;
-
-    BYTE* bRam;                         // Ram byte pointer: 2 bytes pointer pointing
-                                        // to 1 byte of data
-    WORD* wRam;                         // Ram word poitner: 2 bytes poitner pointing
-                                        // to 2 bytes of data
-
-    ROM BYTE* bRom;                     // Size depends on compiler setting
-    ROM WORD* wRom;
-    //rom near byte* nbRom;               // Near = 2 bytes pointer
-    //rom near word* nwRom;
-    //rom far byte* fbRom;                // Far = 3 bytes pointer
-    //rom far word* fwRom;
+    unsigned char* bRam;	// Ram byte pointer: 2 bytes pointer pointing
+				// to 1 byte of data
+    uint16_t* wRam;		// Ram word poitner: 2 bytes poitner pointing
+				// to 2 bytes of data
+    const unsigned char* bRom;	// Size depends on compiler setting
+    const uint16_t* wRom;
 } POINTER;
 
  //* Depricated: v2.2 - will be removed at some point of time ***
@@ -229,22 +195,8 @@ typedef union _POINTER
 #define ConvertToPhysicalAddress(a) mips_virtual_addr_to_physical((unsigned)a)
 
 /*
-    Function:
-        void USBModuleDisable(void)
-
-    Description:
-        This macro is used to disable the USB module
-
-    Parameters:
-        None
-
-    Return Values:
-        None
-
-    Remarks:
-        None
-
-  */
+ * This macro is used to disable the USB module
+ */
 #define USBModuleDisable() {\
 	U1CON = 0;\
 	U1IE = 0;\

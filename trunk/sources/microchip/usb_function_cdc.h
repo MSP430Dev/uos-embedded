@@ -1,107 +1,34 @@
-/************************************************************************
-  File Information:
-    FileName:       usb_function_cdc.h
-    Dependencies:   See INCLUDES section
-    Processor:      PIC18 or PIC24 USB Microcontrollers
-    Hardware:       The code is natively intended to be used on the following
-                    hardware platforms: PICDEM™ FS USB Demo Board,
-                    PIC18F87J50 FS USB Plug-In Module, or
-                    Explorer 16 + PIC24 USB PIM.  The firmware may be
-                    modified for use on other USB platforms by editing the
-                    HardwareProfile.h file.
-    Complier:   Microchip C18 (for PIC18) or C30 (for PIC24)
-    Company:        Microchip Technology, Inc.
-
-    Software License Agreement:
-
-    The software supplied herewith by Microchip Technology Incorporated
-    (the “Company”) for its PIC® Microcontroller is intended and
-    supplied to you, the Company’s customer, for use solely and
-    exclusively on Microchip PIC Microcontroller products. The
-    software is owned by the Company and/or its supplier, and is
-    protected under applicable copyright laws. All rights are reserved.
-    Any use in violation of the foregoing restrictions may subject the
-    user to criminal sanctions under applicable laws, as well as to
-    civil liability for the breach of the terms and conditions of this
-    license.
-
-    THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
-    WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
-    TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-    PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
-    IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
-    CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-     Change History:
-     Rev         Description
-     v2.3        Decricated the mUSBUSARTIsTxTrfReady() macro.  It is
-                 replaced by the USBUSARTIsTxTrfReady() function.
-
-  Summary:
-    This file contains all of functions, macros, definitions, variables,
-    datatypes, etc. that are required for usage with the CDC function
-    driver. This file should be included in projects that use the CDC
-    \function driver.  This file should also be included into the
-    usb_descriptors.c file and any other user file that requires access to the
-    CDC interface.
-
-
-
-    This file is located in the "\<Install Directory\>\\Microchip\\Include\\USB"
-    directory.
-
-  Description:
-    USB CDC Function Driver File
-
-    This file contains all of functions, macros, definitions, variables,
-    datatypes, etc. that are required for usage with the CDC function
-    driver. This file should be included in projects that use the CDC
-    \function driver.  This file should also be included into the
-    usb_descriptors.c file and any other user file that requires access to the
-    CDC interface.
-
-    This file is located in the "\<Install Directory\>\\Microchip\\Include\\USB"
-    directory.
-
-    When including this file in a new project, this file can either be
-    referenced from the directory in which it was installed or copied
-    directly into the user application folder. If the first method is
-    chosen to keep the file located in the folder in which it is installed
-    then include paths need to be added so that the library and the
-    application both know where to reference each others files. If the
-    application folder is located in the same folder as the Microchip
-    folder (like the current demo folders), then the following include
-    paths need to be added to the application's project:
-
-    ..\\Include
-
-    ..\\..\\Include
-
-    ..\\..\\MicrochipInclude
-
-    ..\\..\\\<Application Folder\>
-
-    ..\\..\\..\\\<Application Folder\>
-
-    If a different directory structure is used, modify the paths as
-    required. An example using absolute paths instead of relative paths
-    would be the following:
-
-    C:\\Microchip Solutions\\Microchip\\Include
-
-    C:\\Microchip Solutions\\My Demo Application
-
-********************************************************************/
-
-
+/*
+ * USB CDC Function Driver File
+ *
+ * This file contains all of functions, macros, definitions, variables,
+ * datatypes, etc. that are required for usage with the CDC function
+ * driver. This file should be included in projects that use the CDC
+ * \function driver.  This file should also be included into the
+ * usb_descriptors.c file and any other user file that requires access to the
+ * CDC interface.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PIC® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PIC Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ */
 #ifndef CDC_H
 #define CDC_H
 
-/** I N C L U D E S **********************************************************/
-#include "GenericTypeDefs.h"
 #include "usb_config.h"
-
-/** D E F I N I T I O N S ****************************************************/
 
 /* Class-Specific Requests */
 #define SEND_ENCAPSULATED_COMMAND   0x00
@@ -176,7 +103,7 @@
     #define LINE_CODING_PFUNC &USB_CDC_SET_LINE_CODING_HANDLER
 #else
     #define LINE_CODING_TARGET &line_coding._byte[0]
-    #define LINE_CODING_PFUNC NULL
+    #define LINE_CODING_PFUNC 0
 #endif
 
 #if defined(USB_CDC_SUPPORT_HARDWARE_FLOW_CONTROL)
@@ -219,7 +146,7 @@
 
 /******************************************************************************
     Function:
-        void CDCSetBaudRate(DWORD baudRate)
+        void CDCSetBaudRate(uint32_t baudRate)
 
     Summary:
         This macro is used set the baud rate reported back to the host during
@@ -241,7 +168,7 @@
         None
 
     Parameters:
-        DWORD baudRate - The desired baudrate
+        uint32_t baudRate - The desired baudrate
 
     Return Values:
         None
@@ -254,7 +181,7 @@
 
 /******************************************************************************
     Function:
-        void CDCSetCharacterFormat(BYTE charFormat)
+        void CDCSetCharacterFormat (unsigned char charFormat)
 
     Summary:
         This macro is used manually set the character format reported back to
@@ -276,7 +203,7 @@
         None
 
     Parameters:
-        BYTE charFormat - number of stop bits.  Available options are:
+        unsigned char charFormat - number of stop bits.  Available options are:
          * NUM_STOP_BITS_1 - 1 Stop bit
          * NUM_STOP_BITS_1_5 - 1.5 Stop bits
          * NUM_STOP_BITS_2 - 2 Stop bits
@@ -295,7 +222,7 @@
 
 /******************************************************************************
     Function:
-        void CDCSetParity(BYTE parityType)
+        void CDCSetParity (unsigned char parityType)
 
     Summary:
         This function is used manually set the parity format reported back to
@@ -317,7 +244,7 @@
         None
 
     Parameters:
-        BYTE parityType - Type of parity.  The options are the following:
+        unsigned char parityType - Type of parity.  The options are the following:
             * PARITY_NONE
             * PARITY_ODD
             * PARITY_EVEN
@@ -340,7 +267,7 @@
 
 /******************************************************************************
     Function:
-        void CDCSetDataSize(BYTE dataBits)
+        void CDCSetDataSize (unsigned char dataBits)
 
     Summary:
         This function is used manually set the number of data bits reported back
@@ -362,7 +289,7 @@
         None
 
     Parameters:
-        BYTE dataBits - number of data bits.  The options are 5, 6, 7, 8, or 16.
+        unsigned char dataBits - number of data bits.  The options are 5, 6, 7, 8, or 16.
 
     Return Values:
         None
@@ -375,7 +302,7 @@
 
 /******************************************************************************
     Function:
-        void CDCSetLineCoding(DWORD baud, BYTE format, BYTE parity, BYTE dataSize)
+        void CDCSetLineCoding(uint32_t baud, unsigned char format, unsigned char parity, unsigned char dataSize)
 
     Summary:
         This function is used to manually set the data reported back
@@ -397,18 +324,18 @@
         None
 
     Parameters:
-        DWORD baud - The desired baudrate
-        BYTE format - number of stop bits.  Available options are:
+        uint32_t baud - The desired baudrate
+        unsigned char format - number of stop bits.  Available options are:
          * NUM_STOP_BITS_1 - 1 Stop bit
          * NUM_STOP_BITS_1_5 - 1.5 Stop bits
          * NUM_STOP_BITS_2 - 2 Stop bits
-        BYTE parity - Type of parity.  The options are the following:
+        unsigned char parity - Type of parity.  The options are the following:
             * PARITY_NONE
             * PARITY_ODD
             * PARITY_EVEN
             * PARITY_MARK
             * PARITY_SPACE
-        BYTE dataSize - number of data bits.  The options are 5, 6, 7, 8, or 16.
+        unsigned char dataSize - number of data bits.  The options are 5, 6, 7, 8, or 16.
 
     Return Values:
         None
@@ -426,7 +353,7 @@
 
 /******************************************************************************
     Function:
-        BOOL USBUSARTIsTxTrfReady(void)
+        bool_t USBUSARTIsTxTrfReady(void)
 
     Summary:
         This macro is used to check if the CDC class is ready
@@ -461,7 +388,7 @@
 
 /******************************************************************************
     Function:
-        void mUSBUSARTTxRam(BYTE *pData, BYTE len)
+        void mUSBUSARTTxRam (unsigned char *pData, unsigned char len)
 
     Description:
         Depricated in MCHPFSUSB v2.3.  This macro has been replaced by
@@ -471,7 +398,7 @@
 
 /******************************************************************************
     Function:
-        void mUSBUSARTTxRam(BYTE *pData, BYTE len)
+        void mUSBUSARTTxRam (unsigned char *pData, unsigned char len)
 
     Description:
         Use this macro to transfer data located in data memory.
@@ -509,7 +436,7 @@
 
 /******************************************************************************
     Function:
-        void mUSBUSARTTxRom(rom BYTE *pData, BYTE len)
+        void mUSBUSARTTxRom (const unsigned char *pData, unsigned char len)
 
     Description:
         Use this macro to transfer data located in program memory.
@@ -555,20 +482,20 @@ typedef union _LINE_CODING
 {
     struct
     {
-        BYTE _byte[LINE_CODING_LENGTH];
+        unsigned char _byte[LINE_CODING_LENGTH];
     };
     struct
     {
-        DWORD_VAL   dwDTERate;          // Complex data structure
-        BYTE    bCharFormat;
-        BYTE    bParityType;
-        BYTE    bDataBits;
+        unsigned long dwDTERate;          // Complex data structure
+        unsigned char bCharFormat;
+        unsigned char bParityType;
+        unsigned char bDataBits;
     };
 } LINE_CODING;
 
 typedef union _CONTROL_SIGNAL_BITMAP
 {
-    BYTE _byte;
+    unsigned char _byte;
     struct
     {
         unsigned DTE_PRESENT:1;       // [0] Not Present  [1] Present
@@ -582,39 +509,39 @@ typedef union _CONTROL_SIGNAL_BITMAP
 /* Header Functional Descriptor */
 typedef struct __attribute__((packed)) _USB_CDC_HEADER_FN_DSC
 {
-    BYTE bFNLength;
-    BYTE bDscType;
-    BYTE bDscSubType;
-    WORD bcdCDC;
+    unsigned char bFNLength;
+    unsigned char bDscType;
+    unsigned char bDscSubType;
+    uint16_t bcdCDC;
 } USB_CDC_HEADER_FN_DSC;
 
 /* Abstract Control Management Functional Descriptor */
 typedef struct __attribute__((packed)) _USB_CDC_ACM_FN_DSC
 {
-    BYTE bFNLength;
-    BYTE bDscType;
-    BYTE bDscSubType;
-    BYTE bmCapabilities;
+    unsigned char bFNLength;
+    unsigned char bDscType;
+    unsigned char bDscSubType;
+    unsigned char bmCapabilities;
 } USB_CDC_ACM_FN_DSC;
 
 /* Union Functional Descriptor */
 typedef struct __attribute__((packed)) _USB_CDC_UNION_FN_DSC
 {
-    BYTE bFNLength;
-    BYTE bDscType;
-    BYTE bDscSubType;
-    BYTE bMasterIntf;
-    BYTE bSaveIntf0;
+    unsigned char bFNLength;
+    unsigned char bDscType;
+    unsigned char bDscSubType;
+    unsigned char bMasterIntf;
+    unsigned char bSaveIntf0;
 } USB_CDC_UNION_FN_DSC;
 
 /* Call Management Functional Descriptor */
 typedef struct __attribute__((packed)) _USB_CDC_CALL_MGT_FN_DSC
 {
-    BYTE bFNLength;
-    BYTE bDscType;
-    BYTE bDscSubType;
-    BYTE bmCapabilities;
-    BYTE bDataInterface;
+    unsigned char bFNLength;
+    unsigned char bDscType;
+    unsigned char bDscSubType;
+    unsigned char bmCapabilities;
+    unsigned char bDataInterface;
 } USB_CDC_CALL_MGT_FN_DSC;
 
 typedef union __attribute__((packed)) _CDC_NOTICE
@@ -625,13 +552,13 @@ typedef union __attribute__((packed)) _CDC_NOTICE
 } CDC_NOTICE, *PCDC_NOTICE;
 
 /** E X T E R N S *********************************************************** */
-extern BYTE cdc_rx_len;
+extern unsigned char cdc_rx_len;
 extern USB_HANDLE lastTransmission;
 
-extern BYTE cdc_trf_state;
+extern unsigned char cdc_trf_state;
 extern POINTER pCDCSrc;
-extern BYTE cdc_tx_len;
-extern BYTE cdc_mem_type;
+extern unsigned char cdc_tx_len;
+extern unsigned char cdc_mem_type;
 
 extern volatile CDC_NOTICE cdc_notice;
 extern LINE_CODING line_coding;
@@ -639,9 +566,9 @@ extern LINE_CODING line_coding;
 /** Public Prototypes ************************************************ */
 void USBCheckCDCRequest(void);
 void CDCInitEP(void);
-BYTE getsUSBUSART(char *buffer, BYTE len);
-void putrsUSBUSART(const ROM char *data);
-void putUSBUSART(char *data, BYTE Length);
+unsigned char getsUSBUSART(char *buffer, unsigned char len);
+void putrsUSBUSART(const char *data);
+void putUSBUSART(char *data, unsigned char Length);
 void putsUSBUSART(char *data);
 void CDCTxService(void);
 

@@ -19,10 +19,8 @@
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>
-#include "GenericTypeDefs.h"
 #include "Compiler.h"
 #include "usb_config.h"
-//#include <microchip/usb_device.h>
 #include <microchip/usb.h>
 #include <microchip/usb_function_cdc.h>
 
@@ -36,36 +34,52 @@
  * required in the stack provided demos.  They are not required in
  * final application design.
  */
-#define mLED_1_On()         LATECLR = (1 << 3)
-#define mLED_USB_On()       LATECLR = (1 << 3)
-#define mLED_2_On()         LATECLR = (1 << 2)
-#define mLED_3_On()         LATECLR = (1 << 1)
-#define mLED_4_On()         LATECLR = (1 << 0)
+#define mLED_1_On()		LATECLR = (1 << 3)
+#define mLED_USB_On()		LATECLR = (1 << 3)
+#define mLED_2_On()		LATECLR = (1 << 2)
+#define mLED_3_On()		LATECLR = (1 << 1)
+#define mLED_4_On()		LATECLR = (1 << 0)
 
-#define mLED_1_Off()        LATESET = (1 << 3)
-#define mLED_USB_Off()      LATESET = (1 << 3)
-#define mLED_2_Off()        LATESET = (1 << 2)
-#define mLED_3_Off()        LATESET = (1 << 1)
-#define mLED_4_Off()        LATESET = (1 << 0)
+#define mLED_1_Off()		LATESET = (1 << 3)
+#define mLED_USB_Off()		LATESET = (1 << 3)
+#define mLED_2_Off()		LATESET = (1 << 2)
+#define mLED_3_Off()		LATESET = (1 << 1)
+#define mLED_4_Off()		LATESET = (1 << 0)
 
-#define mLED_1_Toggle()     LATEINV = (1 << 3)
-#define mLED_USB_Toggle()   LATEINV = (1 << 3)
-#define mLED_2_Toggle()     LATEINV = (1 << 2)
-#define mLED_3_Toggle()     LATEINV = (1 << 1)
-#define mLED_4_Toggle()     LATEINV = (1 << 0)
+#define mLED_1_Toggle()		LATEINV = (1 << 3)
+#define mLED_USB_Toggle()	LATEINV = (1 << 3)
+#define mLED_2_Toggle()		LATEINV = (1 << 2)
+#define mLED_3_Toggle()		LATEINV = (1 << 1)
+#define mLED_4_Toggle()		LATEINV = (1 << 0)
 
 // Let compile time pre-processor calculate the CORE_TICK_PERIOD
-#define CORE_TICK_RATE		(KHZ / 2)
+//#define CORE_TICK_RATE	(KHZ / 2)
 
 // Decrements every 1 ms.
-volatile static unsigned int OneMSTimer;
+//volatile static unsigned int OneMSTimer;
 
-BOOL stringPrinted;
+/*
+ * BlinkUSBStatus turns on and off LEDs
+ * corresponding to the USB device state.
+ *
+ * mLED macros can be found in HardwareProfile.h
+ * USBDeviceState is declared and updated in usb_device.c.
+ */
+void BlinkUSBStatus (void)
+{
+	static unsigned led_count = 0;
 
-void USBDeviceTasks(void);
-void YourHighPriorityISRCode();
-void YourLowPriorityISRCode();
-void BlinkUSBStatus(void);
+	if (led_count == 0) {
+		led_count = 50000U;
+	}
+	led_count--;
+
+	if (USBDeviceState == CONFIGURED_STATE) {
+		if (led_count == 0) {
+			mLED_USB_Toggle();
+		}
+	}
+}
 
 #if 0
 void /*__ISR(_CORE_TIMER_VECTOR, ipl2)*/ CoreTimerHandler(void)
@@ -93,25 +107,8 @@ int main (void)
 	LATE |= 0x000F;
 	TRISE &= 0xFFF0;
 
-	// Open up the core timer at our 1ms rate
-//	OpenCoreTimer (CORE_TICK_RATE);
-
-	// set up the core timer interrupt with a prioirty of 2 and zero sub-priority
-//	mConfigIntCoreTimer (CT_INT_ON | CT_INT_PRIOR_2 | CT_INT_SUB_PRIOR_0);
-
-	// enable multi-vector interrupts
-//	INTEnableSystemMultiVectoredInt ();
-
 	USBDeviceInit();	//usb_device.c.  Initializes USB module SFRs and firmware
     				//variables to known states.
-
-	// Configure the proper PB frequency and the number of wait states
-//	SYSTEMConfigWaitStatesAndPB (80000000L);
-
-	// Enable the cache for the best performance
-//	CheKseg0CacheOn();
-
-// 	mJTAGPortEnable(0);
 	PMCON = 0;
 
 	for (;;) {
@@ -147,12 +144,12 @@ int main (void)
 				putUSBUSART ((char*) USB_Out_Buffer, strlen (USB_Out_Buffer));
 				mLED_2_Toggle();
 				mLED_3_On();
-				OneMSTimer = 1000;
+				//OneMSTimer = 1000;
 			}
 
-			if (! OneMSTimer) {
+//			if (! OneMSTimer) {
 				mLED_3_Off();
-			}
+//			}
 
 			CDCTxService();
 		}
@@ -160,51 +157,68 @@ int main (void)
 }
 
 /*
- * BlinkUSBStatus turns on and off LEDs
- * corresponding to the USB device state.
+ * USB Callback Functions
  *
- * mLED macros can be found in HardwareProfile.h
- * USBDeviceState is declared and updated in usb_device.c.
+ * The USB firmware stack will call the callback functions USBCBxxx() in response to certain USB related
+ * events.  For example, if the host PC is powering down, it will stop sending out Start of Frame (SOF)
+ * packets to your device.  In response to this, all USB devices are supposed to decrease their power
+ * consumption from the USB Vbus to <2.5mA each.  The USB module detects this condition (which according
+ * to the USB specifications is 3+ms of no bus activity/SOF packets) and then calls the USBCBSuspend()
+ * function.  You should modify these callback functions to take appropriate actions for each of these
+ * conditions.  For example, in the USBCBSuspend(), you may wish to add code that will decrease power
+ * consumption from Vbus to <2.5mA (such as by clock switching, turning off LEDs, putting the
+ * microcontroller to sleep, etc.).  Then, in the USBCBWakeFromSuspend() function, you may then wish to
+ * add code that undoes the power saving things done in the USBCBSuspend() function.
+ *
+ * The USBCBSendResume() function is special, in that the USB stack will not automatically call this
+ * function.  This function is meant to be called from the application firmware instead.  See the
+ * additional comments near the function.
  */
-void BlinkUSBStatus (void)
-{
-	static WORD led_count = 0;
-
-	if (led_count == 0) {
-		led_count = 50000U;
-	}
-	led_count--;
-
-	if (USBDeviceState == CONFIGURED_STATE) {
-		if (led_count == 0) {
-			mLED_USB_Toggle();
-		}
-	}
-}
-
-// ******************************************************************************************************
-// ************** USB Callback Functions ****************************************************************
-// ******************************************************************************************************
-// The USB firmware stack will call the callback functions USBCBxxx() in response to certain USB related
-// events.  For example, if the host PC is powering down, it will stop sending out Start of Frame (SOF)
-// packets to your device.  In response to this, all USB devices are supposed to decrease their power
-// consumption from the USB Vbus to <2.5mA each.  The USB module detects this condition (which according
-// to the USB specifications is 3+ms of no bus activity/SOF packets) and then calls the USBCBSuspend()
-// function.  You should modify these callback functions to take appropriate actions for each of these
-// conditions.  For example, in the USBCBSuspend(), you may wish to add code that will decrease power
-// consumption from Vbus to <2.5mA (such as by clock switching, turning off LEDs, putting the
-// microcontroller to sleep, etc.).  Then, in the USBCBWakeFromSuspend() function, you may then wish to
-// add code that undoes the power saving things done in the USBCBSuspend() function.
-
-// The USBCBSendResume() function is special, in that the USB stack will not automatically call this
-// function.  This function is meant to be called from the application firmware instead.  See the
-// additional comments near the function.
 
 /*
- * Call back that is invoked when a USB suspend is detected
+ * This function is called when the device becomes
+ * initialized, which occurs after the host sends a
+ * SET_CONFIGURATION (wValue not = 0) request.  This
+ * callback function should initialize the endpoints
+ * for the device's usage according to the current
+ * configuration.
  */
-void USBCBSuspend (void)
+void USBCBInitEP (void)
 {
+	CDCInitEP();
+}
+
+/*
+ * When SETUP packets arrive from the host, some
+ * firmware must process the request and respond
+ * appropriately to fulfill the request.  Some of
+ * the SETUP packets will be for standard
+ * USB "chapter 9" (as in, fulfilling chapter 9 of
+ * the official USB specifications) requests, while
+ * others may be specific to the USB device class
+ * that is being implemented.  For example, a HID
+ * class device needs to be able to respond to
+ * "GET REPORT" type of requests.  This
+ * is not a standard USB chapter 9 request, and
+ * therefore not handled by usb_device.c.  Instead
+ * this request should be handled by class specific
+ * firmware, such as that contained in usb_function_hid.c.
+ */
+void USBCBCheckOtherReq (void)
+{
+	USBCheckCDCRequest();
+}
+
+/*
+ * The USBCBStdSetDscHandler() callback function is
+ * called when a SETUP, bRequest: SET_DESCRIPTOR request
+ * arrives.  Typically SET_DESCRIPTOR requests are
+ * not used in most applications, and it is
+ * optional to support this type of request.
+ */
+void USBCBStdSetDscHandler(void)
+{
+	/* Must claim session ownership if supporting this request */
 }
 
 /*
@@ -225,6 +239,13 @@ void USBCBWakeFromSuspend(void)
 	// packets.  In order to do this, the USB module must receive proper
 	// clocking (IE: 48MHz clock must be available to SIE for full speed USB
 	// operation).
+}
+
+/*
+ * Call back that is invoked when a USB suspend is detected
+ */
+void USBCBSuspend (void)
+{
 }
 
 /*
@@ -264,53 +285,6 @@ void USBCBErrorHandler(void)
 
 	// Nevertheless, this callback function is provided, such as
 	// for debugging purposes.
-}
-
-
-/*
- * When SETUP packets arrive from the host, some
- * firmware must process the request and respond
- * appropriately to fulfill the request.  Some of
- * the SETUP packets will be for standard
- * USB "chapter 9" (as in, fulfilling chapter 9 of
- * the official USB specifications) requests, while
- * others may be specific to the USB device class
- * that is being implemented.  For example, a HID
- * class device needs to be able to respond to
- * "GET REPORT" type of requests.  This
- * is not a standard USB chapter 9 request, and
- * therefore not handled by usb_device.c.  Instead
- * this request should be handled by class specific
- * firmware, such as that contained in usb_function_hid.c.
- */
-void USBCBCheckOtherReq (void)
-{
-	USBCheckCDCRequest();
-}
-
-/*
- * The USBCBStdSetDscHandler() callback function is
- * called when a SETUP, bRequest: SET_DESCRIPTOR request
- * arrives.  Typically SET_DESCRIPTOR requests are
- * not used in most applications, and it is
- * optional to support this type of request.
- */
-void USBCBStdSetDscHandler(void)
-{
-	// Must claim session ownership if supporting this request
-}
-
-/*
- * This function is called when the device becomes
- * initialized, which occurs after the host sends a
- * SET_CONFIGURATION (wValue not = 0) request.  This
- * callback function should initialize the endpoints
- * for the device's usage according to the current
- * configuration.
- */
-void USBCBInitEP (void)
-{
-	CDCInitEP();
 }
 
 /*
@@ -374,18 +348,19 @@ void USBCBInitEP (void)
  */
 void USBCBSendResume(void)
 {
-	static WORD delay_count;
+	static unsigned delay_count;
 
-	U1CON |= PIC32_U1CON_RESUME;	// Start RESUME signaling
+	// Start RESUME signaling
+	U1CON |= PIC32_U1CON_RESUME;
 
-	delay_count = 1800U;		// Set RESUME line for 1-13 ms
+	// Set RESUME line for 1-13 ms
+	delay_count = 1800U;
 	do {
 		delay_count--;
 	} while (delay_count);
 
 	U1CON &= ~PIC32_U1CON_RESUME;
 }
-
 
 /*
  * This function is called whenever a EP0 data
@@ -404,51 +379,5 @@ void USBCBSendResume(void)
 #if defined(ENABLE_EP0_DATA_RECEIVED_CALLBACK)
 void USBCBEP0DataReceived(void)
 {
-}
-#endif
-
-#if 0
-/*
- * This function is called from the USB stack to
- * notify a user application that a USB event
- * occured.  This callback is in interrupt context
- * when the USB_INTERRUPT option is selected.
- *
- * Input:
- *	USB_EVENT event - the type of event
- *	void *pdata     - pointer to the event data
- *	WORD size       - size of the event data
- */
-BOOL USER_USB_CALLBACK_EVENT_HANDLER (USB_EVENT event, void *pdata, WORD size)
-{
-	switch(event) {
-        case EVENT_CONFIGURED:
-		USBCBInitEP();
-		break;
-        case EVENT_SET_DESCRIPTOR:
-		USBCBStdSetDscHandler();
-		break;
-        case EVENT_EP0_REQUEST:
-		USBCBCheckOtherReq();
-		break;
-        case EVENT_SOF:
-		USBCB_SOF_Handler();
-		break;
-        case EVENT_SUSPEND:
-		USBCBSuspend();
-		break;
-        case EVENT_RESUME:
-		USBCBWakeFromSuspend();
-		break;
-        case EVENT_BUS_ERROR:
-		USBCBErrorHandler();
-		break;
-        case EVENT_TRANSFER:
-		//Nop();
-		break;
-        default:
-		break;
-    }
-    return TRUE;
 }
 #endif

@@ -1,28 +1,27 @@
 /*
-    This file contains all of functions, macros, definitions, variables,
-    datatypes, etc. that are required for usage with the CDC function
-    driver. This file should be included in projects that use the CDC
-    \function driver.
-
-    The software supplied herewith by Microchip Technology Incorporated
-    (the “Company”) for its PIC® Microcontroller is intended and
-    supplied to you, the Company’s customer, for use solely and
-    exclusively on Microchip PIC Microcontroller products. The
-    software is owned by the Company and/or its supplier, and is
-    protected under applicable copyright laws. All rights are reserved.
-    Any use in violation of the foregoing restrictions may subject the
-    user to criminal sanctions under applicable laws, as well as to
-    civil liability for the breach of the terms and conditions of this
-    license.
-
-    THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
-    WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
-    TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-    PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
-    IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
-    CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ * This file contains all of functions, macros, definitions, variables,
+ * datatypes, etc. that are required for usage with the CDC function
+ * driver. This file should be included in projects that use the CDC
+ * \function driver.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PIC® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PIC Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  */
-#include "GenericTypeDefs.h"
+#include <runtime/lib.h>
 #include "Compiler.h"
 #include "usb_config.h"
 #include <microchip/usb_device.h>
@@ -33,24 +32,24 @@
 volatile CDC_NOTICE cdc_notice;
 volatile unsigned char cdc_data_rx[CDC_DATA_OUT_EP_SIZE];
 volatile unsigned char cdc_data_tx[CDC_DATA_IN_EP_SIZE];
-LINE_CODING line_coding;    // Buffer to store line coding information
+LINE_CODING line_coding;	// Buffer to store line coding information
 
-BYTE cdc_rx_len;            // total rx length
+unsigned char cdc_rx_len;	// total rx length
 
-BYTE cdc_trf_state;         // States are defined cdc.h
-POINTER pCDCSrc;            // Dedicated source pointer
-POINTER pCDCDst;            // Dedicated destination pointer
-BYTE cdc_tx_len;            // total tx length
-BYTE cdc_mem_type;          // _ROM, _RAM
+unsigned char cdc_trf_state;	// States are defined cdc.h
+POINTER pCDCSrc;		// Dedicated source pointer
+POINTER pCDCDst;		// Dedicated destination pointer
+unsigned char cdc_tx_len;	// total tx length
+unsigned char cdc_mem_type;	// _ROM, _RAM
 
 USB_HANDLE CDCDataOutHandle;
 USB_HANDLE CDCDataInHandle;
 
 
 CONTROL_SIGNAL_BITMAP control_signal_bitmap;
-DWORD BaudRateGen;			// BRG value calculated from baudrate
-extern BYTE  i;
-extern BYTE_VAL *pDst;
+uint32_t BaudRateGen;		// BRG value calculated from baudrate
+extern unsigned char  i;
+extern unsigned char *pDst;
 
 /**************************************************************************
   SEND_ENCAPSULATED_COMMAND and GET_ENCAPSULATED_RESPONSE are required
@@ -59,7 +58,7 @@ extern BYTE_VAL *pDst;
   used for conformance.
  ************************************************************************* */
 #define dummy_length    0x08
-BYTE_VAL dummy_encapsulated_cmd_response[dummy_length];
+unsigned char dummy_encapsulated_cmd_response[dummy_length];
 
 #if defined(USB_CDC_SET_LINE_CODING_HANDLER)
 CTRL_TRF_RETURN USB_CDC_SET_LINE_CODING_HANDLER(CTRL_TRF_PARAMS);
@@ -112,35 +111,35 @@ void USBCheckCDCRequest(void)
         //****** These commands are required *//
         case SEND_ENCAPSULATED_COMMAND:
          //send the packet
-            inPipes[0].pSrc.bRam = (BYTE*)&dummy_encapsulated_cmd_response;
-            inPipes[0].wCount.Val = dummy_length;
+            inPipes[0].pSrc.bRam = (unsigned char*)&dummy_encapsulated_cmd_response;
+            inPipes[0].wCount = dummy_length;
             inPipes[0].info.bits.ctrl_trf_mem = USB_INPIPES_RAM;
             inPipes[0].info.bits.busy = 1;
             break;
         case GET_ENCAPSULATED_RESPONSE:
             // Populate dummy_encapsulated_cmd_response first.
-            inPipes[0].pSrc.bRam = (BYTE*)&dummy_encapsulated_cmd_response;
+            inPipes[0].pSrc.bRam = (unsigned char*)&dummy_encapsulated_cmd_response;
             inPipes[0].info.bits.busy = 1;
             break;
         //****** End of required commands *//
 
         #if defined(USB_CDC_SUPPORT_ABSTRACT_CONTROL_MANAGEMENT_CAPABILITIES_D1)
         case SET_LINE_CODING:
-            outPipes[0].wCount.Val = SetupPkt.wLength;
-            outPipes[0].pDst.bRam = (BYTE*)LINE_CODING_TARGET;
+            outPipes[0].wCount = SetupPkt.wLength;
+            outPipes[0].pDst.bRam = (unsigned char*)LINE_CODING_TARGET;
             outPipes[0].pFunc = LINE_CODING_PFUNC;
             outPipes[0].info.bits.busy = 1;
             break;
 
         case GET_LINE_CODING:
             USBEP0SendRAMPtr(
-                (BYTE*)&line_coding,
+                (unsigned char*)&line_coding,
                 LINE_CODING_LENGTH,
                 USB_EP0_INCLUDE_ZERO);
             break;
 
         case SET_CONTROL_LINE_STATE:
-            control_signal_bitmap._byte = (BYTE)SetupPkt.W_Value.v[0];
+            control_signal_bitmap._byte = (unsigned char)SetupPkt.W_Value;
             CONFIGURE_RTS(control_signal_bitmap.CARRIER_CONTROL);
             CONFIGURE_DTR(control_signal_bitmap.DTE_PRESENT);
             inPipes[0].info.bits.busy = 1;
@@ -207,10 +206,10 @@ void USBCheckCDCRequest(void)
 void CDCInitEP(void)
 {
     //Abstract line coding information
-    line_coding.dwDTERate.Val = 19200;      // baud rate
-    line_coding.bCharFormat = 0x00;         // 1 stop bit
-    line_coding.bParityType = 0x00;         // None
-    line_coding.bDataBits = 0x08;           // 5,6,7,8, or 16
+    line_coding.dwDTERate = 19200;	// baud rate
+    line_coding.bCharFormat = 0;	// 1 stop bit
+    line_coding.bParityType = 0;	// None
+    line_coding.bDataBits = 8;		// 5,6,7,8, or 16
 
     cdc_trf_state = CDC_TX_READY;
     cdc_rx_len = 0;
@@ -229,13 +228,13 @@ void CDCInitEP(void)
     USBEnableEndpoint(CDC_COMM_EP,USB_IN_ENABLED|USB_HANDSHAKE_ENABLED|USB_DISALLOW_SETUP);
     USBEnableEndpoint(CDC_DATA_EP,USB_IN_ENABLED|USB_OUT_ENABLED|USB_HANDSHAKE_ENABLED|USB_DISALLOW_SETUP);
 
-    CDCDataOutHandle = USBRxOnePacket(CDC_DATA_EP,(BYTE*)&cdc_data_rx,sizeof(cdc_data_rx));
-    CDCDataInHandle = NULL;
+    CDCDataOutHandle = USBRxOnePacket(CDC_DATA_EP,(unsigned char*)&cdc_data_rx,sizeof(cdc_data_rx));
+    CDCDataInHandle = 0;
 }//end CDCInitEP
 
 /**********************************************************************************
   Function:
-        BYTE getsUSBUSART(char *buffer, BYTE len)
+        unsigned char getsUSBUSART(char *buffer, unsigned char len)
 
   Summary:
     getsUSBUSART copies a string of BYTEs received through USB CDC Bulk OUT
@@ -251,8 +250,8 @@ void CDCInitEP(void)
 
     Typical Usage:
     <code>
-        BYTE numBytes;
-        BYTE buffer[64]
+        unsigned char numBytes;
+        unsigned char buffer[64]
 
         numBytes = getsUSBUSART(buffer,sizeof(buffer)); //until the buffer is free.
         if(numBytes \> 0)
@@ -272,7 +271,7 @@ void CDCInitEP(void)
     len -     The number of BYTEs expected.
 
   */
-BYTE getsUSBUSART(char *buffer, BYTE len)
+unsigned char getsUSBUSART(char *buffer, unsigned char len)
 {
     cdc_rx_len = 0;
 
@@ -295,7 +294,8 @@ BYTE getsUSBUSART(char *buffer, BYTE len)
          * Prepare dual-ram buffer for next OUT transaction
          */
 
-        CDCDataOutHandle = USBRxOnePacket(CDC_DATA_EP,(BYTE*)&cdc_data_rx,sizeof(cdc_data_rx));
+        CDCDataOutHandle = USBRxOnePacket (CDC_DATA_EP,
+		(unsigned char*)&cdc_data_rx, sizeof(cdc_data_rx));
 
     }//end if
 
@@ -305,7 +305,7 @@ BYTE getsUSBUSART(char *buffer, BYTE len)
 
 /******************************************************************************
   Function:
-	void putUSBUSART(char *data, BYTE length)
+	void putUSBUSART(char *data, unsigned char length)
 
   Summary:
     putUSBUSART writes an array of data to the USB. Use this version, is
@@ -340,10 +340,10 @@ BYTE getsUSBUSART(char *buffer, BYTE len)
 
   Input:
     char *data - pointer to a RAM array of data to be transfered to the host
-    BYTE length - the number of bytes to be transfered (must be less than 255).
+    unsigned char length - the number of bytes to be transfered (must be less than 255).
 
  */
-void putUSBUSART(char *data, BYTE  length)
+void putUSBUSART (char *data, unsigned char length)
 {
     /*
      * User should have checked that cdc_trf_state is in CDC_TX_READY state
@@ -370,7 +370,7 @@ void putUSBUSART(char *data, BYTE  length)
      */
     if(cdc_trf_state == CDC_TX_READY)
     {
-        mUSBUSARTTxRam((BYTE*)data, length);     // See cdc.h
+        mUSBUSARTTxRam ((unsigned char*)data, length);     // See cdc.h
     }
 }//end putUSBUSART
 
@@ -416,7 +416,7 @@ void putUSBUSART(char *data, BYTE  length)
 
 void putsUSBUSART(char *data)
 {
-    BYTE len;
+    unsigned char len;
     char *pData;
 
     /*
@@ -462,7 +462,7 @@ void putsUSBUSART(char *data)
      * The actual transfer process will be handled by CDCTxService(),
      * which should be called once per Main Program loop.
      */
-    mUSBUSARTTxRam((BYTE*)data, len);     // See cdc.h
+    mUSBUSARTTxRam ((unsigned char*)data, len);     // See cdc.h
 }//end putsUSBUSART
 
 /**************************************************************************
@@ -507,7 +507,7 @@ void putsUSBUSART(char *data)
   */
 void putrsUSBUSART(const ROM char *data)
 {
-    BYTE len;
+    unsigned char len;
     const ROM char *pData;
 
     /*
@@ -554,7 +554,7 @@ void putrsUSBUSART(const ROM char *data)
      * which should be called once per Main Program loop.
      */
 
-    mUSBUSARTTxRom((ROM BYTE*)data,len); // See cdc.h
+    mUSBUSARTTxRom ((const unsigned char*)data, len); // See cdc.h
 
 }//end putrsUSBUSART
 
@@ -604,8 +604,8 @@ void putrsUSBUSART(const ROM char *data)
 
 void CDCTxService(void)
 {
-    BYTE byte_to_send;
-    BYTE i;
+    unsigned char byte_to_send;
+    unsigned char i;
 
     if(USBHandleBusy(CDCDataInHandle)) return;
     /*
@@ -626,7 +626,7 @@ void CDCTxService(void)
      */
     if(cdc_trf_state == CDC_TX_BUSY_ZLP)
     {
-        CDCDataInHandle = USBTxOnePacket(CDC_DATA_EP,NULL,0);
+        CDCDataInHandle = USBTxOnePacket (CDC_DATA_EP, 0, 0);
         //CDC_DATA_BD_IN.CNT = 0;
         cdc_trf_state = CDC_TX_COMPLETING;
     }
@@ -645,7 +645,7 @@ void CDCTxService(void)
          */
     	cdc_tx_len = cdc_tx_len - byte_to_send;
 
-        pCDCDst.bRam = (BYTE*)&cdc_data_tx; // Set destination pointer
+        pCDCDst.bRam = (unsigned char*)&cdc_data_tx; // Set destination pointer
 
         i = byte_to_send;
         if(cdc_mem_type == _ROM)            // Determine type of memory source
@@ -680,7 +680,7 @@ void CDCTxService(void)
             else
                 cdc_trf_state = CDC_TX_COMPLETING;
         }//end if(cdc_tx_len...)
-        CDCDataInHandle = USBTxOnePacket(CDC_DATA_EP,(BYTE*)&cdc_data_tx,byte_to_send);
+        CDCDataInHandle = USBTxOnePacket (CDC_DATA_EP, (unsigned char*)&cdc_data_tx, byte_to_send);
 
     }//end if(cdc_tx_sate == CDC_TX_BUSY)
 

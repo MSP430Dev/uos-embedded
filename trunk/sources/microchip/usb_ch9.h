@@ -1,174 +1,113 @@
-/*******************************************************************************
-
-    USB Chapter 9 Protocol (Header File)
-
-Summary:
-    This file defines data structures, constants, and macros that are used to
-    to support the USB Device Framework protocol described in Chapter 9 of the
-    USB 2.0 specification.
-
-Description:
-    This file defines data structures, constants, and macros that are used to
-    to support the USB Device Framework protocol described in Chapter 9 of the
-    USB 2.0 specification.
-
-    This file is located in the "\<Install Directory\>\\Microchip\\Include\\USB"
-    directory.
-    
-    When including this file in a new project, this file can either be
-    referenced from the directory in which it was installed or copied
-    directly into the user application folder. If the first method is
-    chosen to keep the file located in the folder in which it is installed
-    then include paths need to be added so that the library and the
-    application both know where to reference each others files. If the
-    application folder is located in the same folder as the Microchip
-    folder (like the current demo folders), then the following include
-    paths need to be added to the application's project:
-    
-    ..\\Include
-    
-    ..\\..\\Include
-    
-    ..\\..\\MicrochipInclude
-    
-    ..\\..\\\<Application Folder\>
-    
-    ..\\..\\..\\\<Application Folder\>
-    
-    If a different directory structure is used, modify the paths as
-    required. An example using absolute paths instead of relative paths
-    would be the following:
-    
-    C:\\Microchip Solutions\\Microchip\\Include
-    
-    C:\\Microchip Solutions\\My Demo Application 
-*******************************************************************************/
-//DOM-IGNORE-BEGIN
-/*******************************************************************************
-
-* FileName:        usb_ch9.h
-* Dependencies:    None
-* Processor:       PIC18/PIC24/PIC32MX microcontrollers with USB module
-* Compiler:        C18 v3.13+/C30 v2.01+/C32 v0.00.18+
-* Company:         Microchip Technology, Inc.
-* File Description:
-* This file contains the definitions and prototypes used for
-* specification chapter 9 compliance.
-
-Software License Agreement
-
-The software supplied herewith by Microchip Technology Incorporated
-(the “Company”) for its PICmicro® Microcontroller is intended and
-supplied to you, the Company’s customer, for use solely and
-exclusively on Microchip PICmicro Microcontroller products. The
-software is owned by the Company and/or its supplier, and is
-protected under applicable copyright laws. All rights are reserved.
-Any use in violation of the foregoing restrictions may subject the
-user to criminal sanctions under applicable laws, as well as to
-civil liability for the breach of the terms and conditions of this
-license.
-
-THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
-WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
-TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
-IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
-CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-*******************************************************************************/
-//DOM-IGNORE-END
-
-//DOM-IGNORE-BEGIN
+/*
+ * USB Chapter 9 Protocol (Header File)
+ *
+ * This file defines data structures, constants, and macros that are used to
+ * to support the USB Device Framework protocol described in Chapter 9 of the
+ * USB 2.0 specification.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PICmicro® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PICmicro Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this
+ * license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ */
 #ifndef _USB_CH9_H_
 #define _USB_CH9_H_
-//DOM-IGNORE-END
 
-
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: USB Descriptors
-// *****************************************************************************
-// *****************************************************************************
+//
+#define USB_DESCRIPTOR_DEVICE		0x01	// bDescriptorType for a Device Descriptor.
+#define USB_DESCRIPTOR_CONFIGURATION	0x02	// bDescriptorType for a Configuration Descriptor.
+#define USB_DESCRIPTOR_STRING		0x03	// bDescriptorType for a String Descriptor.
+#define USB_DESCRIPTOR_INTERFACE	0x04	// bDescriptorType for an Interface Descriptor.
+#define USB_DESCRIPTOR_ENDPOINT		0x05	// bDescriptorType for an Endpoint Descriptor.
+#define USB_DESCRIPTOR_DEVICE_QUALIFIER	0x06	// bDescriptorType for a Device Qualifier.
+#define USB_DESCRIPTOR_OTHER_SPEED	0x07	// bDescriptorType for a Other Speed Configuration.
+#define USB_DESCRIPTOR_INTERFACE_POWER	0x08	// bDescriptorType for Interface Power.
+#define USB_DESCRIPTOR_OTG		0x09	// bDescriptorType for an OTG Descriptor.
 
-#define USB_DESCRIPTOR_DEVICE           0x01    // bDescriptorType for a Device Descriptor.
-#define USB_DESCRIPTOR_CONFIGURATION    0x02    // bDescriptorType for a Configuration Descriptor.
-#define USB_DESCRIPTOR_STRING           0x03    // bDescriptorType for a String Descriptor.
-#define USB_DESCRIPTOR_INTERFACE        0x04    // bDescriptorType for an Interface Descriptor.
-#define USB_DESCRIPTOR_ENDPOINT         0x05    // bDescriptorType for an Endpoint Descriptor.
-#define USB_DESCRIPTOR_DEVICE_QUALIFIER 0x06    // bDescriptorType for a Device Qualifier.
-#define USB_DESCRIPTOR_OTHER_SPEED      0x07    // bDescriptorType for a Other Speed Configuration.
-#define USB_DESCRIPTOR_INTERFACE_POWER  0x08    // bDescriptorType for Interface Power.
-#define USB_DESCRIPTOR_OTG              0x09    // bDescriptorType for an OTG Descriptor.
-
-// *****************************************************************************
-/* USB Device Descriptor Structure
-
-This struct defines the structure of a USB Device Descriptor.  Note that this
-structure may need to be packed, or even accessed as bytes, to properly access
-the correct fields when used on some device architectures.
-*/
+/*
+ * USB Device Descriptor Structure
+ *
+ * This struct defines the structure of a USB Device Descriptor.  Note that this
+ * structure may need to be packed, or even accessed as bytes, to properly access
+ * the correct fields when used on some device architectures.
+ */
 typedef struct __attribute__ ((packed)) _USB_DEVICE_DESCRIPTOR
 {
-    BYTE bLength;               // Length of this descriptor.
-    BYTE bDescriptorType;       // DEVICE descriptor type (USB_DESCRIPTOR_DEVICE).
-    WORD bcdUSB;                // USB Spec Release Number (BCD).
-    BYTE bDeviceClass;          // Class code (assigned by the USB-IF). 0xFF-Vendor specific.
-    BYTE bDeviceSubClass;       // Subclass code (assigned by the USB-IF).
-    BYTE bDeviceProtocol;       // Protocol code (assigned by the USB-IF). 0xFF-Vendor specific.
-    BYTE bMaxPacketSize0;       // Maximum packet size for endpoint 0.
-    WORD idVendor;              // Vendor ID (assigned by the USB-IF).
-    WORD idProduct;             // Product ID (assigned by the manufacturer).
-    WORD bcdDevice;             // Device release number (BCD).
-    BYTE iManufacturer;         // Index of String Descriptor describing the manufacturer.
-    BYTE iProduct;              // Index of String Descriptor describing the product.
-    BYTE iSerialNumber;         // Index of String Descriptor with the device's serial number.
-    BYTE bNumConfigurations;    // Number of possible configurations.
+	unsigned char bLength;			// Length of this descriptor.
+	unsigned char bDescriptorType;		// DEVICE descriptor type (USB_DESCRIPTOR_DEVICE).
+	uint16_t bcdUSB;			// USB Spec Release Number (BCD).
+	unsigned char bDeviceClass;		// Class code (assigned by the USB-IF). 0xFF-Vendor specific.
+	unsigned char bDeviceSubClass;		// Subclass code (assigned by the USB-IF).
+	unsigned char bDeviceProtocol;		// Protocol code (assigned by the USB-IF). 0xFF-Vendor specific.
+	unsigned char bMaxPacketSize0;		// Maximum packet size for endpoint 0.
+	uint16_t idVendor;			// Vendor ID (assigned by the USB-IF).
+	uint16_t idProduct;			// Product ID (assigned by the manufacturer).
+	uint16_t bcdDevice;			// Device release number (BCD).
+	unsigned char iManufacturer;		// Index of String Descriptor describing the manufacturer.
+	unsigned char iProduct;			// Index of String Descriptor describing the product.
+	unsigned char iSerialNumber;		// Index of String Descriptor with the device's serial number.
+	unsigned char bNumConfigurations;	// Number of possible configurations.
 } USB_DEVICE_DESCRIPTOR;
 
 
-// *****************************************************************************
-/* USB Configuration Descriptor Structure
-
-This struct defines the structure of a USB Configuration Descriptor.  Note that this
-structure may need to be packed, or even accessed as bytes, to properly access
-the correct fields when used on some device architectures.
-*/
+/*
+ * USB Configuration Descriptor Structure
+ *
+ * This struct defines the structure of a USB Configuration Descriptor.  Note that this
+ * structure may need to be packed, or even accessed as bytes, to properly access
+ * the correct fields when used on some device architectures.
+ */
 typedef struct __attribute__ ((packed)) _USB_CONFIGURATION_DESCRIPTOR
 {
-    BYTE bLength;               // Length of this descriptor.
-    BYTE bDescriptorType;       // CONFIGURATION descriptor type (USB_DESCRIPTOR_CONFIGURATION).
-    WORD wTotalLength;          // Total length of all descriptors for this configuration.
-    BYTE bNumInterfaces;        // Number of interfaces in this configuration.
-    BYTE bConfigurationValue;   // Value of this configuration (1 based).
-    BYTE iConfiguration;        // Index of String Descriptor describing the configuration.
-    BYTE bmAttributes;          // Configuration characteristics.
-    BYTE bMaxPower;             // Maximum power consumed by this configuration.
+	unsigned char bLength;			// Length of this descriptor.
+	unsigned char bDescriptorType;		// CONFIGURATION descriptor type (USB_DESCRIPTOR_CONFIGURATION).
+	uint16_t wTotalLength;			// Total length of all descriptors for this configuration.
+	unsigned char bNumInterfaces;		// Number of interfaces in this configuration.
+	unsigned char bConfigurationValue;	// Value of this configuration (1 based).
+	unsigned char iConfiguration;		// Index of String Descriptor describing the configuration.
+	unsigned char bmAttributes;		// Configuration characteristics.
+	unsigned char bMaxPower;		// Maximum power consumed by this configuration.
 } USB_CONFIGURATION_DESCRIPTOR;
 
 // Attributes bits
-#define USB_CFG_DSC_REQUIRED     0x80                       // Required attribute
-#define USB_CFG_DSC_SELF_PWR    (0x40|USB_CFG_DSC_REQUIRED) // Device is self powered.
-#define USB_CFG_DSC_REM_WAKE    (0x20|USB_CFG_DSC_REQUIRED) // Device can request remote wakup
+#define USB_CFG_DSC_REQUIRED	0x80				// Required attribute
+#define USB_CFG_DSC_SELF_PWR	(0x40 | USB_CFG_DSC_REQUIRED)	// Device is self powered.
+#define USB_CFG_DSC_REM_WAKE	(0x20 | USB_CFG_DSC_REQUIRED)	// Device can request remote wakup
 
 
-// *****************************************************************************
-/* USB Interface Descriptor Structure
-
-This struct defines the structure of a USB Interface Descriptor.  Note that this
-structure may need to be packed, or even accessed as bytes, to properly access
-the correct fields when used on some device architectures.
-*/
+/*
+ * USB Interface Descriptor Structure
+ *
+ * This struct defines the structure of a USB Interface Descriptor.  Note that this
+ * structure may need to be packed, or even accessed as bytes, to properly access
+ * the correct fields when used on some device architectures.
+ */
 typedef struct __attribute__ ((packed)) _USB_INTERFACE_DESCRIPTOR
 {
-    BYTE bLength;               // Length of this descriptor.
-    BYTE bDescriptorType;       // INTERFACE descriptor type (USB_DESCRIPTOR_INTERFACE).
-    BYTE bInterfaceNumber;      // Number of this interface (0 based).
-    BYTE bAlternateSetting;     // Value of this alternate interface setting.
-    BYTE bNumEndpoints;         // Number of endpoints in this interface.
-    BYTE bInterfaceClass;       // Class code (assigned by the USB-IF).  0xFF-Vendor specific.
-    BYTE bInterfaceSubClass;    // Subclass code (assigned by the USB-IF).
-    BYTE bInterfaceProtocol;    // Protocol code (assigned by the USB-IF).  0xFF-Vendor specific.
-    BYTE iInterface;            // Index of String Descriptor describing the interface.
+	unsigned char bLength;			// Length of this descriptor.
+	unsigned char bDescriptorType;		// INTERFACE descriptor type (USB_DESCRIPTOR_INTERFACE).
+	unsigned char bInterfaceNumber;		// Number of this interface (0 based).
+	unsigned char bAlternateSetting;	// Value of this alternate interface setting.
+	unsigned char bNumEndpoints;		// Number of endpoints in this interface.
+	unsigned char bInterfaceClass;		// Class code (assigned by the USB-IF).  0xFF-Vendor specific.
+	unsigned char bInterfaceSubClass;	// Subclass code (assigned by the USB-IF).
+	unsigned char bInterfaceProtocol;	// Protocol code (assigned by the USB-IF).  0xFF-Vendor specific.
+	unsigned char iInterface;		// Index of String Descriptor describing the interface.
 } USB_INTERFACE_DESCRIPTOR;
 
 
@@ -181,12 +120,12 @@ the correct fields when used on some device architectures.
 */
 typedef struct __attribute__ ((packed)) _USB_ENDPOINT_DESCRIPTOR
 {
-    BYTE bLength;               // Length of this descriptor.
-    BYTE bDescriptorType;       // ENDPOINT descriptor type (USB_DESCRIPTOR_ENDPOINT).
-    BYTE bEndpointAddress;      // Endpoint address. Bit 7 indicates direction (0=OUT, 1=IN).
-    BYTE bmAttributes;          // Endpoint transfer type.
-    WORD wMaxPacketSize;        // Maximum packet size.
-    BYTE bInterval;             // Polling interval in frames.
+	unsigned char bLength;		// Length of this descriptor.
+	unsigned char bDescriptorType;	// ENDPOINT descriptor type (USB_DESCRIPTOR_ENDPOINT).
+	unsigned char bEndpointAddress;	// Endpoint address. Bit 7 indicates direction (0=OUT, 1=IN).
+	unsigned char bmAttributes;	// Endpoint transfer type.
+	uint16_t wMaxPacketSize;        // Maximum packet size.
+	unsigned char bInterval;	// Polling interval in frames.
 } USB_ENDPOINT_DESCRIPTOR;
 
 
@@ -235,9 +174,9 @@ the correct fields when used on some device architectures.
 */
 typedef struct __attribute__ ((packed)) _USB_OTG_DESCRIPTOR
 {
-    BYTE bLength;               // Length of this descriptor.
-    BYTE bDescriptorType;       // OTG descriptor type (USB_DESCRIPTOR_OTG).
-    BYTE bmAttributes;          // OTG attributes.
+	unsigned char bLength;		// Length of this descriptor.
+	unsigned char bDescriptorType;	// OTG descriptor type (USB_DESCRIPTOR_OTG).
+	unsigned char bmAttributes;	// OTG attributes.
 } USB_OTG_DESCRIPTOR;
 
 
@@ -259,8 +198,8 @@ typedef struct __attribute__ ((packed)) _USB_OTG_DESCRIPTOR
 
 typedef struct __attribute__ ((packed)) _USB_STRING_DSC
 {
-    BYTE   bLength;             // Size of this descriptor
-    BYTE   bDescriptorType;     // Type, USB_DSC_STRING
+	unsigned char bLength;		// Size of this descriptor
+	unsigned char bDescriptorType;	// Type, USB_DSC_STRING
 
 } USB_STRING_DESCRIPTOR;
 
@@ -278,15 +217,15 @@ typedef struct __attribute__ ((packed)) _USB_STRING_DSC
 
 typedef struct __attribute__ ((packed)) _USB_DEVICE_QUALIFIER_DESCRIPTOR
 {
-    BYTE bLength;               // Size of this descriptor
-    BYTE bType;                 // Type, always USB_DESCRIPTOR_DEVICE_QUALIFIER
-    WORD bcdUSB;                // USB spec version, in BCD
-    BYTE bDeviceClass;          // Device class code
-    BYTE bDeviceSubClass;       // Device sub-class code
-    BYTE bDeviceProtocol;       // Device protocol
-    BYTE bMaxPacketSize0;       // EP0, max packet size
-    BYTE bNumConfigurations;    // Number of "other-speed" configurations
-    BYTE bReserved;             // Always zero (0)
+	unsigned char bLength;			// Size of this descriptor
+	unsigned char bType;			// Type, always USB_DESCRIPTOR_DEVICE_QUALIFIER
+	uint16_t bcdUSB;			// USB spec version, in BCD
+	unsigned char bDeviceClass;		// Device class code
+	unsigned char bDeviceSubClass;		// Device sub-class code
+	unsigned char bDeviceProtocol;		// Device protocol
+	unsigned char bMaxPacketSize0;		// EP0, max packet size
+	unsigned char bNumConfigurations;	// Number of "other-speed" configurations
+	unsigned char bReserved;		// Always zero (0)
 
 } USB_DEVICE_QUALIFIER_DESCRIPTOR;
 
@@ -303,30 +242,27 @@ typedef struct __attribute__ ((packed)) _USB_DEVICE_QUALIFIER_DESCRIPTOR
 
 typedef struct __attribute__ ((packed)) SetupPkt
 {
-    union                           // offset   description
-    {                               // ------   ------------------------
-        BYTE bmRequestType;         //   0      Bit-map of request type
-        struct
-        {
-            BYTE    recipient:  5;  //          Recipient of the request
-            BYTE    type:       2;  //          Type of request
-            BYTE    direction:  1;  //          Direction of data X-fer
-        };
-    }requestInfo;
+	union					// offset   description
+	{					// ------   ------------------------
+		unsigned char bmRequestType;	//   0      Bit-map of request type
+		struct {
+			unsigned recipient:  5;	//          Recipient of the request
+			unsigned type:       2;	//          Type of request
+			unsigned direction:  1;	//          Direction of data X-fer
+		};
+	} requestInfo;
 
-    BYTE    bRequest;               //   1      Request type
-    UINT16  wValue;                 //   2      Depends on bRequest
-    UINT16  wIndex;                 //   4      Depends on bRequest
-    UINT16  wLength;                //   6      Depends on bRequest
+	unsigned char bRequest;			//   1      Request type
+	uint16_t wValue;			//   2      Depends on bRequest
+	uint16_t wIndex;			//   4      Depends on bRequest
+	uint16_t wLength;			//   6      Depends on bRequest
 
 } SETUP_PKT, *PSETUP_PKT;
 
 
-// ******************************************************************
-// ******************************************************************
+//
 // Section: USB Specification Constants
-// ******************************************************************
-// ******************************************************************
+//
 
 // Section: Valid PID Values
 //DOM-IGNORE-BEGIN
@@ -420,9 +356,4 @@ typedef struct __attribute__ ((packed)) SetupPkt
 // Section: USB Class Code Definitions
 #define USB_HUB_CLASSCODE                       0x09    //  Class code for a hub.
 
-
 #endif  // _USB_CH9_H_
-/*************************************************************************
- * EOF
- */
-

@@ -1,100 +1,31 @@
-/*******************************************************************************
-
-    USB Device header file
-
-Summary:
-    This file, with its associated C source file, provides the main substance of
-    the USB device side stack.  These files will receive, transmit, and process
-    various USB commands as well as take action when required for various events
-    that occur on the bus.
-
-Description:
-    This file, with its associated C source file, provides the main substance of
-    the USB device side stack.  These files will receive, transmit, and process
-    various USB commands as well as take action when required for various events
-    that occur on the bus.
-
-    This file is located in the "\<Install Directory\>\\Microchip\\Include\\USB"
-    directory.
-
-    When including this file in a new project, this file can either be
-    referenced from the directory in which it was installed or copied
-    directly into the user application folder. If the first method is
-    chosen to keep the file located in the folder in which it is installed
-    then include paths need to be added so that the library and the
-    application both know where to reference each others files. If the
-    application folder is located in the same folder as the Microchip
-    folder (like the current demo folders), then the following include
-    paths need to be added to the application's project:
-
-    ..\\Include
-
-    ..\\..\\Include
-
-    ..\\..\\MicrochipInclude
-
-    ..\\..\\\<Application Folder\>
-
-    ..\\..\\..\\\<Application Folder\>
-
-    If a different directory structure is used, modify the paths as
-    required. An example using absolute paths instead of relative paths
-    would be the following:
-
-    C:\\Microchip Solutions\\Microchip\\Include
-
-    C:\\Microchip Solutions\\My Demo Application
-
-******************************************************************************/
-//DOM-IGNORE-BEGIN
-/******************************************************************************
- FileName:     	usb_device.h
- Dependencies:	See INCLUDES section
- Processor:		PIC18 or PIC24 USB Microcontrollers
- Hardware:		The code is natively intended to be used on the following
- 				hardware platforms: PICDEM™ FS USB Demo Board,
- 				PIC18F87J50 FS USB Plug-In Module, or
- 				Explorer 16 + PIC24 USB PIM.  The firmware may be
- 				modified for use on other USB platforms by editing the
- 				HardwareProfile.h file.
- Complier:  	Microchip C18 (for PIC18) or C30 (for PIC24)
- Company:		Microchip Technology, Inc.
-
- Software License Agreement:
-
- The software supplied herewith by Microchip Technology Incorporated
- (the “Company”) for its PIC® Microcontroller is intended and
- supplied to you, the Company’s customer, for use solely and
- exclusively on Microchip PIC Microcontroller products. The
- software is owned by the Company and/or its supplier, and is
- protected under applicable copyright laws. All rights are reserved.
- Any use in violation of the foregoing restrictions may subject the
- user to criminal sanctions under applicable laws, as well as to
- civil liability for the breach of the terms and conditions of this
- license.
-
- THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
- WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
- TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
- IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
- CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-********************************************************************
- File Description:
-
- Change History:
-  Rev   Date         Description
-  1.0   11/19/2004   Initial release
-  2.1   02/26/2007   Added "(" & ")" to EP definitions
-                     Updated for simplicity and to use common
-                     coding style
-*******************************************************************/
-
+/*
+ * USB Device header file
+ *
+ * This file, with its associated C source file, provides the main substance of
+ * the USB device side stack.  These files will receive, transmit, and process
+ * various USB commands as well as take action when required for various events
+ * that occur on the bus.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PIC® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PIC Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this
+ * license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ */
 #ifndef USBDEVICE_H
 #define USBDEVICE_H
-//DOM-IGNORE-END
-
 
 #include "Compiler.h"
 #include <microchip/usb_ch9.h>
@@ -103,16 +34,14 @@ Description:
                         //  usb_hal.h file to insure that the user
                         //  options are selected after the defines
                         //  are created.
-/** DEFINITIONS ****************************************************/
-
-/********************************************************************
-USB Endpoint Definitions
-USB Standard EP Address Format: DIR:X:X:X:EP3:EP2:EP1:EP0
-This is used in the descriptors. See usbcfg.c
-
-NOTE: Do not use these values for checking against USTAT.
-To check against USTAT, use values defined in usbd.h.
-********************************************************************/
+/*
+ * USB Endpoint Definitions
+ * USB Standard EP Address Format: DIR:X:X:X:EP3:EP2:EP1:EP0
+ * This is used in the descriptors. See usbcfg.c
+ *
+ * NOTE: Do not use these values for checking against USTAT.
+ * To check against USTAT, use values defined in usbd.h.
+ */
 #define _EP_IN      0x80
 #define _EP_OUT     0x00
 #define _EP01_OUT   0x01
@@ -192,19 +121,19 @@ typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
     /** Standard Device Requests ***********************************/
     struct __attribute__ ((packed))
     {
-        BYTE bmRequestType; //from table 9-2 of USB2.0 spec
-        BYTE bRequest; //from table 9-2 of USB2.0 spec
-        WORD wValue; //from table 9-2 of USB2.0 spec
-        WORD wIndex; //from table 9-2 of USB2.0 spec
-        WORD wLength; //from table 9-2 of USB2.0 spec
+        unsigned char bmRequestType; //from table 9-2 of USB2.0 spec
+        unsigned char bRequest; //from table 9-2 of USB2.0 spec
+        uint16_t wValue; //from table 9-2 of USB2.0 spec
+        uint16_t wIndex; //from table 9-2 of USB2.0 spec
+        uint16_t wLength; //from table 9-2 of USB2.0 spec
     };
     struct __attribute__ ((packed))
     {
         unsigned :8;
         unsigned :8;
-        WORD_VAL W_Value; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
-        WORD_VAL W_Index; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
-        WORD_VAL W_Length; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
+        uint16_t W_Value; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
+        uint16_t W_Index; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
+        uint16_t W_Length; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
     };
     struct __attribute__ ((packed))
     {
@@ -212,7 +141,7 @@ typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
         unsigned RequestType:2; //Standard,Class,Vendor,Reserved
         unsigned DataDir:1;     //Host-to-device,Device-to-host
         unsigned :8;
-        BYTE bFeature;          //DEVICE_REMOTE_WAKEUP,ENDPOINT_HALT
+        unsigned char bFeature;          //DEVICE_REMOTE_WAKEUP,ENDPOINT_HALT
         unsigned :8;
         unsigned :8;
         unsigned :8;
@@ -223,9 +152,9 @@ typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
     {
         unsigned :8;
         unsigned :8;
-        BYTE bDscIndex;         //For Configuration and String DSC Only
-        BYTE bDescriptorType;          //Device,Configuration,String
-        WORD wLangID;           //Language ID
+        unsigned char bDscIndex;         //For Configuration and String DSC Only
+        unsigned char bDescriptorType;          //Device,Configuration,String
+        uint16_t wLangID;           //Language ID
         unsigned :8;
         unsigned :8;
     };
@@ -233,19 +162,8 @@ typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
     {
         unsigned :8;
         unsigned :8;
-        BYTE_VAL bDevADR;       //Device Address 0-127
-        BYTE bDevADRH;          //Must equal zero
-        unsigned :8;
-        unsigned :8;
-        unsigned :8;
-        unsigned :8;
-    };
-    struct __attribute__ ((packed))
-    {
-        unsigned :8;
-        unsigned :8;
-        BYTE bConfigurationValue;         //Configuration Value 0-255
-        BYTE bCfgRSD;           //Must equal zero (Reserved)
+        unsigned char bDevADR;		//Device Address 0-127
+        unsigned char bDevADRH;          //Must equal zero
         unsigned :8;
         unsigned :8;
         unsigned :8;
@@ -255,10 +173,21 @@ typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
     {
         unsigned :8;
         unsigned :8;
-        BYTE bAltID;            //Alternate Setting Value 0-255
-        BYTE bAltID_H;          //Must equal zero
-        BYTE bIntfID;           //Interface Number Value 0-255
-        BYTE bIntfID_H;         //Must equal zero
+        unsigned char bConfigurationValue;         //Configuration Value 0-255
+        unsigned char bCfgRSD;           //Must equal zero (Reserved)
+        unsigned :8;
+        unsigned :8;
+        unsigned :8;
+        unsigned :8;
+    };
+    struct __attribute__ ((packed))
+    {
+        unsigned :8;
+        unsigned :8;
+        unsigned char bAltID;            //Alternate Setting Value 0-255
+        unsigned char bAltID_H;          //Must equal zero
+        unsigned char bIntfID;           //Interface Number Value 0-255
+        unsigned char bIntfID_H;         //Must equal zero
         unsigned :8;
         unsigned :8;
     };
@@ -268,8 +197,8 @@ typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
         unsigned :8;
         unsigned :8;
         unsigned :8;
-        BYTE bEPID;             //Endpoint ID (Number & Direction)
-        BYTE bEPID_H;           //Must equal zero
+        unsigned char bEPID;             //Endpoint ID (Number & Direction)
+        unsigned char bEPID_H;           //Must equal zero
         unsigned :8;
         unsigned :8;
     };
@@ -300,27 +229,27 @@ typedef struct __attribute__ ((packed))
     {
         //Various options of pointers that are available to
         // get the data from
-        BYTE *bRam;
-        const BYTE *bRom;
-        WORD *wRam;
-        const WORD *wRom;
-    }pSrc;
+        unsigned char *bRam;
+        const unsigned char *bRom;
+        uint16_t *wRam;
+        const uint16_t *wRom;
+    } pSrc;
     union __attribute__ ((packed))
     {
         struct __attribute__ ((packed))
         {
             //is this transfer from RAM or ROM?
-            BYTE ctrl_trf_mem          :1;
-            BYTE reserved              :5;
+            unsigned ctrl_trf_mem          :1;
+            unsigned reserved              :5;
             //include a zero length packet after
             //data is done if data_size%ep_size = 0?
-            BYTE includeZero           :1;
+            unsigned includeZero           :1;
             //is this PIPE currently in use
-            BYTE busy                  :1;
-        }bits;
-        BYTE Val;
-    }info;
-    WORD_VAL wCount;
+            unsigned busy                  :1;
+        } bits;
+        unsigned char Val;
+    } info;
+    uint16_t wCount;
 }IN_PIPE;
 
 #define CTRL_TRF_RETURN void
@@ -331,20 +260,20 @@ typedef struct __attribute__ ((packed))
     {
         //Various options of pointers that are available to
         // get the data from
-        BYTE *bRam;
-        WORD *wRam;
-    }pDst;
+        unsigned char *bRam;
+        uint16_t *wRam;
+    } pDst;
     union __attribute__ ((packed))
     {
         struct __attribute__ ((packed))
         {
-            BYTE reserved              :7;
+            unsigned reserved              :7;
             //is this PIPE currently in use
-            BYTE busy                  :1;
-        }bits;
-        BYTE Val;
-    }info;
-    WORD_VAL wCount;
+            unsigned busy                  :1;
+        } bits;
+        unsigned char Val;
+    } info;
+    uint16_t wCount;
     CTRL_TRF_RETURN (*pFunc)(CTRL_TRF_PARAMS);
 }OUT_PIPE;
 
@@ -500,7 +429,6 @@ This defintions is a return value of the function USBGetDeviceState(). */
 #define USB_HANDLE volatile BDT_ENTRY*
 
 #if !defined(USBDEVICE_C)
-/** EXTERNS ********************************************************/
     //Definitions for the BDT
     #if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
         extern volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 2];
@@ -523,29 +451,29 @@ This defintions is a return value of the function USBGetDeviceState(). */
     #endif
 
     //Configuration descriptor
-    extern const BYTE configDescriptor1[];
+    extern const unsigned char configDescriptor1[];
 
     #if !defined(USB_USER_CONFIG_DESCRIPTOR)
         //Array of configuration descriptors
-        extern const BYTE *const USB_CD_Ptr[];
+        extern const unsigned char *const USB_CD_Ptr[];
     #else
         USB_USER_CONFIG_DESCRIPTOR_INCLUDE;
     #endif
 
     //Array of string descriptors
-    extern const BYTE *const USB_SD_Ptr[];
+    extern const unsigned char *const USB_SD_Ptr[];
 
     #if defined(USB_USE_HID)
     //Class specific - HID report descriptor
     #if !defined(__USB_DESCRIPTORS_C)
-        extern const struct{BYTE report[HID_RPT01_SIZE];} hid_rpt01;
+        extern const struct { unsigned char report[HID_RPT01_SIZE]; } hid_rpt01;
     #endif
     #endif
 
     //Buffer for control transfers
     extern volatile CTRL_TRF_SETUP SetupPkt;           // 8-byte only
     //Buffer for control transfer data
-    extern volatile BYTE CtrlTrfData[USB_EP0_BUFF_SIZE];
+    extern volatile unsigned char CtrlTrfData[USB_EP0_BUFF_SIZE];
 
     #if defined(USB_USE_HID)
     //class specific data buffers
@@ -586,8 +514,8 @@ This defintions is a return value of the function USBGetDeviceState(). */
 
 /** EXTERNS ********************************************************/
 #if !defined(USBDEVICE_C)
-    extern BYTE USBDeviceState;
-    extern BYTE USBActiveConfiguration;
+    extern unsigned char USBDeviceState;
+    extern unsigned char USBActiveConfiguration;
     extern USB_VOLATILE IN_PIPE inPipes[1];
     extern USB_VOLATILE OUT_PIPE outPipes[1];
     extern volatile BDT_ENTRY *pBDTEntryIn[USB_MAX_EP_NUMBER+1];
@@ -679,7 +607,7 @@ void USBDeviceInit(void);
 
 /********************************************************************
   Function:
-        BOOL USBGetRemoteWakeupStatus(void)
+        bool_t USBGetRemoteWakeupStatus(void)
 
   Summary:
     This function indicates if remote wakeup has been enabled by the host.
@@ -709,7 +637,7 @@ void USBDeviceInit(void);
     descriptor. For example:
 
     <code lang="c">
-    const BYTE configDescriptor1[]={
+    const unsigned char configDescriptor1[]={
         0x09,                           // Size
         USB_DESCRIPTOR_CONFIGURATION,   // descriptor type
         DESC_CONFIG_WORD(0x0022),       // Total length
@@ -744,7 +672,7 @@ void USBDeviceInit(void);
 
 /***************************************************************************
   Function:
-        BYTE USBGetDeviceState(void)
+        unsigned char USBGetDeviceState(void)
 
   Summary:
     This function will return the current state of the device on the USB.
@@ -809,7 +737,7 @@ void USBDeviceInit(void);
 
 /***************************************************************************
   Function:
-        BOOL USBGetSuspendState(void)
+        bool_t USBGetSuspendState(void)
 
   Summary:
     This function indicates if this device is currently suspended. When a
@@ -868,20 +796,20 @@ void USBStdSetCfgHandler(void);
 void USBStdGetStatusHandler(void);
 void USBStdFeatureReqHandler(void);
 void USBCtrlTrfOutHandler(void);
-BOOL USBIsTxBusy(BYTE EPNumber);
-void USBPut(BYTE EPNum, BYTE Data);
+bool_t USBIsTxBusy(unsigned char EPNumber);
+void USBPut(unsigned char EPNum, unsigned char Data);
 void USBEPService(void);
-void USBConfigureEndpoint(BYTE EPNum, BYTE direction);
+void USBConfigureEndpoint(unsigned char EPNum, unsigned char direction);
 
 void USBProtocolResetHandler(void);
 void USBWakeFromSuspend(void);
 void USBSuspend(void);
 void USBStallHandler(void);
-volatile USB_HANDLE USBTransferOnePacket(BYTE ep, BYTE dir, BYTE* data, BYTE len);
-void USBEnableEndpoint(BYTE ep,BYTE options);
+volatile USB_HANDLE USBTransferOnePacket(unsigned char ep, unsigned char dir, unsigned char* data, unsigned char len);
+void USBEnableEndpoint(unsigned char ep, unsigned char options);
 
 #if defined(USB_DYNAMIC_EP_CONFIG)
-    void USBInitEP(BYTE const* pConfig);
+    void USBInitEP(unsigned char const* pConfig);
 #else
     #define USBInitEP(a)
 #endif
@@ -1270,7 +1198,7 @@ void USBCBEP0DataReceived(void);
 
 /*************************************************************************
   Function:
-    BOOL USBHandleBusy(USB_HANDLE handle)
+    bool_t USBHandleBusy(USB_HANDLE handle)
 
   Summary:
     Checks to see if the input handle is busy
@@ -1285,7 +1213,7 @@ void USBCBEP0DataReceived(void);
     {
         //Send the data contained in the INPacket[] array out on
         //  endpoint USBGEN_EP_NUM
-        USBGenericInHandle = USBGenWrite(USBGEN_EP_NUM,(BYTE*)&INPacket[0],sizeof(INPacket));
+        USBGenericInHandle = USBGenWrite(USBGEN_EP_NUM,(unsigned char*)&INPacket[0],sizeof(INPacket));
     }
     </code>
 
@@ -1304,7 +1232,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        WORD USBHandleGetLength(USB_HANDLE handle)
+        uint16_t USBHandleGetLength(USB_HANDLE handle)
 
     Summary:
         Retrieves the length of the destination buffer of the input
@@ -1322,7 +1250,7 @@ void USBCBEP0DataReceived(void);
         address for.
 
     Return Values:
-        WORD - length of the current buffer that the input handle
+        uint16_t - length of the current buffer that the input handle
         points to.  If the transfer is complete then this is the
         length of the data transmitted or the length of data
         actually received.
@@ -1335,7 +1263,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        WORD USBHandleGetAddr(USB_HANDLE)
+        uint16_t USBHandleGetAddr(USB_HANDLE)
 
     Summary:
         Retrieves the address of the destination buffer of the input
@@ -1353,7 +1281,7 @@ void USBCBEP0DataReceived(void);
         address for.
 
     Return Values:
-        WORD - address of the current buffer that the input handle
+        uint16_t - address of the current buffer that the input handle
         points to.
 
     Remarks:
@@ -1364,7 +1292,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        void USBEP0SetSourceRAM(BYTE* src)
+        void USBEP0SetSourceRAM(unsigned char* src)
 
     Summary:
         Sets the address of the data to send over the
@@ -1387,7 +1315,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        void USBEP0SetSourceROM(BYTE* src)
+        void USBEP0SetSourceROM(unsigned char* src)
 
     Summary:
         Sets the address of the data to send over the
@@ -1410,7 +1338,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        void USBEP0Transmit(BYTE options)
+        void USBEP0Transmit(unsigned char options)
 
     Summary:
         Sets the address of the data to send over the
@@ -1440,7 +1368,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        void USBEP0SetSize(WORD size)
+        void USBEP0SetSize(uint16_t size)
 
     Summary:
         Sets the size of the data to send over the
@@ -1459,11 +1387,11 @@ void USBCBEP0DataReceived(void);
         None
 
  *******************************************************************/
-#define USBEP0SetSize(size) inPipes[0].wCount.Val = size
+#define USBEP0SetSize(size) inPipes[0].wCount = size
 
 /********************************************************************
     Function:
-        void USBEP0SendRAMPtr(BYTE* src, WORD size, BYTE Options)
+        void USBEP0SendRAMPtr(unsigned char* src, uint16_t size, unsigned char Options)
 
     Summary:
         Sets the source, size, and options of the data
@@ -1495,7 +1423,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        void USBEP0SendROMPtr(BYTE* src, WORD size, BYTE Options)
+        void USBEP0SendROMPtr(unsigned char* src, uint16_t size, unsigned char Options)
 
     Summary:
         Sets the source, size, and options of the data
@@ -1527,7 +1455,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        USB_HANDLE USBTxOnePacket(BYTE ep, BYTE* data, WORD len)
+        USB_HANDLE USBTxOnePacket(unsigned char ep, unsigned char* data, uint16_t len)
 
     Summary:
         Sends the specified data out the specified endpoint
@@ -1552,7 +1480,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        void USBRxOnePacket(BYTE ep, BYTE* data, WORD len)
+        void USBRxOnePacket(unsigned char ep, unsigned char* data, uint16_t len)
 
     Summary:
         Receives the specified data out the specified endpoint
@@ -1576,7 +1504,7 @@ void USBCBEP0DataReceived(void);
 
 /********************************************************************
     Function:
-        void USBClearInterruptFlag(WORD reg, BYTE flag)
+        void USBClearInterruptFlag(uint16_t reg, unsigned char flag)
 
     Summary:
         Clears the specified interrupt flag
@@ -1585,8 +1513,8 @@ void USBCBEP0DataReceived(void);
         None
 
     Parameters:
-        WORD reg - the register name holding the interrupt flag
-        BYTE flag - the bit number needing to be cleared
+        uint16_t reg - the register name holding the interrupt flag
+        unsigned char flag - the bit number needing to be cleared
 
     Return Values:
         None
@@ -1595,11 +1523,11 @@ void USBCBEP0DataReceived(void);
         None
 
  *******************************************************************/
-void USBClearInterruptFlag(BYTE* reg, BYTE flag);
+void USBClearInterruptFlag(unsigned char* reg, unsigned char flag);
 
 /********************************************************************
     Function:
-        void USBClearInterruptRegister(WORD reg)
+        void USBClearInterruptRegister(uint16_t reg)
 
     Summary:
         Clears the specified interrupt register
@@ -1608,7 +1536,7 @@ void USBClearInterruptFlag(BYTE* reg, BYTE flag);
         None
 
     Parameters:
-        WORD reg - the register name that needs to be cleared
+        uint16_t reg - the register name that needs to be cleared
 
     Return Values:
         None
@@ -1625,7 +1553,7 @@ void USBClearInterruptFlag(BYTE* reg, BYTE flag);
 
 /********************************************************************
     Function:
-        void USBStallEndpoint(BYTE ep, BYTE dir)
+        void USBStallEndpoint(unsigned char ep, unsigned char dir)
 
     Summary:
          STALLs the specified endpoint
@@ -1634,8 +1562,8 @@ void USBClearInterruptFlag(BYTE* reg, BYTE flag);
         None
 
     Parameters:
-        BYTE ep - the endpoint the data will be transmitted on
-        BYTE dir - the direction of the transfer
+        unsigned char ep - the endpoint the data will be transmitted on
+        unsigned char dir - the direction of the transfer
 
     Return Values:
         None
@@ -1644,7 +1572,7 @@ void USBClearInterruptFlag(BYTE* reg, BYTE flag);
         None
 
  *******************************************************************/
-void USBStallEndpoint(BYTE ep, BYTE dir);
+void USBStallEndpoint(unsigned char ep, unsigned char dir);
 
 #if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
     #define USB_NEXT_EP0_OUT_PING_PONG 0x0000   // Used in USB Device Mode only
@@ -1954,6 +1882,6 @@ void USBStallEndpoint(BYTE ep, BYTE dir);
     #error "No ping pong mode defined."
 #endif
 
-extern USB_VOLATILE BOOL RemoteWakeup;
+extern USB_VOLATILE bool_t RemoteWakeup;
 
 #endif //USBD_H

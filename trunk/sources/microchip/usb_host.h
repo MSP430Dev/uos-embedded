@@ -1,69 +1,41 @@
-/*******************************************************************************
-
-    USB Host Driver (Header File)
-
-Description:
-    This file provides the hardware interface for a USB Embedded Host
-    application.  Most applications will not make direct use of the functions
-    in this file.  Instead, one or more client driver files should also be
-    included in the project to support the devices that will be attached to the
-    host.  Application interface will be through the client drivers.
-
-    This header file must be included after the application-specific
-    usb_config.h file, as usb_config.h configures parts of this file.
-
-Summary:
-    This file provides the hardware interface for a USB Embedded Host
-    application.
-
-*******************************************************************************/
-//DOM-IGNORE-BEGIN
-/******************************************************************************
-
-* FileName:        usb_host.h
-* Dependencies:    None
-* Processor:       PIC24/dsPIC30/dsPIC33/PIC32MX
-* Compiler:        C30 v2.01/C32 v0.00.18
-* Company:         Microchip Technology, Inc.
-
-Software License Agreement
-
-The software supplied herewith by Microchip Technology Incorporated
-(the “Company”) for its PICmicro® Microcontroller is intended and
-supplied to you, the Company’s customer, for use solely and
-exclusively on Microchip PICmicro Microcontroller products. The
-software is owned by the Company and/or its supplier, and is
-protected under applicable copyright laws. All rights are reserved.
-Any use in violation of the foregoing restrictions may subject the
-user to criminal sanctions under applicable laws, as well as to
-civil liability for the breach of the terms and conditions of this
-license.
-
-THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
-WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
-TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
-IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
-CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-Author          Date    Comments
---------------------------------------------------------------------------------
-KO/BC       15-Oct-2007 First release
-
-*******************************************************************************/
-
+/*
+ * USB Host Driver (Header File)
+ *
+ * This file provides the hardware interface for a USB Embedded Host
+ * application.  Most applications will not make direct use of the functions
+ * in this file.  Instead, one or more client driver files should also be
+ * included in the project to support the devices that will be attached to the
+ * host.  Application interface will be through the client drivers.
+ *
+ * This header file must be included after the application-specific
+ * usb_config.h file, as usb_config.h configures parts of this file.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PICmicro® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PICmicro Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this
+ * license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ */
 #ifndef __USBHOST_H__
 #define __USBHOST_H__
-//DOM-IGNORE-END
 
 #include <limits.h>
-#include "GenericTypeDefs.h"
 
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: Host Firmware Version
-// *****************************************************************************
-// *****************************************************************************
+//
 
 #define USB_HOST_FW_MAJOR_VER   1       // Firmware version, major release number.
 #define USB_HOST_FW_MINOR_VER   0       // Firmware version, minor release number.
@@ -152,12 +124,12 @@ This structure describes the transfer attributes of an endpoint.
 */
 typedef union
 {
-   BYTE     val;                            //
+   unsigned char val;
    struct
    {
-       BYTE bfTransferType          : 2;    // See USB_TRANSFER_TYPE_* for values.
-       BYTE bfSynchronizationType   : 2;    // For isochronous endpoints only.
-       BYTE bfUsageType             : 2;    // For isochronous endpoints only.
+       unsigned bfTransferType          : 2;    // See USB_TRANSFER_TYPE_* for values.
+       unsigned bfSynchronizationType   : 2;    // For isochronous endpoints only.
+       unsigned bfUsageType             : 2;    // For isochronous endpoints only.
    };
 } TRANSFER_ATTRIBUTES;
 
@@ -171,10 +143,10 @@ of transfer completion.
 
 typedef struct _HOST_TRANSFER_DATA
 {
-   DWORD                dataCount;          // Count of bytes transferred.
-   BYTE                *pUserData;          // Pointer to transfer data.
-   BYTE                 bEndpointAddress;   // Transfer endpoint.
-   BYTE                 bErrorCode;         // Transfer error code.
+   uint32_t             dataCount;          // Count of bytes transferred.
+   unsigned char        *pUserData;          // Pointer to transfer data.
+   unsigned char        bEndpointAddress;   // Transfer endpoint.
+   unsigned char        bErrorCode;         // Transfer error code.
    TRANSFER_ATTRIBUTES  bmAttributes;       // Endpoint transfer attributes.
 } HOST_TRANSFER_DATA;
 
@@ -190,31 +162,31 @@ typedef struct _USB_TPL
 {
     union
     {
-        DWORD       val;                        //
+        uint32_t    val;
         struct
         {
-            WORD    idVendor;                   // Vendor ID
-            WORD    idProduct;                  // Product ID
+            uint16_t    idVendor;               // Vendor ID
+            uint16_t    idProduct;              // Product ID
         };
         struct
         {
-            BYTE    bClass;                     // Class ID
-            BYTE    bSubClass;                  // SubClass ID
-            BYTE    bProtocol;                  // Protocol ID
+            unsigned char bClass;               // Class ID
+            unsigned char bSubClass;            // SubClass ID
+            unsigned char bProtocol;            // Protocol ID
         };
     } device;                                   //
-    BYTE            bConfiguration;             // Initial device configuration
-    BYTE            ClientDriver;               // Index of client driver in the Client Driver table
+    unsigned char   bConfiguration;             // Initial device configuration
+    unsigned char   ClientDriver;               // Index of client driver in the Client Driver table
     union
     {
-        BYTE         val;                       //
+        unsigned char val;
         struct
         {
-            BYTE     bfAllowHNP      : 1;       // Is HNP allowed?
-            BYTE     bfIsClassDriver : 1;       // Client driver is a class-level driver
-            BYTE     bfSetConfiguration : 1;    // bConfiguration is valid
+            unsigned bfAllowHNP      : 1;       // Is HNP allowed?
+            unsigned bfIsClassDriver : 1;       // Client driver is a class-level driver
+            unsigned bfSetConfiguration : 1;    // bConfiguration is valid
         };
-    } flags;                                    //
+    } flags;
 } USB_TPL;
 
 // Section: TPL Initializers
@@ -235,8 +207,8 @@ typedef struct _USB_TPL
 
 /****************************************************************************
   Function:
-    BOOL (*USB_CLIENT_EVENT_HANDLER) ( BYTE address, USB_EVENT event,
-                        void *data, DWORD size )
+    bool_t (*USB_CLIENT_EVENT_HANDLER) (unsigned char address, USB_EVENT event,
+                        void *data, uint32_t size )
 
   Summary:
     This is a typedef to use when defining a client driver event handler.
@@ -254,10 +226,10 @@ typedef struct _USB_TPL
     The client must have been initialized.
 
   Parameters:
-    BYTE address    - Address of device where event occurred
+    unsigned char address    - Address of device where event occurred
     USB_EVENT event - Identifies the event that occured
     void *data      - Pointer to event-specific data
-    DWORD size      - Size of the event-specific data
+    uint32_t size      - Size of the event-specific data
 
   Return Values:
     TRUE    - The event was handled
@@ -270,12 +242,12 @@ typedef struct _USB_TPL
     macro as the name of that function.
   ***************************************************************************/
 
-typedef BOOL (*USB_CLIENT_EVENT_HANDLER) ( BYTE address, USB_EVENT event, void *data, DWORD size );
+typedef bool_t (*USB_CLIENT_EVENT_HANDLER) (unsigned char address, USB_EVENT event, void *data, uint32_t size );
 
 
 /****************************************************************************
   Function:
-    BOOL (*USB_CLIENT_INIT)   ( BYTE address, DWORD flags )
+    bool_t (*USB_CLIENT_INIT)   (unsigned char address, uint32_t flags )
 
   Summary:
     This is a typedef to use when defining a client driver initialization
@@ -291,8 +263,8 @@ typedef BOOL (*USB_CLIENT_EVENT_HANDLER) ( BYTE address, USB_EVENT event, void *
     The device has been configured.
 
   Parameters:
-    BYTE address - Device's address on the bus
-    WORD flags   - Initialization flags
+    unsigned char address - Device's address on the bus
+    uint16_t flags   - Initialization flags
 
   Return Values:
     TRUE    - Successful
@@ -304,13 +276,13 @@ typedef BOOL (*USB_CLIENT_EVENT_HANDLER) ( BYTE address, USB_EVENT event, void *
     selected configuration.
   ***************************************************************************/
 
-typedef BOOL (*USB_CLIENT_INIT)   ( BYTE address, DWORD flags );
+typedef bool_t (*USB_CLIENT_INIT)   (unsigned char address, uint32_t flags );
 
 
 /****************************************************************************
   Function:
-    BOOL USB_HOST_APP_EVENT_HANDLER ( BYTE address, USB_EVENT event,
-            void *data, DWORD size )
+    bool_t USB_HOST_APP_EVENT_HANDLER (unsigned char address, USB_EVENT event,
+            void *data, uint32_t size )
 
   Summary:
     This is a typedef to use when defining the application level events
@@ -339,10 +311,10 @@ typedef BOOL (*USB_CLIENT_INIT)   ( BYTE address, DWORD flags );
     None
 
   Parameters:
-    BYTE address        - Address of the USB device generating the event
+    unsigned char address        - Address of the USB device generating the event
     USB_EVENT event     - Event that occurred
     void *data          - Optional pointer to data for the event
-    DWORD size          - Size of the data pointed to by *data
+    uint32_t size          - Size of the data pointed to by *data
 
   Return Values:
     TRUE    - Event was processed successfully
@@ -353,7 +325,7 @@ typedef BOOL (*USB_CLIENT_INIT)   ( BYTE address, DWORD flags );
     events are assumed to function without error.
   ***************************************************************************/
 #if defined( USB_HOST_APP_EVENT_HANDLER )
-    BOOL USB_HOST_APP_EVENT_HANDLER ( BYTE address, USB_EVENT event, void *data, DWORD size );
+    bool_t USB_HOST_APP_EVENT_HANDLER (unsigned char address, USB_EVENT event, void *data, uint32_t size );
 #else
     // If the application does not provide an event handler, then we will
     // assume that all events function without error.
@@ -374,7 +346,7 @@ typedef struct _CLIENT_DRIVER_TABLE
 {
     USB_CLIENT_INIT          Initialize;     // Initialization routine
     USB_CLIENT_EVENT_HANDLER EventHandler;   // Event routine
-    DWORD                    flags;          // Initialization flags
+    uint32_t                    flags;          // Initialization flags
 
 } CLIENT_DRIVER_TABLE;
 
@@ -385,8 +357,8 @@ typedef struct _CLIENT_DRIVER_TABLE
 // *****************************************************************************
 // *****************************************************************************
 
-extern BYTE                *pCurrentConfigurationDescriptor;    // Pointer to the current Configuration Descriptor of the attached device.
-extern BYTE                *pDeviceDescriptor;                  // Pointer to the Device Descriptor of the attached device.
+extern unsigned char       *pCurrentConfigurationDescriptor;    // Pointer to the current Configuration Descriptor of the attached device.
+extern unsigned char       *pDeviceDescriptor;                  // Pointer to the Device Descriptor of the attached device.
 extern USB_TPL              usbTPL[];                           // Application's Targeted Peripheral List.
 extern CLIENT_DRIVER_TABLE  usbClientDrvTable[];                // Application's client driver table.
 
@@ -399,7 +371,7 @@ extern CLIENT_DRIVER_TABLE  usbClientDrvTable[];                // Application's
 
 /****************************************************************************
   Function:
-    BYTE USBHostClearEndpointErrors( BYTE deviceAddress, BYTE endpoint )
+    unsigned char USBHostClearEndpointErrors (unsigned char deviceAddress, unsigned char endpoint )
 
   Summary:
     This function clears an endpoint's internal error condition.
@@ -414,8 +386,8 @@ extern CLIENT_DRIVER_TABLE  usbClientDrvTable[];                // Application's
     None
 
   Parameters:
-    BYTE deviceAddress  - Address of device
-    BYTE endpoint       - Endpoint to clear error condition
+    unsigned char deviceAddress  - Address of device
+    unsigned char endpoint       - Endpoint to clear error condition
 
   Return Values:
     USB_SUCCESS             - Errors cleared
@@ -426,14 +398,14 @@ extern CLIENT_DRIVER_TABLE  usbClientDrvTable[];                // Application's
     None
   ***************************************************************************/
 
-BYTE    USBHostClearEndpointErrors( BYTE deviceAddress, BYTE endpoint );
+unsigned char USBHostClearEndpointErrors (unsigned char deviceAddress, unsigned char endpoint );
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostDeviceRequest( BYTE deviceAddress, BYTE bmRequestType,
-                    BYTE bRequest, WORD wValue, WORD wIndex, WORD wLength,
-                    BYTE *data, BYTE dataDirection )
+    unsigned charUSBHostDeviceRequest (unsigned char deviceAddress, unsigned char bmRequestType,
+                    unsigned char bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength,
+                    unsigned char *data, unsigned char dataDirection)
 
   Summary:
     This function sends a standard device request to the attached device.
@@ -458,18 +430,18 @@ BYTE    USBHostClearEndpointErrors( BYTE deviceAddress, BYTE endpoint );
     writes to EP0 should be in progress.
 
   Parameters:
-    BYTE deviceAddress  - Device address
-    BYTE bmRequestType  - The request type as defined by the USB
+    unsigned char deviceAddress  - Device address
+    unsigned char bmRequestType  - The request type as defined by the USB
                             specification.
-    BYTE bRequest       - The request as defined by the USB specification.
-    WORD wValue         - The value for the request as defined by the USB
+    unsigned char bRequest       - The request as defined by the USB specification.
+    uint16_t wValue         - The value for the request as defined by the USB
                             specification.
-    WORD wIndex         - The index for the request as defined by the USB
+    uint16_t wIndex         - The index for the request as defined by the USB
                             specification.
-    WORD wLength        - The data length for the request as defined by the
+    uint16_t wLength        - The data length for the request as defined by the
                             USB specification.
-    BYTE *data          - Pointer to the data for the request.
-    BYTE dataDirection  - USB_DEVICE_REQUEST_SET or USB_DEVICE_REQUEST_GET
+    unsigned char *data          - Pointer to the data for the request.
+    unsigned char dataDirection  - USB_DEVICE_REQUEST_SET or USB_DEVICE_REQUEST_GET
 
   Return Values:
     USB_SUCCESS                 - Request processing started
@@ -484,13 +456,13 @@ BYTE    USBHostClearEndpointErrors( BYTE deviceAddress, BYTE endpoint );
     DTS reset is done before the command is issued.
   ***************************************************************************/
 
-BYTE    USBHostDeviceRequest( BYTE deviceAddress, BYTE bmRequestType, BYTE bRequest,
-             WORD wValue, WORD wIndex, WORD wLength, BYTE *data, BYTE dataDirection );
+unsigned char USBHostDeviceRequest (unsigned char deviceAddress, unsigned char bmRequestType, unsigned char bRequest,
+             uint16_t wValue, uint16_t wIndex, uint16_t wLength, unsigned char *data, unsigned char dataDirection);
 
 
 /****************************************************************************
   Function:
-    BOOL    USBHostDeviceSpecificClientDriver( BYTE deviceAddress )
+    bool_t    USBHostDeviceSpecificClientDriver (unsigned char deviceAddress )
 
   Summary:
     This function indicates if the specified device has explicit client
@@ -511,7 +483,7 @@ BYTE    USBHostDeviceRequest( BYTE deviceAddress, BYTE bmRequestType, BYTE bRequ
     None
 
   Parameters:
-    BYTE deviceAddress  - Address of device
+    unsigned char deviceAddress  - Address of device
 
   Return Values:
     TRUE    - This device is listed in the TPL by VID andPID, and has explicit
@@ -534,12 +506,12 @@ BYTE    USBHostDeviceRequest( BYTE deviceAddress, BYTE bmRequestType, BYTE bRequ
     subclass, and protocol fields can be safely ignored.
   ***************************************************************************/
 
-BOOL    USBHostDeviceSpecificClientDriver( BYTE deviceAddress );
+bool_t    USBHostDeviceSpecificClientDriver (unsigned char deviceAddress);
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostDeviceStatus( BYTE deviceAddress )
+    unsigned char USBHostDeviceStatus (unsigned char deviceAddress)
 
   Summary:
     This function returns the current status of a device.
@@ -552,7 +524,7 @@ BOOL    USBHostDeviceSpecificClientDriver( BYTE deviceAddress );
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
+    unsigned char deviceAddress  - Device address
 
   Return Values:
     USB_DEVICE_ATTACHED                 - Device is attached and running
@@ -574,12 +546,12 @@ BOOL    USBHostDeviceSpecificClientDriver( BYTE deviceAddress );
     None
   ***************************************************************************/
 
-BYTE    USBHostDeviceStatus( BYTE deviceAddress );
+unsigned char USBHostDeviceStatus (unsigned char deviceAddress);
 
 
 /****************************************************************************
   Function:
-    BYTE * USBHostGetCurrentConfigurationDescriptor( BYTE deviceAddress )
+    unsigned char *USBHostGetCurrentConfigurationDescriptor (unsigned char deviceAddress )
 
   Description:
     This function returns a pointer to the current configuration descriptor
@@ -589,10 +561,10 @@ BYTE    USBHostDeviceStatus( BYTE deviceAddress );
     None
 
   Parameters:
-    BYTE deviceAddress  - Address of device
+    unsigned char deviceAddress  - Address of device
 
   Returns:
-    BYTE *  - Pointer to the Configuration Descriptor.
+    unsigned char*  - Pointer to the Configuration Descriptor.
 
   Remarks:
     None
@@ -607,7 +579,7 @@ BYTE    USBHostDeviceStatus( BYTE deviceAddress );
 
 /****************************************************************************
   Function:
-    BYTE * USBHostGetDeviceDescriptor( BYTE deviceAddress )
+    unsigned char* USBHostGetDeviceDescriptor (unsigned char deviceAddress)
 
   Description:
     This function returns a pointer to the device descriptor of the
@@ -617,10 +589,10 @@ BYTE    USBHostDeviceStatus( BYTE deviceAddress );
     None
 
   Parameters:
-    BYTE deviceAddress  - Address of device
+    unsigned char deviceAddress  - Address of device
 
   Returns:
-    BYTE *  - Pointer to the Device Descriptor.
+    unsigned char *  - Pointer to the Device Descriptor.
 
   Remarks:
     This will need to be expanded to a full function when multiple device
@@ -632,8 +604,8 @@ BYTE    USBHostDeviceStatus( BYTE deviceAddress );
 
 /****************************************************************************
   Function:
-    BYTE USBHostGetStringDescriptor ( BYTE deviceAddress,  BYTE stringNumber,
-                        BYTE *stringDescriptor, BYTE stringLength )
+    unsigned char USBHostGetStringDescriptor (unsigned char deviceAddress, unsigned char stringNumber,
+                        unsigned char *stringDescriptor, unsigned char stringLength)
 
   Summary:
     This routine initiates a request to obtains the requested string
@@ -676,7 +648,7 @@ BYTE    USBHostDeviceStatus( BYTE deviceAddress );
 
 /****************************************************************************
   Function:
-    BOOL USBHostInit(  unsigned long flags  )
+    bool_t USBHostInit(  unsigned long flags  )
 
   Summary:
     This function initializes the variables of the USB host stack.
@@ -704,13 +676,13 @@ BYTE    USBHostDeviceStatus( BYTE deviceAddress );
     application.
   ***************************************************************************/
 
-BOOL USBHostInit(  unsigned long flags  );
+bool_t USBHostInit(  unsigned long flags  );
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostRead( BYTE deviceAddress, BYTE endpoint, BYTE *pData,
-                        DWORD size )
+    unsigned char USBHostRead (unsigned char deviceAddress, unsigned char endpoint, unsigned char *pData,
+                        uint32_t size)
   Description:
     This function initiates a read from the attached device.
 
@@ -718,10 +690,10 @@ BOOL USBHostInit(  unsigned long flags  );
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
-    BYTE endpoint       - Endpoint number
-    BYTE *pData         - Pointer to where to store the data
-    DWORD size          - Number of data bytes to store
+    unsigned char deviceAddress  - Device address
+    unsigned char endpoint       - Endpoint number
+    unsigned char *pData         - Pointer to where to store the data
+    uint32_t size          - Number of data bytes to store
 
   Return Values:
     USB_SUCCESS                     - Read started successfully.
@@ -741,12 +713,12 @@ BOOL USBHostInit(  unsigned long flags  );
     None
   ***************************************************************************/
 
-BYTE    USBHostRead( BYTE deviceAddress, BYTE endpoint, BYTE *data, DWORD size );
+unsigned char USBHostRead (unsigned char deviceAddress, unsigned char endpoint, unsigned char *data, uint32_t size );
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostResetDevice( BYTE deviceAddress )
+    unsigned char USBHostResetDevice (unsigned char deviceAddress)
 
   Summary:
     This function resets an attached device.
@@ -760,7 +732,7 @@ BYTE    USBHostRead( BYTE deviceAddress, BYTE endpoint, BYTE *data, DWORD size )
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
+    unsigned char deviceAddress  - Device address
 
   Return Values:
     USB_SUCCESS         - Success
@@ -774,12 +746,12 @@ BYTE    USBHostRead( BYTE deviceAddress, BYTE endpoint, BYTE *data, DWORD size )
     performed.
   ***************************************************************************/
 
-BYTE    USBHostResetDevice( BYTE deviceAddress );
+unsigned char USBHostResetDevice (unsigned char deviceAddress);
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostResumeDevice( BYTE deviceAddress )
+    unsigned char USBHostResumeDevice (unsigned char deviceAddress)
 
   Summary:
     This function issues a RESUME to the attached device.
@@ -792,7 +764,7 @@ BYTE    USBHostResetDevice( BYTE deviceAddress );
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
+    unsigned char deviceAddress  - Device address
 
   Return Values:
     USB_SUCCESS         - Success
@@ -803,13 +775,13 @@ BYTE    USBHostResetDevice( BYTE deviceAddress );
     None
   ***************************************************************************/
 
-BYTE    USBHostResumeDevice( BYTE deviceAddress );
+unsigned char USBHostResumeDevice (unsigned char deviceAddress);
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostSetDeviceConfiguration( BYTE deviceAddress,
-                    BYTE configuration )
+    unsigned charUSBHostSetDeviceConfiguration (unsigned char deviceAddress,
+                    unsigned char configuration)
 
   Summary:
     This function changes the device's configuration.
@@ -824,8 +796,8 @@ BYTE    USBHostResumeDevice( BYTE deviceAddress );
     writes should be in progress.
 
   Parameters:
-    BYTE deviceAddress  - Device address
-    BYTE configuration  - Index of the new configuration
+    unsigned char deviceAddress  - Device address
+    unsigned char configuration  - Index of the new configuration
 
   Return Values:
     USB_SUCCESS         - Process of changing the configuration was started
@@ -842,13 +814,13 @@ BYTE    USBHostResumeDevice( BYTE deviceAddress );
     USB_HOLDING_UNSUPPORTED_DEVICE error.
   ***************************************************************************/
 
-BYTE    USBHostSetDeviceConfiguration( BYTE deviceAddress, BYTE configuration );
+unsigned char USBHostSetDeviceConfiguration (unsigned char deviceAddress, unsigned char configuration);
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostSetNAKTimeout( BYTE deviceAddress, BYTE endpoint, WORD flags, 
-                WORD timeoutCount )
+    unsigned char USBHostSetNAKTimeout (unsigned char deviceAddress, unsigned char endpoint, uint16_t flags,
+                uint16_t timeoutCount )
 
   Summary:
     This function specifies NAK timeout capability.
@@ -856,18 +828,18 @@ BYTE    USBHostSetDeviceConfiguration( BYTE deviceAddress, BYTE configuration );
   Description:
     This function is used to set whether or not an endpoint on a device
     should time out a transaction based on the number of NAKs received, and
-    if so, how many NAKs are allowed before the timeout.  
+    if so, how many NAKs are allowed before the timeout.
 
   Precondition:
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
-    BYTE endpoint       - Endpoint number to configure
-    WORD flags          - Bit 0: 
+    unsigned char deviceAddress  - Device address
+    unsigned char endpoint       - Endpoint number to configure
+    uint16_t flags          - Bit 0:
                             * 0 = disable NAK timeout
                             * 1 = enable NAK timeout
-    WORD timeoutCount   - Number of NAKs allowed before a timeout
+    uint16_t timeoutCount   - Number of NAKs allowed before a timeout
 
   Return Values:
     USB_SUCCESS             - NAK timeout was configured successfully.
@@ -878,7 +850,7 @@ BYTE    USBHostSetDeviceConfiguration( BYTE deviceAddress, BYTE configuration );
     None
   ***************************************************************************/
 
-BYTE USBHostSetNAKTimeout( BYTE deviceAddress, BYTE endpoint, WORD flags, WORD timeoutCount );
+unsigned char USBHostSetNAKTimeout (unsigned char deviceAddress, unsigned char endpoint, uint16_t flags, uint16_t timeoutCount );
 
 
 /****************************************************************************
@@ -911,7 +883,7 @@ void    USBHostShutdown( void );
 
 /****************************************************************************
   Function:
-    BYTE USBHostSuspendDevice( BYTE deviceAddress )
+    unsigned char USBHostSuspendDevice (unsigned char deviceAddress)
 
   Summary:
     This function suspends a device.
@@ -925,7 +897,7 @@ void    USBHostShutdown( void );
     None
 
   Parameters:
-    BYTE deviceAddress  - Device to suspend
+    unsigned char deviceAddress  - Device to suspend
 
   Return Values:
     USB_SUCCESS         - Success
@@ -936,7 +908,7 @@ void    USBHostShutdown( void );
     None
   ****************************************************************************/
 
-BYTE    USBHostSuspendDevice( BYTE deviceAddress );
+unsigned char USBHostSuspendDevice (unsigned char deviceAddress);
 
 
 /****************************************************************************
@@ -978,7 +950,7 @@ void    USBHostTasks( void );
 
 /****************************************************************************
   Function:
-    void USBHostTerminateTransfer( BYTE deviceAddress, BYTE endpoint )
+    void USBHostTerminateTransfer (unsigned char deviceAddress, unsigned char endpoint)
 
 
   Summary:
@@ -993,8 +965,8 @@ void    USBHostTasks( void );
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
-    BYTE endpoint       - Endpoint number
+    unsigned char deviceAddress  - Device address
+    unsigned char endpoint       - Endpoint number
 
   Returns:
     None
@@ -1003,13 +975,13 @@ void    USBHostTasks( void );
     None
   ***************************************************************************/
 
-void    USBHostTerminateTransfer( BYTE deviceAddress, BYTE endpoint );
+void    USBHostTerminateTransfer (unsigned char deviceAddress, unsigned char endpoint);
 
 
 /****************************************************************************
   Function:
-    BOOL USBHostTransferIsComplete( BYTE deviceAddress, BYTE endpoint,
-                        BYTE *errorCode, DWORD *byteCount )
+    bool_t USBHostTransferIsComplete (unsigned char deviceAddress, unsigned char endpoint,
+                        unsigned char *errorCode, uint32_t *byteCount )
 
   Summary:
     This function initiates whether or not the last endpoint transaction is
@@ -1024,11 +996,11 @@ void    USBHostTerminateTransfer( BYTE deviceAddress, BYTE endpoint );
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
-    BYTE endpoint       - Endpoint number
-    BYTE *errorCode     - Error code indicating the status of the transfer.
+    unsigned char deviceAddress  - Device address
+    unsigned char endpoint       - Endpoint number
+    unsigned char *errorCode     - Error code indicating the status of the transfer.
                             Only valid if the transfer is complete.
-    DWORD *byteCount    - The number of bytes sent or received.
+    uint32_t *byteCount    - The number of bytes sent or received.
 
   Return Values:
     TRUE    - Transfer is complete.
@@ -1050,13 +1022,13 @@ void    USBHostTerminateTransfer( BYTE deviceAddress, BYTE endpoint );
         * USB_ENDPOINT_ERROR              - Other error
   ***************************************************************************/
 
-BOOL    USBHostTransferIsComplete( BYTE deviceAddress, BYTE endpoint, BYTE *errorCode, DWORD *byteCount );
+bool_t    USBHostTransferIsComplete (unsigned char deviceAddress, unsigned char endpoint, unsigned char *errorCode, uint32_t *byteCount );
 
 
 /****************************************************************************
   Function:
-    BYTE  USBHostVbusEvent( USB_EVENT vbusEvent, BYTE hubAddress,
-                                        BYTE portNumber)
+    unsigned char USBHostVbusEvent (USB_EVENT vbusEvent, unsigned char hubAddress,
+                                        unsigned char portNumber)
 
   Summary:
     This function handles Vbus events that are detected by the application.
@@ -1080,9 +1052,9 @@ BOOL    USBHostTransferIsComplete( BYTE deviceAddress, BYTE endpoint, BYTE *erro
     USB_EVENT vbusEvent     - Vbus event that occured.  Valid events:
                                     * EVENT_VBUS_OVERCURRENT
                                     * EVENT_VBUS_POWER_AVAILABLE
-    BYTE hubAddress         - Address of the hub device (USB_ROOT_HUB for the
+    unsigned char hubAddress         - Address of the hub device (USB_ROOT_HUB for the
                                 root hub)
-    BYTE portNumber         - Number of the physical port on the hub (0 - based)
+    unsigned char portNumber         - Number of the physical port on the hub (0 - based)
 
   Return Values:
     USB_SUCCESS             - Event handled
@@ -1092,13 +1064,13 @@ BOOL    USBHostTransferIsComplete( BYTE deviceAddress, BYTE endpoint, BYTE *erro
     None
   ***************************************************************************/
 
-BYTE    USBHostVbusEvent(USB_EVENT vbusEvent, BYTE hubAddress, BYTE portNumber);
+unsigned char USBHostVbusEvent(USB_EVENT vbusEvent, unsigned char hubAddress, unsigned char portNumber);
 
 
 /****************************************************************************
   Function:
-    BYTE USBHostWrite( BYTE deviceAddress, BYTE endpoint, BYTE *data,
-                        DWORD size )
+    unsigned char USBHostWrite (unsigned char deviceAddress, unsigned char endpoint, unsigned char *data,
+                        uint32_t size)
 
   Summary:
     This function initiates a write to the attached device.
@@ -1112,10 +1084,10 @@ BYTE    USBHostVbusEvent(USB_EVENT vbusEvent, BYTE hubAddress, BYTE portNumber);
     None
 
   Parameters:
-    BYTE deviceAddress  - Device address
-    BYTE endpoint       - Endpoint number
-    BYTE *data          - Pointer to where the data is stored
-    DWORD size          - Number of data bytes to send
+    unsigned char deviceAddress  - Device address
+    unsigned char endpoint       - Endpoint number
+    unsigned char *data          - Pointer to where the data is stored
+    uint32_t size          - Number of data bytes to send
 
   Return Values:
     USB_SUCCESS                     - Write started successfully.
@@ -1135,12 +1107,10 @@ BYTE    USBHostVbusEvent(USB_EVENT vbusEvent, BYTE hubAddress, BYTE portNumber);
     None
   ***************************************************************************/
 
-BYTE    USBHostWrite( BYTE deviceAddress, BYTE endpoint, BYTE *data, DWORD size );
+unsigned char USBHostWrite (unsigned char deviceAddress, unsigned char endpoint, unsigned char *data, uint32_t size );
 
 
 #endif
 
 // *****************************************************************************
 // EOF
-
-
