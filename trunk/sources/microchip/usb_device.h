@@ -29,10 +29,7 @@
 
 #include <microchip/usb_ch9.h>
 #include <microchip/usb_hal.h>
-#include "usb_config.h" //This file needs to be included after the
-                        //  usb_hal.h file to insure that the user
-                        //  options are selected after the defines
-                        //  are created.
+
 /*
  * USB Endpoint Definitions
  * USB Standard EP Address Format: DIR:X:X:X:EP3:EP2:EP1:EP0
@@ -377,6 +374,11 @@ This defintions is a return value of the function USBGetDeviceState(). */
 //  and various other information.  Insure to initialize USB_HANDLE objects
 //  to NULL so that they are in a known state during their first usage.
 #define USB_HANDLE volatile BDT_ENTRY*
+
+// PIC32 supports only full ping-pong mode.
+#ifdef PIC32MX
+#  define USB_PING_PONG_MODE USB_PING_PONG__FULL_PING_PONG
+#endif
 
 #if !defined(USBDEVICE_C)
     //Definitions for the BDT
@@ -1124,7 +1126,7 @@ void USBCBSendResume(void);
 
   PreCondition:
     ENABLE_EP0_DATA_RECEIVED_CALLBACK must be
-    defined already (in usb_config.h)
+    defined already (in target.cfg)
 
   Parameters:
     None

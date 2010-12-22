@@ -3,9 +3,6 @@
  *
  * This file provides the interface for a USB OTG application.
  *
- * This header file must be included after the application-specific
- * usb_config.h file, as usb_config.h configures parts of this file.
- *
  * The software supplied herewith by Microchip Technology Incorporated
  * (the “Company”) for its PICmicro® Microcontroller is intended and
  * supplied to you, the Company’s customer, for use solely and
@@ -217,7 +214,7 @@ void USBOTGClearRoleSwitch();
     None
 
   Remarks:
-  #define USB_MICRO_AB_OTG_CABLE should be commented out in usb_config.h
+  #define USB_MICRO_AB_OTG_CABLE should be commented out in target.cfg
   if not using a micro AB OTG cable
   ***************************************************************************/
 void USBOTGInitialize();
@@ -556,7 +553,7 @@ unsigned char USBOTGCurrentRoleIs();
     will assign a default role of ROLE_DEVICE.
 
     If using a Standard USB Cable, ROLE_HOST or ROLE_DEVICE needs to be manually configured in
-    usb_config.h.
+    target.cfg.
 
     Both of these items can be easily configured using the USB Config Tool which will automatically
     generate the apropriate information for your application

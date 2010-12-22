@@ -24,14 +24,13 @@
 #include <microchip/usb_ch9.h>
 #include <microchip/usb.h>
 #include <microchip/usb_device.h>
-#include "usb_config.h"
 
 #if defined(USB_USE_MSD)
     #include <microchip/usb_function_msd.h>
 #endif
 
 #if (USB_PING_PONG_MODE != USB_PING_PONG__FULL_PING_PONG)
-    #error "PIC32 only supports full ping pong mode.  A different mode other than full ping pong is selected in the usb_config.h file."
+    #error "PIC32 only supports full ping pong mode."
 #endif
 
 //#define DEBUG_MODE
@@ -64,7 +63,7 @@ USB_VOLATILE unsigned char *USBInData[USB_MAX_EP_NUMBER];
 /*
  * Section A: Buffer Descriptor Table
  * - 0x400 - 0x4FF(max)
- * - USB_MAX_EP_NUMBER is defined in usb_config.h
+ * - USB_MAX_EP_NUMBER is defined in target.cfg
  */
 #if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
     volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 2] __attribute__ ((aligned (512)));
@@ -880,7 +879,7 @@ void USBPrepareForNextSetupTrf(void)
     else
     {
         controlTransferState = WAIT_SETUP;
-        pBDTEntryEP0OutNext->CNT = USB_EP0_BUFF_SIZE;      // Defined in usb_config.h
+        pBDTEntryEP0OutNext->CNT = USB_EP0_BUFF_SIZE;      // Defined in target.cfg
         pBDTEntryEP0OutNext->ADR = (unsigned char*)ConvertToPhysicalAddress(&SetupPkt);
 
         /*
@@ -1163,9 +1162,9 @@ void USBStdGetDscHandler(void)
                 break;
             case USB_DESCRIPTOR_CONFIGURATION:
                 #if !defined(USB_USER_CONFIG_DESCRIPTOR)
-                    inPipes[0].pSrc.bRom = *(USB_CD_Ptr+SetupPkt.bDscIndex);
+                    inPipes[0].pSrc.bRom = *(USB_CD_Ptr + SetupPkt.bDscIndex);
                 #else
-                    inPipes[0].pSrc.bRom = *(USB_USER_CONFIG_DESCRIPTOR+SetupPkt.bDscIndex);
+                    inPipes[0].pSrc.bRom = *(USB_USER_CONFIG_DESCRIPTOR + SetupPkt.bDscIndex);
                 #endif
                 inPipes[0].wCount = *(inPipes[0].pSrc.wRom+1);                // Set data count
                 break;

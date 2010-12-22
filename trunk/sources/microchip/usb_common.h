@@ -1,38 +1,35 @@
 /*
-  Common USB Library Definitions (Header File)
-
-  This file defines data types, constants, and macros that are common to
-  multiple layers of the Microchip USB Firmware Stack.
-
-  The software supplied herewith by Microchip Technology Incorporated
-  (the “Company”) for its PICmicro® Microcontroller is intended and
-  supplied to you, the Company’s customer, for use solely and
-  exclusively on Microchip PICmicro Microcontroller products. The
-  software is owned by the Company and/or its supplier, and is
-  protected under applicable copyright laws. All rights are reserved.
-  Any use in violation of the foregoing restrictions may subject the
-  user to criminal sanctions under applicable laws, as well as to
-  civil liability for the breach of the terms and conditions of this
-  license.
-
-  THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
-  WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
-  TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-  PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
-  IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
-  CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+ * Common USB Library Definitions (Header File)
+ *
+ * This file defines data types, constants, and macros that are common to
+ * multiple layers of the Microchip USB Firmware Stack.
+ *
+ * The software supplied herewith by Microchip Technology Incorporated
+ * (the “Company”) for its PICmicro® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
+ * exclusively on Microchip PICmicro Microcontroller products. The
+ * software is owned by the Company and/or its supplier, and is
+ * protected under applicable copyright laws. All rights are reserved.
+ * Any use in violation of the foregoing restrictions may subject the
+ * user to criminal sanctions under applicable laws, as well as to
+ * civil liability for the breach of the terms and conditions of this
+ * license.
+ *
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
+ * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
+ * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
+ * IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  */
 #ifndef _USB_COMMON_H_
 #define _USB_COMMON_H_
 
 #include <limits.h>
-#include "usb_config.h"
 
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: USB Constants
-// *****************************************************************************
-// *****************************************************************************
+//
 
 // Section: Error Code Values
 
@@ -84,32 +81,27 @@
 
 #define USB_SINGLE_DEVICE_ADDRESS               0x01    // Default USB device address (single device support)
 
-
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: USB Data Types
-// *****************************************************************************
-// *****************************************************************************
+//
 
-// *****************************************************************************
 /* Data Transfer Flags
-
-The following flags are used in the flags parameter of the "USBDEVTransferData"
-and "USBHALTransferData" routines.  They can be accessed by the bitfield
-definitions or the macros can be OR'd together to identify the endpoint number
-and properties of the data transfer.
-
-<code>
- 7 6 5 4 3 2 1 0 - Field name
- | | | | \_____/
- | | | |    +----- ep_num    - Endpoint number
- | | | +---------- zero_pkt  - End transfer with short or zero-sized packet
- | | +------------ dts       - 0=DATA0 packet, 1=DATA1 packet
- | +-------------- force_dts - Force data toggle sync to match dts field
- +---------------- direction - Transfer direction: 0=Receive, 1=Transmit
-</code>
-*/
-
+ *
+ * The following flags are used in the flags parameter of the "USBDEVTransferData"
+ * and "USBHALTransferData" routines.  They can be accessed by the bitfield
+ * definitions or the macros can be OR'd together to identify the endpoint number
+ * and properties of the data transfer.
+ *
+ * <code>
+ *  7 6 5 4 3 2 1 0 - Field name
+ *  | | | | \_____/
+ *  | | | |    +----- ep_num    - Endpoint number
+ *  | | | +---------- zero_pkt  - End transfer with short or zero-sized packet
+ *  | | +------------ dts       - 0=DATA0 packet, 1=DATA1 packet
+ *  | +-------------- force_dts - Force data toggle sync to match dts field
+ *  +---------------- direction - Transfer direction: 0=Receive, 1=Transmit
+ * </code>
+ */
 typedef union
 {
     unsigned char bitmap;
@@ -120,40 +112,38 @@ typedef union
         unsigned dts:       1;
         unsigned force_dts: 1;
         unsigned direction: 1;
-    }field;
+    } field;
 
 } TRANSFER_FLAGS;
 
 
-// *****************************************************************************
 /* Data Transfer Flags, Endpoint Number Constants
+ *
+ * These macros can be used as values for the "ep_num" field of the TRANSFER_FLAGS
+ * data type.
+ */
+#define USB_EP0        0
+#define USB_EP1        1
+#define USB_EP2        2
+#define USB_EP3        3
+#define USB_EP4        4
+#define USB_EP5        5
+#define USB_EP6        6
+#define USB_EP7        7
+#define USB_EP8        8
+#define USB_EP9        9
+#define USB_EP10       10
+#define USB_EP11       11
+#define USB_EP12       12
+#define USB_EP13       13
+#define USB_EP14       14
+#define USB_EP15       15
 
-These macros can be used as values for the "ep_num" field of the TRANSFER_FLAGS
-data type.
-*/
-#define USB_EP0        0        //
-#define USB_EP1        1        //
-#define USB_EP2        2        //
-#define USB_EP3        3        //
-#define USB_EP4        4        //
-#define USB_EP5        5        //
-#define USB_EP6        6        //
-#define USB_EP7        7        //
-#define USB_EP8        8        //
-#define USB_EP9        9        //
-#define USB_EP10       10       //
-#define USB_EP11       11       //
-#define USB_EP12       12       //
-#define USB_EP13       13       //
-#define USB_EP14       14       //
-#define USB_EP15       15       //
-
-// *****************************************************************************
 /* Data Transfer Flags, Bitmap Constants
-
-These macros can be used as values for the "bitmap" field of the TRANSFER_FLAGS
-data type.
-*/
+ *
+ * These macros can be used as values for the "bitmap" field of the TRANSFER_FLAGS
+ * data type.
+ */
 #define USB_TRANSMIT        0x80                            // Data will be transmitted to the USB
 #define USB_RECEIVE         0x00                            // Data will be received from the USB
 #define USB_FORCE_DTS       0x40                            // Forces data toggle sync as below:
@@ -166,25 +156,22 @@ data type.
 #define USB_SETUP_STATUS    USB_DATA1|USB_EP0               // Setup-transfer Status Packet
 #define USB_EP_NUM_MASK     0x0F                            // Endpoint number (ep_num) mask
 
-// *****************************************************************************
 /* Data Transfer Flags, Initialization Macro
-
-This macro can be used with the above bitmap constants to initialize a
-TRANSFER_FLAGS value.  It provides the correct data type to avoid compiler
-warnings.
-*/
+ *
+ * This macro can be used with the above bitmap constants to initialize a
+ * TRANSFER_FLAGS value.  It provides the correct data type to avoid compiler
+ * warnings.
+ */
 #define XFLAGS(f) ((TRANSFER_FLAGS)((unsigned char)(f)))             // Initialization Macro
 
 
-// *****************************************************************************
 /* USB Events
-
-This enumeration identifies USB events that occur.  It is used to
-inform USB drivers and applications of events on the bus.  It is passed
-as a parameter to the event-handling routine, which must match the
-prototype of the USB_CLIENT_EVENT_HANDLER data type, when an event occurs.
-*/
-
+ *
+ * This enumeration identifies USB events that occur.  It is used to
+ * inform USB drivers and applications of events on the bus.  It is passed
+ * as a parameter to the event-handling routine, which must match the
+ * prototype of the USB_CLIENT_EVENT_HANDLER data type, when an event occurs.
+ */
 typedef enum
 {
     // No event occured (NULL event)
@@ -298,15 +285,13 @@ typedef enum
 } USB_EVENT;
 
 
-// *****************************************************************************
 /* EVENT_TRANSFER Data
-
-This data structure is passed to the appropriate layer's
-USB_EVENT_HANDLER when an EVT_XFER event has occured, indicating
-that a transfer has completed on the USB.  It provides the endpoint,
-direction, and actual size of the transfer.
+ *
+ * This data structure is passed to the appropriate layer's
+ * USB_EVENT_HANDLER when an EVT_XFER event has occured, indicating
+ * that a transfer has completed on the USB.  It provides the endpoint,
+ * direction, and actual size of the transfer.
  */
-
 typedef struct _transfer_event_data
 {
     TRANSFER_FLAGS  flags;	// Transfer flags (see above)
@@ -316,108 +301,96 @@ typedef struct _transfer_event_data
 } USB_TRANSFER_EVENT_DATA;
 
 
-// *****************************************************************************
 /* EVENT_VBUS_REQUEST_POWER and EVENT_VBUS_RELEASE_POWER Data
-
-This data structure is passed to the appropriate layer's
-USB_EVENT_HANDLER when an EVENT_VBUS_REQUEST_POWER or EVENT_VBUS_RELEASE_POWER
-event has occured, indicating that a change in Vbus power is being requested.
-*/
-
+ *
+ * This data structure is passed to the appropriate layer's
+ * USB_EVENT_HANDLER when an EVENT_VBUS_REQUEST_POWER or EVENT_VBUS_RELEASE_POWER
+ * event has occured, indicating that a change in Vbus power is being requested.
+ */
 typedef struct _vbus_power_data
 {
     unsigned char port;		// Physical port number
     unsigned char current;	// Current in 2mA units
 } USB_VBUS_POWER_EVENT_DATA;
 
-
-// *****************************************************************************
 /* EVT_STALL Data
-
-The EVT_STALL event has a 16-bit data value associated with it where
-a bit is set in the position for each endpoint that is currently
-stalled (ie. bit 0 = EP0, bit 1 = EP1, etc.)
+ *
+ * The EVT_STALL event has a 16-bit data value associated with it where
+ * a bit is set in the position for each endpoint that is currently
+ * stalled (ie. bit 0 = EP0, bit 1 = EP1, etc.)
 */
 
 
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: Event  Handling Routines
-// *****************************************************************************
-// *****************************************************************************
+//
 
-/*******************************************************************************
-    Function:
-        bool_t <Event-handling Function Name> ( USB_EVENT event,
-              void *data, unsigned int size )
-
-    Description:
-        This routine is a "call out" routine that must be implemented by
-        any layer of the USB SW Stack (except the HAL which is at the
-        root of the event-call tree that needs to receive events.  When
-        an event occurs, the HAL calls the next higher layer in the
-        stack to handle the event.  Each layer either handles the event
-        or calls the layer above it to handle the event.  Events are
-        identified by the "event" parameter and may have associated
-        data.  If the higher layer was able to handle the event, it
-        should return TRUE.  If not, it should return FALSE.
-
-    Preconditions:
-        USBInitialize must have been called to initialize the USB SW
-        Stack.
-
-    Paramters:
-        USB_EVENT event   - Identifies the bus event that occured
-        void *data        - Pointer to event-specific data
-        unsigned int size - Size of the event-specific data
-
-    Return Values:
-        None
-
-    Remarks:
-        The function is name is defined by the layer that implements
-        it.  A pointer to the function will be placed by into a table
-        that the lower-layer will use to call it.  This requires the
-        function to use a specific call "signature" (return data type
-        and values and data parameter types and values).
-
-*******************************************************************************/
-
-typedef bool_t (*USB_EVENT_HANDLER) ( USB_EVENT event, void *data, unsigned int size );
+/*
+ *   Function:
+ *       bool_t <Event-handling Function Name> ( USB_EVENT event,
+ *             void *data, unsigned int size )
+ *
+ *   Description:
+ *       This routine is a "call out" routine that must be implemented by
+ *       any layer of the USB SW Stack (except the HAL which is at the
+ *       root of the event-call tree that needs to receive events.  When
+ *       an event occurs, the HAL calls the next higher layer in the
+ *       stack to handle the event.  Each layer either handles the event
+ *       or calls the layer above it to handle the event.  Events are
+ *       identified by the "event" parameter and may have associated
+ *       data.  If the higher layer was able to handle the event, it
+ *       should return TRUE.  If not, it should return FALSE.
+ *
+ *   Preconditions:
+ *       USBInitialize must have been called to initialize the USB SW
+ *       Stack.
+ *
+ *   Paramters:
+ *       USB_EVENT event   - Identifies the bus event that occured
+ *       void *data        - Pointer to event-specific data
+ *       unsigned int size - Size of the event-specific data
+ *
+ *   Return Values:
+ *       None
+ *
+ *   Remarks:
+ *       The function is name is defined by the layer that implements
+ *       it.  A pointer to the function will be placed by into a table
+ *       that the lower-layer will use to call it.  This requires the
+ *       function to use a specific call "signature" (return data type
+ *       and values and data parameter types and values).
+ */
+typedef bool_t (*USB_EVENT_HANDLER) (USB_EVENT event, void *data, unsigned int size);
 
 
-// *****************************************************************************
-// *****************************************************************************
+//
 // Section: USB Application Program Interface (API) Routines
-// *****************************************************************************
-// *****************************************************************************
+//
 
-/****************************************************************************
-    Function:
-        bool_t USBInitialize ( unsigned long flags )
-
-    Summary:
-        This interface initializes the variables of the USB host stack.
-
-    Description:
-        This interface initializes the USB stack.
-
-    Precondition:
-        None
-
-    Parameters:
-        flags - reserved
-
-    Return Values:
-        TRUE  - Initialization successful
-        FALSE - Initialization failure
-
-    Remarks:
-        This interface is implemented as a macro that can be defined by the
-        application or by default is defined correctly for the stack mode.
-
-  ***************************************************************************/
-
+/*
+ *   Function:
+ *       bool_t USBInitialize ( unsigned long flags )
+ *
+ *   Summary:
+ *       This interface initializes the variables of the USB host stack.
+ *
+ *   Description:
+ *       This interface initializes the USB stack.
+ *
+ *   Precondition:
+ *       None
+ *
+ *   Parameters:
+ *       flags - reserved
+ *
+ *   Return Values:
+ *       TRUE  - Initialization successful
+ *       FALSE - Initialization failure
+ *
+ *   Remarks:
+ *       This interface is implemented as a macro that can be defined by the
+ *       application or by default is defined correctly for the stack mode.
+ */
 #ifndef USBInitialize
     #if defined( USB_SUPPORT_DEVICE )
         #if defined( USB_SUPPORT_HOST )
@@ -435,38 +408,36 @@ typedef bool_t (*USB_EVENT_HANDLER) ( USB_EVENT event, void *data, unsigned int 
         #if defined( USB_SUPPORT_HOST )
             #define USBInitialize(f) USBHostInit(f)
         #else
-            #error "Application must define support mode in usb_config.h"
+            #error "Application must define support mode"
         #endif
     #endif
 #endif
 
 
-/****************************************************************************
-    Function:
-        void USBTasks( void )
-
-    Summary:
-        This function executes the tasks for USB operation.
-
-    Description:
-        This function executes the tasks for USB host operation.  It must be
-        executed on a regular basis to keep everything functioning.
-
-    Precondition:
-        USBInitialize() has been called.
-
-    Parameters:
-        None
-
-    Returns:
-        None
-
-    Remarks:
-        This interface is implemented as a macro that can be defined by the
-        application or by default is defined correctly for the stack mode.
-
-  ***************************************************************************/
-
+/*
+ *   Function:
+ *       void USBTasks( void )
+ *
+ *   Summary:
+ *       This function executes the tasks for USB operation.
+ *
+ *   Description:
+ *       This function executes the tasks for USB host operation.  It must be
+ *       executed on a regular basis to keep everything functioning.
+ *
+ *   Precondition:
+ *       USBInitialize() has been called.
+ *
+ *   Parameters:
+ *       None
+ *
+ *   Returns:
+ *       None
+ *
+ *   Remarks:
+ *       This interface is implemented as a macro that can be defined by the
+ *       application or by default is defined correctly for the stack mode.
+ */
 #ifndef USBTasks    // Implemented as a macro that can be overridden.
     #if defined( USB_SUPPORT_DEVICE )
         #if defined( USB_SUPPORT_HOST )
@@ -482,13 +453,9 @@ typedef bool_t (*USB_EVENT_HANDLER) ( USB_EVENT event, void *data, unsigned int 
         #if defined( USB_SUPPORT_HOST )
             #define USBTasks() USBHostTasks()
         #else
-            #error "Application must define support mode in usb_config.h"
+            #error "Application must define support mode"
         #endif
     #endif
 #endif
 
-
 #endif // _USB_COMMON_H_
-/*************************************************************************
- * EOF
- */

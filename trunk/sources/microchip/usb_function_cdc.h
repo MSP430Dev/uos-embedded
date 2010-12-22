@@ -28,8 +28,6 @@
 #ifndef CDC_H
 #define CDC_H
 
-#include "usb_config.h"
-
 /* Class-Specific Requests */
 #define SEND_ENCAPSULATED_COMMAND   0x00
 #define GET_ENCAPSULATED_RESPONSE   0x01

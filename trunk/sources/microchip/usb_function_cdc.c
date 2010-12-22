@@ -22,7 +22,6 @@
  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  */
 #include <runtime/lib.h>
-#include "usb_config.h"
 #include <microchip/usb_device.h>
 #include <microchip/usb_function_cdc.h>
 

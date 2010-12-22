@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-OBJS 		= main.o usb_descriptors.o
+OBJS 		= usb-hello.o
 
 all:		firmware.elf firmware.srec firmware.dis
 		$(SIZE) firmware.elf
