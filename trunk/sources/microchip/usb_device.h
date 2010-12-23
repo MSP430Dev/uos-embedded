@@ -38,74 +38,70 @@
  * NOTE: Do not use these values for checking against USTAT.
  * To check against USTAT, use values defined in usbd.h.
  */
-#define _EP_IN      0x80
-#define _EP_OUT     0x00
-#define _EP01_OUT   0x01
-#define _EP01_IN    0x81
-#define _EP02_OUT   0x02
-#define _EP02_IN    0x82
-#define _EP03_OUT   0x03
-#define _EP03_IN    0x83
-#define _EP04_OUT   0x04
-#define _EP04_IN    0x84
-#define _EP05_OUT   0x05
-#define _EP05_IN    0x85
-#define _EP06_OUT   0x06
-#define _EP06_IN    0x86
-#define _EP07_OUT   0x07
-#define _EP07_IN    0x87
-#define _EP08_OUT   0x08
-#define _EP08_IN    0x88
-#define _EP09_OUT   0x09
-#define _EP09_IN    0x89
-#define _EP10_OUT   0x0A
-#define _EP10_IN    0x8A
-#define _EP11_OUT   0x0B
-#define _EP11_IN    0x8B
-#define _EP12_OUT   0x0C
-#define _EP12_IN    0x8C
-#define _EP13_OUT   0x0D
-#define _EP13_IN    0x8D
-#define _EP14_OUT   0x0E
-#define _EP14_IN    0x8E
-#define _EP15_OUT   0x0F
-#define _EP15_IN    0x8F
+#define _EP_IN		0x80
+#define _EP_OUT		0x00
+#define _EP01_OUT	0x01
+#define _EP01_IN	0x81
+#define _EP02_OUT	0x02
+#define _EP02_IN	0x82
+#define _EP03_OUT	0x03
+#define _EP03_IN	0x83
+#define _EP04_OUT	0x04
+#define _EP04_IN	0x84
+#define _EP05_OUT	0x05
+#define _EP05_IN	0x85
+#define _EP06_OUT	0x06
+#define _EP06_IN	0x86
+#define _EP07_OUT	0x07
+#define _EP07_IN	0x87
+#define _EP08_OUT	0x08
+#define _EP08_IN	0x88
+#define _EP09_OUT	0x09
+#define _EP09_IN	0x89
+#define _EP10_OUT	0x0A
+#define _EP10_IN	0x8A
+#define _EP11_OUT	0x0B
+#define _EP11_IN	0x8B
+#define _EP12_OUT	0x0C
+#define _EP12_IN	0x8C
+#define _EP13_OUT	0x0D
+#define _EP13_IN	0x8D
+#define _EP14_OUT	0x0E
+#define _EP14_IN	0x8E
+#define _EP15_OUT	0x0F
+#define _EP15_IN	0x8F
 
 /* Configuration Attributes */
-#define _DEFAULT    (0x01<<7)       //Default Value (Bit 7 is set)
-#define _SELF       (0x01<<6)       //Self-powered (Supports if set)
-#define _RWU        (0x01<<5)       //Remote Wakeup (Supports if set)
-#define _HNP	        (0x01 << 1)    //HNP (Supports if set)
-#define _SRP	  	 (0x01)		 //SRP (Supports if set)
+#define _DEFAULT	(0x01 << 7)	// Default Value (Bit 7 is set)
+#define _SELF		(0x01 << 6)	// Self-powered (Supports if set)
+#define _RWU		(0x01 << 5)	// Remote Wakeup (Supports if set)
+#define _HNP		(0x01 << 1)	// HNP (Supports if set)
+#define _SRP		(0x01)		// SRP (Supports if set)
 
 /* Endpoint Transfer Type */
-#define _CTRL       0x00            //Control Transfer
-#define _ISO        0x01            //Isochronous Transfer
-#define _BULK       0x02            //Bulk Transfer
-
-#define _INTERRUPT        0x03            //Interrupt Transfer
-#if defined(__18CXX) || defined(__C30__)
-    #define _INT        0x03            //Interrupt Transfer
-#endif
+#define _CTRL		0x00		// Control Transfer
+#define _ISO		0x01		// Isochronous Transfer
+#define _BULK		0x02		// Bulk Transfer
+#define _INTERRUPT	0x03		// Interrupt Transfer
 
 /* Isochronous Endpoint Synchronization Type */
-#define _NS         (0x00<<2)       //No Synchronization
-#define _AS         (0x01<<2)       //Asynchronous
-#define _AD         (0x02<<2)       //Adaptive
-#define _SY         (0x03<<2)       //Synchronous
+#define _NS		(0x00 << 2)	// No Synchronization
+#define _AS		(0x01 << 2)	// Asynchronous
+#define _AD		(0x02 << 2)	// Adaptive
+#define _SY		(0x03 << 2)	// Synchronous
 
 /* Isochronous Endpoint Usage Type */
-#define _DE         (0x00<<4)       //Data endpoint
-#define _FE         (0x01<<4)       //Feedback endpoint
-#define _IE         (0x02<<4)       //Implicit feedback Data endpoint
+#define _DE		(0x00 << 4)	// Data endpoint
+#define _FE		(0x01 << 4)	// Feedback endpoint
+#define _IE		(0x02 << 4)	// Implicit feedback Data endpoint
 
-#define _ROM        USB_INPIPES_ROM
-#define _RAM        USB_INPIPES_RAM
+#define _ROM		USB_INPIPES_ROM
+#define _RAM		USB_INPIPES_RAM
 
 //These are the directional indicators used for the USBTransferOnePacket()
 //  function.
-#define OUT_FROM_HOST 0
-#define IN_TO_HOST 1
+#define OUT_FROM_HOST	0
+#define IN_TO_HOST	1
 
 /********************************************************************
  * CTRL_TRF_SETUP: Every setup packet has 8 bytes.  This structure
@@ -418,7 +414,7 @@ This defintions is a return value of the function USBGetDeviceState(). */
     #if defined(USB_USE_HID)
     //Class specific - HID report descriptor
     #if !defined(__USB_DESCRIPTORS_C)
-        extern const struct { unsigned char report[HID_RPT01_SIZE]; } hid_rpt01;
+        extern const unsigned char hid_rpt01 [HID_RPT01_SIZE];
     #endif
     #endif
 
@@ -431,9 +427,8 @@ This defintions is a return value of the function USBGetDeviceState(). */
     //class specific data buffers
     extern volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
     extern volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
+    extern volatile unsigned char hid_report_feature[HID_FEATURE_REPORT_BYTES];
     #endif
-
-
 #endif
 
 /* Control Transfer States */
