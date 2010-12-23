@@ -25,21 +25,9 @@
 #include <microchip/usb.h>
 #include <microchip/usb_device.h>
 
-#if defined(USB_USE_MSD)
-    #include <microchip/usb_function_msd.h>
-#endif
-
 #if (USB_PING_PONG_MODE != USB_PING_PONG__FULL_PING_PONG)
     #error "PIC32 only supports full ping pong mode."
 #endif
-
-//#define DEBUG_MODE
-
-#ifdef DEBUG_MODE
-    #include "uart2.h"
-#endif
-
-/* VARIABLES */
 
 USB_VOLATILE unsigned char USBDeviceState;
 USB_VOLATILE unsigned char USBActiveConfiguration;
@@ -58,24 +46,12 @@ USB_VOLATILE unsigned char USTATcopy;
 USB_VOLATILE uint16_t USBInMaxPacketSize[USB_MAX_EP_NUMBER];
 USB_VOLATILE unsigned char *USBInData[USB_MAX_EP_NUMBER];
 
-/* USB FIXED LOCATION VARIABLES */
-
 /*
  * Section A: Buffer Descriptor Table
  * - 0x400 - 0x4FF(max)
  * - USB_MAX_EP_NUMBER is defined in target.cfg
  */
-#if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
-    volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 2] __attribute__ ((aligned (512)));
-#elif (USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY)
-    volatile BDT_ENTRY BDT[((USB_MAX_EP_NUMBER + 1) * 2)+1] __attribute__ ((aligned (512)));
-#elif (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)
-    volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 4] __attribute__ ((aligned (512)));
-#elif (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0)
-    volatile BDT_ENTRY BDT[((USB_MAX_EP_NUMBER + 1) * 4)-2] __attribute__ ((aligned (512)));
-#else
-    #error "No ping pong mode defined."
-#endif
+volatile BDT_ENTRY BDT [(USB_MAX_EP_NUMBER + 1) * 4] __attribute__ ((aligned (512)));
 
 /*
  * Section B: EP0 Buffer Space
@@ -84,48 +60,13 @@ volatile CTRL_TRF_SETUP SetupPkt;           // 8-byte only
 volatile unsigned char CtrlTrfData[USB_EP0_BUFF_SIZE];
 
 /*
- * Section C: non-EP0 Buffer Space
+ * This function initializes the device stack
+ * it in the default state
+ *
+ * The USB module will be completely reset including
+ * all of the internal variables, registers, and
+ * interrupt flags.
  */
-// Can provide compile time option to do software pingpong
-#if defined(USB_USE_HID)
-    volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
-    volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
-#endif
-
-#if defined(USB_USE_MSD)
-	//volatile far USB_MSD_CBW_CSW msd_cbw_csw;
-	volatile USB_MSD_CBW msd_cbw;
-	volatile USB_MSD_CSW msd_csw;
-
-	volatile char msd_buffer[512];
-#endif
-
-/* DECLARATIONS */
-
-//DOM-IGNORE-BEGIN
-/*
-  Function:
-    void USBDeviceInit(void)
-
-  Description:
-    This function initializes the device stack
-    it in the default state
-
-  Precondition:
-    None
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    The USB module will be completely reset including
-    all of the internal variables, registers, and
-    interrupt flags.
-  */
-//DOM-IGNORE-END
 void USBDeviceInit(void)
 {
     unsigned char i;
@@ -188,38 +129,20 @@ void USBDeviceInit(void)
     USBDeviceState = DETACHED_STATE;
 }
 
-//DOM-IGNORE-BEGIN
 /*
-  Function:
-    void USBDeviceTasks(void)
-
-  Description:
-    This function is the main state machine of the
-    USB device side stack.  This function should be
-    called periodically to receive and transmit
-    packets through the stack.  This function should
-    be called  preferably once every 100us
-    during the enumeration process.  After the
-    enumeration process this function still needs to
-    be called periodically to respond to various
-    situations on the bus but is more relaxed in its
-    time requirements.  This function should also
-    be called at least as fast as the OUT data
-    expected from the PC.
-
-  Precondition:
-    None
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-  */
-//DOM-IGNORE-END
+ * This function is the main state machine of the
+ * USB device side stack.  This function should be
+ * called periodically to receive and transmit
+ * packets through the stack.  This function should
+ * be called  preferably once every 100us
+ * during the enumeration process.  After the
+ * enumeration process this function still needs to
+ * be called periodically to respond to various
+ * situations on the bus but is more relaxed in its
+ * time requirements.  This function should also
+ * be called at least as fast as the OUT data
+ * expected from the PC.
+ */
 void USBDeviceTasks(void)
 {
     unsigned char i;
@@ -432,26 +355,12 @@ void USBDeviceTasks(void)
 		    }//end if(USBTransactionCompleteIF)
 		    else
 		    	break;	//USTAT FIFO must be empty.
-		}//end for()
-	}//end if(USBTransactionCompleteIE)
-
-}//end of USBDeviceTasks()
+		}
+	}
+}
 
 /*
- * Function:        void USBStallHandler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:
- *
- * Overview:        This function handles the event of a STALL
- *                  occuring on the bus
- *
- * Note:            None
+ * This function handles the event of a STALL occuring on the bus
  */
 void USBStallHandler(void)
 {
@@ -482,20 +391,7 @@ void USBStallHandler(void)
 }
 
 /*
- * Function:        void USBSuspend(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:
- *
- * Overview:        This function handles if the host tries to
- *                  suspend the device
- *
- * Note:            None
+ * This function handles if the host tries to suspend the device
  */
 void USBSuspend(void)
 {
@@ -535,19 +431,7 @@ void USBSuspend(void)
 }
 
 /*
- * Function:        void USBWakeFromSuspend(void)
  *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:
- *
- * Note:            None
  */
 void USBWakeFromSuspend(void)
 {
@@ -580,29 +464,17 @@ void USBWakeFromSuspend(void)
     {
         USBClearInterruptFlag(USBActivityIFReg,USBActivityIFBitNum);
     }  // Added
-
-}//end USBWakeFromSuspend
+}
 
 /*
- * Function:        void USBCtrlEPService(void)
+ * USBCtrlEPService checks for three transaction
+ * types that it knows how to service and services them:
+ * 1. EP0 SETUP
+ * 2. EP0 OUT
+ * 3. EP0 IN
+ * It ignores all other types (i.e. EP1, EP2, etc.)
  *
- * PreCondition:    USTAT is loaded with a valid endpoint address.
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        USBCtrlEPService checks for three transaction
- *                  types that it knows how to service and services
- *                  them:
- *                  1. EP0 SETUP
- *                  2. EP0 OUT
- *                  3. EP0 IN
- *                  It ignores all other types (i.e. EP1, EP2, etc.)
- *
- * Note:            None
+ * PreCondition: USTAT is loaded with a valid endpoint address.
  */
 void USBCtrlEPService(void)
 {
@@ -635,48 +507,38 @@ void USBCtrlEPService(void)
 		//  so take care of the IN transfer
         USBCtrlTrfInHandler();
     }
-
-}//end USBCtrlEPService
+}
 
 /*
- * Function:        void USBCtrlTrfSetupHandler(void)
+ * This routine is a task dispatcher and has 3 stages.
+ * 1. It initializes the control transfer state machine.
+ * 2. It calls on each of the module that may know how to
+ *    service the Setup Request from the host.
+ *    Module Example: USBD, HID, CDC, MSD, ...
+ *    A callback function, USBCBCheckOtherReq(),
+ *    is required to call other module handlers.
+ * 3. Once each of the modules has had a chance to check if
+ *    it is responsible for servicing the request, stage 3
+ *    then checks direction of the transfer to determine how
+ *    to prepare EP0 for the control transfer.
+ *    Refer to USBCtrlEPServiceComplete() for more details.
  *
- * PreCondition:    SetupPkt buffer is loaded with valid USB Setup Data
+ * PreCondition: SetupPkt buffer is loaded with valid USB Setup Data
  *
- * Input:           None
+ * Microchip USB Firmware has three different states for
+ * the control transfer state machine:
+ * 1. WAIT_SETUP
+ * 2. CTRL_TRF_TX
+ * 3. CTRL_TRF_RX
+ * Refer to firmware manual to find out how one state
+ * is transitioned to another.
  *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine is a task dispatcher and has 3 stages.
- *                  1. It initializes the control transfer state machine.
- *                  2. It calls on each of the module that may know how to
- *                     service the Setup Request from the host.
- *                     Module Example: USBD, HID, CDC, MSD, ...
- *                     A callback function, USBCBCheckOtherReq(),
- *                     is required to call other module handlers.
- *                  3. Once each of the modules has had a chance to check if
- *                     it is responsible for servicing the request, stage 3
- *                     then checks direction of the transfer to determine how
- *                     to prepare EP0 for the control transfer.
- *                     Refer to USBCtrlEPServiceComplete() for more details.
- *
- * Note:            Microchip USB Firmware has three different states for
- *                  the control transfer state machine:
- *                  1. WAIT_SETUP
- *                  2. CTRL_TRF_TX
- *                  3. CTRL_TRF_RX
- *                  Refer to firmware manual to find out how one state
- *                  is transitioned to another.
- *
- *                  A Control Transfer is composed of many USB transactions.
- *                  When transferring data over multiple transactions,
- *                  it is important to keep track of data source, data
- *                  destination, and data count. These three parameters are
- *                  stored in pSrc,pDst, and wCount. A flag is used to
- *                  note if the data source is from ROM or RAM.
- *
+ * A Control Transfer is composed of many USB transactions.
+ * When transferring data over multiple transactions,
+ * it is important to keep track of data source, data
+ * destination, and data count. These three parameters are
+ * stored in pSrc,pDst, and wCount. A flag is used to
+ * note if the data source is from ROM or RAM.
  */
 void USBCtrlTrfSetupHandler(void)
 {
@@ -703,27 +565,16 @@ void USBCtrlTrfSetupHandler(void)
 
     /* Stage 3 */
     USBCtrlEPServiceComplete();
+}
 
-}//end USBCtrlTrfSetupHandler
 /*
- * Function:        void USBCtrlTrfOutHandler(void)
+ * This routine handles an OUT transaction according to
+ * which control transfer state is currently active.
  *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine handles an OUT transaction according to
- *                  which control transfer state is currently active.
- *
- * Note:            Note that if the the control transfer was from
- *                  host to device, the session owner should be notified
- *                  at the end of each OUT transaction to service the
- *                  received data.
- *
+ * Note that if the the control transfer was from
+ * host to device, the session owner should be notified
+ * at the end of each OUT transaction to service the
+ * received data.
  */
 void USBCtrlTrfOutHandler(void)
 {
@@ -738,28 +589,16 @@ void USBCtrlTrfOutHandler(void)
 }
 
 /*
- * Function:        void USBCtrlTrfInHandler(void)
+ * This routine handles an IN transaction according to
+ * which control transfer state is currently active.
  *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine handles an IN transaction according to
- *                  which control transfer state is currently active.
- *
- *
- * Note:            A Set Address Request must not change the acutal address
- *                  of the device until the completion of the control
- *                  transfer. The end of the control transfer for Set Address
- *                  Request is an IN transaction. Therefore it is necessary
- *                  to service this unique situation when the condition is
- *                  right. Macro mUSBCheckAdrPendingState is defined in
- *                  usb9.h and its function is to specifically service this
- *                  event.
+ * A Set Address Request must not change the acutal address
+ * of the device until the completion of the control
+ * transfer. The end of the control transfer for Set Address
+ * Request is an IN transaction. Therefore it is necessary
+ * to service this unique situation when the condition is
+ * right. Macro mUSBCheckAdrPendingState is defined in
+ * usb9.h and its function is to specifically service this event.
  */
 void USBCtrlTrfInHandler(void)
 {
@@ -816,21 +655,8 @@ void USBCtrlTrfInHandler(void)
 }
 
 /*
- * Function:        void USBPrepareForNextSetupTrf(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        The routine forces EP0 OUT to be ready for a new
- *                  Setup transaction, and forces EP0 IN to be owned
- *                  by CPU.
- *
- * Note:            None
+ * The routine forces EP0 OUT to be ready for a new
+ * Setup transaction, and forces EP0 IN to be owned by CPU.
  */
 void USBPrepareForNextSetupTrf(void)
 {
@@ -931,20 +757,8 @@ void USBPrepareForNextSetupTrf(void)
 }//end USBPrepareForNextSetupTrf
 
 /*
- * Function:        void USBCheckStdRequest(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine checks the setup data packet to see
- *                  if it knows how to handle it
- *
- * Note:            None
+ * This routine checks the setup data packet to see
+ * if it knows how to handle it
  */
 void USBCheckStdRequest(void)
 {
@@ -993,24 +807,12 @@ void USBCheckStdRequest(void)
         case SYNCH_FRAME:
         default:
             break;
-    }//end switch
-}//end USBCheckStdRequest
+    }
+}
 
 /*
- * Function:        void USBStdFeatureReqHandler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine handles the standard SET & CLEAR
- *                  FEATURES requests
- *
- * Note:            None
+ * This routine handles the standard SET & CLEAR
+ * FEATURES requests
  */
 void USBStdFeatureReqHandler(void)
 {
@@ -1123,26 +925,12 @@ void USBStdFeatureReqHandler(void)
                 #endif
 
             }
-        }//end if
-
-    }//end if
-}//end USBStdFeatureReqHandler
+        }
+    }
+}
 
 /*
- * Function:        void USBStdGetDscHandler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine handles the standard GET_DESCRIPTOR
- *                  request.
- *
- * Note:            None
+ * This routine handles the standard GET_DESCRIPTOR request.
  */
 void USBStdGetDscHandler(void)
 {
@@ -1169,11 +957,11 @@ void USBStdGetDscHandler(void)
                 inPipes[0].wCount = *(inPipes[0].pSrc.wRom+1);                // Set data count
                 break;
             case USB_DESCRIPTOR_STRING:
-                #if defined(USB_NUM_STRING_DESCRIPTORS)
-                if(SetupPkt.bDscIndex<USB_NUM_STRING_DESCRIPTORS)
-                #else
-                if(1)
-                #endif
+#if defined(USB_NUM_STRING_DESCRIPTORS)
+		if (SetupPkt.bDscIndex < USB_NUM_STRING_DESCRIPTORS)
+#else
+                if (1)
+#endif
                 {
                     //Get a pointer to the String descriptor requested
                     inPipes[0].pSrc.bRom = *(USB_SD_Ptr+SetupPkt.bDscIndex);
@@ -1193,19 +981,7 @@ void USBStdGetDscHandler(void)
 }//end USBStdGetDscHandler
 
 /*
- * Function:        void USBStdGetStatusHandler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine handles the standard GET_STATUS request
- *
- * Note:            None
+ * This routine handles the standard GET_STATUS request
  */
 void USBStdGetStatusHandler(void)
 {
@@ -1259,35 +1035,23 @@ void USBStdGetStatusHandler(void)
         inPipes[0].wCount &= ~0xff;
         inPipes[0].wCount |= 2;				// Set data count
     }//end if(...)
-}//end USBStdGetStatusHandler
+}
 
 /*
- * Function:        void USBCtrlEPServiceComplete(void)
+ * This routine wrap up the ramaining tasks in servicing
+ * a Setup Request. Its main task is to set the endpoint
+ * controls appropriately for a given situation. See code
+ * below.
+ * There are three main scenarios:
+ * a) There was no handler for the Request, in this case
+ *    a STALL should be sent out.
+ * b) The host has requested a read control transfer,
+ *    endpoints are required to be setup in a specific way.
+ * c) The host has requested a write control transfer, or
+ *    a control data stage is not required, endpoints are
+ *    required to be setup in a specific way.
  *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine wrap up the ramaining tasks in servicing
- *                  a Setup Request. Its main task is to set the endpoint
- *                  controls appropriately for a given situation. See code
- *                  below.
- *                  There are three main scenarios:
- *                  a) There was no handler for the Request, in this case
- *                     a STALL should be sent out.
- *                  b) The host has requested a read control transfer,
- *                     endpoints are required to be setup in a specific way.
- *                  c) The host has requested a write control transfer, or
- *                     a control data stage is not required, endpoints are
- *                     required to be setup in a specific way.
- *
- *                  Packet processing is resumed by clearing PKTDIS bit.
- *
- * Note:            None
+ * Packet processing is resumed by clearing PKTDIS bit.
  */
 void USBCtrlEPServiceComplete(void)
 {
@@ -1407,30 +1171,21 @@ void USBCtrlEPServiceComplete(void)
 			}
         }
     }
-
 }
 
 
 /*
- * Function:        void USBCtrlTrfTxService(void)
+ * This routine should be called from only two places.
+ * One from USBCtrlEPServiceComplete() and one from
+ * USBCtrlTrfInHandler(). It takes care of managing a
+ * transfer over multiple USB transactions.
  *
- * PreCondition:    pSrc, wCount, and usb_stat.ctrl_trf_mem are setup properly.
+ * This routine works with isochronous endpoint larger than
+ * 256 bytes and is shown here as an example of how to deal
+ * with BC9 and BC8. In reality, a control endpoint can never
+ * be larger than 64 bytes.
  *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine should be called from only two places.
- *                  One from USBCtrlEPServiceComplete() and one from
- *                  USBCtrlTrfInHandler(). It takes care of managing a
- *                  transfer over multiple USB transactions.
- *
- * Note:            This routine works with isochronous endpoint larger than
- *                  256 bytes and is shown here as an example of how to deal
- *                  with BC9 and BC8. In reality, a control endpoint can never
- *                  be larger than 64 bytes.
+ * PreCondition: pSrc, wCount, and usb_stat.ctrl_trf_mem are setup properly.
  */
 void USBCtrlTrfTxService(void)
 {
@@ -1486,29 +1241,17 @@ void USBCtrlTrfTxService(void)
             *pDst++ = *inPipes[0].pSrc.bRam++;
             byteToSend--;
         }//end while(byte_to_send)
-    }//end if(usb_stat.ctrl_trf_mem == _ROM)
-
-}//end USBCtrlTrfTxService
+    }
+}
 
 /*
- * Function:        void USBCtrlTrfRxService(void)
+ * *** This routine is only partially complete. Check for
+ * new version of the firmware.
  *
- * PreCondition:    pDst and wCount are setup properly.
- *                  pSrc is always &CtrlTrfData
- *                  usb_stat.ctrl_trf_mem is always _RAM.
- *                  wCount should be set to 0 at the start of each control
- *                  transfer.
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        *** This routine is only partially complete. Check for
- *                  new version of the firmware.
- *
- * Note:            None
+ * PreCondition: pDst and wCount are setup properly.
+ *               pSrc is always &CtrlTrfData
+ *               usb_stat.ctrl_trf_mem is always _RAM.
+ *               wCount should be set to 0 at the start of each control transfer.
  */
 void USBCtrlTrfRxService(void)
 {
@@ -1568,22 +1311,10 @@ void USBCtrlTrfRxService(void)
 }//end USBCtrlTrfRxService
 
 /*
- * Function:        void USBStdSetCfgHandler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This routine first disables all endpoints by
- *                  clearing UEP registers. It then configures
- *                  (initializes) endpoints by calling the callback
- *                  function USBCBInitEP().
- *
- * Note:            None
+ * This routine first disables all endpoints by
+ * clearing UEP registers. It then configures
+ * (initializes) endpoints by calling the callback
+ * function USBCBInitEP().
  */
 void USBStdSetCfgHandler(void)
 {
@@ -1612,26 +1343,14 @@ void USBStdSetCfgHandler(void)
         //initialize the required endpoints
         USBInitEP((const unsigned char*)(USB_CD_Ptr[USBActiveConfiguration-1]));
         USBCBInitEP();
-
-    }//end if(SetupPkt.bConfigurationValue == 0)
-}//end USBStdSetCfgHandler
+    }
+}
 
 /*
- * Function:        void USBConfigureEndpoint (unsigned char EPNum, unsigned char direction)
+ * This function will configure the specified endpoint.
  *
- * PreCondition:    None
- *
- * Input:           unsigned char EPNum - the endpoint to be configured
- *                  unsigned char direction - the direction to be configured
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This function will configure the specified
- *                  endpoint
- *
- * Note:            None
+ * Input: unsigned char EPNum - the endpoint to be configured
+ *        unsigned char direction - the direction to be configured
  */
 void USBConfigureEndpoint (unsigned char EPNum, unsigned char direction)
 {
@@ -1673,54 +1392,42 @@ void USBConfigureEndpoint (unsigned char EPNum, unsigned char direction)
 }
 
 /*
-  Function:
-        void USBEnableEndpoint (unsigned char ep, unsigned char options)
-
-  Summary:
-    This function will enable the specified endpoint with the specified
-    options
-  Description:
-    This function will enable the specified endpoint with the specified
-    options.
-
-    Typical Usage:
-    <code>
-    void USBCBInitEP(void)
-    {
-        USBEnableEndpoint(MSD_DATA_IN_EP,USB_IN_ENABLED|USB_OUT_ENABLED|USB_HANDSHAKE_ENABLED|USB_DISALLOW_SETUP);
-        USBMSDInit();
-    }
-    </code>
-
-    In the above example endpoint number MSD_DATA_IN_EP is being configured
-    for both IN and OUT traffic with handshaking enabled. Also since
-    MSD_DATA_IN_EP is not endpoint 0 (MSD does not allow this), then we can
-    explicitly disable SETUP packets on this endpoint.
-  Conditions:
-    None
-  Input:
-    unsigned char ep -       the endpoint to be configured
-    unsigned char options -  optional settings for the endpoint. The options should
-                    be ORed together to form a single options string. The
-                    available optional settings for the endpoint. The
-                    options should be ORed together to form a single options
-                    string. The available options are the following\:
-                    * USB_HANDSHAKE_ENABLED enables USB handshaking (ACK,
-                      NAK)
-                    * USB_HANDSHAKE_DISABLED disables USB handshaking (ACK,
-                      NAK)
-                    * USB_OUT_ENABLED enables the out direction
-                    * USB_OUT_DISABLED disables the out direction
-                    * USB_IN_ENABLED enables the in direction
-                    * USB_IN_DISABLED disables the in direction
-                    * USB_ALLOW_SETUP enables control transfers
-                    * USB_DISALLOW_SETUP disables control transfers
-                    * USB_STALL_ENDPOINT STALLs this endpoint
-  Return:
-    None
-  Remarks:
-    None
-  */
+ * This function will enable the specified endpoint with the specified
+ * options.
+ *
+ * Typical Usage:
+ * <code>
+ * void USBCBInitEP(void)
+ * {
+ *     USBEnableEndpoint(MSD_DATA_IN_EP,USB_IN_ENABLED|USB_OUT_ENABLED|USB_HANDSHAKE_ENABLED|USB_DISALLOW_SETUP);
+ *     USBMSDInit();
+ * }
+ * </code>
+ *
+ * In the above example endpoint number MSD_DATA_IN_EP is being configured
+ * for both IN and OUT traffic with handshaking enabled. Also since
+ * MSD_DATA_IN_EP is not endpoint 0 (MSD does not allow this), then we can
+ * explicitly disable SETUP packets on this endpoint.
+ *
+ * Input:
+ *   unsigned char ep -       the endpoint to be configured
+ *   unsigned char options -  optional settings for the endpoint. The options should
+ *                   be ORed together to form a single options string. The
+ *                   available optional settings for the endpoint. The
+ *                   options should be ORed together to form a single options
+ *                   string. The available options are the following\:
+ *                   * USB_HANDSHAKE_ENABLED enables USB handshaking (ACK,
+ *                     NAK)
+ *                   * USB_HANDSHAKE_DISABLED disables USB handshaking (ACK,
+ *                     NAK)
+ *                   * USB_OUT_ENABLED enables the out direction
+ *                   * USB_OUT_DISABLED disables the out direction
+ *                   * USB_IN_ENABLED enables the in direction
+ *                   * USB_IN_DISABLED disables the in direction
+ *                   * USB_ALLOW_SETUP enables control transfers
+ *                   * USB_DISALLOW_SETUP disables control transfers
+ *                   * USB_STALL_ENDPOINT STALLs this endpoint
+ */
 void USBEnableEndpoint (unsigned char ep, unsigned char options)
 {
     //Set the options to the appropriate endpoint control register
@@ -1743,21 +1450,11 @@ void USBEnableEndpoint (unsigned char ep, unsigned char options)
 }
 
 /*
- * Function:        void USBStallEndpoint (unsigned char ep, unsigned char dir)
- *
- * PreCondition:    None
+ * STALLs the specified endpoint
  *
  * Input:
  *   unsigned char ep - the endpoint the data will be transmitted on
  *   unsigned char dir - the direction of the transfer
- *
- * Output:          None
- *
- * Side Effects:    Endpoint is STALLed
- *
- * Overview:        STALLs the specified endpoint
- *
- * Note:            None
  */
 void USBStallEndpoint (unsigned char ep, unsigned char dir)
 {
@@ -1793,28 +1490,14 @@ void USBStallEndpoint (unsigned char ep, unsigned char dir)
 }
 
 /*
- * Function:        USB_HANDLE USBTransferOnePacket(
- *                      unsigned char ep,
- *                      unsigned char dir,
- *                      unsigned char* data,
- *                      unsigned char len)
- *
- * PreCondition:    None
+ * Transfers one packet over the USB.
  *
  * Input:
  *   unsigned char ep - the endpoint the data will be transmitted on
  *   unsigned char dir - the direction of the transfer
-                This value is either OUT_FROM_HOST or IN_TO_HOST
+ *                       This value is either OUT_FROM_HOST or IN_TO_HOST
  *   unsigned char* data - pointer to the data to be sent
  *   unsigned char len - length of the data needing to be sent
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        Transfers one packet over the USB
- *
- * Note:            None
  */
 USB_HANDLE USBTransferOnePacket (unsigned char ep, unsigned char dir, unsigned char* data, unsigned char len)
 {
@@ -1863,24 +1546,13 @@ USB_HANDLE USBTransferOnePacket (unsigned char ep, unsigned char dir, unsigned c
 }
 
 /*
- * Function:        void USBClearInterruptFlag (unsigned char* reg, unsigned char flag)
- *
- * PreCondition:    None
+ * Clears the specified interrupt flag.
  *
  * Input:
  *   unsigned char* reg - the register address holding the interrupt flag
  *   unsigned char flag - the bit number needing to be cleared
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        clears the specified interrupt flag.
- *
- * Note:
  */
 void USBClearInterruptFlag(unsigned char* reg, unsigned char flag)
 {
     *reg = (0x01<<flag);
 }
-/* EOF USBDevice.c */

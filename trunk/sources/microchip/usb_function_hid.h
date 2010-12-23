@@ -29,6 +29,34 @@
 #ifndef HID_H
 #define HID_H
 
+/*
+ * Default HID configuration.
+ */
+#ifndef HID_EP
+#   define HID_EP		1
+#endif
+#ifndef HID_INTF_ID
+#   define HID_INTF_ID		0x00
+#endif
+#ifndef HID_BD_OUT
+#   define HID_BD_OUT		USB_EP_1_OUT
+#endif
+#ifndef HID_INT_OUT_EP_SIZE
+#   define HID_INT_OUT_EP_SIZE	3
+#endif
+#ifndef HID_BD_IN
+#   define HID_BD_IN		USB_EP_1_IN
+#endif
+#ifndef HID_INT_IN_EP_SIZE
+#   define HID_INT_IN_EP_SIZE	3
+#endif
+#ifndef HID_NUM_OF_DSC
+#   define HID_NUM_OF_DSC	1
+#endif
+#ifndef HID_RPT01_SIZE
+#   define HID_RPT01_SIZE	47
+#endif
+
 /* Class-Specific Requests */
 #define GET_REPORT		0x01
 #define GET_IDLE		0x02
@@ -56,6 +84,13 @@
 #define HID_PROTOCOL_NONE	0x00
 #define HID_PROTOCOL_KEYBOARD	0x01
 #define HID_PROTOCOL_MOUSE	0x02
+
+#if !defined(USBDEVICE_C)
+    extern const unsigned char hid_rpt01 [HID_RPT01_SIZE];
+    extern volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
+    extern volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
+    extern volatile unsigned char hid_report_feature[HID_FEATURE_REPORT_BYTES];
+#endif
 
 /*
     Macro:

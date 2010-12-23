@@ -36,6 +36,12 @@ void HIDGetReportHandler (void);
 void HIDSetReportHandler (void);
 
 /*
+ * Section C: non-EP0 Buffer Space
+ */
+volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
+volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
+
+/*
  * This routine handles HID specific request that happen on EP0.  These
  * include, but are not limited to, requests for the HID report
  * descriptors.  This function should be called from the

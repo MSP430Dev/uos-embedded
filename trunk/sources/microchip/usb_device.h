@@ -103,14 +103,14 @@
 #define OUT_FROM_HOST	0
 #define IN_TO_HOST	1
 
-/********************************************************************
+/*
  * CTRL_TRF_SETUP: Every setup packet has 8 bytes.  This structure
  * allows direct access to the various members of the control
  * transfer.
- *******************************************************************/
+ */
 typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
 {
-    /** Standard Device Requests ***********************************/
+    /* Standard Device Requests */
     struct __attribute__ ((packed))
     {
         unsigned char bmRequestType; //from table 9-2 of USB2.0 spec
@@ -208,7 +208,7 @@ typedef union __attribute__ ((packed)) _CTRL_TRF_SETUP
         unsigned :8;
     };
 
-    /** End: Standard Device Requests ******************************/
+    /* End: Standard Device Requests */
 
 } CTRL_TRF_SETUP;
 
@@ -284,10 +284,10 @@ typedef struct __attribute__ ((packed))
 #define USB_EP0_NO_DATA        USB_INPIPES_NO_DATA
 #define USB_EP0_NO_OPTIONS     USB_INPIPES_NO_OPTIONS
 
-/********************************************************************
+/*
  * Standard Request Codes
  * USB 2.0 Spec Ref Table 9-4
- *******************************************************************/
+ */
 #define GET_STATUS  0
 #define CLR_FEATURE 1
 #define SET_FEATURE 3
@@ -376,101 +376,80 @@ This defintions is a return value of the function USBGetDeviceState(). */
 #  define USB_PING_PONG_MODE USB_PING_PONG__FULL_PING_PONG
 #endif
 
-#if !defined(USBDEVICE_C)
-    //Definitions for the BDT
-    #if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
-        extern volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 2];
-    #elif (USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY)
-        extern volatile BDT_ENTRY BDT[((USB_MAX_EP_NUMBER+1) * 2)+1];
-    #elif (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)
-        extern volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 4];
-    #elif (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0)
-        extern volatile BDT_ENTRY BDT[((USB_MAX_EP_NUMBER + 1) * 4)-2];
-    #else
-        #error "No ping pong mode defined."
-    #endif
-
-    //Depricated in v2.2 - will be removed in a future revision
-    #if !defined(USB_USER_DEVICE_DESCRIPTOR)
-        //Device descriptor
-        extern const USB_DEVICE_DESCRIPTOR device_dsc;
-    #else
-        USB_USER_DEVICE_DESCRIPTOR_INCLUDE;
-    #endif
-
-    //Configuration descriptor
-    extern const unsigned char configDescriptor1[];
-
-    #if !defined(USB_USER_CONFIG_DESCRIPTOR)
-        //Array of configuration descriptors
-        extern const unsigned char *const USB_CD_Ptr[];
-    #else
-        USB_USER_CONFIG_DESCRIPTOR_INCLUDE;
-    #endif
-
-    //Array of string descriptors
-    extern const unsigned char *const USB_SD_Ptr[];
-
-    #if defined(USB_USE_HID)
-    //Class specific - HID report descriptor
-    #if !defined(__USB_DESCRIPTORS_C)
-        extern const unsigned char hid_rpt01 [HID_RPT01_SIZE];
-    #endif
-    #endif
-
-    //Buffer for control transfers
-    extern volatile CTRL_TRF_SETUP SetupPkt;           // 8-byte only
-    //Buffer for control transfer data
-    extern volatile unsigned char CtrlTrfData[USB_EP0_BUFF_SIZE];
-
-    #if defined(USB_USE_HID)
-    //class specific data buffers
-    extern volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
-    extern volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
-    extern volatile unsigned char hid_report_feature[HID_FEATURE_REPORT_BYTES];
-    #endif
+/* Size of buffer for end-point EP0.
+ * Valid Options: 8, 16, 32, or 64 bytes.
+ * Using larger options take more SRAM, but
+ * does not provide much advantage in most types
+ * of applications.  Exceptions to this, are applications
+ * that use EP0 IN or OUT for sending large amounts of
+ * application related data.
+ */
+#ifndef USB_EP0_BUFF_SIZE
+#   define USB_EP0_BUFF_SIZE	8
 #endif
+
+/*
+ * Only one interface by default.
+ */
+#ifndef USB_MAX_NUM_INT
+#   define USB_MAX_NUM_INT	1
+#endif
+
+//Definitions for the BDT
+extern volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 4];
+
+//Device descriptor
+extern const USB_DEVICE_DESCRIPTOR device_dsc;
+
+//Configuration descriptor
+extern const unsigned char configDescriptor1[];
+
+//Array of configuration descriptors
+extern const unsigned char *const USB_CD_Ptr[];
+
+//Array of string descriptors
+extern const unsigned char *const USB_SD_Ptr[];
+
+//Buffer for control transfers
+extern volatile CTRL_TRF_SETUP SetupPkt;           // 8-byte only
+//Buffer for control transfer data
+extern volatile unsigned char CtrlTrfData[USB_EP0_BUFF_SIZE];
 
 /* Control Transfer States */
-#define WAIT_SETUP          0
-#define CTRL_TRF_TX         1
-#define CTRL_TRF_RX         2
+#define WAIT_SETUP		0
+#define CTRL_TRF_TX		1
+#define CTRL_TRF_RX		2
 
 /* v2.1 fix - Short Packet States - Used by Control Transfer Read  - CTRL_TRF_TX */
-#define SHORT_PKT_NOT_USED  0
-#define SHORT_PKT_PENDING   1
-#define SHORT_PKT_SENT      2
+#define SHORT_PKT_NOT_USED	0
+#define SHORT_PKT_PENDING	1
+#define SHORT_PKT_SENT		2
 
 /* USB PID: Token Types - See chapter 8 in the USB specification */
-#define SETUP_TOKEN         0x0D    // 0b00001101
-#define OUT_TOKEN           0x01    // 0b00000001
-#define IN_TOKEN            0x09    // 0b00001001
+#define SETUP_TOKEN		0x0D    // 0b00001101
+#define OUT_TOKEN		0x01    // 0b00000001
+#define IN_TOKEN		0x09    // 0b00001001
 
 /* bmRequestType Definitions */
-#define HOST_TO_DEV         0
-#define DEV_TO_HOST         1
+#define HOST_TO_DEV		0
+#define DEV_TO_HOST		1
 
-#define STANDARD            0x00
-#define CLASS               0x01
-#define VENDOR              0x02
+#define STANDARD		0x00
+#define CLASS			0x01
+#define VENDOR			0x02
 
-#define RCPT_DEV            0
-#define RCPT_INTF           1
-#define RCPT_EP             2
-#define RCPT_OTH            3
+#define RCPT_DEV		0
+#define RCPT_INTF		1
+#define RCPT_EP			2
+#define RCPT_OTH		3
 
-/** EXTERNS ********************************************************/
-#if !defined(USBDEVICE_C)
-    extern unsigned char USBDeviceState;
-    extern unsigned char USBActiveConfiguration;
-    extern USB_VOLATILE IN_PIPE inPipes[1];
-    extern USB_VOLATILE OUT_PIPE outPipes[1];
-    extern volatile BDT_ENTRY *pBDTEntryIn[USB_MAX_EP_NUMBER+1];
-#endif
+extern unsigned char USBDeviceState;
+extern unsigned char USBActiveConfiguration;
+extern USB_VOLATILE IN_PIPE inPipes[1];
+extern USB_VOLATILE OUT_PIPE outPipes[1];
+extern volatile BDT_ENTRY *pBDTEntryIn[USB_MAX_EP_NUMBER+1];
 
-/** PUBLIC PROTOTYPES **********************************************/
-
-/**************************************************************************
+/*
   Function:
         void USBDeviceTasks(void)
 
@@ -524,10 +503,10 @@ This defintions is a return value of the function USBGetDeviceState(). */
     enumeration process. After the enumeration process this function still
     needs to be called periodically to respond to various situations on the
     bus but is more relaxed in its time requirements.
-  **************************************************************************/
+  */
 void USBDeviceTasks(void);
 
-/**************************************************************************
+/*
     Function:
         void USBDeviceInit(void)
 
@@ -549,10 +528,10 @@ void USBDeviceTasks(void);
     Remarks:
         None
 
-  **************************************************************************/
+  */
 void USBDeviceInit(void);
 
-/********************************************************************
+/*
   Function:
         bool_t USBGetRemoteWakeupStatus(void)
 
@@ -614,10 +593,10 @@ void USBDeviceInit(void);
   Remarks:
     None
 
-  *******************************************************************/
+  */
 #define USBGetRemoteWakeupStatus() RemoteWakeup
 
-/***************************************************************************
+/*
   Function:
         unsigned char USBGetDeviceState(void)
 
@@ -679,10 +658,10 @@ void USBDeviceInit(void);
                          communication on the bus.
   Remarks:
     None
-  ***************************************************************************/
+  */
 #define USBGetDeviceState() USBDeviceState
 
-/***************************************************************************
+/*
   Function:
         bool_t USBGetSuspendState(void)
 
@@ -768,9 +747,9 @@ void USBEnableEndpoint(unsigned char ep, unsigned char options);
     #define USBCB_EP0_DATA_RECEIVED()
 #endif
 
-/** Section: CALLBACKS ******************************************************/
+/* Section: CALLBACKS */
 
-/*************************************************************************
+/*
   Function:
       void USBCBSuspend(void)
 
@@ -814,10 +793,10 @@ void USBEnableEndpoint(unsigned char ep, unsigned char options);
     None
 
     Remark: None
-  *************************************************************************/
+  */
 void USBCBSuspend(void);
 
-/******************************************************************************
+/*
  Function:
    void USBCBWakeFromSuspend(void)
 
@@ -850,10 +829,10 @@ void USBCBSuspend(void);
  Return Values: None
 
  Remarks:       None
- *****************************************************************************/
+ */
 void USBCBWakeFromSuspend(void);
 
-/********************************************************************
+/*
   Function:
     void USBCB_SOF_Handler(void)
 
@@ -881,10 +860,10 @@ void USBCBWakeFromSuspend(void);
 
   Remarks:
     None
- *******************************************************************/
+ */
 void USBCB_SOF_Handler(void);
 
-/*******************************************************************
+/*
   Function:
     void USBCBErrorHandler(void)
 
@@ -926,10 +905,10 @@ void USBCB_SOF_Handler(void);
 
     Nevertheless, this callback function is provided, such as
     for debugging purposes.
- *******************************************************************/
+ */
 void USBCBErrorHandler(void);
 
-/**************************************************************************
+/*
   Function:
       void USBCBCheckOtherReq(void)
 
@@ -961,10 +940,10 @@ void USBCBErrorHandler(void);
     None
   Remarks:
     None
-  **************************************************************************/
+  */
 void USBCBCheckOtherReq(void);
 
-/*******************************************************************
+/*
   Function:
     void USBCBStdSetDscHandler(void)
 
@@ -988,10 +967,10 @@ void USBCBCheckOtherReq(void);
     None
 
   Remark:            None
- *******************************************************************/
+ */
 void USBCBStdSetDscHandler(void);
 
-/*****************************************************************************************************************
+/*
   Function:
       void USBCBInitEP(void)
 
@@ -1016,10 +995,10 @@ void USBCBStdSetDscHandler(void);
     None
   Remarks:
     None
-  *****************************************************************************************************************/
+  */
 void USBCBInitEP(void);
 
-/******************************************************************************
+/*
   Function:
         void USBCBSendResume(void)
 
@@ -1097,10 +1076,10 @@ void USBCBInitEP(void);
         PIC32 as they have different clocking structures.
       * A timer can be used in place of the blocking loop if desired.
 
-******************************************************************************/
+*/
 void USBCBSendResume(void);
 
-/*******************************************************************
+/*
   Function:
     void USBCBEP0DataReceived(void)
 
@@ -1131,19 +1110,19 @@ void USBCBSendResume(void);
 
   Remarks:
     None
-*******************************************************************/
+*/
 void USBCBEP0DataReceived(void);
 
 
 
 
-/** Section: MACROS ******************************************************/
+/* Section: MACROS */
 
 #define DESC_CONFIG_BYTE(a) (a)
 #define DESC_CONFIG_WORD(a) (a&0xFF),((a>>8)&0xFF)
 #define DESC_CONFIG_DWORD(a) (a&0xFF),((a>>8)&0xFF),((a>>16)&0xFF),((a>>24)&0xFF)
 
-/*************************************************************************
+/*
   Function:
     bool_t USBHandleBusy(USB_HANDLE handle)
 
@@ -1174,10 +1153,10 @@ void USBCBEP0DataReceived(void);
     FALSE -  The specified handle is free and available for a transfer
   Remarks:
     None
-  *************************************************************************/
+  */
 #define USBHandleBusy(handle) (handle==0?0:handle->STAT.UOWN)
 
-/********************************************************************
+/*
     Function:
         uint16_t USBHandleGetLength(USB_HANDLE handle)
 
@@ -1205,10 +1184,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBHandleGetLength(handle) (handle->CNT)
 
-/********************************************************************
+/*
     Function:
         uint16_t USBHandleGetAddr(USB_HANDLE)
 
@@ -1234,10 +1213,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBHandleGetAddr(handle) (handle->ADR)
 
-/********************************************************************
+/*
     Function:
         void USBEP0SetSourceRAM(unsigned char* src)
 
@@ -1257,10 +1236,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBEP0SetSourceRAM(src) inPipes[0].pSrc.bRam = src
 
-/********************************************************************
+/*
     Function:
         void USBEP0SetSourceROM(unsigned char* src)
 
@@ -1280,10 +1259,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBEP0SetSourceROM(src) inPipes[0].pSrc.bRom = src
 
-/********************************************************************
+/*
     Function:
         void USBEP0Transmit(unsigned char options)
 
@@ -1310,10 +1289,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBEP0Transmit(options) inPipes[0].info.Val = options | USB_INPIPES_BUSY
 
-/********************************************************************
+/*
     Function:
         void USBEP0SetSize(uint16_t size)
 
@@ -1333,10 +1312,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBEP0SetSize(size) inPipes[0].wCount = size
 
-/********************************************************************
+/*
     Function:
         void USBEP0SendRAMPtr(unsigned char* src, uint16_t size, unsigned char Options)
 
@@ -1365,10 +1344,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBEP0SendRAMPtr(src,size,options)  {USBEP0SetSourceRAM(src);USBEP0SetSize(size);USBEP0Transmit(options | USB_EP0_RAM);}
 
-/********************************************************************
+/*
     Function:
         void USBEP0SendROMPtr(unsigned char* src, uint16_t size, unsigned char Options)
 
@@ -1397,10 +1376,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBEP0SendROMPtr(src,size,options)  {USBEP0SetSourceROM(src);USBEP0SetSize(size);USBEP0Transmit(options | USB_EP0_ROM);}
 
-/********************************************************************
+/*
     Function:
         USB_HANDLE USBTxOnePacket(unsigned char ep, unsigned char* data, uint16_t len)
 
@@ -1422,10 +1401,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBTxOnePacket(ep,data,len)     USBTransferOnePacket(ep,IN_TO_HOST,data,len)
 
-/********************************************************************
+/*
     Function:
         void USBRxOnePacket(unsigned char ep, unsigned char* data, uint16_t len)
 
@@ -1446,10 +1425,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 #define USBRxOnePacket(ep,data,len)      USBTransferOnePacket(ep,OUT_FROM_HOST,data,len)
 
-/********************************************************************
+/*
     Function:
         void USBClearInterruptFlag(uint16_t reg, unsigned char flag)
 
@@ -1469,10 +1448,10 @@ void USBCBEP0DataReceived(void);
     Remarks:
         None
 
- *******************************************************************/
+ */
 void USBClearInterruptFlag(unsigned char* reg, unsigned char flag);
 
-/********************************************************************
+/*
     Function:
         void USBClearInterruptRegister(uint16_t reg)
 

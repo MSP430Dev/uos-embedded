@@ -326,18 +326,13 @@ void USBCBErrorHandler(void)
  *    Make sure to verify using the MPLAB SIM's Stopwatch
  *    and verify the actual signal on an oscilloscope.
  */
-void USBCBSendResume(void)
+void USBCBSendResume (void)
 {
-	static unsigned delay_count;
-
 	// Start RESUME signaling
 	U1CON |= PIC32_U1CON_RESUME;
 
 	// Set RESUME line for 1-13 ms
-	delay_count = 1800U;
-	do {
-		delay_count--;
-	} while (delay_count);
+	udelay (5000);
 
 	U1CON &= ~PIC32_U1CON_RESUME;
 }
