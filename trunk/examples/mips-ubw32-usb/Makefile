@@ -11,9 +11,10 @@ firmware.elf:   startup.o libuos.a $(OBJS)
 		$(CC) $(LDFLAGS) $(CFLAGS) $(DEPFLAGS) $(OBJS) $(LIBS) -o $@
 
 clean:
-		rm -rf *~ usb/*~ *.[oasi] *.elf *.lst *.dis .deps *.srec $(MODULES)
+		rm -rf *~ usb/*~ *.[oasi] *.elf *.lst *.dis .deps *.srec *.hex $(MODULES)
 
-load:		firmware.hex
-		ubw32 -write $< -reset
+load:		firmware.srec
+		objcopy -I srec -O ihex firmware.srec firmware.hex
+		ubw32 -write firmware.hex -reset
 
 include $(OS)/sources/rules.mak

@@ -50,12 +50,6 @@
 #define mLED_3_Toggle()		LATEINV = (1 << 1)
 #define mLED_4_Toggle()		LATEINV = (1 << 0)
 
-// Let compile time pre-processor calculate the CORE_TICK_PERIOD
-//#define CORE_TICK_RATE	(KHZ / 2)
-
-// Decrements every 1 ms.
-//volatile static unsigned int OneMSTimer;
-
 /*
  * BlinkUSBStatus turns on and off LEDs
  * corresponding to the USB device state.
@@ -68,7 +62,7 @@ void BlinkUSBStatus (void)
 	static unsigned led_count = 0;
 
 	if (led_count == 0) {
-		led_count = 50000U;
+		led_count = 50000;
 	}
 	led_count--;
 
@@ -78,21 +72,6 @@ void BlinkUSBStatus (void)
 		}
 	}
 }
-
-#if 0
-void /*__ISR(_CORE_TIMER_VECTOR, ipl2)*/ CoreTimerHandler(void)
-{
-	// clear the interrupt flag
-	mCTClearIntFlag();
-
-	if (OneMSTimer) {
-		OneMSTimer--;
-	}
-
-	// update the period
-	UpdateCoreTimer (CORE_TICK_RATE);
-}
-#endif
 
 /*
  * Main program entry point.
@@ -130,24 +109,27 @@ int main (void)
 
 		// User Application USB tasks
 		if (USBDeviceState >= CONFIGURED_STATE && ! (U1PWRC & PIC32_U1PWRC_USUSPEND)) {
-			unsigned char numBytesRead;
-			static unsigned char USB_In_Buffer[64];
-			static unsigned char USB_Out_Buffer[64];
+			unsigned nbytes_read;
+			static unsigned char inbuf[64], outbuf[64];
+			static unsigned led3_count = 0;
 
 			// Pull in some new data if there is new data to pull in
-			numBytesRead = getsUSBUSART ((char*) USB_In_Buffer, 64);
-			if (numBytesRead != 0) {
-				snprintf (USB_Out_Buffer, sizeof (USB_Out_Buffer),
-					"Received USB bytes. Hello!\r\n");
-				putUSBUSART ((char*) USB_Out_Buffer, strlen (USB_Out_Buffer));
+			nbytes_read = getsUSBUSART ((char*) inbuf, 64);
+			if (nbytes_read != 0) {
+				snprintf (outbuf, sizeof(outbuf),
+					"Received %d bytes: %02x...\r\n",
+					nbytes_read, inbuf[0]);
+				putUSBUSART ((char*) outbuf, strlen (outbuf));
 				mLED_2_Toggle();
 				mLED_3_On();
-				//OneMSTimer = 1000;
+				led3_count = 10000;
 			}
-
-//			if (! OneMSTimer) {
-				mLED_3_Off();
-//			}
+			if (led3_count) {
+				// Turn off LED3 when timeout expired.
+				led3_count--;
+				if (led3_count == 0)
+					mLED_3_Off();
+			}
 
 			CDCTxService();
 		}
