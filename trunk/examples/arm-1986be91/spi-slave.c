@@ -24,7 +24,7 @@ void display_refresh (unsigned sent, unsigned received)
 	printf (&display, "  Кбит/сек: %d\r\n", spi.kbps);
 	printf (&display, "  Передано: %lu\r\n", spi.out_packets);
 	printf (&display, "   Принято: %lu\r\n", spi.in_packets);
-	printf (&display, "Прерываний: %lu\r\n", spi.intr);
+	printf (&display, "Прерываний: %lu\r\n", spi.interrupts);
 	if (sent != ~0) {
 		printf (&display, "Отправлено: '%c'\r\n", sent);
 		if (received != ~0)

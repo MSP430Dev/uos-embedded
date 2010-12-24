@@ -22,7 +22,7 @@
 /*
  * Queue of SPI packets.
  */
-#define SPI_QUEUE_SIZE		64	/* max number of packets in queue */
+#define SPI_QUEUE_SIZE		16	/* max number of packets in queue */
 
 typedef struct _spi_queue_t {
 	unsigned count;
@@ -37,12 +37,13 @@ typedef struct _spi_t {
 	mutex_t lock;			/* interrupt goes here */
 
 	unsigned port;			/* port number */
+	unsigned irq;			/* interrupt number */
 	unsigned master;		/* master or slave */
 	unsigned kbps;			/* kbits per second */
 	spi_queue_t inq;		/* queue of received packets */
 
 	/* Statistics. */
-	unsigned long intr;		/* interrupt counter */
+	unsigned long interrupts;	/* interrupt counter */
 	unsigned long out_packets;	/* transmitted packets */
 	unsigned long in_packets;	/* received packets */
 	unsigned long in_discards;	/* ignored packets, due to lack of memory */

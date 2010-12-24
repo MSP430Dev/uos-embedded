@@ -294,6 +294,7 @@ void spi_output (spi_t *c, unsigned word)
 		mutex_wait (&c->lock);
 	}
 	reg->DR = word;
+	arch_intr_allow (c->irq);
 	c->out_packets++;
 	mutex_unlock (&c->lock);
 }
@@ -333,10 +334,6 @@ int spi_input (spi_t *c, unsigned *word)
 	int reply = 0;
 
 	mutex_lock (&c->lock);
-	if (receive_data (c)) {
-		/* Шлём сигнал для передатчика. */
-		mutex_signal (&c->lock, 0);
-	}
 	if (! spi_queue_is_empty (&c->inq)) {
 		*word = spi_queue_get (&c->inq);
 		reply = 1;
@@ -351,10 +348,6 @@ int spi_input (spi_t *c, unsigned *word)
 void spi_input_wait (spi_t *c, unsigned *word)
 {
 	mutex_lock (&c->lock);
-	if (receive_data (c)) {
-		/* Шлём сигнал для передатчика. */
-		mutex_signal (&c->lock, 0);
-	}
 	while (spi_queue_is_empty (&c->inq)) {
 		/* Ждём приёма пакета. */
 		mutex_wait (&c->lock);
@@ -370,9 +363,9 @@ static bool_t spi_handle_interrupt (void *arg)
 {
 	spi_t *c = (spi_t*) arg;
 
-	c->intr++;
+	c->interrupts++;
 	receive_data (c);
-	arch_intr_allow (c->port);
+	arch_intr_allow (c->irq);
 	return 0;
 }
 
@@ -389,15 +382,14 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit)
 	/* Выбор соответствующего интерфейса SSP и
 	 * установка внешних сигналов. */
 	SSP_t *reg;
-	int irq;
 	if (c->port == 0) {
 		spi_setup_ssp1 ();
 		reg = ARM_SSP1;
-		irq = IRQ_SSP1;
+		c->irq = IRQ_SSP1;
 	} else {
 		spi_setup_ssp2 ();
 		reg = ARM_SSP2;
-		irq = IRQ_SSP2;
+		c->irq = IRQ_SSP2;
 	}
 
 	/* Инициализация всех регистров данного интерфейса SSP.
@@ -422,6 +414,6 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit)
 	reg->CR1 |= ARM_SSP_CR1_SSE;
 
 	/* Подключение к нужному номеру прерывания. */
-	mutex_lock_irq (&c->lock, irq, spi_handle_interrupt, c);
+	mutex_lock_irq (&c->lock, c->irq, spi_handle_interrupt, c);
 	mutex_unlock (&c->lock);
 }

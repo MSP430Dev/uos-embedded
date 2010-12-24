@@ -31,13 +31,15 @@ void display_refresh (unsigned sent, unsigned received)
 	printf (&display, "  Кбит/сек: %d\r\n", spi.kbps);
 	printf (&display, "  Передано: %lu\r\n", spi.out_packets);
 	printf (&display, "   Принято: %lu\r\n", spi.in_packets);
-	printf (&display, "Прерываний: %lu\r\n", spi.intr);
+	printf (&display, "Прерываний: %lu\r\n", spi.interrupts);
 	if (sent != ~0) {
 		printf (&display, "Отправлено: '%c'\r\n", sent);
 		if (received >= ' ' && received <= '~')
 			printf (&display, "   Обратно: '%c'\r\n", received);
-		else
+		else if (received != ~0)
 			printf (&display, "   Обратно: %04x\r\n", received);
+		else
+			printf (&display, "   Обратно: ---\r\n");
 	}
 }
 
@@ -49,11 +51,7 @@ void send_receive (unsigned sent)
 	unsigned received;
 
 	spi_output (&spi, sent);
-
-	/* Ждём в течение 16 битовых интервалов. */
-	udelay (1 + 16 * 1000 / KBIT_PER_SEC);
-	if (! spi_input (&spi, &received))
-		received = ~0;
+	spi_input_wait (&spi, &received);
 	display_refresh (sent, received);
 }
 
