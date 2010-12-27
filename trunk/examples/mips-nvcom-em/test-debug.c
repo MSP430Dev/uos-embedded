@@ -10,8 +10,3 @@ int main (void)
 		debug_getchar();
 	}
 }
-
-void _irq_handler_ ()
-{
-/*	uos_halt (0);*/
-}

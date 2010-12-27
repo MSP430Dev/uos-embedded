@@ -225,8 +225,3 @@ int main (void)
 	for (;;)
 		menu ();
 }
-
-void _irq_handler_ ()
-{
-/*	uos_halt (0);*/
-}

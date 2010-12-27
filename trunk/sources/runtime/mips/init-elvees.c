@@ -294,6 +294,12 @@ uos_valid_memory_address (void *ptr)
 	return 0;
 }
 
+void __attribute__ ((weak))
+_irq_handler_ ()
+{
+	/* This is needed when no kernel is present. */
+}
+
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 static void dump_of_death (unsigned int context[])
 {
