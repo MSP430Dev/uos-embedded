@@ -47,7 +47,7 @@ typedef struct _stream_interface_t {
 /* LY: умышленно вызываем ошибки там, где без необходимости вместо puts() используется printf() */
 #define printf(x,f,...) stream_printf (to_stream (x), f, ##__VA_ARGS__)
 
-void drain_input (stream_t *u); /* LY: чистит забуферизиронванный в потоке ввод. */
+void drain_input (stream_t *u); /* LY: чистит забуферизированный в потоке ввод. */
 int stream_puts (stream_t *u, const char *str);
 unsigned char *stream_gets (stream_t *u, unsigned char *str, int len);
 int stream_printf (stream_t *u, const char *fmt, ...);

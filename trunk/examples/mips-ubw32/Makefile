@@ -15,6 +15,7 @@ all:		$(OUTS) $(TESTS) $(TEST).dis
 		$(SIZE) *.elf
 
 $(OUTS) $(TESTS): startup.o libuos.a
+		$(OBJCOPY) -O binary $(TEST).elf $(TEST).bin
 
 clean:
 		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
