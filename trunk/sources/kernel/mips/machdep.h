@@ -23,6 +23,13 @@
 /*
  * The total number of different hardware interrupts.
  */
+#ifdef PIC32MX
+/*
+ * Total number of interrupt vectors.
+ */
+#define ARCH_INTERRUPTS		46
+#endif
+
 #ifdef ELVEES_MC24
 /*
  * 32 interrupts linked to MASKR[31:0] register.

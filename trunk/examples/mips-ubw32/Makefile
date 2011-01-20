@@ -2,9 +2,9 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-debug
+TEST		= test-task
 TESTS		= $(TEST).srec
-TESTS		+= test-debug.srec test-leds.srec #test-task.srec #test-timer.srec test-uart.srec
+#TESTS		+= test-debug.srec test-leds.srec #test-task.srec #test-timer.srec test-uart.srec
 #TESTS		+= philosophers.srec test-ram.srec #test-tcl.srec
 #TESTS           += test-latency.srec test-tswitch.srec
 #TESTS           += test-fpu.srec
@@ -13,9 +13,9 @@ OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis
 		$(SIZE) *.elf
+		$(OBJCOPY) -O binary $(TEST).elf $(TEST).bin
 
 $(OUTS) $(TESTS): startup.o libuos.a
-		$(OBJCOPY) -O binary $(TEST).elf $(TEST).bin
 
 clean:
 		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)

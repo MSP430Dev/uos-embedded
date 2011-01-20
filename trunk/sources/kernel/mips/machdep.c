@@ -146,6 +146,132 @@ _arch_task_switch_ ()
 	asm volatile ("j _restore_regs_");
 }
 
+#ifdef PIC32MX
+static void dump_of_death (unsigned int context[])
+{
+	unsigned int cause, badvaddr, config;
+	const char *code = 0;
+
+	debug_printf ("\n\n*** 0x%08x: exception ", context [CONTEXT_PC]);
+
+	cause = mips_read_c0_register (C0_CAUSE);
+	switch (cause & CA_EXC_CODE) {
+	case CA_Int:	code = "Interrupt"; break;
+	case CA_AdEL:	code = "Address Load"; break;
+	case CA_AdES:	code = "Address Save"; break;
+	case CA_IBE:	code = "Bus fetch"; break;
+	case CA_DBE:	code = "Bus load/store"; break;
+	case CA_Sys:	code = "Syscall"; break;
+	case CA_Bp:	code = "Breakpoint"; break;
+	case CA_RI:	code = "Reserved Instruction"; break;
+	case CA_CPU:	code = "Coprocessor Unusable"; break;
+	case CA_Ov:	code = "Arithmetic Overflow"; break;
+	case CA_Tr:	code = "Trap"; break;
+	}
+	if (code)
+		debug_printf ("'%s'\n", code);
+	else
+		debug_printf ("%d\n", cause >> 2 & 31);
+
+	badvaddr = mips_read_c0_register (C0_BADVADDR);
+	config = mips_read_c0_register (C0_CONFIG);
+	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x\n",
+		cause, badvaddr, config);
+
+	debug_printf ("                t0 = %8x   s0 = %8x   t8 = %8x   lo = %8x\n",
+		context [CONTEXT_R8], context [CONTEXT_R16],
+		context [CONTEXT_R24], context [CONTEXT_LO]);
+	debug_printf ("at = %8x   t1 = %8x   s1 = %8x   t9 = %8x   hi = %8x\n",
+		context [CONTEXT_R1], context [CONTEXT_R9], context [CONTEXT_R17],
+		context [CONTEXT_R25], context [CONTEXT_HI]);
+	debug_printf ("v0 = %8x   t2 = %8x   s2 = %8x               status = %8x\n",
+		context [CONTEXT_R2], context [CONTEXT_R10],
+		context [CONTEXT_R18], context [CONTEXT_STATUS]);
+	debug_printf ("v1 = %8x   t3 = %8x   s3 = %8x                  epc = %8x\n",
+		context [CONTEXT_R3], context [CONTEXT_R11],
+		context [CONTEXT_R19], context [CONTEXT_PC]);
+	debug_printf ("a0 = %8x   t4 = %8x   s4 = %8x   gp = %8x\n",
+		context [CONTEXT_R4], context [CONTEXT_R12],
+		context [CONTEXT_R20], context [CONTEXT_GP]);
+	debug_printf ("a1 = %8x   t5 = %8x   s5 = %8x   sp = %8x\n",
+		context [CONTEXT_R5], context [CONTEXT_R13],
+		context [CONTEXT_R21], context + CONTEXT_WORDS);
+	debug_printf ("a2 = %8x   t6 = %8x   s6 = %8x   fp = %8x\n",
+		context [CONTEXT_R6], context [CONTEXT_R14],
+		context [CONTEXT_R22], context [CONTEXT_FP]);
+	debug_printf ("a3 = %8x   t7 = %8x   s7 = %8x   ra = %8x\n",
+		context [CONTEXT_R7], context [CONTEXT_R15],
+		context [CONTEXT_R23], context [CONTEXT_RA]);
+
+	debug_printf ("\nHalt...\n\n");
+	asm volatile ("1: j 1b; nop");
+}
+
+/*
+ * Translate interrupt vector number to IRQ mask.
+ */
+static const unsigned mask_by_vector [ARCH_INTERRUPTS] = {
+	(1 << PIC32_IRQ_CT),		/* 0  - Core Timer Interrupt */
+	(1 << PIC32_IRQ_CS0),           /* 1  - Core Software Interrupt 0 */
+	(1 << PIC32_IRQ_CS1),           /* 2  - Core Software Interrupt 1 */
+	(1 << PIC32_IRQ_INT0),          /* 3  - External Interrupt 0 */
+	(1 << PIC32_IRQ_T1),            /* 4  - Timer1 */
+	(1 << PIC32_IRQ_IC1),           /* 5  - Input Capture 1 */
+	(1 << PIC32_IRQ_OC1),           /* 6  - Output Compare 1 */
+	(1 << PIC32_IRQ_INT1),          /* 7  - External Interrupt 1 */
+	(1 << PIC32_IRQ_T2),            /* 8  - Timer2 */
+	(1 << PIC32_IRQ_IC2),           /* 9  - Input Capture 2 */
+	(1 << PIC32_IRQ_OC2),           /* 10 - Output Compare 2 */
+	(1 << PIC32_IRQ_INT2),          /* 11 - External Interrupt 2 */
+	(1 << PIC32_IRQ_T3),            /* 12 - Timer3 */
+	(1 << PIC32_IRQ_IC3),           /* 13 - Input Capture 3 */
+	(1 << PIC32_IRQ_OC3),           /* 14 - Output Compare 3 */
+	(1 << PIC32_IRQ_INT3),          /* 15 - External Interrupt 3 */
+	(1 << PIC32_IRQ_T4),            /* 16 - Timer4 */
+	(1 << PIC32_IRQ_IC4),           /* 17 - Input Capture 4 */
+	(1 << PIC32_IRQ_OC4),           /* 18 - Output Compare 4 */
+	(1 << PIC32_IRQ_INT4),          /* 19 - External Interrupt 4 */
+	(1 << PIC32_IRQ_T5),            /* 20 - Timer5 */
+	(1 << PIC32_IRQ_IC5),           /* 21 - Input Capture 5 */
+	(1 << PIC32_IRQ_OC5),           /* 22 - Output Compare 5 */
+	(1 << PIC32_IRQ_SPI1E) |        /* 23 - SPI1 */
+	(1 << PIC32_IRQ_SPI1TX) |
+	(1 << PIC32_IRQ_SPI1RX),
+	(1 << PIC32_IRQ_U1E) |          /* 24 - UART1 */
+	(1 << PIC32_IRQ_U1RX) |
+	(1 << PIC32_IRQ_U1TX),
+	(1 << PIC32_IRQ_I2C1B) |        /* 25 - I2C1 */
+	(1 << PIC32_IRQ_I2C1S) |
+	(1 << PIC32_IRQ_I2C1M),
+	(1 << (PIC32_IRQ_CN-32)),       /* 26 - Input Change Interrupt */
+	(1 << (PIC32_IRQ_AD1-32)),      /* 27 - ADC1 Convert Done */
+	(1 << (PIC32_IRQ_PMP-32)),      /* 28 - Parallel Master Port */
+	(1 << (PIC32_IRQ_CMP1-32)),     /* 29 - Comparator Interrupt */
+	(1 << (PIC32_IRQ_CMP2-32)),     /* 30 - Comparator Interrupt */
+	(1 << (PIC32_IRQ_SPI2E-32)) |   /* 31 - SPI2 */
+	(1 << (PIC32_IRQ_SPI2TX-32)) |
+	(1 << (PIC32_IRQ_SPI2RX-32)),
+	(1 << (PIC32_IRQ_U2E-32)) |     /* 32 - UART2 */
+	(1 << (PIC32_IRQ_U2RX-32)) |
+	(1 << (PIC32_IRQ_U2TX-32)),
+	(1 << (PIC32_IRQ_I2C2B-32)) |   /* 33 - I2C2 */
+	(1 << (PIC32_IRQ_I2C2S-32)) |
+	(1 << (PIC32_IRQ_I2C2M-32)),
+	(1 << (PIC32_IRQ_FSCM-32)),     /* 34 - Fail-Safe Clock Monitor */
+	(1 << (PIC32_IRQ_RTCC-32)),     /* 35 - Real-Time Clock and Calendar */
+	(1 << (PIC32_IRQ_DMA0-32)),     /* 36 - DMA Channel 0 */
+	(1 << (PIC32_IRQ_DMA1-32)),     /* 37 - DMA Channel 1 */
+	(1 << (PIC32_IRQ_DMA2-32)),     /* 38 - DMA Channel 2 */
+	(1 << (PIC32_IRQ_DMA3-32)),     /* 39 - DMA Channel 3 */
+	0,				/* 40 */
+	0,				/* 41 */
+	0,				/* 42 */
+	0,				/* 43 */
+	(1 << (PIC32_IRQ_FCE-32)),      /* 44 - Flash Control Event */
+	(1 << (PIC32_IRQ_USB-32)),      /* 45 - USB */
+};
+#endif /* PIC32MX */
+
 /*
  * Interrupt handler.
  * The call is performed via the assembler label,
@@ -164,6 +290,13 @@ _arch_interrupt_ (void)
 "_irq_handler_: .globl _irq_handler_"
 	);
 
+#ifdef PIC32MX
+	/* Only interrupts are allowed. Any exception is fatal. */
+	unsigned cause = mips_read_c0_register (C0_CAUSE);
+	if ((cause & 0x0000007c) != CA_Int)
+		dump_of_death (mips_get_stack_pointer () - 4);
+#endif
+
 #ifdef ELVEES_FPU_EPC_BUG
 	/* Исправляем ошибку в процессоре MC-24RT3: требуется откат
 	 * адреса EPC, если прерывание произошло в слоте перехода
@@ -178,11 +311,26 @@ _arch_interrupt_ (void)
 #endif
 	for (;;) {
 		/* Get the current irq number */
+#ifdef PIC32MX
+		unsigned intstat = INTSTAT;
+		if (PIC32_INTSTAT_SRIPL (intstat) == 0)
+			break;
+		irq = PIC32_INTSTAT_VEC (intstat);
+
+		/* Disable the irq, to avoid loops */
+		if (irq < PIC32_VECT_CN)
+			IECCLR(0) = mask_by_vector [irq];
+		else
+			IECCLR(1) = mask_by_vector [irq];
+#endif
+
+#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 		unsigned status = mips_read_c0_register (C0_STATUS);
 		unsigned cause = mips_read_c0_register (C0_CAUSE);
 		unsigned pending = status & cause & 0xff00;
 		if (! pending)
 			break;
+#endif /* ELVEES_MC24 || ELVEES_NVCOM01 || ELVEES_NVCOM02 */
 #ifdef ELVEES_MC24
 		/* Read readme-mc24.txt for interrupt numbers. */
 		if (pending & ST_IM_MCU) {
@@ -317,6 +465,13 @@ _arch_interrupt_ (void)
 void
 arch_intr_allow (int irq)
 {
+#ifdef PIC32MX
+	if (irq < PIC32_VECT_CN)
+		IECSET(0) = mask_by_vector [irq];
+	else
+		IECSET(1) = mask_by_vector [irq];
+#endif
+
 #ifdef ELVEES_MC24
 	if (irq < 32) {
 		/* Internal interrupt: 0..31. */

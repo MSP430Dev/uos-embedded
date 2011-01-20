@@ -99,7 +99,8 @@ phy_read (eth_t *u, unsigned address)
 /*
  * Set default values to Ethernet controller registers.
  */
-static void chip_init (eth_t *u)
+static void
+chip_init (eth_t *u)
 {
 	/* Включение тактовой частоты EMAC */
 	MC_CLKEN |= MC_CLKEN_EMAC;
