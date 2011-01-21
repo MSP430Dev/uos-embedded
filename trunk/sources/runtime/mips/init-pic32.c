@@ -44,6 +44,19 @@ void __attribute ((noreturn))_init_ (void)
 	U1STASET = PIC32_USTA_URXEN |		/* Receiver Enable */
 		   PIC32_USTA_UTXEN;		/* Transmit Enable */
 
+	/*
+	 * Setup interrupt controller.
+	 */
+	INTCON = 0;				/* Interrupt Control */
+	IPTMR = 0;				/* Temporal Proximity Timer */
+	IFS(0) = IFS(1) = IFS(2) = 0;		/* Interrupt Flag Status */
+	IEC(0) = IEC(1) = IEC(2) = 0;		/* Interrupt Enable Control */
+	IPC(0) = IPC(1) = IPC(2) = IPC(3) = 	/* Interrupt Priority Control */
+	IPC(4) = IPC(5) = IPC(6) = IPC(7) =
+	IPC(8) = IPC(9) = IPC(10) = IPC(11) =
+		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
+		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
+
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
 	src = (unsigned*) &_etext;

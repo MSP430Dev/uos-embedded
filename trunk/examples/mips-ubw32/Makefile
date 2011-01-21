@@ -2,9 +2,9 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-task
-TESTS		= $(TEST).srec
-#TESTS		+= test-debug.srec test-leds.srec #test-task.srec #test-timer.srec test-uart.srec
+TEST		= test-timer
+#TESTS		= $(TEST).srec
+TESTS		+= test-debug.srec test-leds.srec test-task.srec test-timer.srec #test-uart.srec
 #TESTS		+= philosophers.srec test-ram.srec #test-tcl.srec
 #TESTS           += test-latency.srec test-tswitch.srec
 #TESTS           += test-fpu.srec

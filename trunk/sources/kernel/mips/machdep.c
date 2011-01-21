@@ -313,7 +313,7 @@ _arch_interrupt_ (void)
 		/* Get the current irq number */
 #ifdef PIC32MX
 		unsigned intstat = INTSTAT;
-		if (PIC32_INTSTAT_SRIPL (intstat) == 0)
+		if ((intstat & PIC32_INTSTAT_SRIPL_MASK) == 0)
 			break;
 		irq = PIC32_INTSTAT_VEC (intstat);
 

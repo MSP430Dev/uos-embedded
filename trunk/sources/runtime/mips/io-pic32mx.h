@@ -663,6 +663,7 @@
  */
 #define PIC32_INTSTAT_VEC(s)	((s) & 0xFF)	/* Interrupt vector */
 #define PIC32_INTSTAT_SRIPL(s)	((s) >> 8 & 7)	/* Requested priority level */
+#define PIC32_INTSTAT_SRIPL_MASK 0x0700
 
 /*
  * Interrupt Prority Control register.

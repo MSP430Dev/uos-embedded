@@ -7,7 +7,7 @@ TEST		= spi-master
 #TESTS		+= test-timer.hex test-timer-lcd.hex test-latency.hex test-tswitch.hex
 #TESTS		+= test-uart.hex phil-uart.hex phil-lcd.hex
 TESTS		+= spi-master.hex spi-slave.hex #test-can.hex
-#TESTS		+= test-mac.hex test-eth.hex test-tcp.hex test-udp.hex test-telnetd.hex
+TESTS		+= test-mac.hex test-eth.hex test-tcp.hex test-udp.hex test-telnetd.hex
 OUTS		= $(TESTS:%.hex=%.elf) #udpping
 
 # Using MILPROG utility.

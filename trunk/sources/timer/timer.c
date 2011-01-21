@@ -39,7 +39,7 @@
 #endif
 
 #if ARM_AT91SAM
-#   define TIMER_IRQ		AT91C_ID_SYS
+#   define TIMER_IRQ	AT91C_ID_SYS
 #endif
 
 #if ELVEES_MC24
@@ -52,6 +52,10 @@
 
 #if ELVEES_NVCOM02
 #   define TIMER_IRQ		22	/* TODO: Interval Timer interrupt */
+#endif
+
+#if PIC32MX
+#   define TIMER_IRQ	PIC32_VECT_CT	/* Core Timer Interrupt */
 #endif
 
 #if ARM_1986BE9
@@ -107,6 +111,14 @@ timer_handler (timer_t *t)
 #if ARM_AT91SAM
 	/* Clear interrupt. */
 	*AT91C_PITC_PIVR;
+#endif
+#if PIC32MX
+	/* Increment COMPARE register. */
+	unsigned compare = mips_read_c0_register (C0_COMPARE);
+	do {
+		compare += t->compare_step;
+		mips_write_c0_register (C0_COMPARE, compare);
+	} while ((int) (compare - mips_read_c0_register (C0_COUNT)) < 0);
 #endif
 	/* Increment current time. */
 	t->milliseconds += t->msec_per_tick;
@@ -264,6 +276,12 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 #if ARM_AT91SAM
 	*AT91C_PITC_PIMR = (((t->khz * t->msec_per_tick + 8) >> 4) - 1) |
 		AT91C_PITC_PITEN | AT91C_PITC_PITIEN;
+#endif
+#if PIC32MX
+	/* Use core timer. */
+	unsigned count = mips_read_c0_register (C0_COUNT);
+	t->compare_step = (t->khz * t->msec_per_tick + 1) / 2;
+	mips_write_c0_register (C0_COMPARE, count + t->compare_step);
 #endif
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 	/* Use interval timer with prescale 1:1. */
