@@ -35,10 +35,15 @@ _reset_vector_:	.globl	_reset_vector_
 		lui	$gp, 0x8000			# Set global pointer (delay slot)
 
 #---------------------------------------
-# Restore CPU state and return from interrupt
+# Base of exception handlers
 #
 		.section .exception
 		.org	0
+_exception_base_: .globl _exception_base_
+
+#---------------------------------------
+# Restore CPU state and return from interrupt
+#
 _restore_regs_: .globl _restore_regs_
 		addi	$sp, MIPS_FSPACE		# Remove an arg frame
 

@@ -18,7 +18,7 @@
  */
 #include <runtime/lib.h>
 
-extern void _etext();
+extern void _etext(), _exception_base_();
 extern unsigned __data_start, _edata, _end, _estack[];
 extern int main ();
 
@@ -31,6 +31,15 @@ extern int main ();
 void __attribute ((noreturn))_init_ (void)
 {
 	unsigned *src, *dest, *limit;
+
+	/* Initialize STATUS register: master interrupt disable.
+	 * Setup interrupt vector base. */
+	mips_write_c0_register (C0_STATUS, ST_CU0 | ST_BEV);
+	mips_write_c0_select (C0_EBASE, 1, _exception_base_);
+	mips_write_c0_register (C0_STATUS, ST_CU0);
+
+	/* Clear CAUSE register: use special interrupt vector 0x200. */
+	mips_write_c0_register (C0_CAUSE, CA_IV);
 
 	/*
 	 * Setup UART registers.

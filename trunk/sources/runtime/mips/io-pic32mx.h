@@ -29,7 +29,8 @@
 #define C0_STATUS	12	/* Processor status and control */
 #define C0_CAUSE	13	/* Cause of last exception */
 #define C0_EPC		14	/* Program counter at last exception */
-#define C0_PRID_EBASE	15	/* Processor identification; exception base address */
+#define C0_PRID		15	/* Processor identification (read only) */
+#define C0_EBASE	15	/* Exception base address (write only) */
 #define C0_CONFIG	16	/* Configuration */
 #define C0_DEBUG	23	/* Debug control and status */
 #define C0_DEPC		24	/* Program counter at last debug exception */

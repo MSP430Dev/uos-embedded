@@ -132,14 +132,29 @@ void *mips_get_stack_pointer ()
 	__value;						\
 })
 
+#define mips_read_c0_select(reg,sel)				\
+	({ int __value;						\
+	asm volatile (						\
+	"mfc0	%0, $%1, %2"					\
+	: "=r" (__value) : "K" (reg), "K" (sel));		\
+	__value;						\
+})
+
 /*
  * Write C0 coprocessor register.
  */
 #define mips_write_c0_register(reg, value)			\
-do {								\
+	do {							\
 	asm volatile (						\
 	"mtc0	%z0, $%1 \n	nop \n	nop \n	nop"		\
 	: : "r" ((unsigned int) (value)), "K" (reg));		\
+	} while (0)
+
+#define mips_write_c0_select(reg, sel, value)			\
+do {								\
+	asm volatile (						\
+	"mtc0	%z0, $%1, %2 \n	nop \n	nop \n	nop"		\
+	: : "r" ((unsigned int) (value)), "K" (reg), "K" (sel));\
 } while (0)
 
 /*
