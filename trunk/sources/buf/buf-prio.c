@@ -60,7 +60,7 @@ buf_prio_queue_put (buf_prio_queue_t *q, buf_t *p, int prio)
 /*
  * Обмениваем пакет на другой с большим приоритетом.
  * Или на более старый с тем же приоритетом.
- * Всегда возвращаем непустой укзатель.
+ * Всегда возвращаем непустой указатель.
  */
 buf_t *
 buf_prio_queue_exchange (buf_prio_queue_t *q, buf_t *p, int prio)

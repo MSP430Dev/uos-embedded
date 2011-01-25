@@ -36,12 +36,12 @@ inline extern struct _buf_t **buf_queue_first (buf_queue_t *q)
 	return head;
 }
 
-inline extern struct _buf_t ** buf_queue_last (buf_queue_t *q)
+inline extern struct _buf_t **buf_queue_last (buf_queue_t *q)
 {
 	return q->tail;
 }
 
-inline extern struct _buf_t ** buf_queue_next (buf_queue_t *q, struct _buf_t **ptr)
+inline extern struct _buf_t **buf_queue_next (buf_queue_t *q, struct _buf_t **ptr)
 {
 	if (--ptr < q->queue)
 		ptr += q->size;

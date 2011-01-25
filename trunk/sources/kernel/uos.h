@@ -35,6 +35,9 @@ typedef struct _mutex_irq_t mutex_irq_t;
 typedef struct _mutex_group_t mutex_group_t;
 typedef struct _mutex_slot_t mutex_slot_t;
 
+/* Fast irq handler. */
+typedef bool_t (*handler_t) (void*);
+
 /* Task management. */
 task_t *task_create (void (*func)(void*), void *arg, const char *name, int priority,
 	array_t *stack, unsigned stacksz);
@@ -47,7 +50,7 @@ int task_priority (task_t *task);
 void task_set_priority (task_t *task, int priority);
 void *task_private (task_t *task);
 void task_set_private (task_t *task, void *privatep);
-void task_yield ();
+void task_yield (void);
 
 struct _stream_t;
 void task_print (struct _stream_t *stream, task_t *t);
@@ -64,16 +67,10 @@ bool_t mutex_trylock (mutex_t *lock);
 void mutex_signal (mutex_t *lock, void *message);
 void *mutex_wait (mutex_t *lock);
 
-/* Fast irq handler. */
-typedef bool_t (*handler_t) (void*);
-
 /* Interrupt management. */
 void mutex_lock_irq (mutex_t*, int irq, handler_t func, void *arg);
 void mutex_unlock_irq (mutex_t*);
 void mutex_attach_irq (mutex_t *m, int irq, handler_t func, void *arg);
-
-/* User-supplied startup routine. */
-extern void uos_init (void);
 
 /* Group management. */
 mutex_group_t *mutex_group_init (array_t *buf, unsigned buf_size);
@@ -81,6 +78,9 @@ bool_t mutex_group_add (mutex_group_t*, mutex_t*);
 void mutex_group_listen (mutex_group_t*);
 void mutex_group_unlisten (mutex_group_t*);
 void mutex_group_wait (mutex_group_t *g, mutex_t **lock_ptr, void **msg_ptr);
+
+/* User-supplied startup routine. */
+extern void uos_init (void);
 
 /*
  * ----------

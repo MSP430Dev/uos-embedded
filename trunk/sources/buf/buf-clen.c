@@ -4,10 +4,10 @@
 /*
  * Count number of bufs in a chain.
  */
-unsigned char
+small_int_t
 buf_chain_len (buf_t *p)
 {
-	unsigned char len;
+	small_int_t len;
 
 	for (len = 0; p; p = p->next)
 		++len;

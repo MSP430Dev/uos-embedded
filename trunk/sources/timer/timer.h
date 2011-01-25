@@ -13,17 +13,6 @@ extern "C" {
  */
 #define TIMER_MSEC_PER_DAY	(24UL*60*60*1000)
 
-/**\~english
- * Data structure for holding a time value.
- *
- * \~russian
- * Структура для хранения значения времени.
- */
-typedef struct _timer_snap_t {
-	unsigned long milliseconds;
-	unsigned int days;
-} timer_snap_t;
-
 struct _timer_t {
 	mutex_t lock;
 	mutex_t decisec;		/* every 0.1 second is signalled here */
@@ -52,10 +41,9 @@ void timer_delay (timer_t *t, unsigned long msec);
 
 /* Query real time. */
 unsigned long timer_milliseconds (timer_t *t);
+unsigned int timer_days (timer_t *t, unsigned long *milliseconds);
 bool_t timer_passed (timer_t *t, unsigned long t0, unsigned int msec);
-unsigned int timer_days (timer_t *t);
 bool_t interval_greater_or_equal (long interval, long msec);
-void timer_snap (timer_t *timer, timer_snap_t *snap);
 
 #ifdef __cplusplus
 }

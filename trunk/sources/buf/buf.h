@@ -34,7 +34,7 @@ buf_t *buf_alloc (struct _mem_pool_t *m, unsigned short size,
  * Deallocate the buffer. If the buf is a chain all bufs in the
  * chain are deallocated. Return the number of deallocated segments.
  */
-unsigned char buf_free (buf_t *p);
+small_int_t buf_free (buf_t *p);
 
 /*
  * Shrink the buf to the size given by the size parameter.
@@ -47,7 +47,7 @@ void buf_truncate (buf_t *p, unsigned short size);
  * fails. If so, an additional buf should be allocated for the header
  * and it should be chained to the front.
  */
-unsigned char buf_add_header (buf_t *p, short header_size);
+bool_t buf_add_header (buf_t *p, short header_size);
 
 /*
  * Chain buf t on the end of buf h. Pbuf h will have it's tot_len
@@ -75,7 +75,7 @@ buf_t *buf_copy (buf_t *h);
 /*
  * Count number of bufs in a chain.
  */
-unsigned char buf_chain_len (buf_t *p);
+small_int_t buf_chain_len (buf_t *p);
 
 /*
  * Print the buffer contents using debug_printf.

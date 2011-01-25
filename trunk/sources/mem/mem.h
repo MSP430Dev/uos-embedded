@@ -28,7 +28,7 @@ typedef struct _mem_pool_t mem_pool_t;
 void mem_init (mem_pool_t *region, size_t start, size_t stop);
 void mem_check32 (uint32_t start, uint32_t end, void (*error_callback) (void));
 void *mem_alloc (mem_pool_t *region, size_t bytes);
-void *mem_alloc_must (mem_pool_t *region, size_t bytes, const char *);
+void *mem_xalloc (mem_pool_t *region, size_t bytes, const char *title);
 void *mem_alloc_dirty (mem_pool_t *region, size_t bytes);
 void *mem_realloc (void *block, size_t bytes);
 void mem_truncate (void *block, size_t bytes);

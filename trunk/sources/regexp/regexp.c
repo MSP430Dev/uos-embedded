@@ -178,7 +178,7 @@ static unsigned char *regprop (unsigned char *op);
  * Determine the required size.
  * On failure, returns 0.
  */
-unsigned short
+unsigned
 regexp_size (const unsigned char *exp)
 {
 	compile_t x;
@@ -216,7 +216,7 @@ regexp_size (const unsigned char *exp)
  * Beware that the optimization-preparation code in here knows about some
  * of the structure of the compiled regexp.
  */
-unsigned char
+bool_t
 regexp_compile (regexp_t *r, const unsigned char *exp)
 {
 	unsigned char *scan;
@@ -765,7 +765,7 @@ regoptail (unsigned char *p, unsigned char *val)
  * Match a regular expression against a string.
  * Returns 1 on success, or 0 on failure.
  */
-unsigned char
+bool_t
 regexp_execute (regexp_t *prog, const unsigned char *string)
 {
 	execute_t z;

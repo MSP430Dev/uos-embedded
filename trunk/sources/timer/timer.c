@@ -165,35 +165,22 @@ timer_milliseconds (timer_t *t)
 }
 
 /**\~english
- * Return the (real) time in milliseconds since uOS start.
+ * Return the (real) time in days and milliseconds since uOS start.
  *
  * \~russian
- * Запрос времени в сутках.
+ * Запрос времени в сутках и миллисекундах.
  */
 unsigned int
-timer_days (timer_t *t)
+timer_days (timer_t *t, unsigned long *milliseconds)
 {
 	unsigned short val;
 
 	mutex_lock (&t->lock);
+	if (milliseconds)
+		*milliseconds = t->milliseconds;
 	val = t->days;
 	mutex_unlock (&t->lock);
 	return val;
-}
-
-/**\~english
- * Return a valid snap of both days and milliseconds.
- *
- * \~russian
- * Запрос значения текущего времени.
- */
-void
-timer_snap (timer_t *t, timer_snap_t *v)
-{
-	mutex_lock (&t->lock);
-	v->milliseconds = t->milliseconds;
-	v->days = t->days;
-	mutex_unlock (&t->lock);
 }
 
 /**\~english

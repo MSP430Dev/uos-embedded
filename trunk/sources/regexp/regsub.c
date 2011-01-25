@@ -24,7 +24,7 @@
  * Perform substitutions after a regexp match.
  * Returns 1 on success, or 0 on failure.
  */
-unsigned char
+bool_t
 regexp_substitute (const regexp_t *prog, const unsigned char *src, unsigned char *dst)
 {
 	unsigned char c;

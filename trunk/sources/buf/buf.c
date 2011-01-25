@@ -65,7 +65,7 @@ buf_truncate (buf_t *p, unsigned short size)
  * the buf. Also, the ->tot_len and ->len fields are adjusted.
  * Return 0 when there is not enough space for header.
  */
-unsigned char
+bool_t
 buf_add_header (buf_t *p, short header_size)
 {
 	if (p->payload - header_size < (unsigned char*) p + sizeof (buf_t))
@@ -82,7 +82,7 @@ buf_add_header (buf_t *p, short header_size)
  * Deallocate the buffer. If the buf is a chain all bufs in the
  * chain are deallocated. Return the number of deallocated segments.
  */
-unsigned char
+small_int_t
 buf_free (buf_t *p)
 {
 	unsigned char count;
