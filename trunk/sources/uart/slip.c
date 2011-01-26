@@ -87,7 +87,7 @@ slip_transmit_start (slip_t *u)
 				/* Last segment transmitted. */
 				++u->netif.out_packets;
 				u->netif.out_bytes += u->out->tot_len;
-/*				debug_printf ("slip: transmitted %d bytes\n", u->out->tot_len);*/
+debug_printf ("slip: transmitted %d bytes\n", u->out->tot_len);
 				u->out_free = u->out;
 				u->out = 0;
 				u->out_flag = 1;
@@ -132,7 +132,7 @@ slip_set_cts_poller (slip_t *u, bool_t (*func) (slip_t*))
 bool_t
 slip_output (slip_t *u, buf_t *p, small_uint_t prio)
 {
-/*	debug_printf ("slip_output: transmit %d bytes\n", p->tot_len);*/
+debug_printf ("slip_output: transmit %d bytes\n", p->tot_len);
 	mutex_lock (&u->transmitter);
 
 	if (u->out) {
@@ -140,7 +140,7 @@ slip_output (slip_t *u, buf_t *p, small_uint_t prio)
 		if (buf_queue_is_full (&u->outq)) {
 			++u->netif.out_discards;
 			mutex_unlock (&u->transmitter);
-/*			debug_printf ("slip_output: overflow\n");*/
+debug_printf ("slip_output: overflow\n");
 			buf_free (p);
 			return 0;
 		}
@@ -223,7 +223,7 @@ slip_receive_data (slip_t *u)
 
 	for (;;) {
 		if (test_frame_error (u->port)) {
-/*debug_putchar (0, '%');*/
+debug_putchar (0, '%');
 /*			debug_printf ("slip: FRAME ERROR\n");*/
 			/* Check that receive data is available,
 			 * and get the received byte. */
@@ -231,13 +231,13 @@ slip_receive_data (slip_t *u)
 			continue;
 		}
 		if (test_parity_error (u->port)) {
-/*debug_putchar (0, '@');*/
+debug_putchar (0, '@');
 /*			debug_printf ("slip: PARITY ERROR\n");*/
 			c = get_received_byte (u->port);
 			continue;
 		}
 		if (test_overrun_error (u->port)) {
-/*debug_putchar (0, '#');*/
+debug_putchar (0, '#');
 /*			debug_printf ("slip: RECEIVE OVERRUN\n");*/
 			c = get_received_byte (u->port);
 			continue;
@@ -250,7 +250,7 @@ slip_receive_data (slip_t *u)
 			return 1;
 		}
 
-/*debug_printf ("%x\n", c);*/
+debug_printf ("<%x> ", c);
 		if (! u->in_ptr)
 			continue;
 
@@ -281,7 +281,7 @@ slip_receive_data (slip_t *u)
 			}
 			if (u->in_ptr >= u->in_limit) {
 				/* Ignore input on buffer overflow. */
-/*debug_putchar (0, '!');*/
+debug_putchar (0, '!');
 /*				debug_printf ("slip_receive_data: ignore packet - buffer overflow\n");*/
 				++u->netif.in_errors;
 				u->in_ptr = u->in->payload;
@@ -319,7 +319,7 @@ slip_receiver (void *arg)
 				u->in_limit = u->in_ptr + u->netif.mtu;
 			} else {
 				/* No buffer - ignore input. */
-/*				debug_printf ("slip_receiver: out of memory\n");*/
+debug_printf ("slip_receiver: out of memory\n");
 				++u->netif.in_discards;
 			}
 		}
@@ -330,12 +330,12 @@ slip_receiver (void *arg)
 		/* Process all available received data. */
 		if (u->in_ptr && u->in_ptr > u->in->payload) {
 			len = u->in_ptr - u->in->payload;
-/*			debug_printf ("slip_receiver(%ld): received %d bytes\n", u->netif.in_packets, len);*/
+debug_printf ("slip_receiver(%ld): received %d bytes\n", u->netif.in_packets, len);
 			buf_truncate (u->in, len);
 			++u->netif.in_packets;
 
 			if (buf_queue_is_full (&u->inq)) {
-/*				debug_printf ("slip_receiver: input overflow\n");*/
+debug_printf ("slip_receiver: input overflow\n");
 				++u->netif.in_discards;
 
 				/* Reuse the packet. */
@@ -365,7 +365,8 @@ slip_transmitter (void *arg)
 
 	enable_transmitter (u->port);
 #else
-	/* TODO */
+	mutex_lock (&u->transmitter);
+	/*TODO*/
 #endif
 
 	for (;;) {

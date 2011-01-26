@@ -323,8 +323,8 @@ ip_main (void *arg)
 		mutex_lock (&ip->lock);
 		if (ip->timer && m == &ip->timer->decisec) {
 			/* Per 0.1 second timer interrupt. */
-			/*debug_printf ("ip: timer %d\n",
-				timer_milliseconds (ip->timer));*/
+			/*debug_printf ("ip: timer %d\n", timer_milliseconds (ip->timer));*/
+/*debug_printf ("[%d] ", timer_milliseconds (ip->timer));*/
 			if (ip->arp)
 				arp_timer (ip->arp);
 
@@ -343,7 +343,7 @@ ip_main (void *arg)
 		} else {
 			/* Interrupt from driver. */
 			netif = (netif_t*) m;
-			/*debug_printf ("ip: netif %S\n", netif->name);*/
+/*debug_printf ("ip: netif %S\n", netif->name);*/
 
 			for (;;) {
 				p = netif_input (netif);
