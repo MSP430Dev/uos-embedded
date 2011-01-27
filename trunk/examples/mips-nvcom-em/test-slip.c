@@ -74,7 +74,7 @@ void uos_init (void)
 	/*
 	 * Create interface slip0 200.0.0.2 / 255.255.255.0
 	 */
-	slip_init (&slip, 1, "slip0", 80, &pool, KHZ, 38400);
+	slip_init (&slip, 1, "slip0", 80, &pool, KHZ, 115200);
 
 	unsigned char my_ip[] = { 200, 0, 0, 2 };
 	route_add_netif (&ip, &route, my_ip, 24, &slip.netif);

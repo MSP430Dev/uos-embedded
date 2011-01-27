@@ -56,7 +56,7 @@ typedef struct _eth_t {
 } eth_t;
 
 void eth_init (eth_t *u, const char *name, int prio,
-	struct _mem_pool_t *pool, arp_t *arp, const unsigned char *macaddr);
+	struct _mem_pool_t *pool, struct _arp_t *arp, const unsigned char *macaddr);
 void eth_debug (eth_t *u, struct _stream_t *stream);
 void eth_start_negotiation (eth_t *u);
 int eth_get_carrier (eth_t *u);

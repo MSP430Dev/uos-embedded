@@ -49,6 +49,25 @@ udp_queue_get (udp_socket_t *q, unsigned char *paddr,
 	return p;
 }
 
+static inline void
+udp_queue_free (udp_socket_t *q)
+{
+	while (q->count > 0) {
+		assert (q->head >= q->queue);
+		assert (q->head < q->queue + SOCKET_QUEUE_SIZE);
+		assert (q->head->buf != 0);
+
+		/* Remove packet from queue. */
+		buf_free (q->head->buf);
+
+		/* Advance head pointer. */
+		++q->head;
+		--q->count;
+		if (q->head >= q->queue + SOCKET_QUEUE_SIZE)
+			q->head = q->queue;
+	}
+}
+
 static bool_t
 udp_queue_is_full (udp_socket_t *q)
 {
@@ -301,6 +320,40 @@ udp_socket (udp_socket_t *s, ip_t *ip, unsigned short port)
 	s->next = ip->udp_sockets;
 	ip->udp_sockets = s;
 	mutex_unlock (&ip->lock);
+	mutex_unlock (&s->lock);
+}
+
+static inline void
+udp_list_remove (udp_socket_t **socklist, udp_socket_t *ns)
+{
+	if (*socklist == ns) {
+		*socklist = ns->next;
+	} else {
+		udp_socket_t *p;
+
+		for (p = *socklist; p; p = p->next) {
+			if (p->next && p->next == ns) {
+				p->next = ns->next;
+				break;
+			}
+		}
+	}
+	ns->next = 0;
+}
+
+/*
+ * Close the socket: remove queued data.
+ * Remove the UDP socket from IP list.
+ */
+void
+udp_close (udp_socket_t *s)
+{
+	mutex_lock (&s->ip->lock);
+	udp_list_remove (&s->ip->udp_sockets, s);
+	mutex_unlock (&s->ip->lock);
+
+	mutex_lock (&s->lock);
+	udp_queue_free (s);
 	mutex_unlock (&s->lock);
 }
 

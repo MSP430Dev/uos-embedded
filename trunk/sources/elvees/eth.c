@@ -682,7 +682,7 @@ static netif_interface_t eth_interface = {
  */
 void
 eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
-	arp_t *arp, const unsigned char *macaddr)
+	struct _arp_t *arp, const unsigned char *macaddr)
 {
 	u->netif.interface = &eth_interface;
 	u->netif.name = name;

@@ -700,7 +700,8 @@ extern timer_t timer;
  * Set up the network interface.
  */
 void
-cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool, arp_t *arp)
+cs8900_init (cs8900_t *u, const char *name, int prio, mem_pool_t *pool,
+	struct _arp_t *arp)
 {
 	u->netif.interface = &cs8900_interface;
 	u->netif.name = name;

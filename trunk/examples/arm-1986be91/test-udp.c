@@ -7,6 +7,7 @@
 #include <buf/buf.h>
 #include <net/route.h>
 #include <net/ip.h>
+#include <net/arp.h>
 #include <net/udp.h>
 #include <timer/timer.h>
 #include <gpanel/gpanel.h>

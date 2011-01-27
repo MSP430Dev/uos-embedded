@@ -1,8 +1,6 @@
 #ifndef __NETIF_H_
 #define	__NETIF_H_ 1
 
-#include <net/arp.h>
-
 struct _buf_t;
 
 /*
@@ -16,7 +14,7 @@ typedef struct _netif_t {
 	struct _netif_interface_t *interface;
 
 	const char *name;
-	arp_t *arp;
+	struct _arp_t *arp;
 	unsigned char ethaddr [6];	/* MAC-адрес */
 	unsigned short mtu;		/* max packet length */
 	unsigned char type;		/* SNMP-compatible */

@@ -29,10 +29,10 @@ typedef struct _ip_t {
 	struct _timer_t *timer;		/* timer driver */
 	struct _route_t *route;		/* routing table */
 	struct _arp_t	*arp;		/* ARP protocol data */
-	unsigned char	forwarding;	/* forwarding enabled */
-	unsigned char	default_ttl;	/* default time-to-live value */
-	unsigned char	tos;		/* type of service value */
-	unsigned short	id;		/* output packet number */
+	bool_t		forwarding;	/* forwarding enabled */
+	small_uint_t	default_ttl;	/* default time-to-live value */
+	small_uint_t	tos;		/* type of service value */
+	unsigned	id;		/* output packet number */
 
 	/*
 	 * UDP

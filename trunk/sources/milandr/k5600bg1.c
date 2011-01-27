@@ -641,7 +641,7 @@ static netif_interface_t k5600bg1_interface = {
  */
 void
 k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
-	arp_t *arp, const unsigned char *macaddr)
+	struct _arp_t *arp, const unsigned char *macaddr)
 {
 	u->netif.interface = &k5600bg1_interface;
 	u->netif.name = name;

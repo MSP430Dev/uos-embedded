@@ -7,6 +7,7 @@
 #include <net/route.h>
 #include <net/ip.h>
 #include <net/tcp.h>
+#include <net/arp.h>
 #include <timer/timer.h>
 #include <elvees/eth.h>
 

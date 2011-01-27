@@ -47,7 +47,7 @@ typedef struct _k5600bg1_t {
 } k5600bg1_t;
 
 void k5600bg1_init (k5600bg1_t *u, const char *name, int prio,
-	struct _mem_pool_t *pool, arp_t *arp, const unsigned char *macaddr);
+	struct _mem_pool_t *pool, struct _arp_t *arp, const unsigned char *macaddr);
 void k5600bg1_debug (k5600bg1_t *u, struct _stream_t *stream);
 int k5600bg1_get_carrier (k5600bg1_t *u);
 long k5600bg1_get_speed (k5600bg1_t *u, int *duplex);

@@ -6,6 +6,7 @@
 #include <mem/mem.h>
 #include <net/route.h>
 #include <net/ip.h>
+#include <net/arp.h>
 #include <net/tcp.h>
 #include <timer/timer.h>
 #include <gpanel/gpanel.h>

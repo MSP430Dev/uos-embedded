@@ -9,6 +9,7 @@
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/tcp.h>
+#include <net/arp.h>
 
 /*
  * Forward an IP packet. It finds an appropriate route for the packet,

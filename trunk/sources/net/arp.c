@@ -4,6 +4,7 @@
 #include <buf/buf.h>
 #include <net/netif.h>
 #include <net/route.h>
+#include <net/arp.h>
 
 #undef ARP_TRACE
 

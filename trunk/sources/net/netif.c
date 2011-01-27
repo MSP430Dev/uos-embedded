@@ -3,6 +3,7 @@
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <net/netif.h>
+#include <net/arp.h>
 
 bool_t
 netif_output_prio (netif_t *netif, buf_t *p, unsigned char *ipdest,
