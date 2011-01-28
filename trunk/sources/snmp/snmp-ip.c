@@ -3,6 +3,7 @@
 #include <snmp/asn.h>
 #include <snmp/snmp.h>
 #include <net/ip.h>
+#include <net/arp.h>
 #include <net/route.h>
 #include <net/netif.h>
 #include <snmp/snmp-var.h>

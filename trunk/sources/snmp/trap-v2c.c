@@ -62,10 +62,11 @@ snmp_trap_v2c (snmp_t *snmp, udp_socket_t *sock, const char *trap_type,
 	}
 	var1->seq.count = 2;
 	var1->seq.arr[0] = asn_make_oid (snmp->pool, "1.3.6.1.2.1.1.3.0");
-	if (snmp->ip && snmp->ip->timer)
-		santisec = timer_milliseconds (snmp->ip->timer) / 10 +
-			timer_days (snmp->ip->timer) * 24L * 60 * 60 * 100;
-	else
+	if (snmp->ip && snmp->ip->timer) {
+		unsigned long msec;
+		unsigned days = timer_days (snmp->ip->timer, &msec);
+		santisec = msec / 10 + days * 24L * 60 * 60 * 100;
+	} else
 		santisec = 0;
 	var1->seq.arr[1] = asn_make_int (snmp->pool, santisec, ASN_TIME_TICKS);
 

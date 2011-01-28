@@ -91,9 +91,11 @@ snmp_trap_v1 (snmp_t *snmp, udp_socket_t *sock, unsigned char *local_ip,
 
 	/* Timestamp */
 	santisec = 0;
-	if (snmp->ip && snmp->ip->timer)
-		santisec = timer_milliseconds (snmp->ip->timer) / 10 +
-			timer_days (snmp->ip->timer) * 24L * 60 * 60 * 100;
+	if (snmp->ip && snmp->ip->timer) {
+		unsigned long msec;
+		unsigned days = timer_days (snmp->ip->timer, &msec);
+		santisec = msec / 10 + days * 24L * 60 * 60 * 100;
+	}
 	pdu->seq.arr[4] = asn_make_int (snmp->pool, santisec, ASN_TIME_TICKS);
 
 	/*

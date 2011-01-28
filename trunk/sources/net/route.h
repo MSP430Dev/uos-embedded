@@ -27,4 +27,7 @@ void route_add_netif (struct _ip_t *ip, struct _route_t *r,
 bool_t route_add_gateway (struct _ip_t *ip, struct _route_t *r,
 	unsigned char *ipaddr, unsigned char masklen, unsigned char *gateway);
 
+void route_setup (struct _ip_t *ip, struct _route_t *r, unsigned char *ipaddr,
+	unsigned char masklen, unsigned char *gateway);
+
 #endif /* !__ROUTE_H_ */

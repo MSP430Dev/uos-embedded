@@ -23,9 +23,11 @@ asn_t *snmp_get_sysUpTime (snmp_t *snmp, ...)
 {
 	unsigned long santisec = 0;
 
-	if (snmp->ip->timer)
-		santisec = timer_milliseconds (snmp->ip->timer) / 10 +
-			timer_days (snmp->ip->timer) * 24L * 60 * 60 * 100;
+	if (snmp->ip->timer) {
+		unsigned long msec;
+		unsigned days = timer_days (snmp->ip->timer, &msec);
+		santisec = msec / 10 + days * 24L * 60 * 60 * 100;
+	}
 	return asn_make_int (snmp->pool, santisec, ASN_TIME_TICKS);
 }
 
