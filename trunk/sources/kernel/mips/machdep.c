@@ -336,7 +336,6 @@ _arch_interrupt_ (void)
 		if (pending & ST_IM_MCU) {
 			/* Internal interrupt: 0..31. */
 			irq = 31 - mips_count_leading_zeroes (MC_QSTR & MC_MASKR);
-/*debug_printf ("<%d>", irq);*/
 			if (irq < 0)
 				break;
 			/* Disable the internal irq, to avoid loops */
@@ -344,7 +343,6 @@ _arch_interrupt_ (void)
 		} else {
 			/* External irq: 32..38. */
 			irq = 55 - mips_count_leading_zeroes (pending);
-/*debug_printf ("[%d-%08x-%08x]", irq, status, cause);*/
 			/* Disable the external irq, to avoid loops */
 			status &= ~(0x100 << (irq & 7));
 			mips_write_c0_register (C0_STATUS, status);
@@ -357,28 +355,24 @@ _arch_interrupt_ (void)
 			irq = 30;
 			status &= ~ST_IM_COMPARE;
 			mips_write_c0_register (C0_STATUS, status);
-/*debug_printf ("<C>", irq);*/
 		} else if (pending & ST_IM_QSTR0) {
 			/* QSTR0 interrupt: 0..31. */
 			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
 			if (irq < 0)
 				break;
 			MC_MASKR0 &= ~(1 << irq);
-/*debug_printf ("<%d>", irq);*/
 		} else if (pending & ST_IM_QSTR1) {
 			/* QSTR1 interrupt: 32..35. */
 			irq = 32 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
 			if (irq < 32)
 				break;
 			MC_MASKR1 &= ~(1 << irq);
-/*debug_printf ("[%d]", irq);*/
 		} else if (pending & ST_IM_QSTR2) {
 			/* QSTR2 interrupt: 36..51. */
 			irq = 36 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
 			if (irq < 36)
 				break;
 			MC_MASKR2 &= ~(1 << irq);
-/*debug_printf ("{%d}", irq);*/
 		} else
 			break;
 #endif
@@ -476,7 +470,6 @@ arch_intr_allow (int irq)
 	if (irq < 32) {
 		/* Internal interrupt: 0..31. */
 		MC_MASKR |= 1 << irq;
-/*debug_printf ("enable irq %d, MASKR=%#x\n", irq, MC_MASKR);*/
 	} else {
 		/* External irq: 32..38. */
 		unsigned status = mips_read_c0_register (C0_STATUS);
@@ -490,19 +483,15 @@ arch_intr_allow (int irq)
 		unsigned status = mips_read_c0_register (C0_STATUS);
 		status |= ST_IM_COMPARE;
 		mips_write_c0_register (C0_STATUS, status);
-/*debug_printf ("enable irq %d, status=%#x\n", irq, status);*/
 	} else if (irq < 32) {
 		/* QSTR0 interrupt: 0..31. */
 		MC_MASKR0 |= 1 << irq;
-/*debug_printf ("enable irq %d, MASKR0=%#x\n", irq, MC_MASKR0);*/
 	} else if (irq < 32+4) {
 		/* QSTR1 interrupt: 32..35. */
 		MC_MASKR1 |= 1 << (irq-32);
-/*debug_printf ("enable irq %d, MASKR1=%#x\n", irq, MC_MASKR1);*/
 	} else {
 		/* QSTR2 interrupt: 36..51. */
 		MC_MASKR2 |= 1 << (irq-36);
-/*debug_printf ("enable irq %d, MASKR2=%#x\n", irq, MC_MASKR2);*/
 	}
 #endif
 #ifdef ELVEES_NVCOM02

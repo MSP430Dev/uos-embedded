@@ -16,6 +16,10 @@
 #   include "at91sam.h"
 #endif
 
+#if PIC32MX
+#   include "pic32.h"
+#endif
+
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
 #   include "elvees.h"
 #endif

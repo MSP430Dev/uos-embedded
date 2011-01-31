@@ -99,7 +99,7 @@ arch_intr_unbind (int irq)
 
 /*
  * Last version of LIBC implemented a pointer mangling:
- * encrypting of finction addresses, stored in memory.
+ * encrypting of function addresses, stored in memory.
  * So we need this stuff to use longjmp() without
  * corresponding setjmp().
  */
