@@ -732,7 +732,8 @@ static netif_interface_t eth_interface = {
  * Set up the network interface.
  */
 void
-eth_init (eth_t *c, const char *name, int rprio, int tprio, mem_pool_t *pool, arp_t *arp)
+eth_init (eth_t *c, const char *name, int rprio, int tprio, mem_pool_t *pool,
+	struct _arp_t *arp)
 {
 	unsigned long id;
 	int i;

@@ -8,6 +8,7 @@
 struct _mem_pool_t;
 struct _buf_t;
 struct _stream_t;
+struct _arp_t;
 
 typedef struct _eth_desc_t {
 	unsigned long data;		/* buffer data pointer */
@@ -102,7 +103,7 @@ typedef struct _eth_t {
 } eth_t;
 
 void eth_init (eth_t *c, const char *name, int rprio, int tprio,
-	struct _mem_pool_t *pool, arp_t *arp);
+	struct _mem_pool_t *pool, struct _arp_t *arp);
 int eth_transmit_space (eth_t *c);
 void eth_set_mode (eth_t *c, int speed100, int fdx, int disneg);
 void eth_start_negotiation (eth_t *c);

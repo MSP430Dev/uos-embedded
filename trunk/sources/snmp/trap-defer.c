@@ -406,6 +406,11 @@ void trap_defer_cold_start (unsigned short reset_counter)
 	trap_enqueue_release (&t);
 }
 
+static unsigned long fetch_addr (unsigned char *addr)
+{
+	return *(long*) addr;
+}
+
 void trap_defer_auth_failure (void)
 {
 	trap_t t;
@@ -416,7 +421,7 @@ void trap_defer_auth_failure (void)
 	assert (trap_queue != 0);
 	mutex_lock (&lock);
 	t.type = TRAP_AUTH;
-	t.auth_failure.user_addr = *(unsigned long*) snmp->user_addr;
+	t.auth_failure.user_addr = fetch_addr (snmp->user_addr);
 	trap_enqueue_release (&t);
 }
 

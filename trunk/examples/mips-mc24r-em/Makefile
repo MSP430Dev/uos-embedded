@@ -19,7 +19,7 @@ $(CURRENT).elf: $(CURRENT).o
 		$(CC) $(LDFLAGS) -Wl,-Map=$(CURRENT).map $< $(LIBS) -o $@
 
 clean:
-		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis *.map .deps $(MODULES)
 
 load:		$(CURRENT).srec
 		mcprog $(CURRENT).srec

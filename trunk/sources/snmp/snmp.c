@@ -400,6 +400,12 @@ next (snmp_t *snmp, asn_t **name, asn_t **val)
 	return (*val ? SNMP_NO_ERROR : SNMP_NO_SUCH_NAME);
 }
 
+static unsigned long
+fetch_addr (unsigned char *addr)
+{
+	return *(long*) addr;
+}
+
 /*
  * Check the client access privileges.
  * Return 1 on success, 0 on failure.
@@ -412,15 +418,15 @@ snmp_auth (snmp_t *snmp, unsigned char *community, bool_t setflag)
 
 	if (strncmp (community, snmp->set_community,
 	    sizeof (snmp->set_community)) == 0) {
-		addr = *(long*) snmp->user_addr ^ *(long*) snmp->set_addr;
-		if ((addr & *(long*) snmp->set_mask) == 0)
+		addr = fetch_addr (snmp->user_addr) ^ fetch_addr (snmp->set_addr);
+		if ((addr & fetch_addr (snmp->set_mask)) == 0)
 			return 1;
 		cnt = &snmp->in_bad_community_uses;
 	}
 	if (! setflag && strncmp (community, snmp->get_community,
 	    sizeof (snmp->get_community)) == 0) {
-		addr = *(long*) snmp->user_addr ^ *(long*) snmp->get_addr;
-		if ((addr & *(long*) snmp->get_mask) == 0)
+		addr = fetch_addr (snmp->user_addr) ^ fetch_addr (snmp->get_addr);
+		if ((addr & fetch_addr (snmp->get_mask)) == 0)
 			return 1;
 		cnt = &snmp->in_bad_community_uses;
 	}

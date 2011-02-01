@@ -20,7 +20,7 @@ clean:
 		rm -rf *~ *.[oasi] *.elf *.hex *.bin *.lst *.dis .deps png2rgb $(MODULES)
 
 png2rgb:	../../sources/gpanel/png2rgb.c
-		gcc -Wall -O ../../sources/gpanel/png2rgb.c -lpng -o $@
+		gcc -Wall -O -I/opt/local/include ../../sources/gpanel/png2rgb.c -L/opt/local/lib -lpng -o $@
 
 test_lcd.o:	test_lcd.c image_frog.c
 		$(CC) $(CFLAGS) -c test_lcd.c

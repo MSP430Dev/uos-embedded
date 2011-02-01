@@ -25,8 +25,7 @@ static inline int gettimeofday (struct timeval *tv, struct timezone *tz)
 	extern timer_t *uos_timer;
 
 	if (tv) {
-		msec = timer_milliseconds (uos_timer);
-		days = timer_days (uos_timer);
+		days = timer_days (uos_timer, &msec);
 		tv->tv_sec = msec / 1000;
 		tv->tv_usec = (msec - tv->tv_sec * 1000) * 1000;
 		tv->tv_sec += days * 24 * 60 * 60;

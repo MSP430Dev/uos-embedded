@@ -6,7 +6,6 @@
 #include <uart/uart.h>
 #include <timer/timer.h>
 #include <mem/mem.h>
-#include <watchdog/watchdog.h>
 
 /*
  * Installed SRAM 64k*8.

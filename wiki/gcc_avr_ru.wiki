@@ -4,7 +4,7 @@
 Описана установка кросс-системы программирования для микроконтроллеров
 семейства [http://atmel.com/products/avr/ Atmel AVR].
 Устанавливается поддержка языков Си и Си++.
-Используется компилятор версии [http://gcc.gnu.org/gcc-4.4/ GCC 4.4.1].
+Используется компилятор версии [http://gcc.gnu.org/gcc-4.4/ GCC 4.4.4].
 
 Готовый бинарный пакет можно скачать здесь:
  * [http://uos-embedded.googlecode.com/files/gcc433-avr.tgz gcc433-avr.tgz] -- для Linux
@@ -23,7 +23,7 @@
 }}}
 
 Устанавливать готовую систему программирования будем в каталог
-/usr/local/avr441 по номеру версии GCC 4.4.1. Это упростит в будущем
+/usr/local/avr444 по номеру версии GCC 4.4.4. Это упростит в будущем
 переход на новые версии компилятора.
 
 Для простоты предположим, что сборка производится в каталоге /src.
@@ -31,14 +31,14 @@
 произведя соответствующие изменения в выполняемых командах.
 
 Скачайте тексты в каталог /src:
-  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.19.1.tar.bz2 binutils-2.19.1.tar.bz2] (15 Мбайт)
-  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.1/gcc-4.4.1.tar.bz2 gcc-4.4.1.tar.bz2] (60 Мбайт)
+  * [ftp://sourceware.org/pub/binutils/releases/binutils-2.20.1.tar.bz2 binutils-2.20.1.tar.bz2] (16 Мбайт)
+  * [http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.4/gcc-4.4.4.tar.bz2 gcc-4.4.4.tar.bz2] (56 Мбайт)
 
 Распакуйте их:
 {{{
   cd /src
-  tar xvjf binutils-2.19.1.tar.bz2
-  tar xvjf gcc-4.4.1.tar.bz2
+  tar xvjf binutils-2.20.1.tar.bz2
+  tar xvjf gcc-4.4.4.tar.bz2
 }}}
 
 === Правка для GCC ===
@@ -48,7 +48,7 @@
 [http://uos-embedded.googlecode.com/files/gcc43-avr-rodata.pch gcc43-avr-rodata.pch].
 Чтобы применить правку, выполните команды:
 {{{
-  cd /src/gcc-4.4.1/gcc/config/avr
+  cd /src/gcc-4.4.4/gcc/config/avr
   patch < gcc43-avr-rodata.pch
 }}}
 
@@ -65,26 +65,17 @@
 архиватор AR, а также набор утилит для работы с объектными файлами
 (SIZE, NM, RANLIB, STRIP, и прочие).
 
-Для успешной сборки binutils 2.19.1 следует использовать правку, исправляющую
-ошибки в файле opcodes/avr-dis.c:
-[http://uos-embedded.googlecode.com/files/binutils-2.19.1.pch binutils-2.19.1.pch].
-Чтобы применить правку, выполните команды:
-{{{
-  cd /src/binutils-2.19.1/opcodes
-  patch < binutils-2.19.1.pch
-}}}
-
 Сборка производится в отдельном каталоге binutils-avr. Выполните команды:
 {{{
   mkdir /src/binutils-avr
   cd /src/binutils-avr
-  ../binutils-2.19.1/configure --target=avr --prefix=/usr/local/avr441 --disable-nls
+  /src/binutils-2.20.1/configure --target=avr --prefix=/usr/local/avr444 --disable-nls
   make
 }}}
 
 Для установки создайте каталог. Для этого могут потребоваться полномочия суперпользователя:
 {{{
-  mkdir /usr/local/avr441
+  mkdir /usr/local/avr444
 }}}
 
 Установите binutils:
@@ -94,12 +85,21 @@
 }}}
 
 === Сборка gcc ===
+Для кросс-компилятора не нужны библиотеки libstdc++ и libmudflap.
+Чтобы они не вызывали ошибок при сборке, удалите их:
+{{{
+  cd /src/gcc-4.4.4
+  rm -rf libstdc++-v3
+  rm -rf libmudflap
+}}}
+
 Сборка компилятора производится в отдельном каталоге gcc-avr.
 Выполните команды:
 {{{
   mkdir /src/gcc-avr
   cd /src/gcc-avr
-  ../gcc-4.4.1/configure --target=avr --prefix=/usr/local/avr441 --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
+  /src/gcc-4.4.4/configure --target=avr --prefix=/usr/local/avr444 \
+    --enable-languages=c,c++ --disable-nls --disable-shared --disable-libssp
   make
 }}}
 
@@ -109,9 +109,24 @@
   make install
 }}}
 
-== Установка под Windows ==
+== Установка под Windows для Cygwin ==
 
-Установите CygWin. Для этого с сайта [http://cygwin.com] загрузите файл setup.exe,
-запустите его и выберите набор пакетов для установки. Достаточно выбрать пакеты bash, gcc, make, diffutils, libmpfr-devel, libiconv-devel, patch.
+Установите Cygwin. Для этого на сайте [http://cygwin.com] щёлкните
+"Install Cygwin now". Это приведет к загрузке небольшого файла setup.exe,
+который надо будет после загрузки запустить и выбрать набор пакетов
+для установки. Достаточно выбрать пакеты bash, gcc, gmake.
+Готовый к употреблению пакет можно скачать здесь:
+[http://vak.ru/pub/windows/cygwin171.zip cygwin171.zip].
+Для установки запустите файл "install.bat".
 
 После установки Cygwin сборка GCC производится так же, как и в Linux.
+
+== Установка под Windows для MinGW ==
+
+Установите MinGW и Msys по инструкции:
+[http://mingw.org/wiki/HOWTO_Install_the_MinGW_GCC_Compiler_Suite].
+Либо готовый к употреблению пакет можно скачать здесь:
+[http://uos-embedded.googlecode.com/files/mingw51.zip mingw51.zip].
+Распакуйте его в каталог c:\, затем вызывайте c:\Msys\1.0\msys.bat.
+
+После установки MinGW и Msys сборка GCC производится так же, как и в Linux.

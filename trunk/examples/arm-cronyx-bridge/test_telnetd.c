@@ -17,6 +17,7 @@
 #include <nvram/nvram.h>
 #include <net/route.h>
 #include <net/ip.h>
+#include <net/arp.h>
 #include <net/tcp.h>
 #include <net/telnet.h>
 #include <tcl/tcl.h>
