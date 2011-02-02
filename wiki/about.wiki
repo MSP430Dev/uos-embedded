@@ -5,7 +5,7 @@ for commercial applications.
 
 Project files could be downloaded [download_ru from here] (page in Russian, sorry).
 
-Documentation is located [docs_ru here] (in Russian, not finished yet).
+Documentation is located [docs_ru here] (in Russian).
 
 == Key features of uOS ==
   * Excellent hardware scalability: from 8-bit microcontrollers with 16 kilobytes ROM and 2 kilobytes RAM to weighty 32-bit microprocessors.
@@ -15,8 +15,9 @@ Documentation is located [docs_ru here] (in Russian, not finished yet).
 
 == Supported architectures ==
   * Atmel AVR.
-  * ARM: Samsung S3C4530A, Atmel AT91SAM7 and AT91SAM9. ARM and Thumb modes.
-  * MIPS32: Elvees MC-24.
+  * ARM: Atmel AT91SAM7 and AT91SAM9, Samsung S3C4530A, Milandr 1986BE91. ARM, Thumb and Thumb2 modes.
+  * MIPS32: Microchip PIC32, Elvees MC-24.
+  * Texas Instruments MSP430.
   * Intel i386: PC-compatible computers with PCI bus and VESA video. Grub 0.97 is used.
   * Linux386: virtual machine, with TCP/IP support. Useful for debugging of platform-independent part of system being developed: data processing algorithms, memory management, networking protocols.
 
