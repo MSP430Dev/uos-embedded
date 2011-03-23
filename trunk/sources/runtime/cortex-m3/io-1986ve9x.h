@@ -202,6 +202,12 @@ typedef struct
 	arm_reg_t GFEN;		/* Фильтрация входа */
 } GPIO_t;
 
+#define ARM_GPIO_IN(n)		(0 << (n))
+#define ARM_GPIO_OUT(n)		(1 << (n))
+
+#define ARM_ANALOG(n)		(0 << (n))
+#define ARM_DIGITAL(n)		(1 << (n))
+
 #define ARM_GPIOA		((GPIO_t*) ARM_GPIOA_BASE)
 #define ARM_GPIOB		((GPIO_t*) ARM_GPIOB_BASE)
 #define ARM_GPIOC		((GPIO_t*) ARM_GPIOC_BASE)

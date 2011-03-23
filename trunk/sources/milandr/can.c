@@ -131,6 +131,12 @@ static void can_setup_timing (can_t *c, int kbitsec)
 		CAN_BITTMNG_SEG2 (4) | CAN_BITTMNG_SEG1 (4) |
 		CAN_BITTMNG_PSEG (pseg) | CAN_BITTMNG_BRP (brp);
 
+/*
+	reg->BITTMNG = CAN_BITTMNG_SB | CAN_BITTMNG_SJW (3) |
+		CAN_BITTMNG_SEG2 (7) | CAN_BITTMNG_SEG1 (7) |
+		CAN_BITTMNG_PSEG (2) | CAN_BITTMNG_BRP (3);
+*/
+
 debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, KHZ / (brp + 1) / nq, brp, reg->BITTMNG);
 }
 
@@ -157,7 +163,7 @@ static void can_setup (can_t *c, int kbitsec)
 		/* Быстрый фронт. */
 		ARM_GPIOC->PWR = (ARM_GPIOC->PWR &
 			~(ARM_PWR_MASK(8) | ARM_PWR_MASK(9))) |
-			ARM_PWR_FAST(8) | ARM_PWR_FAST(9);
+			ARM_PWR_FASTEST(8) | ARM_PWR_FASTEST(9);
 
 		/* Разрешение тактовой частоты на CAN1, источник HCLK. */
 		ARM_RSTCLK->CAN_CLOCK = (ARM_RSTCLK->CAN_CLOCK & ~ARM_CAN_CLOCK_BRG1(7)) |
@@ -321,6 +327,71 @@ void can_input (can_t *c, can_frame_t *fr)
 	mutex_unlock (&c->lock);
 }
 
+static int can_get_next_frame (can_t *c, can_frame_t *fr)
+{
+	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+
+	/* Есть ли буферы с принятым сообщением. */
+	if (reg->STATUS & CAN_STATUS_RX_READY) {
+		unsigned i;
+		reg->STATUS = 0;
+		for (i=0; i<NRBUF; i++) {
+			unsigned bufcon = reg->BUF_CON[i];
+			if (! (bufcon & CAN_BUF_CON_RX_FULL))
+				continue;
+			if (bufcon & CAN_BUF_CON_OVER_WR) {
+				/* Сообщение перезаписано */
+				c->in_discards++;
+				reg->BUF_CON[i] = bufcon &
+					~(CAN_BUF_CON_RX_FULL |
+					CAN_BUF_CON_OVER_WR);
+				continue;
+			}
+			CAN_BUF_t *buf = &reg->BUF[i];
+			fr->id = buf->ID;
+			if (fr->id == 0)
+				fr->id = buf->ID;
+			if (fr->id == 0)
+				fr->id = buf->ID;
+			fr->dlc = buf->DLC;
+			if (fr->dlc == 0)
+				fr->dlc = buf->DLC;
+			if (fr->dlc == 0)
+				fr->dlc = buf->DLC;
+			fr->data[0] = buf->DATAL;
+			if (fr->data[0] == 0)
+				fr->data[0] = buf->DATAL;
+			if (fr->data[0] == 0)
+				fr->data[0] = buf->DATAL;
+			fr->data[1] = buf->DATAH;
+			if (fr->data[1] == 0)
+				fr->data[1] = buf->DATAH;
+			if (fr->data[1] == 0)
+				fr->data[1] = buf->DATAH;
+			reg->BUF_CON[i] = bufcon & ~CAN_BUF_CON_RX_FULL;
+
+			if (CAN_DLC_LEN (fr->dlc) > 8) {
+				c->in_errors++;
+				continue;
+			}
+			/* Пакет успешно принят. */
+			c->in_packets++;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int can_poll (can_t *c, can_frame_t *fr)
+{
+	int res;
+	mutex_lock (&c->lock);
+	res = can_get_next_frame (c, fr);
+	mutex_unlock (&c->lock);
+	return res;
+}
+
 /*
  * Sets given channel disabled (channel is enabled after can_init())
  */
@@ -361,9 +432,8 @@ static bool_t can_handle_interrupt (void *arg)
 {
 	can_t *c = (can_t *)arg;
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+	can_frame_t fr;
 
-	unsigned status = reg->STATUS;
-	reg->STATUS = 0;
 //debug_printf ("can interrupt: STATUS = %08x\n", status);
 #if 0
 	c->rec = CAN_STATUS_REC (status);
@@ -403,63 +473,15 @@ static bool_t can_handle_interrupt (void *arg)
 		c->out_bit_errors++;
 	}
 #endif
-	/* Есть ли буферы с принятым сообщением. */
-	if (status & CAN_STATUS_RX_READY) {
-		unsigned i;
-		for (i=0; i<NRBUF; i++) {
-			unsigned bufcon = reg->BUF_CON[i];
-			if (! (bufcon & CAN_BUF_CON_RX_FULL))
-				continue;
-			if (bufcon & CAN_BUF_CON_OVER_WR) {
-				/* Сообщение перезаписано */
-//debug_printf ("OVERWRITE!\n");
-				c->in_discards++;
-				reg->BUF_CON[i] = bufcon &
-					~(CAN_BUF_CON_RX_FULL |
-					CAN_BUF_CON_OVER_WR);
-				continue;
-			}
-			CAN_BUF_t *buf = &reg->BUF[i];
-			can_frame_t fr;
-			fr.id = buf->ID;
-			if (fr.id == 0)
-				fr.id = buf->ID;
-			if (fr.id == 0)
-				fr.id = buf->ID;
-			fr.dlc = buf->DLC;
-			if (fr.dlc == 0)
-				fr.dlc = buf->DLC;
-			if (fr.dlc == 0)
-				fr.dlc = buf->DLC;
-			fr.data[0] = buf->DATAL;
-			if (fr.data[0] == 0)
-				fr.data[0] = buf->DATAL;
-			if (fr.data[0] == 0)
-				fr.data[0] = buf->DATAL;
-			fr.data[1] = buf->DATAH;
-			if (fr.data[1] == 0)
-				fr.data[1] = buf->DATAH;
-			if (fr.data[1] == 0)
-				fr.data[1] = buf->DATAH;
-/*debug_printf ("can rx: %08x-%08x-%08x-%08x\n", fr.id, fr.dlc, fr.data[0], fr.data[1]);*/
-			reg->BUF_CON[i] = bufcon & ~CAN_BUF_CON_RX_FULL;
-
-			if (CAN_DLC_LEN (fr.dlc) > 8) {
-				c->in_errors++;
-				continue;
-			}
-			if (can_queue_is_full (&c->inq)) {
-				c->in_discards++;
-				continue;
-			}
-			/* Пакет успешно принят. */
-			c->in_packets++;
+	if (can_get_next_frame (c, &fr)) {
+		if (can_queue_is_full (&c->inq))
+			c->in_discards++;
+		else
 			can_queue_put (&c->inq, &fr);
-		}
 	}
 
 	/* Есть ли закончившие передающие буферы. */
-	if (status & CAN_STATUS_TX_READY) {
+	if (reg->STATUS & CAN_STATUS_TX_READY) {
 		/* Оставляем маску только для активных буферов. */
 		reg->INT_TX = ~reg->TX & ALL_TBUFS;
 	}
@@ -472,13 +494,15 @@ static bool_t can_handle_interrupt (void *arg)
 /*
  * Set up the CAN driver.
  */
-void can_init (can_t *c, int port, unsigned kbitsec)
+void can_init (can_t *c, int port, unsigned kbitsec, int poll_only)
 {
 	c->port = port;
-	can_queue_init (&c->inq);
+	if (!poll_only) can_queue_init (&c->inq);
 	can_setup (c, kbitsec);
 
 	int irq = (port == 0) ? 0 : 1;
-	mutex_lock_irq (&c->lock, irq, can_handle_interrupt, c);
-	mutex_unlock (&c->lock);
+	if (!poll_only) {
+		mutex_lock_irq (&c->lock, irq, can_handle_interrupt, c);
+		mutex_unlock (&c->lock);
+	}
 }
