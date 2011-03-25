@@ -49,6 +49,19 @@ typedef struct _can_queue_t {
 } can_queue_t;
 
 /*
+ * CAN channel initialization flags
+ */
+enum {
+	POLLONLY	=	1,
+	PORT_A		=	2,
+	PORT_B		=	4,
+	PORT_C		=	8,
+	PORT_D		=	16,
+	PORT_E		= 	32,
+	PORT_F		=	64
+};
+
+/*
  * Data structure for CAN channel.
  */
 typedef struct _can_t {
@@ -80,7 +93,7 @@ typedef struct _can_t {
 /*
  * User level API.
  */
-void can_init (can_t *c, int port, unsigned kbitsec, int poll_only);
+void can_init (can_t *c, int port, unsigned kbitsec, unsigned flags);
 void can_set_speed (can_t *c, unsigned kbitsec);
 void can_set_loop (can_t *c, int on);
 void can_output (can_t *c, const can_frame_t *fr);

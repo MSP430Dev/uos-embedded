@@ -143,27 +143,94 @@ debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, KHZ / 
 /*
  * Инициализация всех регистров контроллера CAN.
  */
-static void can_setup (can_t *c, int kbitsec)
+static void can_setup (can_t *c, int kbitsec, unsigned flags)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
 	if (c->port == 0) {
 		/* Включаем тактирование порта CAN1, PORTC. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN1;
-		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOC;
 
-		/* Основная функция для PC8(CAN1_TX) и PC9(CAN1_RX). */
-		ARM_GPIOC->FUNC = (ARM_GPIOC->FUNC &
-			~(ARM_FUNC_MASK(8) | ARM_FUNC_MASK(9))) |
-			ARM_FUNC_MAIN(8) | ARM_FUNC_MAIN(9);
+		if (flags & PORT_A) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOA;
 
-		/* Цифровые выводы. */
-		ARM_GPIOC->ANALOG |= (1 << 8) | (1 << 9);
+			/* Основная функция для CAN1_TX и CAN1_RX. */
+			ARM_GPIOA->FUNC = (ARM_GPIOA->FUNC &
+				~(ARM_FUNC_MASK(6) | ARM_FUNC_MASK(7))) |
+				ARM_FUNC_ALT(6) | ARM_FUNC_ALT(7);
 
-		/* Быстрый фронт. */
-		ARM_GPIOC->PWR = (ARM_GPIOC->PWR &
-			~(ARM_PWR_MASK(8) | ARM_PWR_MASK(9))) |
-			ARM_PWR_FASTEST(8) | ARM_PWR_FASTEST(9);
+			/* Цифровые выводы. */
+			ARM_GPIOA->ANALOG |= (1 << 6) | (1 << 7);
+
+			/* Быстрый фронт. */
+			ARM_GPIOA->PWR = (ARM_GPIOC->PWR &
+				~(ARM_PWR_MASK(6) | ARM_PWR_MASK(7))) |
+				ARM_PWR_FASTEST(6) | ARM_PWR_FASTEST(7);
+		} else if (flags & PORT_B) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOB;
+
+			/* Основная функция для CAN1_TX и CAN1_RX. */
+			ARM_GPIOB->FUNC = (ARM_GPIOB->FUNC &
+				~(ARM_FUNC_MASK(2) | ARM_FUNC_MASK(3))) |
+				ARM_FUNC_REDEF(2) | ARM_FUNC_REDEF(3);
+
+			/* Цифровые выводы. */
+			ARM_GPIOB->ANALOG |= (1 << 2) | (1 << 3);
+
+			/* Быстрый фронт. */
+			ARM_GPIOB->PWR = (ARM_GPIOB->PWR &
+				~(ARM_PWR_MASK(2) | ARM_PWR_MASK(3))) |
+				ARM_PWR_FASTEST(2) | ARM_PWR_FASTEST(3);
+		} else if (flags & PORT_C) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOC;
+
+			/* Основная функция для CAN1_TX и CAN1_RX. */
+			ARM_GPIOC->FUNC = (ARM_GPIOC->FUNC &
+				~(ARM_FUNC_MASK(8) | ARM_FUNC_MASK(9))) |
+				ARM_FUNC_MAIN(8) | ARM_FUNC_MAIN(9);
+
+			/* Цифровые выводы. */
+			ARM_GPIOC->ANALOG |= (1 << 8) | (1 << 9);
+
+			/* Быстрый фронт. */
+			ARM_GPIOC->PWR = (ARM_GPIOC->PWR &
+				~(ARM_PWR_MASK(8) | ARM_PWR_MASK(9))) |
+				ARM_PWR_FASTEST(8) | ARM_PWR_FASTEST(9);
+		} else if (flags & PORT_D) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
+
+			/* Основная функция для CAN1_TX и CAN1_RX. */
+			ARM_GPIOD->FUNC = (ARM_GPIOD->FUNC &
+				~(ARM_FUNC_MASK(13) | ARM_FUNC_MASK(14))) |
+				ARM_FUNC_REDEF(13) | ARM_FUNC_REDEF(14);
+
+			/* Цифровые выводы. */
+			ARM_GPIOD->ANALOG |= (1 << 13) | (1 << 14);
+
+			/* Быстрый фронт. */
+			ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
+				~(ARM_PWR_MASK(13) | ARM_PWR_MASK(14))) |
+				ARM_PWR_FASTEST(13) | ARM_PWR_FASTEST(14);
+		} else if (flags & PORT_E) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOE;
+
+			/* Основная функция для CAN1_TX и CAN1_RX. */
+			ARM_GPIOE->FUNC = (ARM_GPIOE->FUNC &
+				~(ARM_FUNC_MASK(0) | ARM_FUNC_MASK(1))) |
+				ARM_FUNC_REDEF(0) | ARM_FUNC_REDEF(1);
+
+			/* Цифровые выводы. */
+			ARM_GPIOE->ANALOG |= (1 << 0) | (1 << 1);
+
+			/* Быстрый фронт. */
+			ARM_GPIOE->PWR = (ARM_GPIOE->PWR &
+				~(ARM_PWR_MASK(0) | ARM_PWR_MASK(1))) |
+				ARM_PWR_FASTEST(0) | ARM_PWR_FASTEST(1);
+		} else {
+			/* Ошибка в задании порта*/
+			ARM_RSTCLK->PER_CLOCK &= ~ARM_PER_CLOCK_CAN1;
+			return;
+		}
 
 		/* Разрешение тактовой частоты на CAN1, источник HCLK. */
 		ARM_RSTCLK->CAN_CLOCK = (ARM_RSTCLK->CAN_CLOCK & ~ARM_CAN_CLOCK_BRG1(7)) |
@@ -171,20 +238,72 @@ static void can_setup (can_t *c, int kbitsec)
 	} else {
 		/* Включаем тактирование порта CAN2, PORTD. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN2;
-		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
 
-		/* Основная функция для PD9(CAN2_TX) и PD15(CAN1_RX). */
-		ARM_GPIOD->FUNC = (ARM_GPIOD->FUNC &
-			~(ARM_FUNC_MASK(9) | ARM_FUNC_MASK(15))) |
-			ARM_FUNC_MAIN(9) | ARM_FUNC_MAIN(15);
+		if (flags & PORT_C) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOC;
 
-		/* Цифровые выводы. */
-		ARM_GPIOD->ANALOG |= (1 << 9) | (1 << 15);
+			/* Основная функция для CAN2_TX и CAN2_RX. */
+			ARM_GPIOC->FUNC = (ARM_GPIOC->FUNC &
+				~(ARM_FUNC_MASK(14) | ARM_FUNC_MASK(15))) |
+				ARM_FUNC_REDEF(14) | ARM_FUNC_REDEF(15);
 
-		/* Быстрый фронт. */
-		ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
-			~(ARM_PWR_MASK(9) | ARM_PWR_MASK(15))) |
-			ARM_PWR_FAST(9) | ARM_PWR_FAST(15);
+			/* Цифровые выводы. */
+			ARM_GPIOC->ANALOG |= (1 << 14) | (1 << 15);
+
+			/* Быстрый фронт. */
+			ARM_GPIOC->PWR = (ARM_GPIOC->PWR &
+				~(ARM_PWR_MASK(14) | ARM_PWR_MASK(15))) |
+				ARM_PWR_FASTEST(14) | ARM_PWR_FASTEST(15);
+		} else if (flags & PORT_D) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
+
+			/* Основная функция для CAN2_TX и CAN2_RX. */
+			ARM_GPIOD->FUNC = (ARM_GPIOD->FUNC &
+				~(ARM_FUNC_MASK(9) | ARM_FUNC_MASK(15))) |
+				ARM_FUNC_MAIN(9) | ARM_FUNC_MAIN(15);
+
+			/* Цифровые выводы. */
+			ARM_GPIOD->ANALOG |= (1 << 9) | (1 << 15);
+
+			/* Быстрый фронт. */
+			ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
+				~(ARM_PWR_MASK(9) | ARM_PWR_MASK(15))) |
+				ARM_PWR_FASTEST(9) | ARM_PWR_FASTEST(15);
+		} else if (flags & PORT_E) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOE;
+
+			/* Основная функция для CAN2_TX и CAN2_RX. */
+			ARM_GPIOE->FUNC = (ARM_GPIOE->FUNC &
+				~(ARM_FUNC_MASK(6) | ARM_FUNC_MASK(7))) |
+				ARM_FUNC_ALT(6) | ARM_FUNC_ALT(7);
+
+			/* Цифровые выводы. */
+			ARM_GPIOE->ANALOG |= (1 << 6) | (1 << 7);
+
+			/* Быстрый фронт. */
+			ARM_GPIOE->PWR = (ARM_GPIOE->PWR &
+				~(ARM_PWR_MASK(6) | ARM_PWR_MASK(7))) |
+				ARM_PWR_FASTEST(6) | ARM_PWR_FASTEST(7);
+		} else if (flags & PORT_F) {
+			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOF;
+
+			/* Основная функция для CAN2_TX и CAN2_RX. */
+			ARM_GPIOF->FUNC = (ARM_GPIOF->FUNC &
+				~(ARM_FUNC_MASK(2) | ARM_FUNC_MASK(3))) |
+				ARM_FUNC_REDEF(2) | ARM_FUNC_REDEF(3);
+
+			/* Цифровые выводы. */
+			ARM_GPIOF->ANALOG |= (1 << 2) | (1 << 3);
+
+			/* Быстрый фронт. */
+			ARM_GPIOF->PWR = (ARM_GPIOF->PWR &
+				~(ARM_PWR_MASK(2) | ARM_PWR_MASK(3))) |
+				ARM_PWR_FASTEST(2) | ARM_PWR_FASTEST(3);
+		} else {		
+			/* Ошибка в задании порта*/
+			ARM_RSTCLK->PER_CLOCK &= ~ARM_PER_CLOCK_CAN2;
+			return;
+		}
 
 		/* Разрешение тактовой частоты на CAN2, источник HCLK. */
 		ARM_RSTCLK->CAN_CLOCK = (ARM_RSTCLK->CAN_CLOCK & ~ARM_CAN_CLOCK_BRG2(7)) |
@@ -494,14 +613,14 @@ static bool_t can_handle_interrupt (void *arg)
 /*
  * Set up the CAN driver.
  */
-void can_init (can_t *c, int port, unsigned kbitsec, int poll_only)
+void can_init (can_t *c, int port, unsigned kbitsec, unsigned flags)
 {
 	c->port = port;
-	if (!poll_only) can_queue_init (&c->inq);
-	can_setup (c, kbitsec);
+	can_setup (c, kbitsec, flags);
 
 	int irq = (port == 0) ? 0 : 1;
-	if (!poll_only) {
+	if (! (flags & POLLONLY)) {
+		can_queue_init (&c->inq);
 		mutex_lock_irq (&c->lock, irq, can_handle_interrupt, c);
 		mutex_unlock (&c->lock);
 	}
