@@ -16,6 +16,10 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+#ifdef ELVEES_NVCOM01M
+#define ELVEES_NVCOM01 1
+#endif
+
 #ifdef PIC32MX
 #   include <runtime/mips/io-pic32mx.h>
 #endif

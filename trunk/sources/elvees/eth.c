@@ -319,7 +319,11 @@ chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 /*debug_printf ("write_txfifo %08x, %d bytes\n", physaddr, nbytes);*/
 	/* Set the address and length for DMA. */
 	unsigned csr = MC_DMA_CSR_WN(15) |
+#ifdef ELVEES_NVCOM01M
+		MC_DMA_CSR_WCX (nbytes - 1);
+#else
 		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+#endif
 	MC_IR_EMAC(1) = physaddr;
 	MC_CP_EMAC(1) = 0;
 	MC_CSR_EMAC(1) = csr;
@@ -349,7 +353,11 @@ chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 {
 	/* Set the address and length for DMA. */
 	unsigned csr = MC_DMA_CSR_WN(15) |
+#ifdef ELVEES_NVCOM01M
+		MC_DMA_CSR_WCX (nbytes - 1);
+#else
 		MC_DMA_CSR_WCX (((nbytes + 7) >> 3) - 1);
+#endif
 	MC_CSR_EMAC(0) = csr;
 	MC_IR_EMAC(0) = physaddr;
 	MC_CP_EMAC(0) = 0;
