@@ -114,7 +114,7 @@ void __attribute ((noreturn))_init_ (void)
 	 */
 #ifdef ELVEES_NVCOM01
 	/* Clock: enable only core. */
-	MC_CLKEN = MC_CLKEN_CORE;
+	MC_CLKEN = MC_CLKEN_CORE | MC_CLKEN_CPU | MC_CLKEN_CORE2;
 
 	/* Clock multiply from CLKIN to KHZ. */
 	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |

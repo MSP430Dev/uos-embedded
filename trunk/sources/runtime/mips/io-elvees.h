@@ -385,8 +385,11 @@
 #define MC_CLKEN_MFBSP		(1 << 8)	/* Включение тактовой частоты MFBSP 1-3 */
 #define MC_CLKEN_DSP1		(1 << 5)	/* Включение тактовой частоты DSP1 */
 #define MC_CLKEN_DSP0		(1 << 4)	/* Включение тактовой частоты DSP0 */
-#define MC_CLKEN_CORE		(1 << 0)	/* Включение тактовой частоты ядра
-						   (CPU, MPORT, TIMER, UART, I2C, MFBSP0) */
+#define MC_CLKEN_CORE2		(1 << 2)	/* Отключение (нулем) тактовой частоты CPU, CRAM, коммутатора AXI,
+						 MPORT, UART, I2C, MFBSP0 (от TIMER частота не отключается) */
+#define MC_CLKEN_CPU		(1 << 1)	/* Отключение (нулем) тактовой частоты CPU */
+#define MC_CLKEN_CORE		(1 << 0)	/* Отключение (нулем) тактовой частоты CPU, CRAM, коммутатора AXI,
+						 MPORT, UART, I2C, MFBSP0, TIMER */
 
 /*
  * Системный регистр CR_PLL
