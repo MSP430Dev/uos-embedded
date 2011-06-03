@@ -191,10 +191,10 @@ ubw32 -write test.hex -reset
 [http://www.olimex.com/dev/arm-usb-tiny.html Olimex ARM-USB-Tiny].
 Подключить его можно по следующей схеме:
 
-||*Olimex*||*Сигнал*|| *На плате* ||
-||  5     ||  TDI   || J4/34 - A4 ||
-||  7     ||  TMS   || J4/7  - A0 ||
-||  9     ||  TCK   || J4/19 - A1 ||
-||  13    ||  TDO   || J4/35 - A5 ||
-||  15    || /SYSRST|| J4/5  - VPP||
-|| 18, 20 ||  GND   || J4/40 - GND||
+|| *Olimex*|| *Сигнал*|| *На плате* ||
+||  5      ||   TDI   || J4/34 - A4 ||
+||  7      ||   TMS   || J4/7  - A0 ||
+||  9      ||   TCK   || J4/19 - A1 ||
+||  13     ||   TDO   || J4/35 - A5 ||
+||  15     || /SYSRST || J4/5  - VPP||
+|| 18, 20  ||   GND   || J4/40 - GND||
