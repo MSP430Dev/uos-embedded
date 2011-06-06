@@ -198,3 +198,31 @@ ubw32 -write test.hex -reset
 ||  13     ||   TDO   || J4/35 - A5 ||
 ||  15     || /SYSRST || J4/5  - VPP||
 || 18, 20  ||   GND   || J4/40 - GND||
+
+= Расширение возможностей =
+
+Для работы с консольным портом UART0 можно использовать адаптер
+[http://www.sparkfun.com/products/9873 Sparkfun FTDI Basic Breakout].
+Последовательность действий:
+ - Переключить выход на +5V, перерезав и запаяв соответствующую перемычку на нижней стороне платы FTDI Basic Breakout.
+ - Сигнал GND припаять к JP1/GND.
+ - Сигнал 3V3 припаять к J1/+.
+ - Сигнал TXO припаять к J4/30 = F2 U1RX.
+ - Сигнал RXI припаять к J4/31 = F8 U1TX.
+
+Сменную Flash-карточку можно подключить через
+[http://www.sparkfun.com/products/204 Sparkfun Breakout Board for SD-MMC Cards].
+Для совместимости с платой [http://www.mikroe.com/eng/products/view/573/multimedia-board-for-pic32mx7/ MikroElektronika MMB for PIC32MX7]
+рекомендуется следующий перечень соединений:
+|| *UBW32 board*  || *Signal*|| *SD/MMC board* ||
+||  J4 / 13 - A9  || SD-CS#  || CS  ||
+||  J3 / 8 - D0   || SDO1    || DI  ||
+||  J5 / 2 - +3.3V|| +3.3V   || VCC ||
+||  J3 / 6 - D10  || SCK1    || CLK ||
+||  J5 / 3 - GND  || GND     || GND ||
+||  J4 / 1 - C4   || SDI1    || DO  ||
+||  n/c           || n/c     || IRQ ||
+||  n/c           || n/c     || P9  ||
+||  J4 / 3 - G7   || SD-CD#  || CD  ||
+||  J4 / 2 - G6   || SD-WP   || WP  ||
+||  J5 / 3 - GND  || GND     || COM ||
