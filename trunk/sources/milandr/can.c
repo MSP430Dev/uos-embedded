@@ -143,7 +143,7 @@ debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, KHZ / 
 /*
  * Инициализация всех регистров контроллера CAN.
  */
-static void can_setup (can_t *c, int kbitsec, unsigned flags)
+static void can_setup (can_t *c, int kbitsec)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
@@ -151,7 +151,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 		/* Включаем тактирование порта CAN1, PORTC. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN1;
 
-		if (flags & PORT_A) {
+		if (c->flags & PORT_A) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOA;
 
 			/* Основная функция для CAN1_TX и CAN1_RX. */
@@ -166,7 +166,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 			ARM_GPIOA->PWR = (ARM_GPIOC->PWR &
 				~(ARM_PWR_MASK(6) | ARM_PWR_MASK(7))) |
 				ARM_PWR_FASTEST(6) | ARM_PWR_FASTEST(7);
-		} else if (flags & PORT_B) {
+		} else if (c->flags & PORT_B) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOB;
 
 			/* Основная функция для CAN1_TX и CAN1_RX. */
@@ -181,7 +181,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 			ARM_GPIOB->PWR = (ARM_GPIOB->PWR &
 				~(ARM_PWR_MASK(2) | ARM_PWR_MASK(3))) |
 				ARM_PWR_FASTEST(2) | ARM_PWR_FASTEST(3);
-		} else if (flags & PORT_C) {
+		} else if (c->flags & PORT_C) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOC;
 
 			/* Основная функция для CAN1_TX и CAN1_RX. */
@@ -196,7 +196,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 			ARM_GPIOC->PWR = (ARM_GPIOC->PWR &
 				~(ARM_PWR_MASK(8) | ARM_PWR_MASK(9))) |
 				ARM_PWR_FASTEST(8) | ARM_PWR_FASTEST(9);
-		} else if (flags & PORT_D) {
+		} else if (c->flags & PORT_D) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
 
 			/* Основная функция для CAN1_TX и CAN1_RX. */
@@ -211,7 +211,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 			ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
 				~(ARM_PWR_MASK(13) | ARM_PWR_MASK(14))) |
 				ARM_PWR_FASTEST(13) | ARM_PWR_FASTEST(14);
-		} else if (flags & PORT_E) {
+		} else if (c->flags & PORT_E) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOE;
 
 			/* Основная функция для CAN1_TX и CAN1_RX. */
@@ -239,7 +239,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 		/* Включаем тактирование порта CAN2, PORTD. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN2;
 
-		if (flags & PORT_C) {
+		if (c->flags & PORT_C) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOC;
 
 			/* Основная функция для CAN2_TX и CAN2_RX. */
@@ -254,7 +254,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 			ARM_GPIOC->PWR = (ARM_GPIOC->PWR &
 				~(ARM_PWR_MASK(14) | ARM_PWR_MASK(15))) |
 				ARM_PWR_FASTEST(14) | ARM_PWR_FASTEST(15);
-		} else if (flags & PORT_D) {
+		} else if (c->flags & PORT_D) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
 
 			/* Основная функция для CAN2_TX и CAN2_RX. */
@@ -269,7 +269,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 			ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
 				~(ARM_PWR_MASK(9) | ARM_PWR_MASK(15))) |
 				ARM_PWR_FASTEST(9) | ARM_PWR_FASTEST(15);
-		} else if (flags & PORT_E) {
+		} else if (c->flags & PORT_E) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOE;
 
 			/* Основная функция для CAN2_TX и CAN2_RX. */
@@ -284,7 +284,7 @@ static void can_setup (can_t *c, int kbitsec, unsigned flags)
 			ARM_GPIOE->PWR = (ARM_GPIOE->PWR &
 				~(ARM_PWR_MASK(6) | ARM_PWR_MASK(7))) |
 				ARM_PWR_FASTEST(6) | ARM_PWR_FASTEST(7);
-		} else if (flags & PORT_F) {
+		} else if (c->flags & PORT_F) {
 			ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOF;
 
 			/* Основная функция для CAN2_TX и CAN2_RX. */
@@ -370,7 +370,7 @@ static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 		/* Расширенный формат кадра */
 		buf->ID = fr->id & (CAN_ID_EID_MASK | CAN_ID_SID_MASK);
 		buf->DLC = CAN_DLC_LEN (fr->dlc) |
-			CAN_DLC_IDE | CAN_DLC_SSR | CAN_DLC_R1;
+			CAN_DLC_IDE | CAN_DLC_SSR /*| CAN_DLC_R1*/;
 	} else {
 		/* Стандартный формат кадра */
 		buf->ID = fr->id & CAN_ID_SID_MASK;
@@ -422,14 +422,19 @@ void can_set_loop (can_t *c, int on)
  * Transmit the frame.
  * Return 0 when there is no space in queue.
  */
-void can_output (can_t *c, const can_frame_t *fr)
+int can_output (can_t *c, const can_frame_t *fr)
 {
-	mutex_lock (&c->lock);
-	while (! transmit_enqueue (c, fr)) {
-		/* Ждём появления места в буфере устройства. */
-		mutex_wait (&c->lock);
+	if (c->flags & POLLONLY) {
+		return transmit_enqueue (c, fr);
+	} else {
+		mutex_lock (&c->lock);
+		while (! transmit_enqueue (c, fr)) {
+			/* Ждём появления места в буфере устройства. */
+			mutex_wait (&c->lock);
+		}
+		mutex_unlock (&c->lock);
+		return 1;
 	}
-	mutex_unlock (&c->lock);
 }
 
 /*
@@ -616,12 +621,14 @@ static bool_t can_handle_interrupt (void *arg)
 void can_init (can_t *c, int port, unsigned kbitsec, unsigned flags)
 {
 	c->port = port;
-	can_setup (c, kbitsec, flags);
+	c->flags = flags;
+	can_setup (c, kbitsec);
 
 	int irq = (port == 0) ? 0 : 1;
 	if (! (flags & POLLONLY)) {
 		can_queue_init (&c->inq);
-		mutex_lock_irq (&c->lock, irq, can_handle_interrupt, c);
-		mutex_unlock (&c->lock);
+		//mutex_lock_irq (&c->lock, irq, can_handle_interrupt, c);
+		//mutex_unlock (&c->lock);
+		mutex_attach_irq (&c->lock, irq, can_handle_interrupt, c);
 	}
 }

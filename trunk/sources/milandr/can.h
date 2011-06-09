@@ -68,6 +68,7 @@ typedef struct _can_t {
 	mutex_t lock;			/* interrupt goes here */
 
 	unsigned port;			/* port number */
+	unsigned flags;			/* flags */
 	unsigned kbitsec;		/* data rate kbit/sec */
 	int loop;			/* enable internal loopback */
 	can_queue_t inq;		/* queue of received packets */
@@ -96,7 +97,7 @@ typedef struct _can_t {
 void can_init (can_t *c, int port, unsigned kbitsec, unsigned flags);
 void can_set_speed (can_t *c, unsigned kbitsec);
 void can_set_loop (can_t *c, int on);
-void can_output (can_t *c, const can_frame_t *fr);
+int can_output (can_t *c, const can_frame_t *fr);
 void can_input (can_t *c, can_frame_t *fr);
 int  can_poll (can_t *c, can_frame_t *fr);
 void can_stop (can_t *c);		/* sets given channel disabled (channel is enabled after can_init()) */
