@@ -488,6 +488,60 @@ err:				putchar (&debug, 7);
 	}
 }
 
+void fill_data (unsigned byte0, unsigned byte1)
+{
+        unsigned char *p = data;
+        unsigned i;
+
+        for (i=0; i<SECTSIZE; i+=2) {
+                *p++ = byte0;
+                *p++ = byte1;
+        }
+}
+
+int check_data (unsigned byte0, unsigned byte1)
+{
+        unsigned char *p = data;
+        unsigned i;
+
+        for (i=0; i<SECTSIZE; i+=2) {
+                if (*p != byte0) {
+                        printf (&debug, "Offset %u written %08X read %08X\n",
+                                i, byte0, *p);
+                        return 0;
+                }
+                p++;
+                if (*p != byte1) {
+                        printf (&debug, "Offset %u written %08X read %08X\n",
+                                i, byte0, *p);
+                        return 0;
+                }
+                p++;
+        }
+        return 1;
+}
+
+void test_sectors (unsigned first, unsigned last)
+{
+        unsigned i;
+
+        for (i=first; i<last; i++) {
+                fill_data (0x55^i, 0xaa^i);
+                if (! card_write (0, i*SECTSIZE, data, SECTSIZE)) {
+                        printf (&debug, "Sector %u: write error.\n", i);
+                        break;
+                }
+                if (! card_read (0, i*SECTSIZE, data, SECTSIZE)) {
+                        printf (&debug, "Sector %u: read error.\n", i);
+                        break;
+                }
+                if (! check_data (0x55^i, 0xaa^i)) {
+                        printf (&debug, "Sector %u: data error.\n", i);
+                        break;
+                }
+        }
+}
+
 void print_data (unsigned char *buf, unsigned nbytes)
 {
         unsigned i;
@@ -513,8 +567,9 @@ void menu ()
 	printf (&debug, "\n  2. Get card size");
 	printf (&debug, "\n  3. Read sector #0");
 	printf (&debug, "\n  4. Read sector #1");
-	printf (&debug, "\n  5. Read sector #100");
+	printf (&debug, "\n  5. Read sector #99");
 	printf (&debug, "\n  6. Write sector #0");
+	printf (&debug, "\n  7. Write-read sectors #0...99");
 	puts (&debug, "\n\n");
 	for (;;) {
 		/* Ввод команды. */
@@ -557,13 +612,17 @@ void menu ()
 			break;
 		}
 		if (cmd == '5') {
-                        if (card_read (0, 100*SECTSIZE, data, SECTSIZE))
+                        if (card_read (0, 99*SECTSIZE, data, SECTSIZE))
                                 print_data (data, SECTSIZE);
 			break;
 		}
 		if (cmd == '6') {
                         if (card_write (0, 0, data, SECTSIZE))
                                 printf (&debug, "Data written successfully.\n");
+			break;
+		}
+		if (cmd == '7') {
+                        test_sectors (0, 100);
 			break;
 		}
 		if (cmd == CTL('T')) {
