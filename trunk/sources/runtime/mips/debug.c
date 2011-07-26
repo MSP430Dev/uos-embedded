@@ -156,22 +156,37 @@ debug_getchar (void)
 		c = debug_char;
 		debug_char = -1;
 /*debug_printf ("getchar -> 0x%02x\n", c);*/
+#if 0
+debug_putc ('g');
+debug_putc ('e');
+debug_putc ('t');
+debug_putc ('c');
+debug_putc ('h');
+debug_putc ('a');
+debug_putc ('r');
+debug_putc (' ');
+debug_putc ('-');
+debug_putc ('>');
+debug_putc (' ');
+debug_putc ('0');
+debug_putc ('x');
+debug_putc ("0123456789abcdef"[c >> 4]);
+debug_putc ("0123456789abcdef"[c & 15]);
+debug_putc ('\n');
+#endif
 		return c;
 	}
-	mips_intr_disable (&x);
 	for (;;) {
+                mips_intr_disable (&x);
+/*		watchdog_alive ();*/
+
 		/* Wait until receive data available. */
-		if (! (U1STA & PIC32_USTA_URXDA)) {
-/*			watchdog_alive ();*/
-			mips_intr_restore (x);
-			mips_intr_disable (&x);
-			continue;
-		}
-		/* TODO: utf8 to unicode conversion. */
-		c = U1RXREG;
-		break;
+		if (U1STA & PIC32_USTA_URXDA) {
+                        c = U1RXREG;
+                        break;
+                }
+                mips_intr_restore (x);
 	}
-	mips_intr_restore (x);
 	return c;
 }
 
