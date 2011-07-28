@@ -238,8 +238,7 @@ static const unsigned mask_by_vector [ARCH_INTERRUPTS] = {
 	(1 << PIC32_IRQ_SPI1TX) |
 	(1 << PIC32_IRQ_SPI1RX),
 	(1 << PIC32_IRQ_U1E) |          /* 24 - UART1 */
-	(1 << PIC32_IRQ_U1RX) |
-	(1 << PIC32_IRQ_U1TX),
+	(1 << PIC32_IRQ_U1RX),          /* Do not add TX here! */
 	(1 << PIC32_IRQ_I2C1B) |        /* 25 - I2C1 */
 	(1 << PIC32_IRQ_I2C1S) |
 	(1 << PIC32_IRQ_I2C1M),
@@ -252,8 +251,7 @@ static const unsigned mask_by_vector [ARCH_INTERRUPTS] = {
 	(1 << (PIC32_IRQ_SPI2TX-32)) |
 	(1 << (PIC32_IRQ_SPI2RX-32)),
 	(1 << (PIC32_IRQ_U2E-32)) |     /* 32 - UART2 */
-	(1 << (PIC32_IRQ_U2RX-32)) |
-	(1 << (PIC32_IRQ_U2TX-32)),
+	(1 << (PIC32_IRQ_U2RX-32)),     /* Do not add TX here! */
 	(1 << (PIC32_IRQ_I2C2B-32)) |   /* 33 - I2C2 */
 	(1 << (PIC32_IRQ_I2C2S-32)) |
 	(1 << (PIC32_IRQ_I2C2M-32)),
@@ -322,12 +320,20 @@ _arch_interrupt_ (void)
 //debug_printf ("i%d ", irq);
 
 		/* Disable the irq, to avoid loops */
-		if (irq < PIC32_VECT_CN) {
-			IECCLR(0) = mask_by_vector [irq];
-			IFSCLR(0) = mask_by_vector [irq];
+		unsigned mask = mask_by_vector [irq];
+		if (irq == 24) {
+		        if (U1STA & PIC32_USTA_TRMT)
+                                mask |= 1 << PIC32_IRQ_U1TX;
+		} else if (irq == 32) {
+		        if (U2STA & PIC32_USTA_TRMT)
+                                mask |= 1 << (PIC32_IRQ_U2TX-32);
+                }
+                if (irq < PIC32_VECT_CN) {
+			IECCLR(0) = mask;
+			IFSCLR(0) = mask;
 		} else {
-			IECCLR(1) = mask_by_vector [irq];
-			IFSCLR(1) = mask_by_vector [irq];
+			IECCLR(1) = mask;
+			IFSCLR(1) = mask;
                 }
 #endif
 

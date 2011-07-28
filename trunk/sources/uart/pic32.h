@@ -19,13 +19,13 @@
 #define enable_transmit_interrupt(p)	if (p) IECSET(1) = 1 << (PIC32_IRQ_U2TX-32); \
 					else IECSET(0) = 1 << PIC32_IRQ_U1TX
 #define disable_transmit_interrupt(p)	if (p) IECCLR(1) = 1 << (PIC32_IRQ_U2TX-32); \
-					else IECCLR(0) = 1 << PIC32_IRQ_U1TX
+                                        else IECCLR(0) = 1 << PIC32_IRQ_U1TX
 
 #define transmit_byte(p,c)		if (p) U2TXREG = (c); else U1TXREG = (c)
 #define get_received_byte(p)		((p) ? U2RXREG : U1RXREG)
 
 #define test_transmitter_enabled(p)	1
-#define test_transmitter_empty(p)	((p) ? (U2STA & PIC32_USTA_TRMT) : (U1STA & PIC32_USTA_TRMT))
+#define test_transmitter_empty(p)	(((p) ? U2STA : U1STA) & PIC32_USTA_TRMT)
 #define test_get_receive_data(p,d)	((p) ? ((U2STA & PIC32_USTA_URXDA) ? \
 					((*d) = U2RXREG, 1) : 0) : \
 					((U1STA & PIC32_USTA_URXDA) ? \
