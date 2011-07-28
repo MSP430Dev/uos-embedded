@@ -38,6 +38,9 @@ void __attribute ((noreturn))_init_ (void)
 	mips_write_c0_select (C0_EBASE, 1, _exception_base_);
 	mips_write_c0_register (C0_STATUS, ST_CU0);
 
+	/* Set vector spacing: not used really, but must be nonzero. */
+	mips_write_c0_select (C0_INTCTL, 1, 32);
+
 	/* Clear CAUSE register: use special interrupt vector 0x200. */
 	mips_write_c0_register (C0_CAUSE, CA_IV);
 

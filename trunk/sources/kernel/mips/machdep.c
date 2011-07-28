@@ -295,6 +295,7 @@ _arch_interrupt_ (void)
 	unsigned cause = mips_read_c0_register (C0_CAUSE);
 	if ((cause & 0x0000007c) != CA_Int)
 		dump_of_death (mips_get_stack_pointer () - 4);
+//debug_printf ("[%08x] ", cause);
 #endif
 
 #ifdef ELVEES_FPU_EPC_BUG
@@ -313,15 +314,21 @@ _arch_interrupt_ (void)
 		/* Get the current irq number */
 #ifdef PIC32MX
 		unsigned intstat = INTSTAT;
-		if ((intstat & PIC32_INTSTAT_SRIPL_MASK) == 0)
+//debug_printf ("{%08x} ", intstat);
+		if ((intstat & PIC32_INTSTAT_SRIPL_MASK) == 0) {
 			break;
+                }
 		irq = PIC32_INTSTAT_VEC (intstat);
+//debug_printf ("i%d ", irq);
 
 		/* Disable the irq, to avoid loops */
-		if (irq < PIC32_VECT_CN)
+		if (irq < PIC32_VECT_CN) {
 			IECCLR(0) = mask_by_vector [irq];
-		else
+			IFSCLR(0) = mask_by_vector [irq];
+		} else {
 			IECCLR(1) = mask_by_vector [irq];
+			IFSCLR(1) = mask_by_vector [irq];
+                }
 #endif
 
 #if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
@@ -464,6 +471,7 @@ arch_intr_allow (int irq)
 		IECSET(0) = mask_by_vector [irq];
 	else
 		IECSET(1) = mask_by_vector [irq];
+//debug_printf ("<%d> ", irq);
 #endif
 
 #ifdef ELVEES_MC24

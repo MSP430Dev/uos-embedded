@@ -2,9 +2,9 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-#CFLAGS          += -DSIMULATOR
+CFLAGS          += -g #-DSIMULATOR
 
-TEST		= test-sd
+TEST		= test-uart
 TESTS		= $(TEST).srec
 #TESTS		+= test-debug.srec test-leds.srec test-task.srec test-timer.srec test-uart.srec
 #TESTS		+= philosophers.srec #test-tcl.srec

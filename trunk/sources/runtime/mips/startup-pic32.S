@@ -20,7 +20,7 @@
 #include <runtime/mips/io.h>
 
 		.set	noreorder
-		.set	mips32
+		.set	mips32r2
 
 #---------------------------------------
 # Reset vector at 0x9D006000
@@ -97,16 +97,13 @@ _restore_regs_: .globl _restore_regs_
 		andi	$k1, ST_IE			# Restore only IE bit
 		or	$k0, $k1			# Add saved IE bit
 		mtc0	$k0, $C0_STATUS			# put SR back
-		nop
-		nop
+		ehb
 
 		addi	$sp, CONTEXT_WORDS*4		# Deallocate saved context
 
 		# Return from exception
-		.set mips3
 		eret					# PC <= EPC; EXL <= 0
 		nop					# just to be safe
-		.set mips0
 
 #---------------------------------------
 # Exception vector at 0x0x9D005200
