@@ -224,6 +224,8 @@ typedef struct
 #define ARM_FUNC_ALT(n)		(2 << ((n)*2))	/* альтернативная функция */
 #define ARM_FUNC_REDEF(n)	(3 << ((n)*2))	/* переопределённая функция */
 
+#define ARM_FUNC(n,f)		(f << ((n)*2))	/* установка выбранной функции */
+
 /*
  * Регистр GPIO PWR: скорость фронта порта вывода
  */
@@ -1302,6 +1304,175 @@ typedef struct
  * Регистры ADCx_CHSEL: выбор канала АЦП
  */
 #define ARM_ADC_CHANNEL(n)	(1 << (n))	/* Номер канала */
+
+
+/*---------------------------------------
+ * Описание регистров сторожевого таймера
+ */
+typedef struct
+{
+	arm_reg_t KR;
+	arm_reg_t PR;
+	arm_reg_t RLR;
+	arm_reg_t SR;
+} IWDG_t;
+
+#define ARM_IWDG		((IWDG_t *) ARM_IWDT_BASE)
+
+#define ARM_IWDG_KEY_ALIVE	0xAAAA		/* Это значение должна записывать программа через определенные интервалы времени.
+						 * Иначе сторожевой таймер сгенерирует сброс */
+#define ARM_IWDG_KEY_UNBLOCK	0x5555		/* Это значение должно быть записано в регистр KR для разрешения доступа
+						 * по записи к регистрам PR и RLR */
+#define ARM_IWDG_KEY_START	0xCCCC		/* Это значение разрешает работу сторожевого таймера */
+
+#define ARM_IWDG_PR(x)		((x) & 7)	/* Делитель частоты сторожевого таймера */
+#define ARM_IWDG_RLR(x)		((x) & 0xFFF)	/* Основание счета сторожевого таймера */
+#define ARM_IWDG_SR(x)		((x) & 3)	/* Статус сторожевого таймера */
+
+
+/*--------------------------------------------------------------------------------------
+ * Макроопределения для возможности указания привязки сигналов к контактам из target.cfg
+ */
+
+/*
+ * Каждому контакту микроконтроллера ставится в соответствие уникальное число, имеющее также и символическое имя.
+ * Например, PA0, PC12 и т.д. Пользователь драйвера должен установить значения констант, обозначающих сигналы,
+ * в файле target.cfg своего проекта, в переменной CFLAGS. Например, 
+ *     CFLAGS += -DSSP1RXD=PD11
+ * В коде драйвера можно препроцессором разобрать значение константы для сигнала и получить, к какому контакту
+ * пользователь привязал сигнал, и правильно проинициализировать контакт.
+ * Для примера см. драйвер SPI
+ */
+#define PORT_A	0
+#define PORT_B	1
+#define PORT_C	2
+#define PORT_D	3
+#define PORT_E	4
+#define PORT_F	6
+
+#define M1986VE91T_PIN(port,pin)	(((port) << 4) | (pin))
+#define PORT(x)				(((x) >> 4) & 0xF)
+#define PIN(x)				((x) & 0xF)
+
+#define PA0	M1986VE91T_PIN(PORT_A, 0)
+#define PA1	M1986VE91T_PIN(PORT_A, 1)
+#define PA2	M1986VE91T_PIN(PORT_A, 2)
+#define PA3	M1986VE91T_PIN(PORT_A, 3)
+#define PA4	M1986VE91T_PIN(PORT_A, 4)
+#define PA5	M1986VE91T_PIN(PORT_A, 5)
+#define PA6	M1986VE91T_PIN(PORT_A, 6)
+#define PA7	M1986VE91T_PIN(PORT_A, 7)
+#define PA8	M1986VE91T_PIN(PORT_A, 8)
+#define PA9	M1986VE91T_PIN(PORT_A, 9)
+#define PA10	M1986VE91T_PIN(PORT_A, 10)
+#define PA11	M1986VE91T_PIN(PORT_A, 11)
+#define PA12	M1986VE91T_PIN(PORT_A, 12)
+#define PA13	M1986VE91T_PIN(PORT_A, 13)
+#define PA14	M1986VE91T_PIN(PORT_A, 14)
+#define PA15	M1986VE91T_PIN(PORT_A, 15)
+
+#define PB0	M1986VE91T_PIN(PORT_B, 0)
+#define PB1	M1986VE91T_PIN(PORT_B, 1)
+#define PB2	M1986VE91T_PIN(PORT_B, 2)
+#define PB3	M1986VE91T_PIN(PORT_B, 3)
+#define PB4	M1986VE91T_PIN(PORT_B, 4)
+#define PB5	M1986VE91T_PIN(PORT_B, 5)
+#define PB6	M1986VE91T_PIN(PORT_B, 6)
+#define PB7	M1986VE91T_PIN(PORT_B, 7)
+#define PB8	M1986VE91T_PIN(PORT_B, 8)
+#define PB9	M1986VE91T_PIN(PORT_B, 9)
+#define PB10	M1986VE91T_PIN(PORT_B, 10)
+#define PB11	M1986VE91T_PIN(PORT_B, 11)
+#define PB12	M1986VE91T_PIN(PORT_B, 12)
+#define PB13	M1986VE91T_PIN(PORT_B, 13)
+#define PB14	M1986VE91T_PIN(PORT_B, 14)
+#define PB15	M1986VE91T_PIN(PORT_B, 15)
+
+#define PC0	M1986VE91T_PIN(PORT_C, 0)
+#define PC1	M1986VE91T_PIN(PORT_C, 1)
+#define PC2	M1986VE91T_PIN(PORT_C, 2)
+#define PC3	M1986VE91T_PIN(PORT_C, 3)
+#define PC4	M1986VE91T_PIN(PORT_C, 4)
+#define PC5	M1986VE91T_PIN(PORT_C, 5)
+#define PC6	M1986VE91T_PIN(PORT_C, 6)
+#define PC7	M1986VE91T_PIN(PORT_C, 7)
+#define PC8	M1986VE91T_PIN(PORT_C, 8)
+#define PC9	M1986VE91T_PIN(PORT_C, 9)
+#define PC10	M1986VE91T_PIN(PORT_C, 10)
+#define PC11	M1986VE91T_PIN(PORT_C, 11)
+#define PC12	M1986VE91T_PIN(PORT_C, 12)
+#define PC13	M1986VE91T_PIN(PORT_C, 13)
+#define PC14	M1986VE91T_PIN(PORT_C, 14)
+#define PC15	M1986VE91T_PIN(PORT_C, 15)
+
+#define PD0	M1986VE91T_PIN(PORT_D, 0)
+#define PD1	M1986VE91T_PIN(PORT_D, 1)
+#define PD2	M1986VE91T_PIN(PORT_D, 2)
+#define PD3	M1986VE91T_PIN(PORT_D, 3)
+#define PD4	M1986VE91T_PIN(PORT_D, 4)
+#define PD5	M1986VE91T_PIN(PORT_D, 5)
+#define PD6	M1986VE91T_PIN(PORT_D, 6)
+#define PD7	M1986VE91T_PIN(PORT_D, 7)
+#define PD8	M1986VE91T_PIN(PORT_D, 8)
+#define PD9	M1986VE91T_PIN(PORT_D, 9)
+#define PD10	M1986VE91T_PIN(PORT_D, 10)
+#define PD11	M1986VE91T_PIN(PORT_D, 11)
+#define PD12	M1986VE91T_PIN(PORT_D, 12)
+#define PD13	M1986VE91T_PIN(PORT_D, 13)
+#define PD14	M1986VE91T_PIN(PORT_D, 14)
+#define PD15	M1986VE91T_PIN(PORT_D, 15)
+
+#define PE0	M1986VE91T_PIN(PORT_E, 0)
+#define PE1	M1986VE91T_PIN(PORT_E, 1)
+#define PE2	M1986VE91T_PIN(PORT_E, 2)
+#define PE3	M1986VE91T_PIN(PORT_E, 3)
+#define PE4	M1986VE91T_PIN(PORT_E, 4)
+#define PE5	M1986VE91T_PIN(PORT_E, 5)
+#define PE6	M1986VE91T_PIN(PORT_E, 6)
+#define PE7	M1986VE91T_PIN(PORT_E, 7)
+#define PE8	M1986VE91T_PIN(PORT_E, 8)
+#define PE9	M1986VE91T_PIN(PORT_E, 9)
+#define PE10	M1986VE91T_PIN(PORT_E, 10)
+#define PE11	M1986VE91T_PIN(PORT_E, 11)
+#define PE12	M1986VE91T_PIN(PORT_E, 12)
+#define PE13	M1986VE91T_PIN(PORT_E, 13)
+#define PE14	M1986VE91T_PIN(PORT_E, 14)
+#define PE15	M1986VE91T_PIN(PORT_E, 15)
+
+#define PF0	M1986VE91T_PIN(PORT_F, 0)
+#define PF1	M1986VE91T_PIN(PORT_F, 1)
+#define PF2	M1986VE91T_PIN(PORT_F, 2)
+#define PF3	M1986VE91T_PIN(PORT_F, 3)
+#define PF4	M1986VE91T_PIN(PORT_F, 4)
+#define PF5	M1986VE91T_PIN(PORT_F, 5)
+#define PF6	M1986VE91T_PIN(PORT_F, 6)
+#define PF7	M1986VE91T_PIN(PORT_F, 7)
+#define PF8	M1986VE91T_PIN(PORT_F, 8)
+#define PF9	M1986VE91T_PIN(PORT_F, 9)
+#define PF10	M1986VE91T_PIN(PORT_F, 10)
+#define PF11	M1986VE91T_PIN(PORT_F, 11)
+#define PF12	M1986VE91T_PIN(PORT_F, 12)
+#define PF13	M1986VE91T_PIN(PORT_F, 13)
+#define PF14	M1986VE91T_PIN(PORT_F, 14)
+#define PF15	M1986VE91T_PIN(PORT_F, 15)
+
+#define FUNC_PORT	0
+#define FUNC_MAIN	1
+#define FUNC_ALT	2
+#define FUNC_REDEF	3
+
+static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, unsigned func)
+{
+//debug_printf ("milandr_init_pin: port = %d, pin = %d, func = %d\n", port, pin, func);
+	/* Подача синхроимпульсов */
+	ARM_RSTCLK->PER_CLOCK |= (ARM_PER_CLOCK_GPIOA << port);
+	/* Установка функции */
+	gpio->FUNC = (gpio->FUNC & ~ARM_FUNC_MASK(pin)) | ARM_FUNC(pin, func);
+	/* Цифровой вывод */
+	gpio->ANALOG |= (1 << pin);
+	/* Быстрый фронт */
+	gpio->PWR = (gpio->PWR & ~ARM_PWR_MASK(pin)) | ARM_PWR_FASTEST(pin);
+}
 
 
 /* End of Milandr 1986BE9x register definitions.

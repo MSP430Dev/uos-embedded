@@ -26,9 +26,16 @@ void display_refresh (unsigned sent, unsigned received)
 	printf (&display, "   Принято: %lu\r\n", spi.in_packets);
 	printf (&display, "Прерываний: %lu\r\n", spi.interrupts);
 	if (sent != ~0) {
+/*
 		printf (&display, "Отправлено: '%c'\r\n", sent);
 		if (received != ~0)
 			printf (&display, "   Обратно: '%c'\r\n", received);
+		else
+			printf (&display, "   Обратно: ---\r\n");
+*/
+		printf (&display, "Отправлено: %04x\r\n", sent);
+		if (received != ~0)
+			printf (&display, "   Обратно: %04x\r\n", received);
 		else
 			printf (&display, "   Обратно: ---\r\n");
 	}
@@ -59,7 +66,7 @@ void uos_init (void)
 	gpanel_init (&display, &font_fixed6x8);
 
 	/* SPI2, 16-bit words, slave. */
-	spi_init (&spi, 1, 16, 0);
+	spi_init (&spi, 1, 16, 0, 0);
 	display_refresh (~0, ~0);
 
 	task_create (task_console, 0, "console", 10,

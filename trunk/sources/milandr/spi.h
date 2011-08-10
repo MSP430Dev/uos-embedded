@@ -52,9 +52,17 @@ typedef struct _spi_t {
 /*
  * User level API.
  */
-void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit);
-void spi_output (spi_t *c, unsigned word);
-int spi_input (spi_t *c, unsigned *word);
-void spi_input_wait (spi_t *c, unsigned *word);
+/* Init SPI interface
+ * port			- port number (0 or 1)
+ * bits_per_word	- number of bit in one transfer (4 - 16)
+ * nsec_per_bit		- tx rate in nanoseconds per bit
+ * mode			- mode of SPI transmission (SPO, SPH); 
+			  can be 0, ARM_SSP_CR0_SPO, ARM_SSP_CR0_SPH, or (ARM_SSP_CR0_SPO | ARM_SSP_CR0_SPH)
+ */
+void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit, unsigned mode);
+void spi_output (spi_t *c, unsigned short word);
+void spi_output_block (spi_t *c, unsigned short *data, int count);
+int spi_input (spi_t *c, unsigned short *word);
+void spi_input_wait (spi_t *c, unsigned short *word);
 
 #endif /* !__SPI_H_ */

@@ -28,65 +28,6 @@
 #define IRQ_SSP2	20
 
 /*
- * Таблица выводов интерфейса SSP1.
- * ---- pin --- alt ----------- redef ---
- *	PB12	SSP1_FSS (X33.1/8)
- *	PB13	SSP1_CLK (X33.1/6)
- *	PB14	SSP1_RXD (X33.1/4)
- *	PB15	SSP1_TXD (X33.1/3)
- *	PD9			SSP1_FSS (X32.2/9)
- *	PD10			SSP1_CLK (X32.1/29, X32)
- *	PD11			SSP1_RXD (X32.1/30, X34)
- *	PD12			SSP1_TXD (X32.1/31, X36)
- *	PE12	SSP1_RXD (X32.1/25)
- *	PE13	SSP1_FSS (X32.1/26)
- *	PF0	SSP1_TXD (X32.2/13)
- *	PF1	SSP1_CLK (X32.2/14)
- *	PF2	SSP1_FSS (X32.1/5)
- *	PF3	SSP1_RXD (X32.1/6)
- *
- * Требуемое расположение выводов SPI1 можно задавать макросом
- * CFLAGS в файле 'target.cfg'. По умолчанию используются PD9-PD12.
- */
-#if ! defined (SSP1_ON_PORTB) && \
-    ! defined (SSP1_ON_PORTD) && \
-    ! defined (SSP1_ON_PORTF)
-#	define SSP1_ON_PORTD
-#endif
-
-/*
- * Таблица выводов интерфейса SSP2.
- * ---- pin --- alt ----------- redef ---
- *	PB12			SSP2_FSS (X33.1/8)
- *	PB13			SSP2_CLK (X33.1/6)
- *	PB14			SSP2_RXD (X33.1/4)
- *	PB15			SSP2_TXD (X33.1/3)
- *	PC0			SSP2_FSS (X33.2/10)
- *	PC1			SSP2_CLK (X33.2/11)
- *	PC2			SSP2_RXD (X33.2/12)
- *	PC3			SSP2_TXD (X33.2/5)
- *	PC14	SSP2_FSS (X33.2/28)
- *	PC15	SSP2_RXD (X33.2/24)
- *	PD2	SSP2_RXD (X33.2/13, microSD_7)
- *	PD3	SSP2_FSS (X33.2/15, microSD_2)
- *	PD5	SSP2_CLK (X33.2/16, microSD_5)
- *	PD6	SSP2_TXD (X33.2/14, microSD_3)
- *	PF12			SSP2_FSS (X32.1/15)
- *	PF13			SSP2_CLK (X32.1/16)
- *	PF14			SSP2_RXD (X32.1/19)
- *	PF15			SSP2_TXD (X32.1/20)
- *
- * Требуемое расположение выводов SPI2 можно задавать макросом
- * CFLAGS в файле 'target.cfg'. По умолчанию используются PD2-PD6.
- */
-#if ! defined (SSP2_ON_PORTB) && \
-    ! defined (SSP2_ON_PORTC) && \
-    ! defined (SSP2_ON_PORTD) && \
-    ! defined (SSP2_ON_PORTF)
-#	define SSP2_ON_PORTD
-#endif
-
-/*
  * Initialize queue.
  */
 static inline __attribute__((always_inline))
@@ -101,7 +42,7 @@ void spi_queue_init (spi_queue_t *q)
  * Before call, a user should check that the queue is not full.
  */
 static inline __attribute__((always_inline))
-void spi_queue_put (spi_queue_t *q, unsigned word)
+void spi_queue_put (spi_queue_t *q, unsigned short word)
 {
 	unsigned short *head;
 
@@ -126,7 +67,7 @@ void spi_queue_put (spi_queue_t *q, unsigned word)
  * When empty, returns 0.
  */
 static inline __attribute__((always_inline))
-unsigned spi_queue_get (spi_queue_t *q)
+unsigned short spi_queue_get (spi_queue_t *q)
 {
 	unsigned word = 0;
 	assert (q->tail >= q->queue);
@@ -161,57 +102,109 @@ bool_t spi_queue_is_empty (spi_queue_t *q)
 	return (q->count == 0);
 }
 
+static void spi_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, unsigned func)
+{
+//debug_printf ("SPI init: port = %d, pin = %d, func = %d\n", port, pin, func);
+	/* Подача синхроимпульсов */
+	ARM_RSTCLK->PER_CLOCK |= (ARM_PER_CLOCK_GPIOA << port);
+	/* Установка функции */
+	gpio->FUNC = (gpio->FUNC & ~ARM_FUNC_MASK(pin)) | ARM_FUNC(pin, func);
+	/* Цифровой вывод */
+	gpio->ANALOG |= (1 << pin);
+	/* Быстрый фронт */
+	gpio->PWR = (gpio->PWR & ~ARM_PWR_MASK(pin)) | ARM_PWR_FAST(pin);
+}
+
 /*
  * Инициализация внешних сигналов SSP1.
  */
 static void spi_setup_ssp1 ()
 {
+/* Сигнал SSP1_RXD */
+#ifndef SSP1_RXD
+#define SSP1_RXD	PD11
+#endif
+
+#if (PORT(SSP1_RXD)==PORT_B)
+#	define SSP1_RXD_GPIO ARM_GPIOB
+#	define SSP1_RXD_FUNC FUNC_ALT
+#elif (PORT(SSP1_RXD)==PORT_D)
+#	define SSP1_RXD_GPIO ARM_GPIOD
+#	define SSP1_RXD_FUNC FUNC_REDEF
+#elif (PORT(SSP1_RXD)==PORT_E)
+#	define SSP1_RXD_GPIO ARM_GPIOE
+#	define SSP1_RXD_FUNC FUNC_ALT
+#elif (PORT(SSP1_RXD)==PORT_F)
+#	define SSP1_RXD_GPIO ARM_GPIOF
+#	define SSP1_RXD_FUNC FUNC_ALT
+#else
+#	error "SSP1_RXD pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+/* Сигнал SSP1_TXD */
+#ifndef SSP1_TXD
+#define SSP1_TXD	PD12
+#endif
+
+#if (PORT(SSP1_TXD)==PORT_B)
+#	define SSP1_TXD_GPIO ARM_GPIOB
+#	define SSP1_TXD_FUNC FUNC_ALT
+#elif (PORT(SSP1_TXD)==PORT_D)
+#	define SSP1_TXD_GPIO ARM_GPIOD
+#	define SSP1_TXD_FUNC FUNC_REDEF
+#elif (PORT(SSP1_TXD)==PORT_F)
+#	define SSP1_TXD_GPIO ARM_GPIOF
+#	define SSP1_TXD_FUNC FUNC_ALT
+#else
+#	error "SSP1_TXD pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+/* Сигнал SSP1_FSS */
+#ifndef SSP1_FSS
+#define SSP1_FSS	PD9
+#endif
+
+#if (PORT(SSP1_FSS)==PORT_B)
+#	define SSP1_FSS_GPIO ARM_GPIOB
+#	define SSP1_FSS_FUNC FUNC_ALT
+#elif (PORT(SSP1_FSS)==PORT_D)
+#	define SSP1_FSS_GPIO ARM_GPIOD
+#	define SSP1_FSS_FUNC FUNC_REDEF
+#elif (PORT(SSP1_FSS)==PORT_E)
+#	define SSP1_FSS_GPIO ARM_GPIOE
+#	define SSP1_FSS_FUNC FUNC_ALT
+#elif (PORT(SSP1_FSS)==PORT_F)
+#	define SSP1_FSS_GPIO ARM_GPIOF
+#	define SSP1_FSS_FUNC FUNC_ALT
+#else
+#	error "SSP1_FSS pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+/* Сигнал SSP1_CLK */
+#ifndef SSP1_CLK
+#define SSP1_CLK	PD10
+#endif
+
+#if (PORT(SSP1_CLK)==PORT_B)
+#	define SSP1_CLK_GPIO ARM_GPIOB
+#	define SSP1_CLK_FUNC FUNC_ALT
+#elif (PORT(SSP1_CLK)==PORT_D)
+#	define SSP1_CLK_GPIO ARM_GPIOD
+#	define SSP1_CLK_FUNC FUNC_REDEF
+#elif (PORT(SSP1_CLK)==PORT_F)
+#	define SSP1_CLK_GPIO ARM_GPIOF
+#	define SSP1_CLK_FUNC FUNC_ALT
+#else
+#	error "SSP1_CLK pin is not assigned in CFLAGS of target.cfg"
+#endif
 	/* Включаем тактирование порта SSP1. */
 	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1;
 
-#ifdef SSP1_ON_PORTD
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
+	milandr_init_pin (SSP1_RXD_GPIO, PORT(SSP1_RXD), PIN(SSP1_RXD), SSP1_RXD_FUNC);
+	milandr_init_pin (SSP1_TXD_GPIO, PORT(SSP1_TXD), PIN(SSP1_TXD), SSP1_TXD_FUNC);
+	milandr_init_pin (SSP1_FSS_GPIO, PORT(SSP1_FSS), PIN(SSP1_FSS), SSP1_FSS_FUNC);
+	milandr_init_pin (SSP1_CLK_GPIO, PORT(SSP1_CLK), PIN(SSP1_CLK), SSP1_CLK_FUNC);
 
-	/* Переопределённая функция:
-	 * PD9	- SSP1_FSS
-	 * PD10	- SSP1_CLK
-	 * PD11	- SSP1_RXD
-	 * PD12	- SSP1_TXD */
-	ARM_GPIOD->FUNC = (ARM_GPIOD->FUNC &
-		~(ARM_FUNC_MASK(9) | ARM_FUNC_MASK(10) |
-		  ARM_FUNC_MASK(11) | ARM_FUNC_MASK(12))) |
-		ARM_FUNC_REDEF(9) | ARM_FUNC_REDEF(10) |
-		ARM_FUNC_REDEF(11) | ARM_FUNC_REDEF(12);
-
-	/* Цифровые выводы. */
-	ARM_GPIOD->ANALOG |= (1 << 9) | (1 << 10) |
-			     (1 << 11) | (1 << 12);
-
-	/* Быстрый фронт. */
-	ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
-		~(ARM_PWR_MASK(9) | ARM_PWR_MASK(10) |
-		  ARM_PWR_MASK(11) | ARM_PWR_MASK(12))) |
-		ARM_PWR_FAST(9) | ARM_PWR_FAST(10) |
-		ARM_PWR_FAST(11) | ARM_PWR_FAST(12);
-
-//#elif defined (SSP1_ON_PORTB)
-	/* Альтернативная функция:
-	 * PB12	- SSP1_FSS
-	 * PB13	- SSP1_CLK
-	 * PB14	- SSP1_RXD
-	 * PB15	- SSP1_TXD */
-	/* TODO */
-
-//#elif defined (SSP1_ON_PORTF)
-	/* Альтернативная функция:
-	 * PF0 - SSP1_TXD
-	 * PF1 - SSP1_CLK
-	 * PF2 - SSP1_FSS
-	 * PF3 - SSP1_RXD */
-	/* TODO */
-#else
-#   error "SSP1_ON_PORTx not defined"
-#endif
 	/* Разрешение тактовой частоты на SSP1, источник HCLK. */
 	ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG1(7)) |
 		ARM_SSP_CLOCK_EN1 | ARM_SSP_CLOCK_BRG1(0);
@@ -222,60 +215,106 @@ static void spi_setup_ssp1 ()
  */
 static void spi_setup_ssp2 ()
 {
+/* Сигнал SSP2_RXD */
+#ifndef SSP2_RXD
+#define SSP2_RXD	PD2
+#endif
+
+#if (PORT(SSP2_RXD)==PORT_B)
+#	define SSP2_RXD_GPIO ARM_GPIOB
+#	define SSP2_RXD_FUNC FUNC_REDEF
+#elif (PORT(SSP2_RXD)==PORT_C)
+#	define SSP2_RXD_GPIO ARM_GPIOC
+#	if (PIN(SSP2_RXD)==2)
+#		define SSP2_RXD_FUNC FUNC_REDEF
+#	elif (PIN(SSP2_RXD)==15)
+#		define SSP2_RXD_FUNC FUNC_ALT
+#	endif
+#elif (PORT(SSP2_RXD)==PORT_D)
+#	define SSP2_RXD_GPIO ARM_GPIOD
+#	define SSP2_RXD_FUNC FUNC_ALT
+#elif (PORT(SSP2_RXD)==PORT_F)
+#	define SSP2_RXD_GPIO ARM_GPIOF
+#	define SSP2_RXD_FUNC FUNC_REDEF
+#else
+#	error "SSP2_RXD pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+/* Сигнал SSP2_TXD */
+#ifndef SSP2_TXD
+#define SSP2_TXD	PD6
+#endif
+
+#if (PORT(SSP2_TXD)==PORT_B)
+#	define SSP2_TXD_GPIO ARM_GPIOB
+#	define SSP2_TXD_FUNC FUNC_REDEF
+#elif (PORT(SSP2_TXD)==PORT_C)
+#	define SSP2_TXD_GPIO ARM_GPIOC
+#	define SSP2_TXD_FUNC FUNC_REDEF
+#elif (PORT(SSP2_TXD)==PORT_D)
+#	define SSP2_TXD_GPIO ARM_GPIOD
+#	define SSP2_TXD_FUNC FUNC_ALT
+#elif (PORT(SSP2_TXD)==PORT_F)
+#	define SSP2_TXD_GPIO ARM_GPIOF
+#	define SSP2_TXD_FUNC FUNC_REDEF
+#else
+#	error "SSP2_TXD pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+/* Сигнал SSP2_FSS */
+#ifndef SSP2_FSS
+#define SSP2_FSS	PD3
+#endif
+
+#if (PORT(SSP2_FSS)==PORT_B)
+#	define SSP2_FSS_GPIO ARM_GPIOB
+#	define SSP2_FSS_FUNC FUNC_REDEF
+#elif (PORT(SSP2_FSS)==PORT_C)
+#	define SSP2_FSS_GPIO ARM_GPIOC
+#	if (PIN(SSP2_FSS)==0)
+#		define SSP2_FSS_FUNC FUNC_REDEF
+#	elif (PIN(SSP2_FSS)==14)
+#		define SSP2_FSS_FUNC FUNC_ALT
+#	endif
+#elif (PORT(SSP2_FSS)==PORT_D)
+#	define SSP2_FSS_GPIO ARM_GPIOD
+#	define SSP2_FSS_FUNC FUNC_ALT
+#elif (PORT(SSP2_FSS)==PORT_F)
+#	define SSP2_FSS_GPIO ARM_GPIOF
+#	define SSP2_FSS_FUNC FUNC_REDEF
+#else
+#	error "SSP2_FSS pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+/* Сигнал SSP2_CLK */
+#ifndef SSP2_CLK
+#define SSP2_CLK	PD5
+#endif
+
+#if (PORT(SSP2_CLK)==PORT_B)
+#	define SSP2_CLK_GPIO ARM_GPIOB
+#	define SSP2_CLK_FUNC FUNC_REDEF
+#elif (PORT(SSP2_CLK)==PORT_C)
+#	define SSP2_CLK_GPIO ARM_GPIOC
+#	define SSP2_CLK_FUNC FUNC_REDEF
+#elif (PORT(SSP2_CLK)==PORT_D)
+#	define SSP2_CLK_GPIO ARM_GPIOD
+#	define SSP2_CLK_FUNC FUNC_ALT
+#elif (PORT(SSP2_CLK)==PORT_F)
+#	define SSP2_CLK_GPIO ARM_GPIOF
+#	define SSP2_CLK_FUNC FUNC_REDEF
+#else
+#	error "SSP2_CLK pin is not assigned in CFLAGS of target.cfg"
+#endif
 	/* Включаем тактирование порта SSP2. */
 	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP2;
 
-#ifdef SSP2_ON_PORTD
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
+	milandr_init_pin (SSP2_RXD_GPIO, PORT(SSP2_RXD), PIN(SSP2_RXD), SSP2_RXD_FUNC);
+	milandr_init_pin (SSP2_TXD_GPIO, PORT(SSP2_TXD), PIN(SSP2_TXD), SSP2_TXD_FUNC);
+	milandr_init_pin (SSP2_FSS_GPIO, PORT(SSP2_FSS), PIN(SSP2_FSS), SSP2_FSS_FUNC);
+	milandr_init_pin (SSP2_CLK_GPIO, PORT(SSP2_CLK), PIN(SSP2_CLK), SSP2_CLK_FUNC);
 
-	/* Альтернативная функция:
-	 * PD2 - SSP2_RXD
-	 * PD3 - SSP2_FSS
-	 * PD5 - SSP2_CLK
-	 * PD6 - SSP2_TXD */
-	ARM_GPIOD->FUNC = (ARM_GPIOD->FUNC &
-		~(ARM_FUNC_MASK(2) | ARM_FUNC_MASK(3) |
-		  ARM_FUNC_MASK(5) | ARM_FUNC_MASK(6))) |
-		ARM_FUNC_ALT(2) | ARM_FUNC_ALT(3) |
-		ARM_FUNC_ALT(5) | ARM_FUNC_ALT(6);
 
-	/* Цифровые выводы. */
-	ARM_GPIOD->ANALOG |= (1 << 2) | (1 << 3) |
-			     (1 << 5) | (1 << 6);
-
-	/* Быстрый фронт. */
-	ARM_GPIOD->PWR = (ARM_GPIOD->PWR &
-		~(ARM_PWR_MASK(2) | ARM_PWR_MASK(3) |
-		  ARM_PWR_MASK(5) | ARM_PWR_MASK(6))) |
-		ARM_PWR_FAST(2) | ARM_PWR_FAST(3) |
-		ARM_PWR_FAST(5) | ARM_PWR_FAST(6);
-
-//#elif defined (SSP2_ON_PORTB)
-	/* Переопределённая функция:
-	 * PB12	- SSP2_FSS
-	 * PB13	- SSP2_CLK
-	 * PB14	- SSP2_RXD
-	 * PB15	- SSP2_TXD */
-	/* TODO */
-
-//#elif defined (SSP2_ON_PORTC)
-	/* Переопределённая функция:
-	 * PC0 - SSP2_FSS
-	 * PC1 - SSP2_CLK
-	 * PC2 - SSP2_RXD
-	 * PC3 - SSP2_TXD */
-	/* TODO */
-
-//#elif defined (SSP2_ON_PORTF)
-	/* Переопределённая функция:
-	 * PF12	- SSP2_FSS
-	 * PF13	- SSP2_CLK
-	 * PF14	- SSP2_RXD
-	 * PF15	- SSP2_TXD */
-	/* TODO */
-#else
-#   error "SSP2_ON_PORTx not defined"
-#endif
 	/* Разрешение тактовой частоты на SSP2, источник HCLK. */
 	ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG2(7)) |
 		ARM_SSP_CLOCK_EN2 | ARM_SSP_CLOCK_BRG2(0);
@@ -284,7 +323,7 @@ static void spi_setup_ssp2 ()
 /*
  * Transmit the word.
  */
-void spi_output (spi_t *c, unsigned word)
+void spi_output (spi_t *c, unsigned short word)
 {
 	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
 
@@ -299,6 +338,26 @@ void spi_output (spi_t *c, unsigned word)
 	mutex_unlock (&c->lock);
 }
 
+void spi_output_block (spi_t *c, unsigned short *data, int count)
+{
+	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
+	int i;
+
+	mutex_lock (&c->lock);
+	reg->CR1 &= ~ARM_SSP_CR1_SSE;
+	for (i = 0; i < count; ++i) {
+		while (! (reg->SR & ARM_SSP_SR_TNF)) {
+			/* Ждём появления места в FIFO передатчика. */
+			mutex_wait (&c->lock);
+		}
+		reg->DR = *(data + i);	
+		c->out_packets++;
+	}
+	reg->CR1 |= ARM_SSP_CR1_SSE;
+	arch_intr_allow (c->irq);
+	mutex_unlock (&c->lock);
+}
+
 /*
  * Извлекаем данные из приёмного FIFO.
  */
@@ -309,7 +368,7 @@ static int receive_data (spi_t *c)
 	int nwords = 0;
 
 	while (sr & ARM_SSP_SR_RNE) {
-		unsigned word = reg->DR;
+		unsigned short word = reg->DR;
 		nwords++;
 //debug_printf ("<%04x> ", word);
 		sr = reg->SR;
@@ -329,7 +388,7 @@ static int receive_data (spi_t *c)
  * Fetch received word.
  * Returns 0 when no data is avaiable.
  */
-int spi_input (spi_t *c, unsigned *word)
+int spi_input (spi_t *c, unsigned short *word)
 {
 	int reply = 0;
 
@@ -345,7 +404,7 @@ int spi_input (spi_t *c, unsigned *word)
 /*
  * Wait for word received.
  */
-void spi_input_wait (spi_t *c, unsigned *word)
+void spi_input_wait (spi_t *c, unsigned short *word)
 {
 	mutex_lock (&c->lock);
 	while (spi_queue_is_empty (&c->inq)) {
@@ -372,7 +431,7 @@ static bool_t spi_handle_interrupt (void *arg)
 /*
  * Set up the SPI driver.
  */
-void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit)
+void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit, unsigned mode)
 {
 	/* Инициализация структуры данных драйвера. */
 	c->port = port;
@@ -394,7 +453,7 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit)
 
 	/* Инициализация всех регистров данного интерфейса SSP.
 	 * Ловим прерывания от приёмника. */
-	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (bits_per_word);
+	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (bits_per_word) | mode;
 	if (c->master) {
 		/* Режим master. */
 		unsigned divisor = (KHZ * nsec_per_bit + 1000000) / 2000000;
@@ -411,7 +470,7 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit)
 	}
 	reg->DMACR = 0;
 	reg->IM = ARM_SSP_IM_RX | ARM_SSP_IM_RT;
-	reg->CR1 |= ARM_SSP_CR1_SSE;
+	//reg->CR1 |= ARM_SSP_CR1_SSE;
 
 	/* Подключение к нужному номеру прерывания. */
 	mutex_lock_irq (&c->lock, c->irq, spi_handle_interrupt, c);

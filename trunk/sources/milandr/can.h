@@ -51,15 +51,8 @@ typedef struct _can_queue_t {
 /*
  * CAN channel initialization flags
  */
-enum {
-	POLLONLY	=	1,
-	PORT_A		=	2,
-	PORT_B		=	4,
-	PORT_C		=	8,
-	PORT_D		=	16,
-	PORT_E		= 	32,
-	PORT_F		=	64
-};
+#define	POLLONLY 	0x8000
+/* Also PORT_A, PORT_B, etc. constants can be used */
 
 /*
  * Data structure for CAN channel.

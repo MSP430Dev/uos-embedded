@@ -13,7 +13,7 @@
  * Должна быть как минимум в 12 раз ниже частоты
  * процессора KHZ - так сказано в спецификации микросхемы.
  */
-#define KBIT_PER_SEC	4000
+#define KBIT_PER_SEC	28000
 
 gpanel_t display;
 spi_t spi;
@@ -33,10 +33,17 @@ void display_refresh (unsigned sent, unsigned received)
 	printf (&display, "   Принято: %lu\r\n", spi.in_packets);
 	printf (&display, "Прерываний: %lu\r\n", spi.interrupts);
 	if (sent != ~0) {
+/*
 		printf (&display, "Отправлено: '%c'\r\n", sent);
 		if (received >= ' ' && received <= '~')
 			printf (&display, "   Обратно: '%c'\r\n", received);
 		else if (received != ~0)
+			printf (&display, "   Обратно: %04x\r\n", received);
+		else
+			printf (&display, "   Обратно: ---\r\n");
+*/
+		printf (&display, "Отправлено: %04x\r\n", sent);
+		if (received != ~0)
 			printf (&display, "   Обратно: %04x\r\n", received);
 		else
 			printf (&display, "   Обратно: ---\r\n");
@@ -54,6 +61,8 @@ void send_receive (unsigned sent)
 	spi_input_wait (&spi, &received);
 	display_refresh (sent, received);
 }
+
+unsigned data_block [] = {0x1111, 0x3333, 0x7777, 0xFFFF, 0x7777, 0x3333, 0x1111, 0x5555};
 
 /*
  * Задача опрашивает кнопки и генерит транзакции по SPI.
@@ -108,7 +117,8 @@ void task_console (void *data)
 			select_pressed = 1;
 
 			/* Select. */
-			send_receive ('S');
+			//send_receive ('S');
+			spi_output_block (&spi, data_block, sizeof (data_block) / sizeof (unsigned) );
 		}
 	}
 }
@@ -122,7 +132,7 @@ void uos_init (void)
 	gpanel_init (&display, &font_fixed6x8);
 
 	/* SPI2, 16-bit words, master at 1 Mbit/sec. */
-	spi_init (&spi, 1, 16, 1000000 / KBIT_PER_SEC);
+	spi_init (&spi, 0, 16, 1000000 / KBIT_PER_SEC, 0);
 	display_refresh (~0, ~0);
 
 	task_create (task_console, 0, "console", 10,
