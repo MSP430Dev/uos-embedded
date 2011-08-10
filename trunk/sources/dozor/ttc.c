@@ -299,13 +299,26 @@ int ttc_self_check (ttc_t *ttc)
 	return 1;
 }
 
-void ttc_led (ttc_t *ttc, int led_num, int state)
+void ttc_led_on (ttc_t *ttc, int led_num)
 {
-	if (state)
-		ttc->led_state |= 1 << led_num;
-	else
-		ttc->led_state &= ~(1 << led_num);
+	ttc->led_state |= 1 << led_num;
 	ttc_write16 (ttc, TTC_LEDR, ttc->led_state);
+}
+void ttc_led_off (ttc_t *ttc, int led_num)
+{
+	ttc->led_state &= ~(1 << led_num);
+	ttc_write16 (ttc, TTC_LEDR, ttc->led_state);
+}
+
+void ttc_led_sw (ttc_t *ttc, int led_num)
+{
+	ttc->led_state ^= 1 << led_num;
+	ttc_write16 (ttc, TTC_LEDR, ttc->led_state);
+}
+
+int ttc_get_led (ttc_t *ttc, int led_num)
+{
+	return (ttc->led_state >> led_num) & 1;
 }
 
 
