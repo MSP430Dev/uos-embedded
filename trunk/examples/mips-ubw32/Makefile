@@ -4,7 +4,7 @@ include target.cfg
 
 CFLAGS          += -g #-DSIMULATOR
 
-TEST		= test-uart
+TEST		= test-sd
 TESTS		= $(TEST).srec
 #TESTS		+= test-debug.srec test-leds.srec test-task.srec test-timer.srec test-uart.srec
 #TESTS		+= philosophers.srec #test-tcl.srec

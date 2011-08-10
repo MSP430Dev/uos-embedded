@@ -1,56 +1,68 @@
 /*
  * Testing SD card.
- * Two SD/MMC cards on SPI1.
- * Signals:
- *	D0  - SDO1
- *	D10 - SCK1
- *	C4  - SDI1
- *	A9  - /CS0
- *	A10 - /CS1
- *	G7  - CD0
- *	G6  - WE0
- *	G9  - CD1
- *	G8  - WE1
+ *
+ * These cards are known to work:
+ * 1) NCP SD 256Mb       - type 1, 249856 kbytes,  244 Mbytes
+ * 2) Patriot SD 2Gb     - type 2, 1902592 kbytes, 1858 Mbytes
+ * 3) Wintec microSD 2Gb - type 2, 1969152 kbytes, 1923 Mbytes
+ * 4) Transcend SDHC 4Gb - type 3, 3905536 kbytes, 3814 Mbytes
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <stream/stream.h>
 
+/*
+ * Signals for SPI1:
+ *	D0  - SDO1
+ *	D10 - SCK1
+ *	C4  - SDI1
+ */
+#define SD_PORT     SPI1CON
+
+#define SD_CS0_PORT TRISA       /* A9 - /CS0 */
+#define SD_CS0_PIN  9
+#define SD_CS1_PORT TRISA       /* A10 - /CS1 */
+#define SD_CS1_PIN  10
+
+/*
+ * Port i/o access, relative to TRIS base.
+ */
+#define TRIS_CLR(p)     (&p)[1]
+#define TRIS_SET(p)     (&p)[2]
+#define TRIS_INV(p)     (&p)[3]
+#define PORT_CLR(p)     (&p)[5]
+#define PORT_SET(p)     (&p)[6]
+#define PORT_INV(p)     (&p)[7]
+
 #define CTL(c)		((c) & 037)
 
 ARRAY (stack_console, 1000);
 unsigned char data [512];
+int sd_type[2];                 /* Card type */
 
-#define SDADDR		((struct sdreg*) &SPI1CON)
+#define SDADDR          ((struct sdreg*) &SD_PORT)
 #define SLOW		250
-#define FAST		20000
+#define FAST		14000
 #define SECTSIZE	512
-
-#define PIN_CS0		9	/* port A9 */
-#define PIN_CS1		10	/* port A10 */
-#define PIN_CD0		7	/* port G7 */
-#define PIN_WE0		6	/* port G6 */
-#define PIN_CD1		9	/* port G9 */
-#define PIN_WE1		8	/* port G8 */
 
 /*
  * Definitions for MMC/SDC commands.
  */
 #define CMD_GO_IDLE		0		/* CMD0 */
 #define CMD_SEND_OP_MMC		1		/* CMD1 (MMC) */
-#define	CMD_SEND_OP_SDC		41              /* ACMD41 (SDC) */
-#define CMD_SEND_IF		8
+#define CMD_SEND_IF_COND	8
 #define CMD_SEND_CSD		9
 #define CMD_SEND_CID		10
 #define CMD_STOP		12
-#define CMD_STATUS_SDC 		(0x80+13)	/* ACMD13 (SDC) */
+#define CMD_STATUS_SDC 		13              /* ACMD13 (SDC) */
 #define CMD_SET_BLEN		16
 #define CMD_READ_SINGLE		17
 #define CMD_READ_MULTIPLE	18
 #define CMD_SET_BCOUNT		23		/* (MMC) */
-#define	CMD_SET_WBECNT		(0x80+23)	/* ACMD23 (SDC) */
+#define	CMD_SET_WBECNT		23              /* ACMD23 (SDC) */
 #define CMD_WRITE_SINGLE	24
 #define CMD_WRITE_MULTIPLE	25
+#define	CMD_SEND_OP_SDC		41              /* ACMD41 (SDC) */
 #define CMD_APP			55              /* CMD55 */
 #define CMD_READ_OCR		58
 
@@ -97,44 +109,26 @@ static inline void
 spi_select (unit, on)
 	int unit, on;
 {
-	if (on) {
-		PORTACLR = (unit == 0) ? 1 << PIN_CS0 : 1 << PIN_CS1;
-	} else {
-                PORTASET = (unit == 0) ? 1 << PIN_CS0 : 1 << PIN_CS1;
-
+        switch (unit) {
+        case 0:
+                if (on)
+                        PORT_CLR(SD_CS0_PORT) = 1 << SD_CS0_PIN;
+                else
+                        PORT_SET(SD_CS0_PORT) = 1 << SD_CS0_PIN;
+                break;
+#ifdef SD_CS1_PORT
+        case 1:
+                if (on)
+                        PORT_CLR(SD_CS1_PORT) = 1 << SD_CS1_PIN;
+                else
+                        PORT_SET(SD_CS1_PORT) = 1 << SD_CS1_PIN;
+                break;
+#endif
+        }
+        if (! on) {
                 /* Need additional SPI clocks after deselect */
                 spi_io (0xFF);
-	}
-}
-
-/*
- * SD card connector detection switch.
- * Returns nonzero if the card is present.
- */
-static int
-card_detect (unit)
-	int unit;
-{
-	if (unit == 0) {
-		return ! (PORTG & (1 << PIN_CD0));
-	} else {
-		return ! (PORTG & (1 << PIN_CD1));
-	}
-}
-
-/*
- * SD card write protect detection switch.
- * Returns nonzero if the card is writable.
- */
-static int
-card_writable (unit)
-	int unit;
-{
-	if (unit == 0) {
-		return ! (PORTG & (1 << PIN_WE0));
-	} else {
-		return ! (PORTG & (1 << PIN_WE1));
-	}
+        }
 }
 
 /*
@@ -159,14 +153,7 @@ card_cmd (cmd, addr)
 	unsigned cmd, addr;
 {
 	int i, reply;
-#if 0
-	/* Fetch pending data. */
-	for (i=0; i<1000; i++) {
-		reply = spi_io (0xFF);
-		if (reply == 0xFF)
-			break;
-	}
-#endif
+
 	/* Send a comand packet (6 bytes). */
 	spi_io (cmd | 0x40);
 	spi_io (addr >> 24);
@@ -178,6 +165,8 @@ card_cmd (cmd, addr)
          * For all other commands, CRC is ignored. */
         if (cmd == CMD_GO_IDLE)
                 spi_io (0x95);
+        else if (cmd == CMD_SEND_IF_COND)
+                spi_io (0x87);
         else
                 spi_io (0xFF);
 
@@ -199,9 +188,11 @@ card_init (unit)
 	int unit;
 {
 	int i, reply;
+        unsigned char response[4];
 
 	/* Unselect the card. */
 	spi_select (unit, 0);
+        sd_type[unit] = 0;
 
 	/* Send 80 clock cycles for start up. */
 	for (i=0; i<10; i++)
@@ -213,31 +204,71 @@ card_init (unit)
 	spi_select (unit, 0);
 	if (reply != 1) {
 		/* It must return Idle. */
+                debug_printf ("No card inserted, reply = %d\n", reply);
 		return 0;
 	}
+
+        /* Check SD version. */
+	spi_select (unit, 1);
+        reply = card_cmd (CMD_SEND_IF_COND, 0x1AA);
+        if (reply & 4) {
+                /* Illegal command: card type 1. */
+                spi_select (unit, 0);
+                sd_type[unit] = 1;
+debug_printf ("sd%d: card type 1, reply=%02x\n", unit, reply);
+        } else {
+                response[0] = spi_io (0xFF);
+                response[1] = spi_io (0xFF);
+                response[2] = spi_io (0xFF);
+                response[3] = spi_io (0xFF);
+                spi_select (unit, 0);
+                if (response[3] != 0xAA) {
+                        debug_printf ("sd%d: cannot detect card type, response=%02x-%02x-%02x-%02x\n",
+                                unit, response[0], response[1], response[2], response[3]);
+                        return 0;
+                }
+                sd_type[unit] = 2;
+debug_printf ("sd%d: card type 2, reply=%02x\n", unit, reply);
+        }
 
 	/* Send repeatedly SEND_OP until Idle terminates. */
 	for (i=0; ; i++) {
 		spi_select (unit, 1);
 		card_cmd (CMD_APP, 0);
-		reply = card_cmd (CMD_SEND_OP_SDC, 0);
-#if 0
-                /* Fetch pending data. */
-                int k;
-                for (k=0; k<1000; k++) {
-                        spi_io (0xFF);
-                }
-#endif
+		reply = card_cmd (CMD_SEND_OP_SDC,
+                        sd_type[unit] == 2 ? 0x40000000 : 0);
 		spi_select (unit, 0);
 //debug_printf ("card_init: SEND_OP reply = %d\n", reply);
 		if (reply == 0)
 			break;
 		if (i >= 10000) {
 			/* Init timed out. */
-//debug_printf ("card_init: SEND_OP timed out, reply = %d\n", reply);
+debug_printf ("card_init: SEND_OP timed out, reply = %d\n", reply);
 			return 0;
 		}
 	}
+
+        /* If SD2 read OCR register to check for SDHC card. */
+        if (sd_type[unit] == 2) {
+		spi_select (unit, 1);
+                reply = card_cmd (CMD_READ_OCR, 0);
+                if (reply != 0) {
+                        spi_select (unit, 0);
+                        debug_printf ("sd%d: READ_OCR failed, reply=%02x\n",
+                                unit, reply);
+                        return 0;
+                }
+                response[0] = spi_io (0xFF);
+                response[1] = spi_io (0xFF);
+                response[2] = spi_io (0xFF);
+                response[3] = spi_io (0xFF);
+                spi_select (unit, 0);
+debug_printf ("sd%d: READ_OCR response=%02x-%02x-%02x-%02x\n", unit, response[0], response[1], response[2], response[3]);
+                if ((response[0] & 0xC0) == 0xC0) {
+                        sd_type[unit] = 3;
+debug_printf ("sd%d: card type SDHC\n", unit);
+                }
+        }
 	return 1;
 }
 
@@ -246,9 +277,9 @@ card_init (unit)
  * Return nonzero if successful.
  */
 int
-card_size (unit, nbytes)
+card_size (unit, nblocks)
 	int unit;
-	unsigned *nbytes;
+	unsigned *nblocks;
 {
 	unsigned char csd [16];
 	unsigned csize, n;
@@ -287,12 +318,12 @@ card_size (unit, nbytes)
 	if ((csd[0] >> 6) == 1) {
 		/* SDC ver 2.00 */
 		csize = csd[9] + (csd[8] << 8) + 1;
-		*nbytes = csize << 10;
+		*nblocks = csize << 10;
 	} else {
 		/* SDC ver 1.XX or MMC. */
 		n = (csd[5] & 15) + ((csd[10] & 128) >> 7) + ((csd[9] & 3) << 1) + 2;
 		csize = (csd[8] >> 6) + (csd[7] << 2) + ((csd[6] & 3) << 10) + 1;
-		*nbytes = csize << (n - 9);
+		*nblocks = csize << (n - 9);
 	}
 	return 1;
 }
@@ -315,7 +346,7 @@ card_read (unit, offset, data, bcount)
 again:
 	/* Send READ command. */
 	spi_select (unit, 1);
-	reply = card_cmd (CMD_READ_SINGLE, offset);
+	reply = card_cmd (CMD_READ_SINGLE, sd_type[unit] == 3 ? offset>>9 : offset);
 	if (reply != 0) {
 		/* Command rejected. */
 debug_printf ("card_read: bad READ_SINGLE reply = %d, offset = %08x\n", reply, offset);
@@ -373,13 +404,9 @@ card_write (unit, offset, data, bcount)
 		unit, offset, bcount, data);
 #endif
 again:
-	/* Check Write Protect. */
-	if (! card_writable (unit))
-		return 0;
-
 	/* Send WRITE command. */
 	spi_select (unit, 1);
-	reply = card_cmd (CMD_WRITE_SINGLE, offset);
+	reply = card_cmd (CMD_WRITE_SINGLE, sd_type[unit] == 3 ? offset>>9 : offset);
 	if (reply != 0) {
 		/* Command rejected. */
 		spi_select (unit, 0);
@@ -560,9 +587,6 @@ void menu ()
 {
 	small_uint_t cmd;
 
-	printf (&debug, "\nSD card: %s\n", ! card_detect(0) ? "Not inserted" :
-                card_writable(0) ? "Writable" : "Write protected");
-
 	printf (&debug, "\n  1. Initialize a card");
 	printf (&debug, "\n  2. Get card size");
 	printf (&debug, "\n  3. Read sector #0");
@@ -577,7 +601,7 @@ void menu ()
 		while (peekchar (&debug) < 0)
 			mdelay (5);
 		cmd = getchar (&debug);
-		putchar (&debug, '\n');
+                printf (&debug, "\r\33[K");
 
 		if (cmd == '\n' || cmd == '\r')
 			break;
@@ -595,10 +619,10 @@ void menu ()
 			break;
 		}
 		if (cmd == '2') {
-		        unsigned nbytes;
-                        if (card_size (0, &nbytes))
-                                printf (&debug, "%u bytes, %u kbytes, %u Mbytes\n",
-                                        nbytes, nbytes/1024, nbytes/1024/1024);
+		        unsigned nblocks;
+                        if (card_size (0, &nblocks))
+                                printf (&debug, "%u blocks, %u kbytes, %u Mbytes\n",
+                                        nblocks, nblocks/2, nblocks/2/1024);
 			break;
 		}
 		if (cmd == '3') {
@@ -645,9 +669,12 @@ void uos_init (void)
 {
         /* Initialize hardware. */
         spi_select (0, 0);		// initially keep the SD card disabled
-        TRISACLR = 1 << PIN_CS0;	// make Card select an output pin
-        TRISACLR = 1 << PIN_CS1;
 
+        // make Card select an output pin
+        TRIS_CLR(SD_CS0_PORT) = 1 << SD_CS0_PIN;
+#ifdef SD_CS1_PORT
+        TRIS_CLR(SD_CS1_PORT) = 1 << SD_CS1_PIN;
+#endif
         /* Slow speed: max 40 kbit/sec. */
         SDADDR->stat = 0;
         SDADDR->brg = (KHZ / SLOW + 1) / 2 - 1;
