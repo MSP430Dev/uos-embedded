@@ -7,7 +7,7 @@
 Используется компилятор версии [http://gcc.gnu.org/gcc-4.4/ GCC 4.4.4].
 
 Готовый бинарный пакет можно скачать здесь:
- * [http://uos-embedded.googlecode.com/files/gcc433-avr.tgz gcc433-avr.tgz] -- для Linux
+ * [http://uos-embedded.googlecode.com/files/gcc461-avr-linux.tgz gcc461-avr-linux.tgz] -- для Linux
  * [http://uos-embedded.googlecode.com/files/gcc444-avr-macosx.tgz gcc444-avr-macosx.tgz] -- для Mac OS X
  * [http://uos-embedded.googlecode.com/files/gcc441-avr-cygwin.zip gcc441-avr-cygwin.zip] -- для Windows + Cygwin
 
