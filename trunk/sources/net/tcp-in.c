@@ -455,9 +455,6 @@ tcp_process (tcp_socket_t *s, tcp_segment_t *inseg, tcp_hdr_t *h)
 {
 	tcp_segment_t *rseg;
 	unsigned char acceptable = 0;
-	int err;
-
-	err = 0;
 
 	/* Process incoming RST segments. */
 	if (s->ip->tcp_input_flags & TCP_RST) {

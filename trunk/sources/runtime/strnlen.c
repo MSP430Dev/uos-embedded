@@ -17,7 +17,7 @@ strnlen(const unsigned char *s, size_t n)
 
 	if (n) {
 		do {
-			if (*((const unsigned char *) s)++ == '\0')
+			if (*s++ == '\0')
 				/* return --s - s0; */
 				goto found;  /* ugly, but faster loop */
 		} while (--n);
