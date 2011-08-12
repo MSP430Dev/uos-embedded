@@ -80,6 +80,7 @@
 #define TTC_GCR_N32		0x0020		/* 32 узла в кластере */
 #define TTC_GCR_N64		0x0040		/* 32 узла в кластере */
 #define TTC_GCR_STRT		0x0080		/* режим старта узла */
+#define TTC_GCR_IRQ_POSITIVE	0x0100		/* полярность IRQL: 1 - положительная */
 
 /*
  * GSR – global status register, 16 R

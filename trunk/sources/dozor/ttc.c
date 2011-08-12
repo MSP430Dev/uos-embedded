@@ -4,13 +4,18 @@
 #include "ttc.h"
 #include "ttc-reg.h"
 
+extern void ttc_spi_init (int port, unsigned nsec_per_bit);
+extern void ttc_spi_out (int port, unsigned short *data, int count);
+extern void ttc_spi_in (int port, unsigned short *word);
+extern void ttc_spi_throw (int port, int count);
 
-void ttc_init (ttc_t *ttc, int over_spi, int ttc_num, spi_t *spi)
+void ttc_init (ttc_t *ttc, int ttc_num, int over_spi, int spi_port, unsigned nsec_per_bit)
 {
 	ttc->led_state = 0;
-	ttc->over_spi = over_spi;
 	ttc->ttc_num = ttc_num;
-	ttc->spi = spi;
+	ttc->over_spi = over_spi;
+	ttc->spi_port = spi_port;
+	if (over_spi) ttc_spi_init (spi_port, nsec_per_bit);
 }
 
 unsigned short ttc_read16 (ttc_t *ttc, unsigned short addr)
@@ -20,9 +25,9 @@ unsigned short ttc_read16 (ttc_t *ttc, unsigned short addr)
 	mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr;
-		spi_output_block (ttc->spi, ttc->spi_command, 2);
-		spi_input_wait (ttc->spi, &received);
-		spi_input_wait (ttc->spi, &received);
+		ttc_spi_out (ttc->spi_port, ttc->spi_command, 2);
+		ttc_spi_throw (ttc->spi_port, 1);
+		ttc_spi_in (ttc->spi_port, &received);
 	} else {
 		received = *((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1)));
 	}
@@ -37,10 +42,10 @@ unsigned ttc_read32 (ttc_t *ttc, unsigned short addr)
 	mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr;
-		spi_output_block (ttc->spi, ttc->spi_command, 3);
-		spi_input_wait (ttc->spi, (unsigned short *) &received);
-		spi_input_wait (ttc->spi, (unsigned short *) &received);
-		spi_input_wait (ttc->spi, ((unsigned short *) &received) + 1);
+		ttc_spi_out (ttc->spi_port, ttc->spi_command, 3);
+		ttc_spi_throw (ttc->spi_port, 1);
+		ttc_spi_in (ttc->spi_port, (unsigned short *) &received);
+		ttc_spi_in (ttc->spi_port, ((unsigned short *) &received) + 1);
 	} else {
 		received = *((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1)));
 		received |= *((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1) + 4)) << 16;
@@ -63,10 +68,10 @@ void ttc_read_array (ttc_t *ttc, unsigned short addr, void *buf, int size)
 			if (sz > 14) sz = 14;
 			spi_block_count = (sz + 1) / 2 + 1; /* Размер посылки по SPI - один 16-битный адрес и данные */
 			ttc->spi_command [0] = addr + rd;
-			spi_output_block (ttc->spi, ttc->spi_command, spi_block_count);
-			spi_input_wait (ttc->spi, &received);
+			ttc_spi_out (ttc->spi_port, ttc->spi_command, spi_block_count);
+			ttc_spi_throw (ttc->spi_port, 1);
 			for (i = 0; i < spi_block_count - 1; ++i) {
-				spi_input_wait (ttc->spi, p + (rd >> 1) + i);
+				ttc_spi_in (ttc->spi_port, p + (rd >> 1) + i);
 			}
 			rd += sz;
 		}
@@ -84,15 +89,12 @@ void ttc_read_array (ttc_t *ttc, unsigned short addr, void *buf, int size)
 
 void ttc_write16 (ttc_t *ttc, unsigned short addr, unsigned short data)
 {
-	unsigned short received;
-
 	mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr | 1;
 		ttc->spi_command [1] = data;
-		spi_output_block (ttc->spi, ttc->spi_command, 2);
-		spi_input_wait (ttc->spi, &received);
-		spi_input_wait (ttc->spi, &received);
+		ttc_spi_out (ttc->spi_port, ttc->spi_command, 2);
+		ttc_spi_throw (ttc->spi_port, 2);
 	} else {
 		*((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1))) = data;
 	}
@@ -101,16 +103,12 @@ void ttc_write16 (ttc_t *ttc, unsigned short addr, unsigned short data)
 
 void ttc_write32 (ttc_t *ttc, unsigned short addr, unsigned data)
 {
-	unsigned short received;
-
 	mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr | 1;
 		memcpy (ttc->spi_command + 1, &data, 4);
-		spi_output_block (ttc->spi, ttc->spi_command, 3);
-		spi_input_wait (ttc->spi, &received);
-		spi_input_wait (ttc->spi, &received);
-		spi_input_wait (ttc->spi, &received);
+		ttc_spi_out (ttc->spi_port, ttc->spi_command, 3);
+		ttc_spi_throw (ttc->spi_port, 3);
 	} else {
 		*((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1))) = data;
 		*((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1) + 4)) = data >> 16;
@@ -133,9 +131,8 @@ void ttc_write_array (ttc_t *ttc, unsigned short addr, const void *buf, int size
 			spi_block_count = ((sz + 1) >> 1) + 1; /* Размер посылки по SPI - один 16-битный адрес и данные */
 			ttc->spi_command [0] = (addr + written) | 1;
 			memcpy (ttc->spi_command + 1, (char *) buf + written, sz);
-			spi_output_block (ttc->spi, ttc->spi_command, spi_block_count);
-			for (i = 0; i < spi_block_count; ++i)
-				spi_input_wait (ttc->spi, &received);
+			ttc_spi_out (ttc->spi_port, ttc->spi_command, spi_block_count);
+			ttc_spi_throw (ttc->spi_port, spi_block_count);
 			written += sz;
 		}
 	} else {

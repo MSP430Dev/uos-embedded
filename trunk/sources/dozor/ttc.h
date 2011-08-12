@@ -3,7 +3,6 @@
 
 #include <runtime/lib.h>
 #include <kernel/uos.h>
-#include <milandr/spi.h>
 
 #define SPI_COMMAND_MAX_SZ	8
 
@@ -12,12 +11,12 @@ typedef struct _ttc_t
 	mutex_t lock;
 	int over_spi;
 	int ttc_num;
-	spi_t *spi;
+	int spi_port;
 	unsigned short spi_command [SPI_COMMAND_MAX_SZ];
 	unsigned led_state;
 } ttc_t;
 
-void		ttc_init (ttc_t *ttc, int over_spi, int ttc_num, spi_t *spi);
+void		ttc_init (ttc_t *ttc, int ttc_num, int over_spi, int spi_port, unsigned nsec_per_bit);
 unsigned short	ttc_read16 (ttc_t *ttc, unsigned short addr);
 unsigned 	ttc_read32 (ttc_t *ttc, unsigned short addr);
 void		ttc_read_array (ttc_t *ttc, unsigned short addr, void *buf, int size);
