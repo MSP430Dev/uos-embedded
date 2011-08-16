@@ -186,7 +186,7 @@ int ttc_wait_start_packet (ttc_t *ttc, unsigned addr_status0, unsigned addr_stat
 		s = ttc_read32 (ttc, addr_status0);
 debug_printf ("<status0=%04x ", s);
 		if (s) {
-			if (s == TTC_RSR_STRT) {
+			if (s & TTC_RSR_STRT) {
 				/* Принят стартовый пакет с шины 0. */
 				params = ttc_read32 (ttc, addr_status0 + 4);
 				*start_node = params >> 24;
@@ -200,7 +200,7 @@ debug_printf ("<status0=%04x ", s);
 		s = ttc_read32 (ttc, addr_status1);
 debug_printf ("status1=%04x ", s);
 		if (s) {
-			if (s == TTC_RSR_STRT) {
+			if (s & TTC_RSR_STRT) {
 				/* Принят стартовый пакет с шины 1. */
 				params = ttc_read32 (ttc, addr_status1 + 4);
 				*start_node = params >> 24;
