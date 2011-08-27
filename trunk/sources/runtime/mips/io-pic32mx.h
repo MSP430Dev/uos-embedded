@@ -808,6 +808,51 @@
 #define PIC32_SPISTAT_SPIBUSY	0x00000800      /* SPI is busy */
 
 /*--------------------------------------
+ * DMA controller registers.
+ */
+#define DMACON          PIC32_R (0x83000)       /* DMA Control */
+#define DMACONCLR	PIC32_R (0x83004)
+#define DMACONSET	PIC32_R (0x83008)
+#define DMACONINV	PIC32_R (0x8300C)
+#define DMASTAT         PIC32_R (0x83010)       /* DMA Status */
+#define DMAADDR         PIC32_R (0x83020)       /* DMA Address */
+// TODO: other DMA registers.
+
+/*--------------------------------------
+ * System controller registers.
+ */
+#define OSCCON          PIC32_R (0xf000)
+#define OSCTUN          PIC32_R (0xf010)
+#define DDPCON          PIC32_R (0xf200)        /* Debug Data Port Control */
+#define SYSKEY          PIC32_R (0xf230)
+#define RCON            PIC32_R (0xf600)
+#define RSWRST          PIC32_R (0xf610)
+
+/*--------------------------------------
+ * Prefetch cache controller registers.
+ */
+#define CHECON          PIC32_R (0x84000)       /* Prefetch cache control */
+#define CHECONCLR	PIC32_R (0x84004)
+#define CHECONSET	PIC32_R (0x84008)
+#define CHECONINV	PIC32_R (0x8400C)
+// TODO: other prefetech registers
+
+/*--------------------------------------
+ * Bus matrix control registers.
+ */
+#define BMXCON          PIC32_R (0x82000)       /* Memory configuration */
+#define BMXCONCLR	PIC32_R (0x82004)
+#define BMXCONSET	PIC32_R (0x82008)
+#define BMXCONINV	PIC32_R (0x8200C)
+#define BMXDKPBA        PIC32_R (0x82010)       /* Data RAM kernel program base address */
+#define BMXDUDBA        PIC32_R (0x82020)       /* Data RAM user data base address */
+#define BMXDUPBA        PIC32_R (0x82030)       /* Data RAM user program base address */
+#define BMXDRMSZ        PIC32_R (0x82040)       /* Data RAM size */
+#define BMXPUPBA        PIC32_R (0x82050)       /* Program Flash user program base address */
+#define BMXPFMSZ        PIC32_R (0x82060)       /* Program Flash size */
+#define BMXBOOTSZ       PIC32_R (0x82070)       /* Boot Flash size */
+
+/*--------------------------------------
  * Interrupt controller registers.
  */
 #define INTCON		PIC32_R (0x81000)	/* Interrupt Control */

@@ -14,7 +14,8 @@ OUTS		= $(TESTS:%.srec=%.elf)
 #PROG		= avrdude -cjtag1 -P /dev/ttyUSB? -patmega168
 
 # Using avrdude programmer with AVRISP USB adapter.
-PROG		= avrdude -cstk500v2 -P /dev/ttyUSB? -patmega168
+#PROG		= avrdude -cstk500v2 -P /dev/ttyUSB? -patmega168
+PROG		= avrdude -cstk500v2 -P /dev/tty.usbserial* -patmega168
 
 FUSES		= -Ulfuse:w:0xFF:m -Uhfuse:w:0xDD:m -Uefuse:w:0x01:m
 

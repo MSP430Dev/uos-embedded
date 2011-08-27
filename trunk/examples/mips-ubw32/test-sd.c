@@ -36,35 +36,39 @@
 
 #define CTL(c)		((c) & 037)
 
-ARRAY (stack_console, 1000);
-unsigned char data [512];
-int sd_type[2];                 /* Card type */
-
 #define SDADDR          ((struct sdreg*) &SD_PORT)
 #define SLOW		250
 #define FAST		14000
 #define SECTSIZE	512
 
+ARRAY (stack_console, 1000);
+unsigned char data [SECTSIZE * 2];
+int sd_type[2];                 /* Card type */
+
 /*
  * Definitions for MMC/SDC commands.
  */
-#define CMD_GO_IDLE		0		/* CMD0 */
-#define CMD_SEND_OP_MMC		1		/* CMD1 (MMC) */
+#define CMD_GO_IDLE		0	/* CMD0 */
+#define CMD_SEND_OP_MMC		1	/* CMD1 (MMC) */
 #define CMD_SEND_IF_COND	8
 #define CMD_SEND_CSD		9
 #define CMD_SEND_CID		10
 #define CMD_STOP		12
-#define CMD_STATUS_SDC 		13              /* ACMD13 (SDC) */
+#define CMD_STATUS_SDC 		13      /* ACMD13 (SDC) */
 #define CMD_SET_BLEN		16
 #define CMD_READ_SINGLE		17
 #define CMD_READ_MULTIPLE	18
-#define CMD_SET_BCOUNT		23		/* (MMC) */
-#define	CMD_SET_WBECNT		23              /* ACMD23 (SDC) */
+#define CMD_SET_BCOUNT		23	/* (MMC) */
+#define	CMD_SET_WBECNT		23      /* ACMD23 (SDC) */
 #define CMD_WRITE_SINGLE	24
 #define CMD_WRITE_MULTIPLE	25
-#define	CMD_SEND_OP_SDC		41              /* ACMD41 (SDC) */
-#define CMD_APP			55              /* CMD55 */
+#define	CMD_SEND_OP_SDC		41      /* ACMD41 (SDC) */
+#define CMD_APP			55      /* CMD55 */
 #define CMD_READ_OCR		58
+
+#define DATA_START_BLOCK        0xFE    /* start data token for read or write single block */
+#define STOP_TRAN_TOKEN         0xFD    /* stop token for write multiple blocks */
+#define WRITE_MULTIPLE_TOKEN    0xFC    /* start data token for write multiple blocks */
 
 /*
  * SPI registers.
@@ -91,7 +95,7 @@ struct sdreg {
 /*
  * Send one byte of data and receive one back at the same time.
  */
-static unsigned
+static inline unsigned
 spi_io (byte)
 	unsigned byte;
 {
@@ -132,6 +136,19 @@ spi_select (unit, on)
 }
 
 /*
+ * Wait while busy, up to 300 msec.
+ */
+static void
+spi_wait_ready ()
+{
+        int i;
+
+	for (i=0; i<100000; i++)
+                if (spi_io (0xFF) == 0xFF)
+                        break;
+}
+
+/*
  * Send a command and address to SD media.
  * Return response:
  *   FF - timeout
@@ -153,6 +170,9 @@ card_cmd (cmd, addr)
 	unsigned cmd, addr;
 {
 	int i, reply;
+
+        /* Wait while busy, up to 300 msec. */
+        spi_wait_ready ();
 
 	/* Send a comand packet (6 bytes). */
 	spi_io (cmd | 0x40);
@@ -204,7 +224,7 @@ card_init (unit)
 	spi_select (unit, 0);
 	if (reply != 1) {
 		/* It must return Idle. */
-                debug_printf ("No card inserted, reply = %d\n", reply);
+                debug_printf ("No card inserted, reply = %02x\n", reply);
 		return 0;
 	}
 
@@ -238,12 +258,12 @@ debug_printf ("sd%d: card type 2, reply=%02x\n", unit, reply);
 		reply = card_cmd (CMD_SEND_OP_SDC,
                         sd_type[unit] == 2 ? 0x40000000 : 0);
 		spi_select (unit, 0);
-//debug_printf ("card_init: SEND_OP reply = %d\n", reply);
+//debug_printf ("card_init: SEND_OP reply = %02x\n", reply);
 		if (reply == 0)
 			break;
 		if (i >= 10000) {
 			/* Init timed out. */
-debug_printf ("card_init: SEND_OP timed out, reply = %d\n", reply);
+debug_printf ("card_init: SEND_OP timed out, reply = %02x\n", reply);
 			return 0;
 		}
 	}
@@ -263,7 +283,7 @@ debug_printf ("card_init: SEND_OP timed out, reply = %d\n", reply);
                 response[2] = spi_io (0xFF);
                 response[3] = spi_io (0xFF);
                 spi_select (unit, 0);
-debug_printf ("sd%d: READ_OCR response=%02x-%02x-%02x-%02x\n", unit, response[0], response[1], response[2], response[3]);
+//debug_printf ("sd%d: READ_OCR response=%02x-%02x-%02x-%02x\n", unit, response[0], response[1], response[2], response[3]);
                 if ((response[0] & 0xC0) == 0xC0) {
                         sd_type[unit] = 3;
 debug_printf ("sd%d: card type SDHC\n", unit);
@@ -300,7 +320,7 @@ card_size (unit, nblocks)
 			return 0;
 		}
 		reply = spi_io (0xFF);
-		if (reply == 0xFE)
+		if (reply == DATA_START_BLOCK)
 			break;
 	}
 
@@ -339,7 +359,7 @@ card_read (unit, offset, data, bcount)
 	char *data;
 {
 	int reply, i;
-#if 1
+#if 0
 	debug_printf ("sd%d: read offset %u, length %u bytes, addr %p\n",
 		unit, offset, bcount, data);
 #endif
@@ -349,23 +369,24 @@ again:
 	reply = card_cmd (CMD_READ_SINGLE, sd_type[unit] == 3 ? offset>>9 : offset);
 	if (reply != 0) {
 		/* Command rejected. */
-debug_printf ("card_read: bad READ_SINGLE reply = %d, offset = %08x\n", reply, offset);
+debug_printf ("card_read: bad READ_SINGLE reply = %02x, offset = %08x\n", reply, offset);
 		spi_select (unit, 0);
 		return 0;
 	}
 
 	/* Wait for a response. */
 	for (i=0; ; i++) {
-		if (i >= 25000) {
+		if (i >= 250000) {
 			/* Command timed out. */
-debug_printf ("card_read: READ_SINGLE timed out, reply = %d\n", reply);
+debug_printf ("card_read: READ_SINGLE timed out, reply = %02x\n", reply);
 			spi_select (unit, 0);
 			return 0;
 		}
 		reply = spi_io (0xFF);
-		if (reply == 0xFE)
+		if (reply == DATA_START_BLOCK)
 			break;
-if (reply != 0xFF) debug_printf ("card_read: READ_SINGLE reply = %d\n", reply);
+//if (reply != 0xFF) debug_printf ("card_read: READ_SINGLE reply = %02x\n", reply);
+//if (reply == 0x07) goto again;
 	}
 
 	/* Read data. */
@@ -399,22 +420,39 @@ card_write (unit, offset, data, bcount)
 	char *data;
 {
 	unsigned reply, i;
-#if 1
+#if 0
 	debug_printf ("sd%d: write offset %u, length %u bytes, addr %p\n",
 		unit, offset, bcount, data);
 #endif
-again:
-	/* Send WRITE command. */
+	/* Send pre-erase count. */
 	spi_select (unit, 1);
-	reply = card_cmd (CMD_WRITE_SINGLE, sd_type[unit] == 3 ? offset>>9 : offset);
+        card_cmd (CMD_APP, 0);
+	reply = card_cmd (CMD_SET_WBECNT,
+                (bcount + SECTSIZE - 1) / SECTSIZE);
 	if (reply != 0) {
 		/* Command rejected. */
 		spi_select (unit, 0);
+debug_printf ("card_write: bad SET_WBECNT reply = %02x, count = %u\n", reply, (bcount + SECTSIZE - 1) / SECTSIZE);
 		return 0;
 	}
 
+	/* Send write-multiple command. */
+	reply = card_cmd (CMD_WRITE_MULTIPLE,
+                sd_type[unit] == 3 ? offset>>9 : offset);
+	if (reply != 0) {
+		/* Command rejected. */
+		spi_select (unit, 0);
+debug_printf ("card_write: bad WRITE_MULTIPLE reply = %02x\n", reply);
+		return 0;
+	}
+	spi_select (unit, 0);
+again:
+        /* Select, wait while busy. */
+	spi_select (unit, 1);
+        spi_wait_ready ();
+
 	/* Send data. */
-	spi_io (0xFE);
+	spi_io (WRITE_MULTIPLE_TOKEN);
 	for (i=0; i<SECTSIZE; i++)
 		spi_io (*data++);
 
@@ -427,6 +465,7 @@ again:
 	if ((reply & 0x1f) != 0x05) {
 		/* Data rejected. */
 		spi_select (unit, 0);
+debug_printf ("card_write: data rejected, reply = %02x\n", reply);
 		return 0;
 	}
 
@@ -435,14 +474,13 @@ again:
 		if (i >= 250000) {
 			/* Write timed out. */
 			spi_select (unit, 0);
+debug_printf ("card_write: timed out, reply = %02x\n", reply);
 			return 0;
 		}
 		reply = spi_io (0xFF);
 		if (reply != 0)
 			break;
 	}
-
-	/* Disable the card. */
 	spi_select (unit, 0);
 
         if (bcount > SECTSIZE) {
@@ -450,6 +488,27 @@ again:
                 offset += SECTSIZE;
                 goto again;
         }
+
+        /* End a write multiple blocks sequence. */
+	spi_select (unit, 1);
+        spi_wait_ready ();
+	spi_io (STOP_TRAN_TOKEN);
+        spi_wait_ready ();
+#if 0
+	/* Wait for write completion. */
+	for (i=0; ; i++) {
+		if (i >= 250000) {
+			/* Write timed out. */
+			spi_select (unit, 0);
+debug_printf ("card_write: stop timed out, reply = %02x\n", reply);
+			return 0;
+		}
+		reply = spi_io (0xFF);
+		if (reply != 0)
+			break;
+	}
+#endif
+	spi_select (unit, 0);
 	return 1;
 }
 
@@ -515,9 +574,8 @@ err:				putchar (&debug, 7);
 	}
 }
 
-void fill_data (unsigned byte0, unsigned byte1)
+void fill_sector (unsigned char *p, unsigned byte0, unsigned byte1)
 {
-        unsigned char *p = data;
         unsigned i;
 
         for (i=0; i<SECTSIZE; i+=2) {
@@ -550,14 +608,25 @@ int check_data (unsigned byte0, unsigned byte1)
 
 void test_sectors (unsigned first, unsigned last)
 {
-        unsigned i;
+        unsigned i, r0, r1, w0, w1, kbytes;
 
-        for (i=first; i<last; i++) {
-                fill_data (0x55^i, 0xaa^i);
-                if (! card_write (0, i*SECTSIZE, data, SECTSIZE)) {
+        printf (&debug, "Testing sectors %u-%u\n", first, last);
+        printf (&debug, "Write...");
+        w0 = mips_read_c0_register (C0_COUNT);
+        for (i=first; i<last; i+=2) {
+                fill_sector (data, 0x55^i, 0xaa^i);
+                fill_sector (data+SECTSIZE, 0x55^(i+1), 0xaa^(i+1));
+                if (! card_write (0, i*SECTSIZE, data, SECTSIZE*2)) {
                         printf (&debug, "Sector %u: write error.\n", i);
                         break;
                 }
+                //putchar (&debug, '.');
+        }
+        w1 = mips_read_c0_register (C0_COUNT);
+        printf (&debug, " done\n");
+        printf (&debug, "Verify...");
+        r0 = mips_read_c0_register (C0_COUNT);
+        for (i=first; i<last; i++) {
                 if (! card_read (0, i*SECTSIZE, data, SECTSIZE)) {
                         printf (&debug, "Sector %u: read error.\n", i);
                         break;
@@ -566,7 +635,14 @@ void test_sectors (unsigned first, unsigned last)
                         printf (&debug, "Sector %u: data error.\n", i);
                         break;
                 }
+                //putchar (&debug, '.');
         }
+        r1 = mips_read_c0_register (C0_COUNT);
+        printf (&debug, " done\n");
+
+        kbytes = (last - first + 1) * SECTSIZE / 1024;
+        printf (&debug, "Write: %u kbytes/sec\n", kbytes * KHZ/2 * 1000 / (w1 - w0));
+        printf (&debug, " Read: %u kbytes/sec\n", kbytes * KHZ/2 * 1000 / (r1 - r0));
 }
 
 void print_data (unsigned char *buf, unsigned nbytes)
@@ -593,7 +669,7 @@ void menu ()
 	printf (&debug, "\n  4. Read sector #1");
 	printf (&debug, "\n  5. Read sector #99");
 	printf (&debug, "\n  6. Write sector #0");
-	printf (&debug, "\n  7. Write-read sectors #0...99");
+	printf (&debug, "\n  7. Write-read sectors #0...200");
 	puts (&debug, "\n\n");
 	for (;;) {
 		/* Ввод команды. */
@@ -646,7 +722,7 @@ void menu ()
 			break;
 		}
 		if (cmd == '7') {
-                        test_sectors (0, 100);
+                        test_sectors (0, 200);
 			break;
 		}
 		if (cmd == CTL('T')) {

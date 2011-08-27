@@ -14,7 +14,7 @@ clean:
 		rm -rf *~ usb/*~ *.[oasi] *.elf *.lst *.dis .deps *.srec *.hex $(MODULES)
 
 load:		firmware.srec
-		objcopy -I srec -O ihex firmware.srec firmware.hex
+		$(OBJCOPY) -I srec -O ihex firmware.srec firmware.hex
 		ubw32 -write firmware.hex -reset
 
 include $(OS)/sources/rules.mak

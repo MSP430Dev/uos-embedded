@@ -56,6 +56,13 @@ void __attribute ((noreturn))_init_ (void)
 	U1STASET = PIC32_USTA_URXEN |		/* Receiver Enable */
 		   PIC32_USTA_UTXEN;		/* Transmit Enable */
 
+        /*
+         * Setup wait states.
+         */
+        CHECON = 2;
+        BMXCONCLR = 0x40;
+        CHECONSET = 0x30;
+
 	/*
 	 * Setup interrupt controller.
 	 */
