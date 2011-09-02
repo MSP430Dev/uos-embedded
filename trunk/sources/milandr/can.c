@@ -208,8 +208,8 @@ static void can_setup (can_t *c, int kbitsec)
 		/* Включаем тактирование порта CAN1, PORTC. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN1;
 
-		can_init_pin (CAN1_RX_GPIO, PORT(CAN1_RX), PIN(CAN1_RX), CAN1_RX_FUNC);
-		can_init_pin (CAN1_TX_GPIO, PORT(CAN1_TX), PIN(CAN1_TX), CAN1_TX_FUNC);
+		milandr_init_pin (CAN1_RX_GPIO, PORT(CAN1_RX), PIN(CAN1_RX), CAN1_RX_FUNC);
+		milandr_init_pin (CAN1_TX_GPIO, PORT(CAN1_TX), PIN(CAN1_TX), CAN1_TX_FUNC);
 
 		/* Разрешение тактовой частоты на CAN1, источник HCLK. */
 		ARM_RSTCLK->CAN_CLOCK = (ARM_RSTCLK->CAN_CLOCK & ~ARM_CAN_CLOCK_BRG1(7)) |
@@ -269,8 +269,8 @@ static void can_setup (can_t *c, int kbitsec)
 		/* Включаем тактирование порта CAN2, PORTD. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN2;
 
-		can_init_pin (CAN2_RX_GPIO, PORT(CAN2_RX), PIN(CAN2_RX), CAN2_RX_FUNC);
-		can_init_pin (CAN2_TX_GPIO, PORT(CAN2_TX), PIN(CAN2_TX), CAN2_TX_FUNC);
+		milandr_init_pin (CAN2_RX_GPIO, PORT(CAN2_RX), PIN(CAN2_RX), CAN2_RX_FUNC);
+		milandr_init_pin (CAN2_TX_GPIO, PORT(CAN2_TX), PIN(CAN2_TX), CAN2_TX_FUNC);
 
 		/* Разрешение тактовой частоты на CAN2, источник HCLK. */
 		ARM_RSTCLK->CAN_CLOCK = (ARM_RSTCLK->CAN_CLOCK & ~ARM_CAN_CLOCK_BRG2(7)) |
