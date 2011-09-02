@@ -176,7 +176,7 @@ void uos_init (void)
 
 	timer_init (&timer, KHZ, 10);
 
-	can_init (&can, 1, 1000);
+	can_init (&can, 1, 1000, 0);
 
 	task_create (task_receive, 0, "rcv", 30,
 		stack_receive, sizeof (stack_receive));
