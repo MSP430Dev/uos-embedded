@@ -6,6 +6,8 @@
 
 #define SPI_COMMAND_MAX_SZ	8
 
+typedef void (*ttc_int_handler_t) (int);
+
 typedef struct _ttc_t
 {
 	mutex_t lock;
@@ -14,9 +16,16 @@ typedef struct _ttc_t
 	int spi_port;
 	unsigned short spi_command [SPI_COMMAND_MAX_SZ];
 	unsigned led_state;
+	int irq;
+	int irq_positive;
+	int need_lock;
+	ttc_int_handler_t int_handler;
 } ttc_t;
 
 void		ttc_init (ttc_t *ttc, int ttc_num, int over_spi, int spi_port, unsigned nsec_per_bit);
+void		ttc_set_int_handler (ttc_t *ttc, int irq, ttc_int_handler_t ih, int positive);
+void		ttc_unset_int_handler (ttc_t *ttc);
+void		ttc_reset (ttc_t *ttc);
 unsigned short	ttc_read16 (ttc_t *ttc, unsigned short addr);
 unsigned 	ttc_read32 (ttc_t *ttc, unsigned short addr);
 void		ttc_read_array (ttc_t *ttc, unsigned short addr, void *buf, int size);

@@ -1,5 +1,6 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
+#include <kernel/internal.h>
 #include <stream/stream.h>
 #include "ttc.h"
 #include "ttc-reg.h"
@@ -9,20 +10,68 @@ extern void ttc_spi_out (int port, unsigned short *data, int count);
 extern void ttc_spi_in (int port, unsigned short *word);
 extern void ttc_spi_throw (int port, int count);
 
+static bool_t ttc_interrupt_handler (void *arg)
+{
+	ttc_t * ttc = (ttc_t *) arg;
+	//int old_need_lock = ttc->need_lock;
+	//ttc->need_lock = 0;
+	if (ttc->int_handler)
+		ttc->int_handler (ttc->ttc_num);
+	//ttc->need_lock = old_need_lock;
+	arch_intr_allow (ttc->irq);
+	return 0;
+}
+
 void ttc_init (ttc_t *ttc, int ttc_num, int over_spi, int spi_port, unsigned nsec_per_bit)
 {
 	ttc->led_state = 0;
+	ttc->int_handler = 0;
 	ttc->ttc_num = ttc_num;
 	ttc->over_spi = over_spi;
 	ttc->spi_port = spi_port;
+	ttc->irq = -1;
+	ttc->need_lock = 1;
 	if (over_spi) ttc_spi_init (spi_port, nsec_per_bit);
+}
+
+void ttc_set_int_handler (ttc_t *ttc, int irq, ttc_int_handler_t ih, int positive)
+{
+	if (positive)
+		ttc_write16 (ttc, TTC_GCR, TTC_GCR_IRQ_POSITIVE);
+	else
+		ttc_write16 (ttc, TTC_GCR, 0);
+	ttc->irq = irq;
+	ttc->irq_positive = positive;
+	ttc->int_handler = ih;
+	mutex_attach_irq (&ttc->lock, irq, ttc_interrupt_handler, ttc);
+}
+
+void ttc_unset_int_handler (ttc_t *ttc)
+{
+	mutex_lock (&ttc->lock);
+	mutex_unlock_irq (&ttc->lock);
+	ttc->irq = 0;
+	ttc->int_handler = 0;
+}
+
+void ttc_reset (ttc_t *ttc)
+{
+	mutex_lock (&ttc->lock);
+	ttc->need_lock = 0;
+	ttc_write16 (ttc, TTC_GCR, TTC_GCR_GRST);
+	ttc_write16 (ttc, TTC_GCR, 0);
+	if (ttc->irq_positive) {
+		ttc_write16 (ttc, TTC_GCR, TTC_GCR_IRQ_POSITIVE);
+	}
+	ttc->need_lock = 1;
+	mutex_unlock (&ttc->lock);
 }
 
 unsigned short ttc_read16 (ttc_t *ttc, unsigned short addr)
 {
 	unsigned short received;
 
-	mutex_lock (&ttc->lock);
+	if (ttc->need_lock) mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr;
 		ttc_spi_out (ttc->spi_port, ttc->spi_command, 2);
@@ -31,7 +80,7 @@ unsigned short ttc_read16 (ttc_t *ttc, unsigned short addr)
 	} else {
 		received = *((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1)));
 	}
-	mutex_unlock (&ttc->lock);
+	if (ttc->need_lock) mutex_unlock (&ttc->lock);
 	return received;
 }
 
@@ -39,7 +88,7 @@ unsigned ttc_read32 (ttc_t *ttc, unsigned short addr)
 {
 	unsigned received;
 
-	mutex_lock (&ttc->lock);
+	if (ttc->need_lock) mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr;
 		ttc_spi_out (ttc->spi_port, ttc->spi_command, 3);
@@ -50,7 +99,7 @@ unsigned ttc_read32 (ttc_t *ttc, unsigned short addr)
 		received = *((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1)));
 		received |= *((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1) + 4)) << 16;
 	}
-	mutex_unlock (&ttc->lock);
+	if (ttc->need_lock) mutex_unlock (&ttc->lock);
 	return received;
 }
 
@@ -61,7 +110,7 @@ void ttc_read_array (ttc_t *ttc, unsigned short addr, void *buf, int size)
 	int i, sz, spi_block_count;
 	unsigned short *p = (unsigned short *) buf;
 
-	mutex_lock (&ttc->lock);
+	if (ttc->need_lock) mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		while (rd < size) {
 			sz = size - rd;
@@ -84,12 +133,12 @@ void ttc_read_array (ttc_t *ttc, unsigned short addr, void *buf, int size)
 		}
 
 	}
-	mutex_unlock (&ttc->lock);
+	if (ttc->need_lock) mutex_unlock (&ttc->lock);
 }
 
 void ttc_write16 (ttc_t *ttc, unsigned short addr, unsigned short data)
 {
-	mutex_lock (&ttc->lock);
+	if (ttc->need_lock) mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr | 1;
 		ttc->spi_command [1] = data;
@@ -98,12 +147,12 @@ void ttc_write16 (ttc_t *ttc, unsigned short addr, unsigned short data)
 	} else {
 		*((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1))) = data;
 	}
-	mutex_unlock (&ttc->lock);
+	if (ttc->need_lock) mutex_unlock (&ttc->lock);
 }
 
 void ttc_write32 (ttc_t *ttc, unsigned short addr, unsigned data)
 {
-	mutex_lock (&ttc->lock);
+	if (ttc->need_lock) mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		ttc->spi_command [0] = addr | 1;
 		memcpy (ttc->spi_command + 1, &data, 4);
@@ -113,7 +162,7 @@ void ttc_write32 (ttc_t *ttc, unsigned short addr, unsigned data)
 		*((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1))) = data;
 		*((volatile unsigned short *) (TTC_ADDR_BASE(ttc->ttc_num) + (addr << 1) + 4)) = data >> 16;
 	}
-	mutex_unlock (&ttc->lock);
+	if (ttc->need_lock) mutex_unlock (&ttc->lock);
 }
 
 void ttc_write_array (ttc_t *ttc, unsigned short addr, const void *buf, int size)
@@ -123,7 +172,7 @@ void ttc_write_array (ttc_t *ttc, unsigned short addr, const void *buf, int size
 	int i, sz, spi_block_count;
 	unsigned short *pbuf = (unsigned short *) buf;
 	
-	mutex_lock (&ttc->lock);
+	if (ttc->need_lock) mutex_lock (&ttc->lock);
 	if (ttc->over_spi) {
 		while (written < size) {
 			sz = size - written;
@@ -143,7 +192,7 @@ void ttc_write_array (ttc_t *ttc, unsigned short addr, const void *buf, int size
 			size -= 2;
 		}
 	}
-	mutex_unlock (&ttc->lock);
+	if (ttc->need_lock) mutex_unlock (&ttc->lock);
 }
 
 /*

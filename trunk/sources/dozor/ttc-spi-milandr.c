@@ -2,6 +2,7 @@
 #include <kernel/uos.h>
 #include <milandr/spi.h>
 #include <kernel/internal.h>
+#include <stream/stream.h>
 
 void ttc_spi_out (int port, unsigned short *data, int count)
 {
@@ -17,7 +18,11 @@ void ttc_spi_out (int port, unsigned short *data, int count)
 void ttc_spi_in (int port, unsigned short *word)
 {
 	SSP_t *reg = (port == 0) ? ARM_SSP1 : ARM_SSP2;
-	while (! (reg->SR & ARM_SSP_SR_RNE));
+	int cnt = 0;
+
+	while (! (reg->SR & ARM_SSP_SR_RNE)) {
+		if (cnt++ > 10000) break;
+	}
 	*word = reg->DR;
 }
 
@@ -26,9 +31,12 @@ void ttc_spi_throw (int port, int count)
 	SSP_t *reg = (port == 0) ? ARM_SSP1 : ARM_SSP2;
 	unsigned short word;
 	int i;
-
+	int cnt = 0;
+	
 	for (i = 0; i < count; ++i) {
-		while (! (reg->SR & ARM_SSP_SR_RNE));
+		while (! (reg->SR & ARM_SSP_SR_RNE)) {
+			if (cnt++ > 10000) break;
+		}
 		word = reg->DR;
 	}
 }

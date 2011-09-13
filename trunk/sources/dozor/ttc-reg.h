@@ -81,6 +81,8 @@
 #define TTC_GCR_N64		0x0040		/* 64 узла в кластере */
 #define TTC_GCR_STRT		0x0080		/* режим старта узла */
 #define TTC_GCR_IRQ_POSITIVE	0x0100		/* полярность IRQL: 1 - положительная */
+#define TTC_GCR_HW_START	0x0200		/* аппаратный старт */
+#define TTC_GCR_MASTER		0x0400		/* признак ведущего узла (важно только при старте) */
 
 /*
  * GSR – global status register, 16 R
@@ -89,8 +91,16 @@
 #define TTC_GSR			TTC_REG_ADDR (0x14)
 #define TTC_IER			TTC_REG_ADDR (0x18)
 
-#define TTC_GSR_TDN		0x0001		/* передан пакет */
-#define TTC_GSR_TABT		0x0002		/* передача оборвана на границе слота */
+#define TTC_GSR_TDN		0x0001		/* передан пакет с данными */
+#define TTC_GSR_TSN		0x0002		/* передан старторвый пакет */
+#define TTC_GSR_TABT		0x0004		/* передача оборвана на границе слота */
+#define TTC_GSR_TXP		0x0008		/* идет передача из текущего слота (этот признак не 
+						   устанавливается в GSR, он виден только в слове статуса
+						   выдаваемого слота) */
+#define TTC_GSR_HW_ST_FIN	0x0010		/* режим аппаратного старта закончился */
+#define TTC_GSR_HW_CON_LOST	0x0020		/* аппаратный старт ведущего узла закончился (успешно) */
+#define TTC_GSR_HW_ST_OK	0x0040		/* к данному (ведущему) узлу подключился другой узел */
+#define TTC_GSR_ISNR		0x1000		/* прошел слот с номером, указанном в регистре ISNR */
 #define TTC_GSR_SF		0x2000		/* закончился слот */
 #define TTC_GSR_SINT		0x4000		/* закончился слот с флагом INTR */
 #define TTC_GSR_CCL		0x8000		/* закончился цикл кластера */
@@ -117,6 +127,8 @@
 #define TTC_RSR_CSE		0x0020		/* ошибка CRC приёмника */
 #define TTC_RSR_RCME		0x0040		/* неверный режим кластера */
 #define TTC_RSR_RSPE		0x0080		/* стартовый пакет вместо данных */
+#define TTC_RSR_C0		0x4000
+#define TTC_RSR_C1		0x8000
 
 #define TTC_RSR_BITS		"\20"\
 				"\01rdn\02strt\03rev\04rabt\05rle\06cse\07rcme\10rspe"
@@ -144,6 +156,11 @@
  */
 #define TTC_SSR			TTC_REG_ADDR (0x2c)
 #define TTC_SCP			TTC_REG_ADDR (0x30)
+
+/*
+ * ISNR – interrupt by slot number register, 16 R/W
+ */
+#define TTC_ISNR		TTC_REG_ADDR (0x34)
 
 /*
  * TPLR – transmit preamble length register, 16 R/W
@@ -224,6 +241,10 @@
 #define TTC_CMEC(n)		TTC_REG_ADDR (0xb4 + ((n)<<5))
 #define TTC_RADS(n)		TTC_REG_ADDR (0xb8 + ((n)<<5))
 
+/*
+ * CVECi – регистр маски для формирования сигнала Сi, 64 R/W
+ */
+#define TTC_CVEC(n)		TTC_REG_ADDR (0x100 + ((n)<<3))
 
 /*----------------------------------------------
  * Структура таблицы расписания узла (MEDL)
@@ -241,7 +262,8 @@ struct _medl_t {
 #define TTC_MEDL_CLKSYN		0x0004		/* синхронизация в конце слота */
 #define TTC_MEDL_ETS		0x0008		/* установка внешнего сигнала индикации */
 #define TTC_MEDL_INTR		0x0010		/* прерывание в начале слота */
-};
+#define TTC_MEDL_LAST_SLOT	0x0020		/* признак последнего слота */
+} __attribute__((__packed__));
 typedef struct _medl_t medl_t;
 
 
