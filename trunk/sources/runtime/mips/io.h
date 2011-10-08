@@ -24,14 +24,17 @@
 #   include <runtime/mips/io-pic32mx.h>
 #endif
 #ifdef ELVEES_MC24
+#   define ELVEES	1
 #   include <runtime/mips/io-mc24.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
 #ifdef ELVEES_NVCOM01
+#   define ELVEES	1
 #   include <runtime/mips/io-nvcom01.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
 #ifdef ELVEES_NVCOM02
+#   define ELVEES	1
 #   include <runtime/mips/io-nvcom02.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
@@ -147,6 +150,24 @@ void *mips_get_stack_pointer ()
 /*
  * Write C0 coprocessor register.
  */
+#ifdef ELVEES
+
+#define mips_write_c0_register(reg, value)			\
+	do {							\
+	asm volatile (						\
+	"mtc0	%z0, $%1 \n	nop \n	nop \n	nop"		\
+	: : "r" ((unsigned int) (value)), "K" (reg));		\
+	} while (0)
+
+#define mips_write_c0_select(reg, sel, value)			\
+do {								\
+	asm volatile (						\
+	"mtc0	%z0, $%1, %2 \n	nop \n	nop \n	nop"		\
+	: : "r" ((unsigned int) (value)), "K" (reg), "K" (sel));\
+} while (0)
+
+#else
+
 #define mips_write_c0_register(reg, value)			\
 	do {							\
 	asm volatile (						\
@@ -160,6 +181,8 @@ do {								\
 	"mtc0	%z0, $%1, %2 \n	ehb"                            \
 	: : "r" ((unsigned int) (value)), "K" (reg), "K" (sel));\
 } while (0)
+
+#endif
 
 /*
  * Read FPU (C1 coprocessor) register.

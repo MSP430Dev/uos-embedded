@@ -753,4 +753,92 @@
 #define MD_STATUS_END_READ		(1 << 30)	/* завершилась операция чтения */
 #define MD_STATUS_END_WRITE		(1 << 31)	/* завершилась операция записи */
 
+/*-------------------------------------------
+ * Регистры порта вывода видеоданных VPOUT
+ */
+ 
+/*
+ * CSR_VPOUT - регистр управления и состояния VPOUT
+ */
+#define VPOUT_CSR_INT			(1 << 0)	/* Флаг прерывания */
+#define VPOUT_CSR_FIFO_EMPTY		(1 << 1)	/* Признак пустой очереди FIFO */
+#define VPOUT_CSR_FIFO_ERR		(1 << 2)	/* Признак ошибки FIFO */
+#define VPOUT_CSR_SNAPSHOT		(1 << 19)	/* Режим Snapshot */
+#define VPOUT_CSR_EN_VSYNC		(1 << 20)	/* 0 - внешняя, 1 - внутренняя синхронизация VSYNC */
+#define VPOUT_CSR_EN_HSYNC		(1 << 21)	/* 0 - внешняя, 1 - внутренняя синхронизация HSYNC */
+#define VPOUT_CSR_EN_VCLKO		(1 << 22)	/* 0 - внешняя, 1 - внутренняя синхронизация VCLKO */
+#define VPOUT_CSR_MASK_RD_EMPTY_FIFO	(1 << 23)	/* Разрешение прерывания по чтению из пустого FIFO */
+#define VPOUT_CSR_MASK_HEND		(1 << 24)	/* Разрешение прерывания по концу строки */
+#define VPOUT_CSR_MASK_HSTART		(1 << 25)	/* Разрешение прерывания по началу строки */
+#define VPOUT_CSR_MASK_VEND		(1 << 26)	/* Разрешение прерывания по концу кадра */
+#define VPOUT_CSR_MASK_VSTART		(1 << 27)	/* Разрешение прерывания по началу кадра */
+#define VPOUT_CSR_MASK_FIFO_EMPTY	(1 << 28)	/* Разрешение прерывания по пустому FIFO */
+#define VPOUT_CSR_FEN			(1 << 29)	/* Разрешение переключения сигнала поля (F) */
+#define VPOUT_CSR_RUN			(1 << 30)	/* Запуск порта */
+#define VPOUT_CSR_CLR			(1 << 31)	/* Очистка порта */
+
+/*
+ * FRAME_CNT_VPOUT - счетчик кадров VPOUT
+ */
+#define VPOUT_FC_FRAME_CNT(n)		(n & 0xFFFFFF)	/* Счетчик кадров */
+#define VPOUT_FC_HSYNC			(1 << 29)	/* Текущее состояние сигнала строчной синхронизации */
+#define VPOUT_FC_VSYNC			(1 << 30)	/* Текущее состояние сигнала кадровой синхронизации */
+#define VPOUT_FC_F			(1 << 31)	/* Текущее поле */
+
+
+/*-------------------------------------------
+ * Регистры порта MFBSP
+ */
+ 
+/*
+ * MFBSP_CSR - регистр управления MFBSP
+ */
+#define MC_MFBSP_CSR_LEN		(1 << 0)
+#define MC_MFBSP_CSR_LTRAN		(1 << 1)
+#define MC_MFBSP_CSR_LCLK_RATE(n)	((((n) & 1) << 2) | (((n) & 0x1e) << 10))
+#define MC_MFBSP_CSR_LSTAT(n)		((n) << 3)
+#define MC_MFBSP_CSR_LRERR		(1 << 5)
+#define MC_MFBSP_CSR_LDW		(1 << 6)
+#define MC_MFBSP_CSR_SRQ_TX		(1 << 7)
+#define MC_MFBSP_CSR_SRQ_RX		(1 << 8)
+#define MC_MFBSP_CSR_SPI_I2S_EN		(1 << 9)
+
+#define MC_MFBSP_CSR_GET_LCLK_RATE(x)	(((x) >> 2) & 1) | (((x) >> 10) & 0x1e)
+
+/* 
+ * MFBSP_GPIO_DR и MFBSP_DIR
+ */
+#define MC_MFBSP_GPIO_LACK		(1 << 0)
+#define MC_MFBSP_GPIO_LCLK		(1 << 1)
+#define MC_MFBSP_GPIO_LDAT(n)		(1 << ((n) + 2))
+
+/*
+ * MFBSP_RSR
+ */
+#define MC_MFBSP_RSR_RBE		(1 << 0)
+#define MC_MFBSP_RSR_RBF		(1 << 1)
+#define MC_MFBSP_RSR_RBHF		(1 << 2)
+#define MC_MFBSP_RSR_RBHL		(1 << 3)
+#define MC_MFBSP_RSR_RSBE		(1 << 4)
+#define MC_MFBSP_RSR_RSBF		(1 << 5)
+#define MC_MFBSP_RSR_RXBUF_R		(1 << 8)
+#define MC_MFBSP_RSR_RXBUF_D		(1 << 9)
+#define MC_MFBSP_RSR_RXBUF		(1 << 10)
+#define MC_MFBSP_RSR_RLEV(n)		((n) << 16)
+#define MC_MFBSP_RSR_RB_DIFF(x)		(((x) >> 24) & 0xF)
+
+/*
+ * MFBSP_TSR
+ */
+#define MC_MFBSP_TSR_TBE		(1 << 0)
+#define MC_MFBSP_TSR_TBF		(1 << 1)
+#define MC_MFBSP_TSR_TBHF		(1 << 2)
+#define MC_MFBSP_TSR_TBLL		(1 << 3)
+#define MC_MFBSP_TSR_TXBUF_R		(1 << 8)
+#define MC_MFBSP_TSR_TXBUF_D		(1 << 9)
+#define MC_MFBSP_TSR_TXBUF		(1 << 10)
+#define MC_MFBSP_TSR_TLEV(n)		((n) << 16)
+#define MC_MFBSP_TSR_TBES(n)		((n) << 20)
+#define MC_MFBSP_TSR_TB_DIFF(x)		(((x) >> 24) & 0xF)
+
 #endif /* _IO_ELVEES_H */

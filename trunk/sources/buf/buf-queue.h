@@ -16,17 +16,17 @@ void buf_queue_init (buf_queue_t *q, struct _buf_t **buf, int bytes);
 void buf_queue_put (buf_queue_t *q, struct _buf_t *b);
 struct _buf_t *buf_queue_get (buf_queue_t *q);
 
-inline extern bool_t buf_queue_is_full (buf_queue_t *q)
+static inline __attribute__((always_inline)) bool_t buf_queue_is_full (buf_queue_t *q)
 {
 	return (q->count == q->size);
 }
 
-inline extern bool_t buf_queue_is_empty (buf_queue_t *q)
+static inline __attribute__((always_inline)) bool_t buf_queue_is_empty (buf_queue_t *q)
 {
 	return (q->count == 0);
 }
 
-inline extern struct _buf_t **buf_queue_first (buf_queue_t *q)
+static inline __attribute__((always_inline)) struct _buf_t **buf_queue_first (buf_queue_t *q)
 {
 	struct _buf_t **head;
 
@@ -36,12 +36,12 @@ inline extern struct _buf_t **buf_queue_first (buf_queue_t *q)
 	return head;
 }
 
-inline extern struct _buf_t **buf_queue_last (buf_queue_t *q)
+static inline __attribute__((always_inline)) struct _buf_t **buf_queue_last (buf_queue_t *q)
 {
 	return q->tail;
 }
 
-inline extern struct _buf_t **buf_queue_next (buf_queue_t *q, struct _buf_t **ptr)
+static inline __attribute__((always_inline)) struct _buf_t **buf_queue_next (buf_queue_t *q, struct _buf_t **ptr)
 {
 	if (--ptr < q->queue)
 		ptr += q->size;

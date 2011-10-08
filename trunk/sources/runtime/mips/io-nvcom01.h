@@ -169,13 +169,13 @@
 /*
  * Регистры VPOUT
  */
-#define MC_CSR_VPOUT		MC_R (0x9000)	/* Управление и состояние */
-#define MC_DIV			MC_R (0x9004)	/* Период сигнала VCLKO_out */
-#define MC_HSTART_HEND		MC_R (0x9008)	/* Начало/конец активной части строки */
-#define MC_VSTART_VEND		MC_R (0x900C)	/* Начало/конец активной части кадра */
-#define MC_CNT_VPOUT		MC_R (0x9010)	/* Счетчик строк / счетчик пикселов */
-#define MC_FRAME_CNT_VPOUT	MC_R (0x9014)	/* Счетчик кадров */
-#define MC_FIFO_VPOUT		MC_R (0x901C)	/* Вход FIFO */
+#define MC_VPOUT_CSR		MC_R (0x9000)	/* Управление и состояние */
+#define MC_VPOUT_DIV		MC_R (0x9004)	/* Период сигнала VCLKO_out */
+#define MC_VPOUT_HSTART_HEND	MC_R (0x9008)	/* Начало/конец активной части строки */
+#define MC_VPOUT_VSTART_VEND	MC_R (0x900C)	/* Начало/конец активной части кадра */
+#define MC_VPOUT_CNT		MC_R (0x9010)	/* Счетчик строк / счетчик пикселов */
+#define MC_VPOUT_FRAME_CNT	MC_R (0x9014)	/* Счетчик кадров */
+#define MC_VPOUT_FIFO		MC_R (0x901C)	/* Вход FIFO */
 
 /*
  * Регистры USB
