@@ -361,11 +361,15 @@ void can_set_speed (can_t *c, unsigned kbitsec)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
+#ifndef CAN_NO_MUTEX
 	mutex_lock (&c->lock);
+#endif
 	reg->CONTROL &= ~CAN_CONTROL_EN;
 	can_setup_timing (c, kbitsec);
 	reg->CONTROL |= CAN_CONTROL_EN;
+#ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
+#endif
 }
 
 /*
@@ -375,14 +379,18 @@ void can_set_loop (can_t *c, int on)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
+#ifndef CAN_NO_MUTEX
 	mutex_lock (&c->lock);
+#endif
 	c->loop = on;
 	reg->CONTROL = 0;
 	if (c->loop)
 		reg->CONTROL |= CAN_CONTROL_STM |
 			CAN_CONTROL_SAP | CAN_CONTROL_ROP;
 	reg->CONTROL |= CAN_CONTROL_EN;
+#ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
+#endif
 }
 
 /*
@@ -391,6 +399,7 @@ void can_set_loop (can_t *c, int on)
  */
 int can_output (can_t *c, const can_frame_t *fr)
 {
+#ifndef CAN_NO_MUTEX
 	if (c->flags & POLLONLY) {
 		return transmit_enqueue (c, fr);
 	} else {
@@ -402,6 +411,9 @@ int can_output (can_t *c, const can_frame_t *fr)
 		mutex_unlock (&c->lock);
 		return 1;
 	}
+#else
+	return transmit_enqueue (c, fr);
+#endif
 }
 
 /*
@@ -409,13 +421,17 @@ int can_output (can_t *c, const can_frame_t *fr)
  */
 void can_input (can_t *c, can_frame_t *fr)
 {
+#ifndef CAN_NO_MUTEX
 	mutex_lock (&c->lock);
+#endif
 	while (can_queue_is_empty (&c->inq)) {
 		/* Ждём приёма пакета. */
 		mutex_wait (&c->lock);
 	}
 	can_queue_get (&c->inq, fr);
+#ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
+#endif
 }
 
 static int can_get_next_frame (can_t *c, can_frame_t *fr)
@@ -477,9 +493,17 @@ static int can_get_next_frame (can_t *c, can_frame_t *fr)
 int can_poll (can_t *c, can_frame_t *fr)
 {
 	int res;
+
+#ifndef CAN_NO_MUTEX
 	mutex_lock (&c->lock);
+#endif
+
 	res = can_get_next_frame (c, fr);
+
+#ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
+#endif
+
 	return res;
 }
 
@@ -489,10 +513,14 @@ int can_poll (can_t *c, can_frame_t *fr)
 void can_stop (can_t *c)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+#ifndef CAN_NO_MUTEX
 	mutex_lock (&c->lock);
+#endif
 	reg->CONTROL &= ~CAN_CONTROL_EN;
 	reg->STATUS = 0;
+#ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
+#endif
 }
 
 /*
@@ -501,9 +529,13 @@ void can_stop (can_t *c)
 void can_start (can_t *c)
 {
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
+#ifndef CAN_NO_MUTEX
 	mutex_lock (&c->lock);
+#endif
 	reg->CONTROL |= CAN_CONTROL_EN;
+#ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
+#endif
 }
 
 void can_set_filter (can_t *c, unsigned mask, unsigned pattern)
@@ -511,12 +543,16 @@ void can_set_filter (can_t *c, unsigned mask, unsigned pattern)
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 	int i;
 
+#ifndef CAN_NO_MUTEX
 	mutex_lock (&c->lock);
+#endif
 	for (i = 0; i < NRBUF; ++i) {
 		reg->MASK[i].MASK = mask;
 		reg->MASK[i].FILTER = pattern;
 	}
+#ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
+#endif
 }
 
 static bool_t can_handle_interrupt (void *arg)
@@ -592,10 +628,12 @@ void can_init (can_t *c, int port, unsigned kbitsec, unsigned flags)
 	can_setup (c, kbitsec);
 
 	int irq = (port == 0) ? 0 : 1;
+#ifndef CAN_NO_MUTEX
 	if (! (flags & POLLONLY)) {
 		can_queue_init (&c->inq);
 		//mutex_lock_irq (&c->lock, irq, can_handle_interrupt, c);
 		//mutex_unlock (&c->lock);
 		mutex_attach_irq (&c->lock, irq, can_handle_interrupt, c);
 	}
+#endif
 }

@@ -52,6 +52,7 @@ typedef struct _can_queue_t {
  * CAN channel initialization flags
  */
 #define	POLLONLY 	0x8000
+#define NOMUTEX		0x4000
 /* Also PORT_A, PORT_B, etc. constants can be used */
 
 /*
