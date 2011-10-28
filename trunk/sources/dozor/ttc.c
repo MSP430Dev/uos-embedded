@@ -105,7 +105,6 @@ unsigned ttc_read32 (ttc_t *ttc, unsigned short addr)
 
 void ttc_read_array (ttc_t *ttc, unsigned short addr, void *buf, int size)
 {
-	unsigned short received;
 	int rd = 0;
 	int i, sz, spi_block_count;
 	unsigned short *p = (unsigned short *) buf;
@@ -167,7 +166,6 @@ void ttc_write32 (ttc_t *ttc, unsigned short addr, unsigned data)
 
 void ttc_write_array (ttc_t *ttc, unsigned short addr, const void *buf, int size)
 {
-	unsigned short received;
 	int written = 0;
 	int i, sz, spi_block_count;
 	unsigned short *pbuf = (unsigned short *) buf;
