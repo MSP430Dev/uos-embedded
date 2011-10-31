@@ -1,0 +1,241 @@
+/*
+ * Описание регистров контроллера 5600ВГ1 фирмы Миландр.
+ *
+ * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ *
+ * This file is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * You can redistribute this file and/or modify it under the terms of the GNU
+ * General Public License (GPL) as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your discretion) any later version.
+ * See the accompanying file "COPYING.txt" for more details.
+ *
+ * As a special exception to the GPL, permission is granted for additional
+ * uses of the text contained in this file.  See the accompanying file
+ * "COPY-UOS.txt" for details.
+ */
+
+typedef volatile unsigned int eth_reg_t;
+
+typedef	struct {
+	eth_reg_t MAC_CTRL;	// Управление MAC-уровнем контроллера
+	eth_reg_t MIN_FRAME;	// Минимальная допустимая длина пакета
+	eth_reg_t MAX_FRAME;	// Максимальная допустимая длина пакета
+	eth_reg_t COLLCONF;	// Управление обработкой коллизий
+	eth_reg_t IPGT;		// Задание межпакетного интервала
+	eth_reg_t MAC_ADDR [3];	// Задание MAC-адреса контроллера
+	eth_reg_t HASH [4];	// HASH-таблица для расширенной фильтрации
+	eth_reg_t INT_MASK;	// Маскирование прерываний
+	eth_reg_t INT_SRC;	// Флаги прерываний
+	eth_reg_t PHY_CTRL;	// Управление PHY-уровнем
+	eth_reg_t PHY_STAT;	// Состояние PHY-уровня
+
+	eth_reg_t RXBF_HEAD;	// Голова буфера приёма
+	eth_reg_t RXBF_TAIL;	// Хвост буфера приёма
+	eth_reg_t unused [2];	// (зарезервировано)
+
+	eth_reg_t STAT_RX_ALL;	// Счетчик входящих пакетов
+	eth_reg_t STAT_RX_OK;	// Счетчик успешно принятых
+	eth_reg_t STAT_RX_OVF;	// Счетчик переполнениq буфера приёма
+	eth_reg_t STAT_RX_LOST;	// Счетчик потеряных из-за неготовности
+	eth_reg_t STAT_TX_ALL;	// Счетчик исходящих пакетов
+	eth_reg_t STAT_TX_OK;	// Счетчик успешно отосланных пакетов
+
+	eth_reg_t BASE_RXBF;	// Начало буфера приемника
+	eth_reg_t BASE_TXBF;	// Начало буфера передатчика
+	eth_reg_t BASE_RXBD;	// Начало дескриторов приемника
+	eth_reg_t BASE_TXBD;	// Начало дескриторов передатчика
+	eth_reg_t BASE_REG;	// Начало области регистров
+	eth_reg_t GCTRL;	// Управление внешними интерфейсами
+} eth_regs_t;
+
+typedef	struct {
+	eth_reg_t CTRL;		// Управление и состояние
+	eth_reg_t LEN;		// Полная длина пакета в байтах
+	eth_reg_t PTRH;		// Старшая часть указателя данных
+	eth_reg_t PTRL;		// Указатель на данные пакета
+} eth_desc_t;
+
+/*
+ * Регистр GCTRL - управление интерфейсом к процессору
+ */
+#define GCTRL_GLBL_RST		(1 << 15)	// Общий сброс всего контроллера
+#define GCTRL_READ_CLR_STAT	(1 << 14)	// Очистка статистики по чтению
+#define GCTRL_SPI_RST		(1 << 13)	// Сброс последовательного порта
+#define GCTRL_ASYNC_MODE	(1 << 12)	// Асинхронный режим сигнала RDY
+#define GCTRL_SPI_RX_EDGE	(1 << 10)	// Положительный фронт приёмника SPI
+#define GCTRL_SPI_TX_EDGE	(1 << 9)	// Положительный фронт передатчика SPI
+#define GCTRL_SPI_DIR		(1 << 8)	// Левый бит вперёд (MSB)
+#define GCTRL_SPI_FRAME_POL	(1 << 7)	// Положительный активный уровень
+						// сигнала кадровой синхронизации SPI
+#define GCTRL_SPI_CLK_POL	(1 << 6)	// Инверсная полярность тактового сигнала
+#define GCTRL_SPI_CLK_PHASE	(1 << 5)	// Инверсная фаза тактового сигнала
+#define GCTRL_SPI_DIV(x)	(x)		// (зарезервировано)
+#define GCTRL_BITS		"\20" \
+"\06spi_clk_phase\07spi_clk_pol\10spi_frame_pol" \
+"\11spi_dir\12spi_tx_edge\13spi_rx_edge\15async_mode\16spi_rst\17read_clr_stat\20glbl_rst"
+
+/*
+ * Регистр MAC_CTRL - управление MAC-уровнем
+ */
+#define MAC_CTRL_TX_RST		(1 << 15)	// Сброс передатчика
+#define MAC_CTRL_RX_RST		(1 << 14)	// Сброс приёмника
+#define MAC_CTRL_DSCR_SCAN_EN	(1 << 12)	// Режим сканирования дескрипторов
+#define MAC_CTRL_PAUSE_EN	(1 << 11)	// Разрешения обработки Pause Frame
+#define MAC_CTRL_PRO_EN		(1 << 10)	// Прием всех пакетов
+#define MAC_CTRL_BCA_EN		(1 << 9)	// Прием всех широковещательных пакетов
+#define MAC_CTRL_MCA_EN		(1 << 8)	// Прием всех пакетов согласно Hash
+#define MAC_CTRL_CTRL_FRAME_EN	(1 << 7)	// Прием управляющих пакетов
+#define MAC_CTRL_LONG_FRAME_EN	(1 << 6)	// Прием пакетов длиной более MaxFrame
+#define MAC_CTRL_SHORT_FRAME_EN	(1 << 5)	// Прием пакетов длиной менее MinFrame
+#define MAC_CTRL_ERR_FRAME_EN	(1 << 4)	// Прием пакетов с ошибками
+#define MAC_CTRL_BCKOF_DIS	(1 << 3)	// Без ожидания при повторе в случае коллизии
+#define MAC_CTRL_HALFD_EN	(1 << 2)	// Полудуплексный режим
+#define MAC_CTRL_BIG_ENDIAN	(1 << 1)	// Левый бит вперёд (big endian)
+#define MAC_CTRL_LB_EN		(1 << 0)	// Тестовый шлейф на уровне MAC
+#define MAC_CTRL_BITS		"\20" \
+"\01lb_en\02big_endian\03halfd_en\04bckof_dis\05err_frame_en\06short_frame_en\07long_frame_en\10ctrl_frame_en" \
+"\11mca_en\12bca_en\13pro_en\14pause_en\15dscr_scan_en\17rx_rst\20tx_rst"
+
+/*
+ * Регистр COLLCONF - управление обработкой коллизий
+ */
+#define COLLCONF_RETRIES_LIMIT(x)	((x) << 8)	// Лимит повторов передачи
+#define COLLCONF_COLLISION_WINDOW(x)	(x)		// Окно коллизий
+
+/*
+ * Регистры INT_MASK, INT_SRC - флаги и маскирование прерываний
+ */
+#define INT_RXF			(1 << 15)	// Успешный прием пакета
+#define INT_RXE			(1 << 14)	// Наличие ошибок приема
+#define INT_RXC			(1 << 13)	// Прием пакета управления
+#define INT_RXBF_FULL		(1 << 12)	// Переполнение буфера приема
+#define INT_RXL			(1 << 10)	// Прием пакета длиной более MaxFrame
+#define INT_RXS			(1 << 9)	// Прием пакета длиной менее MinFrame
+#define INT_TXF			(1 << 7)	// Успешная передача пакета
+#define INT_TXE			(1 << 6)	// Наличие ошибок при передаче пакета
+#define INT_TXC			(1 << 5)	// Передача пакета управления
+#define INT_TX_BUSY		(1 << 0)	// Приём и обслуживание пакета Pause
+#define INT_BITS		"\20" \
+"\01tx_busy\06txc\07txe\10txf\12rxs\13rxl\15rxbf_full\16rxc\17rxe\20rxf"
+
+/*
+ * Регистр PHY_CTRL - управление PHY-уровнем
+ */
+#define PHY_CTRL_RST		(1 << 15)	// Сброс встроенного контроллера PHY
+#define PHY_CTRL_EXT_EN		(1 << 14)	// Работа с внешним кнтроллером PHY
+#define PHY_CTRL_TXEN		(1 << 13)	// Разрешение передатчика встроенного PHY
+#define PHY_CTRL_RXEN		(1 << 12)	// Разрешение приёмника встроенного PHY
+#define PHY_CTRL_LINK_PERIOD(x)	((x) << 6)	// Период LINK-импульсов
+#define PHY_CTRL_BASE_2		(1 << 5)	// Коаксиальный кабель в полудуплексе
+#define PHY_CTRL_DIR		(1 << 4)	// Прямой порядок битов в полубайте
+#define PHY_CTRL_EARLY_DV	(1 << 3)	// Формирвание RxDV одновременно с CRS
+#define PHY_CTRL_HALFD		(1 << 2)	// Полудуплесный режим
+#define PHY_CTRL_DLB		(1 << 1)	// Тестовый шлейф на входе PHY
+#define PHY_CTRL_LB		(1 << 0)	// Тестовый шлейф на выходе PHY
+#define PHY_CTRL_BITS		"\20" \
+"\01lb\02dlb\03halfd\04early_dv\05dir\06base_2\15rxen\16txen\17ext_en\20rst"
+
+/*
+ * Регистр PHY_STAT - состояние PHY-уровня
+ */
+#define PHY_STAT_JAM		(1 << 13)	// Коллизия: передача JAM-последовательности
+#define PHY_STAT_JAB		(1 << 12)	// Превышение максимального времени передачи
+#define PHY_STAT_POL		(1 << 11)	// Смена полярности сигналов в приёмнике
+#define PHY_STAT_LINK		(1 << 10)	// Наличие подключения
+#define PHY_STAT_COL		(1 << 9)	// Наличие коллизии
+#define PHY_STAT_CRS		(1 << 8)	// Наличие несущей в линии
+#define PHY_STAT_EXT_LINK	(1 << 5)	// Внешний PHY: наличие подключения
+#define PHY_STAT_EXT_COL	(1 << 1)	// Внешний PHY: наличие коллизии
+#define PHY_STAT_EXT_CRS	(1 << 0)	// Внешний PHY: наличие несущей в линии
+#define PHY_STAT_BITS		"\20" \
+"\01ext_crs\02ext_col\06ext_link\11crs\12col\13link\14pol\15jab\16jam"
+
+/*
+ * Дескриптор передатчика - управление и состояние
+ */
+#define DESC_TX_RDY		(1 << 15)	// Исходящий пакет готов
+#define DESC_TX_WRAP		(1 << 14)	// Последний дескриптор: переход к началу
+#define DESC_TX_IRQ_EN		(1 << 13)	// Разрешение прерываний по передаче
+#define DESC_TX_PRE_DIS		(1 << 10)	// Отключение передачи преамбулы
+#define DESC_TX_PAD_DIS		(1 << 9)	// Отключение дополнения до минимальной длины
+#define DESC_TX_CRC_DIS		(1 << 8)	// Отключение добавления контрольной суммы
+#define DESC_TX_RTRY(x)		(((x)>>4) & 15)	// Счётчик попыток передачи
+#define DESC_TX_RL		(1 << 3)	// Исчерпание кол-ва попыток отправки
+#define DESC_TX_LC		(1 << 2)	// Наличия Late Collision
+#define DESC_TX_UR		(1 << 1)	// Underrun
+#define DESC_TX_CS		(1 << 0)	// Потеря несущей во время передачи
+#define DESC_TX_BITS		"\20" \
+"\01cs\02ur\03lc\04rl" \
+"\11crc_dis\12pad_dis\13pre_dis\16irq_en\17wrap\20rdy"
+
+/*
+ * Дескриптор приёмника - управление и состояние
+ */
+#define DESC_RX_RDY		(1 << 15)	// Готов к приему пакета
+#define DESC_RX_WRAP		(1 << 14)	// Последний дескриптор: переход к началу
+#define DESC_RX_IRQ_EN		(1 << 13)	// Разрешение прерываний по приёму
+#define DESC_RX_MCA		(1 << 10)	// Прием группового пакета по Hash-таблице
+#define DESC_RX_BCA		(1 << 9)	// Прием широковещательного пакета
+#define DESC_RX_UCA		(1 << 8)	// Прием индивидуального пакета
+#define DESC_RX_CF		(1 << 7)	// Прием пакета управления
+#define DESC_RX_LF		(1 << 6)	// Прием пакета длиной более MaxFrame
+#define DESC_RX_SF		(1 << 5)	// Прием пакета длиной менее MinFrame
+#define DESC_RX_EF		(1 << 4)	// Есть ошибки при приеме пакета
+#define DESC_RX_CRC_ERR		(1 << 3)	// Ошибка CRC
+#define DESC_RX_SMB_ERR		(1 << 2)	// Ошибка в данных
+#define DESC_RX_LC		(1 << 1)	// Наличие Late Collision
+#define DESC_RX_OR		(1 << 0)	// Переполнение буфера приема
+#define DESC_RX_BITS		"\20" \
+"\01or\02lc\03smb_err\04crc_err\05ef\06sf\07lf\10cf" \
+"\11uca\12bca\13mca\16irq_en\17wrap\20rdy"
+
+//======================================================================================
+// Ethernet Registers Numbers Definition
+//======================================================================================
+#define ETH_MAC_CTRL		0x1FC0			// mac_ctrl
+#define ETH_MIN_FRAME		0x1FC1			// min_frame
+#define ETH_MAX_FRAME		0x1FC2			// max_frame
+#define ETH_COLLCONF		0x1FC3			// collconf
+#define ETH_IPGT			0x1FC4			// ipgt
+#define ETH_MAC_ADDR_T		0x1FC5			// mac_addr_t
+#define ETH_MAC_ADDR_M		0x1FC6			// mac_addr_m
+#define ETH_MAC_ADDR_H		0x1FC7			// mac_addr_h
+#define ETH_HASH0			0x1FC8			// hash0
+#define ETH_HASH1			0x1FC9			// hash1
+#define ETH_HASH2			0x1FCA			// hash2
+#define ETH_HASH3			0x1FCB			// hash3
+#define ETH_INT_MASK		0x1FCC			// int_mask
+#define ETH_INT_SRC			0x1FCD			// int_src
+#define ETH_PHY_CTRL		0x1FCE			// phy_ctrl
+#define ETH_PHY_STAT		0x1FCF			// phy_stat
+#define ETH_RXBF_HEAD		0x1FD0			// rxbf_head
+#define ETH_RXBF_TAIL		0x1FD1			// rxbf_tail
+#define Reserved_0			0x1FD2			// reserved0
+#define Reserved_1			0x1FD3			// reserved1
+#define ETH_STAT_RX_ALL		0x1FD4			// stat_rx_all
+#define ETH_STAT_RX_OK		0x1FD5			// stat_rx_ok
+#define ETH_STAT_RX_OVF		0x1FD6			// stat_rx_ovf
+#define ETH_STAT_RX_LOST	0x1FD7			// stat_rx_lost
+#define ETH_STAT_TX_ALL		0x1FD8			// stat_tx_all
+#define ETH_STAT_TX_OK		0x1FD9			// stat_tx_ok
+#define ETH_BASE_RXBF		0x1FDA			// base_rxbf
+#define ETH_BASE_TXBF		0x1FDB			// base_txbf
+#define ETH_BASE_RXBD		0x1FDC			// base_rxbd
+#define ETH_BASE_TXBD		0x1FDD			// base_txbd
+#define ETH_BASE_REG		0x1FDE			// base_reg
+#define ETH_GCTRL			0x1FDF			// gctrl
+//======================================================================================
+// Ethernet Descriptors and Buffers Sizes Definition
+//======================================================================================
+#define Rx_Buffers_Base		0x0000
+#define Rx_Descriptors_Base	0x0800
+#define Tx_Buffers_Base		0x1000
+#define Tx_Descriptors_Base	0x1800
+#define Registers_Base		0x1FC0
+
+#define RxTx_Buffers_Size	  2048
+#define RxTx_Descriptors_Size  128
+#define Registers_Size			32
