@@ -22,8 +22,8 @@
 #include <stream/stream.h>
 #include <mem/mem.h>
 #include <buf/buf.h>
-#include <dozor/eth.h>
-#include <dozor/eth-regs.h>
+#include <dozor/pkbi-01/eth.h>
+#include <dozor/pkbi-01/eth-regs.h>
 
 //========================================================================================================================
 /*
@@ -69,30 +69,6 @@ unsigned short base_rxbd, base_txbd, base_reg, gctrl;
 
 unsigned short rx_ctrl, rx_len, rx_ptrl, rx_ptrh;
 unsigned short tx_ctrl, tx_len, tx_ptrl, tx_ptrh;
-//========================================================================================================================
-
-/*
- * Set /RST to 0 for one microsecond.
- */
-static void
-chip_reset ()
-{
-	ARM_GPIOB->OE |= PORTB_NRST;
-	udelay (1);
-	ARM_GPIOB->OE &= ~PORTB_NRST;
-}
-
-/*
- * Control /CS for 5600ÂÃ1 chip.
- */
-static void
-chip_select (int on)
-{
-	if (on)
-		ARM_GPIOE->DATA &= ~PORTE_NCS;		// Select
-	else
-		ARM_GPIOE->DATA |= PORTE_NCS;		// Idle
-}
 
 //========================================================================================================================
 void Initialize_Timer_3(void)
@@ -372,7 +348,6 @@ static void
 chip_copyout (unsigned chipaddr, unsigned char *data, unsigned bytes)
 {
 	unsigned short word;
-	unsigned short *pshort = (unsigned short *) data;
 
 	while (bytes >= 2) {
 		word = *data++;
@@ -577,7 +552,7 @@ static unsigned
 handle_interrupt (k5600bg1_t *u)
 {
 	unsigned active = 0;
-	Read_Ethernet_Register(ETH_INT_SRC, &u->intr_flags);
+	Read_Ethernet_Register(ETH_INT_SRC, (unsigned short *)&u->intr_flags);
 	for (;;) {
 		unsigned short desc_rx;
 		Read_Ethernet_Descriptor((Rx_Descriptors_Base + (u->rn * 4) + 0), &desc_rx);
