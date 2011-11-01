@@ -80,6 +80,7 @@ void Initialize_Timer_3(void)
 	ARM_TIMER3->TIM_PSG = 0;
 	ARM_TIMER3->TIM_ARR = 0;
 	ARM_TIMER3->TIM_IE = 0x00000008;				// Timer 3 Interrupts Enable
+	ARM_TIMER3->TIM_CNTRL |= 0x00000001;			// Timer 3 Start
 	HWREG(0xE000E100) |= 0x00010000;				// Timer 3 Interrupts Enable
 }
 
@@ -675,5 +676,5 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	/* Initialize hardware. */
 	chip_init (u);
 	/* Create interrupt task. */
-	//task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
+	task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
 }
