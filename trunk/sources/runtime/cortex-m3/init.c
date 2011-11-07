@@ -38,7 +38,12 @@ _init_ (void)
 //	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOB;
 
 	/* Enable HSE generator. */
-	ARM_RSTCLK->HS_CONTROL = ARM_HS_CONTROL_HSE_ON;
+#ifdef ARM_EXT_GEN
+	ARM_RSTCLK->HS_CONTROL = ARM_HS_CONTROL_HSE_ON | ARM_HS_CONTROL_HSE_BYP; 	// HSE External Generator
+#else
+	ARM_RSTCLK->HS_CONTROL = ARM_HS_CONTROL_HSE_ON;								// HSE External Oscillator
+#endif
+
 	while (! (ARM_RSTCLK->CLOCK_STATUS & ARM_CLOCK_STATUS_HSE_RDY))
 		continue;
 
