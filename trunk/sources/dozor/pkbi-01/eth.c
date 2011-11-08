@@ -81,7 +81,7 @@ void Initialize_Timer_3(void)
 	ARM_TIMER3->TIM_ARR = 0;
 	ARM_TIMER3->TIM_IE = 0x00000008;				// Timer 3 Interrupts Enable
 	ARM_TIMER3->TIM_CNTRL |= 0x00000001;			// Timer 3 Start
-	HWREG(0xE000E100) |= 0x00010000;				// Timer 3 Interrupts Enable
+	//HWREG(0xE000E100) |= 0x00010000;				// Timer 3 Interrupts Enable
 }
 
 /*
@@ -549,10 +549,14 @@ receive_packet (k5600bg1_t *u, unsigned desc_rx, unsigned len, unsigned ptr)
  * Process an interrupt.
  * Return nonzero when there was some activity.
  */
-static unsigned
-handle_interrupt (k5600bg1_t *u)
+static bool_t
+handle_interrupt (void *arg)
 {
-	unsigned active = 0;
+	k5600bg1_t *u = arg;
+	
+	ARM_TIMER3->TIM_STATUS = 0x00000000;	// —разу разрешаем следующее прерывание, чтобы его не потер€ть
+	
+	++u->intr;
 	Read_Ethernet_Register(ETH_INT_SRC, (unsigned short *)&u->intr_flags);
 	for (;;) {
 		unsigned short desc_rx;
@@ -560,7 +564,6 @@ handle_interrupt (k5600bg1_t *u)
 
 		if (desc_rx & DESC_RX_RDY)
 			break;
-		++active;
 
 		/* Fetch the received packet. */
 		unsigned short len;
@@ -594,7 +597,6 @@ handle_interrupt (k5600bg1_t *u)
 			/* «акончена передача пакета. */
 			desc_tx = DESC_TX_WRAP;
 			Write_Ethernet_Descriptor((Tx_Descriptors_Base + 0), &desc_tx);
-			++active;
 
 			/* ѕодсчитываем коллизии. */
 			if (desc_tx & (DESC_TX_RL | DESC_TX_LC)) {
@@ -610,9 +612,10 @@ handle_interrupt (k5600bg1_t *u)
 			buf_free (p);
 		}
 	}
-	ARM_TIMER3->TIM_STATUS = 0x00000000;
-	HWREG(0xE000E280) |= 0x00010000;
-	return active;
+	
+	arch_intr_allow (K5600BG1_IRQ);
+	
+	return 0;
 }
 
 /*
@@ -676,5 +679,6 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	/* Initialize hardware. */
 	chip_init (u);
 	/* Create interrupt task. */
+	mutex_attach_irq (&u->netif.lock, K5600BG1_IRQ, handle_interrupt, u);
 	//task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
 }
