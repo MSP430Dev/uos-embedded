@@ -45,7 +45,7 @@
 #define PORTE_NCS	(1 << 12)	/* nCS on PE12 */
 
 #define NRD		8		/* number of receive descriptors */
-#define RXBUF_BYTES	2048		/* size of hardware receive buffer */
+#define RXBUF_WORDS	2048		/* size of hardware receive buffer */
 
 //========================================================================================================================
 #define HWREG(x)				(*((volatile unsigned long *)(x)))
@@ -154,7 +154,7 @@ chip_init (k5600bg1_t *u)
 	 * При частоте процессора 40 МГц (один такт 25 нс)
 	 * установка ws=11 или 12 даёт цикл в 150 нс.
 	 * Проверено: 125 нс (ws=9) недостаточно. */
-	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS (15);
+	ARM_EXTBUS->CONTROL = ARM_EXTBUS_RAM | ARM_EXTBUS_WS (5);
 //========================================================================================================================
 //	chip_select (1);
 	/* Режимы параллельного интерфейса к процессору. */
@@ -199,7 +199,7 @@ chip_init (k5600bg1_t *u)
 
 	rxbf_tail = 0;
 	Write_Ethernet_Register(ETH_RXBF_TAIL,&rxbf_tail);
-	rxbf_head = RXBUF_BYTES/2 - 1;
+	rxbf_head = RXBUF_WORDS/2 - 1;
 	Write_Ethernet_Register(ETH_RXBF_HEAD,&rxbf_head);
 
 	/* Начальное состояние дескрипторов. */
@@ -335,8 +335,8 @@ chip_copyin (unsigned char *data, unsigned chipaddr, unsigned bytes)
 		chipaddr++;
 		*pshort++ = word;
 		bytes -= 2;
-		if (chipaddr >= (unsigned)(ETH_RXBUF + RXBUF_BYTES))
-			chipaddr = (unsigned)ETH_RXBUF;
+		if (chipaddr >= Rx_Buffers_Base + RXBUF_WORDS)
+			chipaddr = Rx_Buffers_Base;
 	}
 	if (bytes > 0) {
 		data = (unsigned char *) pshort;
@@ -676,5 +676,5 @@ k5600bg1_init (k5600bg1_t *u, const char *name, int prio, mem_pool_t *pool,
 	/* Initialize hardware. */
 	chip_init (u);
 	/* Create interrupt task. */
-	task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
+	//task_create (interrupt_task, u, "eth", prio, u->stack, sizeof (u->stack));
 }
