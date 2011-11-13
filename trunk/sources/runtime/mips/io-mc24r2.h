@@ -1,7 +1,7 @@
 /*
- * Hardware register defines for Elvees NVCom-01 microcontroller.
+ * Hardware register defines for Elvees MC24R2 microcontroller.
  *
- * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ * Copyright (C) 2011 Elvees
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -16,10 +16,12 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-#ifndef _IO_NVCOM01_H
-#define _IO_NVCOM01_H
+#ifndef _IO_MC24R2_H
+#define _IO_MC24R2_H
 
-#define MC_R(a)		*(volatile unsigned*)(0xB82F0000 + (a))
+#define MC_BASE_ADDR	0xB82F0000
+#define MC_R(a)		*(volatile unsigned*)(MC_BASE_ADDR + (a))
+#define MC_A(a)		(MC_BASE_ADDR + (a))
 
 /*
  * Регистры DMA MEM(0-3)
@@ -54,24 +56,6 @@
 #define MC_RUN_VPOUT	MC_R (0x9814)   /* Управление состоянием бита RUN */
 
 /*
- * Регистры DMA EMAC(0-1)
- */
-#define MC_CSR_EMAC(n)	MC_R (0xE800+(n<<6))	/* Управление и состояние */
-#define MC_CP_EMAC(n)	MC_R (0xE804+(n<<6))	/* Указатель цепочки */
-#define MC_IR_EMAC(n)	MC_R (0xE808+(n<<6))	/* Индекс */
-#define MC_RUN_EMAC(n)	MC_R (0xE80C+(n<<6))	/* Управление состоянием бита RUN */
-
-/*
- * Регистры DMA USB(0-3)
- */
-#define MC_CSR_USB(n)	MC_R (0xC800+(n<<6))	/* Управление и состояние */
-#define MC_CP_USB(n)	MC_R (0xC804+(n<<6))	/* Указатель цепочки */
-#define MC_IR_USB(n)	MC_R (0xC808+(n<<6))	/* Индекс */
-#define MC_OR_USB(n)	MC_R (0xC80C+(n<<6))	/* Смещение */
-#define MC_Y_USB(n)	MC_R (0xC810+(n<<6))	/* Параметры направления Y при двухмерной адресации */
-#define MC_RUN_USB(n)	MC_R (0xC814+(n<<6))	/* Управление состоянием бита RUN */
-
-/*
  * Регистры DMA MFBSP(0-3)
  */
 #define MC_CSR_MFBSP_RX(n)	MC_R (0x7800+(n<<6))	/* Управление и состояние */
@@ -84,20 +68,11 @@
 #define MC_IR_MFBSP_TX(n)	MC_R (0x7C08+(n<<6))	/* Индекс */
 #define MC_RUN_MFBSP_TX(n)	MC_R (0x7C0C+(n<<6))	/* Управления состоянием бита RUN */
 
-/*
- * Регистры I2C
- */
-#define MC_I2C_PRER	MC_R (0x2000)	/* Предделитель частоты */
-#define MC_I2C_CTR	MC_R (0x2004)	/* Управление */
-#define MC_I2C_TXR	MC_R (0x2008)	/* Передача данных */
-#define MC_I2C_RXR	MC_R (0x200C)	/* Прием данных */
-#define MC_I2C_CR	MC_R (0x2010)	/* Команды */
-#define MC_I2C_SR	MC_R (0x2014)	/* Состояние */
-#define MC_I2C_PR_CNT	MC_R (0x2018)	/* Счетчик предделителя частоты */
 
 /*
- * Регистры UART0, UART1
+ * Регистры UART0
  */
+#define MC_UART0_BASE	MC_A (0x3000)
 #define MC_RBR		MC_R (0x3000)	/* Приемный буферный регистр */
 #define MC_THR		MC_R (0x3000)	/* Передающий буферный регистр */
 #define MC_IER		MC_R (0x3004)	/* Регистр разрешения прерываний */
@@ -112,32 +87,13 @@
 #define MC_DLM		MC_R (0x3004)	/* Регистр делителя старший */
 #define MC_SCLR		MC_R (0x3014)	/* Регистр предделителя (scaler) */
 
-#define MC_RBR1		MC_R (0x3800)	/* Приемный буферный регистр */
-#define MC_THR1		MC_R (0x3800)	/* Передающий буферный регистр */
-#define MC_IER1		MC_R (0x3804)	/* Регистр разрешения прерываний */
-#define MC_IIR1		MC_R (0x3808)	/* Регистр идентификации прерывания */
-#define MC_FCR1		MC_R (0x3808)	/* Регистр управления FIFO */
-#define MC_LCR1		MC_R (0x380C)	/* Регистр управления линией */
-#define MC_MCR1		MC_R (0x3810)	/* Регистр управления модемом */
-#define MC_LSR1		MC_R (0x3814)	/* Регистр состояния линии */
-#define MC_MSR1		MC_R (0x3818)	/* Регистр состояния модемом */
-#define MC_SPR1		MC_R (0x381C)	/* Регистр Scratch Pad */
-#define MC_DLL1		MC_R (0x3800)	/* Регистр делителя младший */
-#define MC_DLM1		MC_R (0x3804)	/* Регистр делителя старший */
-#define MC_SCLR1	MC_R (0x3814)	/* Регистр предделителя (scaler) */
-
 /*
- * Регистры интервального таймера IT0, IT1
+ * Регистры интервального таймера IT
  */
 #define MC_ITCSR	MC_R (0xD000)	/* Управление */
 #define MC_ITPERIOD	MC_R (0xD004)	/* Период работы таймера */
 #define MC_ITCOUNT	MC_R (0xD008)	/* Счетчик */
 #define MC_ITSCALE	MC_R (0xD00C)	/* Предделитель */
-
-#define MC_ITCSR1	MC_R (0xD020)	/* Управление */
-#define MC_ITPERIOD1	MC_R (0xD024)	/* Период работы таймера */
-#define MC_ITCOUNT1	MC_R (0xD028)	/* Счетчик */
-#define MC_ITSCALE1	MC_R (0xD02C)	/* Предделитель */
 
 /*
  * Регистры WDT
@@ -146,6 +102,13 @@
 #define MC_WTPERIOD	MC_R (0xD014)	/* Период работы таймера */
 #define MC_WTCOUNT	MC_R (0xD018)	/* Счетчик */
 #define MC_WTSCALE	MC_R (0xD01C)	/* Предделитель */
+
+/*
+ * Регистры RTT
+ */
+#define MC_RTCSR	MC_R (0xD020)	/* Управление */
+#define MC_RTPERIOD	MC_R (0xD024)	/* Период работы таймера */
+#define MC_RTCOUNT	MC_R (0xD028)	/* Счетчик */
 
 /*
  * Регистры MFBSP(0-3)
@@ -174,13 +137,13 @@
 /*
  * Регистры VPOUT
  */
-#define MC_VPOUT_CSR		MC_R (0x9000)	/* Управление и состояние */
-#define MC_VPOUT_DIV		MC_R (0x9004)	/* Период сигнала VCLKO_out */
-#define MC_VPOUT_HSTART_HEND	MC_R (0x9008)	/* Начало/конец активной части строки */
-#define MC_VPOUT_VSTART_VEND	MC_R (0x900C)	/* Начало/конец активной части кадра */
-#define MC_VPOUT_CNT		MC_R (0x9010)	/* Счетчик строк / счетчик пикселов */
-#define MC_VPOUT_FRAME_CNT	MC_R (0x9014)	/* Счетчик кадров */
-#define MC_VPOUT_FIFO		MC_R (0x901C)	/* Вход FIFO */
+#define MC_CSR_VPOUT		MC_R (0x9000)	/* Управление и состояние */
+#define MC_DIV			MC_R (0x9004)	/* Период сигнала VCLKO_out */
+#define MC_HSTART_HEND		MC_R (0x9008)	/* Начало/конец активной части строки */
+#define MC_VSTART_VEND		MC_R (0x900C)	/* Начало/конец активной части кадра */
+#define MC_CNT_VPOUT		MC_R (0x9010)	/* Счетчик строк / счетчик пикселов */
+#define MC_FRAME_CNT_VPOUT	MC_R (0x9014)	/* Счетчик кадров */
+#define MC_FIFO_VPOUT		MC_R (0x901C)	/* Вход FIFO */
 
 /*
  * Регистры USB
@@ -199,37 +162,51 @@
 #define MC_USB_CSR_EP4		MC_R (0xC02C)   /* Управление и статус ЕР4 */
 
 /*
- * Регистры Ethernet MAC
+ * Регистры SpaceWire
  */
-#define MC_MAC_CONTROL		MC_R (0xE000)	/* Управление MAC */
-#define MC_MAC_ADDR_L		MC_R (0xE004)	/* Младшая часть исходного адреса MAC */
-#define MC_MAC_ADDR_H		MC_R (0xE008)	/* Старшая часть исходного адреса MAC */
-#define MC_MAC_DADDR_L		MC_R (0xE00C)	/* Младшая часть адреса назначения */
-#define MC_MAC_DADDR_H		MC_R (0xE010)	/* Старшая часть адреса назначения */
-#define MC_MAC_FCS_CLIENT	MC_R (0xE014)	/* Контрольная сумма кадра */
-#define MC_MAC_TYPE		MC_R (0xE018)	/* Тип кадра */
-#define MC_MAC_IFS_COLL_MODE	MC_R (0xE01C)	/* IFS и режим обработки коллизии */
-#define MC_MAC_TX_FRAME_CONTROL	MC_R (0xE020)	/* Управление передачей кадра */
-#define MC_MAC_STATUS_TX	MC_R (0xE024)	/* Статус передачи кадра */
-#define MC_MAC_UCADDR_L		MC_R (0xE028)	/* Младшая часть уникального адреса MAC */
-#define MC_MAC_UCADDR_H		MC_R (0xE02C)	/* Старшая часть уникального адреса MAC */
-#define MC_MAC_MCADDR_L		MC_R (0xE030)	/* Младшая часть группового адреса */
-#define MC_MAC_MCADDR_H		MC_R (0xE034)	/* Старшая часть группового адреса */
-#define MC_MAC_MCADDR_MASK_L	MC_R (0xE038)	/* Младшая часть маски группового адреса */
-#define MC_MAC_MCADDR_MASK_H	MC_R (0xE03C)	/* Старшая часть маски группового адреса */
-#define MC_MAC_HASHT_L		MC_R (0xE040)	/* Младшая часть хэш-таблицы */
-#define MC_MAC_HASHT_H		MC_R (0xE044)	/* Старшая часть хэш-таблицы */
-#define MC_MAC_RX_FRAME_CONTROL	MC_R (0xE048)	/* Управление приемом кадра */
-#define MC_MAC_RX_FR_MAXSIZE	MC_R (0xE04C)	/* Максимальный размер принимаемого кадра */
-#define MC_MAC_STATUS_RX	MC_R (0xE050)	/* Статус приема кадра */
-#define MC_MAC_RX_FRAME_STATUS_FIFO MC_R (0xE054) /* FIFO статусов принятых кадров */
-#define MC_MAC_MD_CONTROL	MC_R (0xE058)	/* Управление порта MD */
-#define MC_MAC_MD_STATUS	MC_R (0xE05C)	/* Статус порта MD */
-#define MC_MAC_MD_MODE		MC_R (0xE060)	/* Режим работы порта MD */
-#define MC_MAC_TX_TEST_CSR	MC_R (0xE064)	/* Управление и состояние режима тестирования TX_FIFO */
-#define MC_MAC_TX_FIFO		MC_R (0xE068)	/* Передающее TX_FIFO */
-#define MC_MAC_RX_TEST_CSR	MC_R (0xE06C)	/* Управление и состояние режима тестирования RX_FIFO */
-#define MC_MAC_RX_FIFO		MC_R (0xE070)	/* Принимающее RX_FIFO */
+#define MC_SWIC_HW_VER(n)	MC_R (0x5000 + ((n) << 12))	/* Регистр аппаратной версии контроллера */
+#define MC_SWIC_STATUS(n)	MC_R (0x5004 + ((n) << 12))	/* Регистр состояния */
+#define MC_SWIC_RX_CODE(n)	MC_R (0x5008 + ((n) << 12))	/* Регистр принятого управляющего символа */
+#define MC_SWIC_MODE_CR(n)	MC_R (0x500C + ((n) << 12))	/* Регистр управления режимом работы */
+#define MC_SWIC_TX_SPEED(n)	MC_R (0x5010 + ((n) << 12))	/* Регистр управления скоростью передачи */
+#define MC_SWIC_TX_CODE(n)	MC_R (0x5014 + ((n) << 12))	/* Регистр передаваемого управляющего символа */
+#define MC_SWIC_RX_SPEED(n)	MC_R (0x5018 + ((n) << 12))	/* Регистр измерителя скорости приема */
+#define MC_SWIC_CNT_RX_PACK(n)	MC_R (0x501C + ((n) << 12))	/* Регистр счетчика принятых пакетов ненулевой длины */
+#define MC_SWIC_CNT_RX0_PACK(n)	MC_R (0x5020 + ((n) << 12))	/* Регистр счетчика принятых пакетов нулевой длины */
+#define MC_SWIC_ISR_L(n)	MC_R (0x5024 + ((n) << 12))	/* Регистр кодов распределенных прерываний (младшая часть) */
+#define MC_SWIC_ISR_H(n)	MC_R (0x5028 + ((n) << 12))	/* Регистр кодов распределенных прерываний (старшая часть) */
+
+/*
+ * Регистры канала DMA записи в память дескрипторов принимаемых пакетов SWIC
+ */
+#define MC_SWIC_RX_DESC_CSR(n)	MC_R (0x5800 + ((n) << 12))	/* Регистр управления и состояния канала */
+#define MC_SWIC_RX_DESC_CP(n)	MC_R (0x5804 + ((n) << 12))	/* Регистр указателя цепочки канала */
+#define MC_SWIC_RX_DESC_IR(n)	MC_R (0x5808 + ((n) << 12))	/* Индексный регистр внешней памяти канала */
+#define MC_SWIC_RX_DESC_RUN(n)	MC_R (0x580C + ((n) << 12))	/* Псевдорегистр управления состоянием бита RUN */
+
+/*
+ * Регистры канала DMA записи в память принимаемых слов данных SWIC
+ */
+#define MC_SWIC_RX_DATA_CSR(n)	MC_R (0x5840 + ((n) << 12))	/* Регистр управления и состояния канала */
+#define MC_SWIC_RX_DATA_CP(n)	MC_R (0x5844 + ((n) << 12))	/* Регистр указателя цепочки канала */
+#define MC_SWIC_RX_DATA_IR(n)	MC_R (0x5848 + ((n) << 12))	/* Индексный регистр внешней памяти канала */
+#define MC_SWIC_RX_DATA_RUN(n)	MC_R (0x584C + ((n) << 12))	/* Псевдорегистр управления состоянием бита RUN */
+
+/*
+ * Регистры канала DMA чтения из памяти дескрипторов передаваемых пакетов SWIC
+ */
+#define MC_SWIC_TX_DESC_CSR(n)	MC_R (0x5880 + ((n) << 12))	/* Регистр управления и состояния канала */
+#define MC_SWIC_TX_DESC_CP(n)	MC_R (0x5884 + ((n) << 12))	/* Регистр указателя цепочки канала */
+#define MC_SWIC_TX_DESC_IR(n)	MC_R (0x5888 + ((n) << 12))	/* Индексный регистр внешней памяти канала */
+#define MC_SWIC_TX_DESC_RUN(n)	MC_R (0x588C + ((n) << 12))	/* Псевдорегистр управления состоянием бита RUN */
+
+/*
+ * Регистры канала DMA чтения из памяти передаваемых слов данных SWIC
+ */
+#define MC_SWIC_TX_DATA_CSR(n)	MC_R (0x58C0 + ((n) << 12))	/* Регистр управления и состояния канала */
+#define MC_SWIC_TX_DATA_CP(n)	MC_R (0x58C4 + ((n) << 12))	/* Регистр указателя цепочки канала */
+#define MC_SWIC_TX_DATA_IR(n)	MC_R (0x58C8 + ((n) << 12))	/* Индексный регистр внешней памяти канала */
+#define MC_SWIC_TX_DATA_RUN(n)	MC_R (0x58CC + ((n) << 12))	/* Псевдорегистр управления состоянием бита RUN */
 
 /*
  * Регистры порта внешней памяти MPORT
@@ -250,20 +227,13 @@
 #define MC_CLKEN	MC_R (0x4004)	/* Управление отключением частоты от устройств */
 #define MC_CSR		MC_R (0x4008)	/* Управление и состояние */
 #define MC_MASKR0	MC_R (0x4010)	/* Маска прерываний */
-#define MC_QSTR0	MC_R (0x4014)	/* Запросы прерываний от IT, RTT, WDT,
-					 * VPOUT, VPIN, ETHERNET MAC, USB,
-					 * PMSC, UART, nIRQ[3:0] */
-#define MC_MASKR1	MC_R (0x4018)	/* Маска прерываний от DMA MEM */
-#define MC_QSTR1	MC_R (0x401C)	/* Запросы прерываний от DMA MEM */
-#define MC_MASKR2	MC_R (0x4020)	/* Маска прерываний от MFBSP */
-#define MC_QSTR2	MC_R (0x4024)	/* Запросы прерываний от MFBSP */
+#define MC_QSTR0	MC_R (0x4014)	/* Запросы прерываний */
+#define MC_MASKR1	MC_R (0x4018)	/* Маска прерываний */
+#define MC_QSTR1	MC_R (0x401C)	/* Запросы прерываний*/
+#define MC_MASKR2	MC_R (0x4020)	/* Маска прерываний */
+#define MC_QSTR2	MC_R (0x4024)	/* Запросы прерываний */
+#define MC_MASKR3	MC_R (0x4028)	/* Маска прерываний*/
+#define MC_QSTR3	MC_R (0x402c)	/* Запросы прерываний*/
 #define MC_IRQM		MC_R (0x4030)	/* Режимы внешних прерываний nIRQ[3:0] */
 
-/*
- * Регистры многоканального коррелятора
- */
-#define MC_BASE_MCC	MC_R (0xF000)	/* Базовый адрес регистров МСС */
-#define MC_INT_EN_MCC	MC_R (0xFFF4)	/* Разрешение прерывания от MCC */
-#define MC_INT_RST_MCC	MC_R (0xFFF8)	/* Сброс прерывания от MCC */
-
-#endif /* _IO_NVCOM01_H */
+#endif /* _IO_MC24R2_H */

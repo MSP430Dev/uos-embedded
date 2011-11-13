@@ -1,0 +1,12 @@
+#conf set blkio        # mdb internal configuration
+reset
+
+set 0xb82f1000 0x009200fc # CSCON0
+set 0xb82f1004 0x001708fc # CSCON1
+set 0xb82f1008 0x001710fc # CSCON2
+set 0xb82f100c 0x00971cfc # CSCON3
+set 0xb82f4008 0x00010061 # CSR x*CLK
+
+loadelf ./test-ram.out
+#run
+exit

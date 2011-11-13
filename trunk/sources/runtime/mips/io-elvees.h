@@ -66,6 +66,15 @@
 #define ST_IM_MCU	0x00008000	/* от внутренних устройств микроконтроллера */
 #endif
 
+#ifdef ELVEES_MC24R2
+#define ST_IM_QSTR0	0x00000400
+#define ST_IM_QSTR1	0x00000800
+#define ST_IM_QSTR2	0x00001000
+#define ST_IM_QSTR3	0x00002000
+#define ST_IM_DSP	0x00004000
+#define ST_IM_COMPARE	0x00008000
+#endif
+
 #ifdef ELVEES_NVCOM01
 #define ST_IM_QSTR0	0x00000400	/* от внутренних устройств микроконтроллера */
 #define ST_IM_QSTR1	0x00000800	/* от DMA MEM */

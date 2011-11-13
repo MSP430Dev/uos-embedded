@@ -22,7 +22,7 @@ bool_t debug_onlcr = 1;
 
 static int debug_char = -1;
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 /*
  * Send a byte to the UART transmitter, with interrupts disabled.
  */
@@ -110,7 +110,7 @@ debug_peekchar (void)
 	debug_char = c;
 	return c;
 }
-#endif /* ELVEES_MC24 */
+#endif /* ELVEES */
 
 #if defined (PIC32MX)
 /*
@@ -215,7 +215,7 @@ debug_peekchar (void)
 	debug_char = c;
 	return c;
 }
-#endif /* ELVEES_MC24 */
+#endif /* PIC32MX */
 
 void
 debug_puts (const char *p)

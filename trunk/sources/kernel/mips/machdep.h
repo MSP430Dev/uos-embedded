@@ -38,6 +38,17 @@
 #define ARCH_INTERRUPTS		(32+8)
 #endif
 
+#ifdef ELVEES_MC24R2
+/*
+ * 23 interrupts linked to MASKR0[22:0] register.
+ * 4 interrupts linked to MASKR1[3:0] register.
+ * 32 interrupts linked to MASKR2[31:0] register.
+ * 5 interrupts linked to MASKR3[4:0] register.
+ * COMPARE interrupt linked to irq 19.
+ */
+#define ARCH_INTERRUPTS		(23+4+32+5)
+#endif
+
 #ifdef ELVEES_NVCOM01
 /*
  * 32 interrupts linked to MASKR0[31:0] register.

@@ -28,6 +28,11 @@
 #   include <runtime/mips/io-mc24.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
+#ifdef ELVEES_MC24R2
+#   define ELVEES	1
+#   include <runtime/mips/io-mc24r2.h>
+#   include <runtime/mips/io-elvees.h>
+#endif
 #ifdef ELVEES_NVCOM01
 #   define ELVEES	1
 #   include <runtime/mips/io-nvcom01.h>
@@ -91,6 +96,9 @@
  * local storage. When it is greater than 16, you must put it
  * in a macro definition here.
  */
+#ifdef ELVEES_MC24R2
+#   define MIPS_FSPACE		24	/* for Elvees MC24R2 */
+#endif
 #ifdef ELVEES_NVCOM01
 #   define MIPS_FSPACE		24	/* for Elvees NVCom-01 */
 #endif
@@ -150,7 +158,7 @@ void *mips_get_stack_pointer ()
 /*
  * Write C0 coprocessor register.
  */
-#ifdef ELVEES
+#if defined (ELVEES)
 
 #define mips_write_c0_register(reg, value)			\
 	do {							\
@@ -233,7 +241,7 @@ do {								\
 static void inline __attribute__ ((always_inline))
 mips_intr_disable (int *x)
 {
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 	/* This must be atomic operation.
 	 * On MIPS1 this could be done only using system call exception. */
 	asm volatile (
@@ -252,7 +260,7 @@ mips_intr_disable (int *x)
 static void inline __attribute__ ((always_inline))
 mips_intr_restore (int x)
 {
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 	int status;
 
 	status = mips_read_c0_register (C0_STATUS);
@@ -268,7 +276,7 @@ mips_intr_restore (int x)
 static void inline __attribute__ ((always_inline))
 mips_intr_enable ()
 {
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 	int status;
 
 	status = mips_read_c0_register (C0_STATUS);

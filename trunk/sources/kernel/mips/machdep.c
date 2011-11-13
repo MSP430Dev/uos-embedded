@@ -337,13 +337,13 @@ _arch_interrupt_ (void)
                 }
 #endif
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#ifdef ELVEES
 		unsigned status = mips_read_c0_register (C0_STATUS);
 		unsigned cause = mips_read_c0_register (C0_CAUSE);
 		unsigned pending = status & cause & 0xff00;
 		if (! pending)
 			break;
-#endif /* ELVEES_MC24 || ELVEES_NVCOM01 || ELVEES_NVCOM02 */
+#endif /* ELVEES */
 #ifdef ELVEES_MC24
 		/* Read readme-mc24.txt for interrupt numbers. */
 		if (pending & ST_IM_MCU) {
@@ -360,6 +360,40 @@ _arch_interrupt_ (void)
 			status &= ~(0x100 << (irq & 7));
 			mips_write_c0_register (C0_STATUS, status);
 		}
+#endif
+#ifdef ELVEES_MC24R2
+		/* Read readme-mc24r2.txt for interrupt numbers. */
+		if (pending & ST_IM_COMPARE) {
+			/* Use number 30 for COMPARE interrupt. */
+			irq = 19;
+			status &= ~ST_IM_COMPARE;
+			mips_write_c0_register (C0_STATUS, status);
+		} else if (pending & ST_IM_QSTR0) {
+			/* QSTR0 interrupt: 0..22. */
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			if (irq < 0)
+				break;
+			MC_MASKR0 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR1) {
+			/* QSTR1 interrupt: 23..26. */
+			irq = 23 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			if (irq < 23)
+				break;
+			MC_MASKR1 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR2) {
+			/* QSTR2 interrupt: 27..58. */
+			irq = 27 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			if (irq < 27)
+				break;
+			MC_MASKR2 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR3) {
+			/* QSTR2 interrupt: 59..63. */
+			irq = 59 + 31 - mips_count_leading_zeroes (MC_QSTR3 & MC_MASKR3);
+			if (irq < 59)
+				break;
+			MC_MASKR3 &= ~(1 << irq);
+		} else
+			break;
 #endif
 #ifdef ELVEES_NVCOM01
 		/* Read readme-nvcom01.txt for interrupt numbers. */
@@ -391,7 +425,7 @@ _arch_interrupt_ (void)
 #endif
 #ifdef ELVEES_NVCOM02
 		/* TODO */
-		/* Read readme-nvcom01.txt for interrupt numbers. */
+		/* Read readme-nvcom02.txt for interrupt numbers. */
 		if (pending & ST_IM_COMPARE) {
 			/* Use number 30 for COMPARE interrupt. */
 			irq = 30;
@@ -489,6 +523,26 @@ arch_intr_allow (int irq)
 		unsigned status = mips_read_c0_register (C0_STATUS);
 		status |= 0x100 << (irq & 7);
 		mips_write_c0_register (C0_STATUS, status);
+	}
+#endif
+#ifdef ELVEES_MC24R2
+	if (irq == 19) {
+		/* Use irq number 19 for COMPARE interrupt. */
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		status |= ST_IM_COMPARE;
+		mips_write_c0_register (C0_STATUS, status);
+	} else if (irq < 23) {
+		/* QSTR0 interrupt: 0..22. */
+		MC_MASKR0 |= 1 << irq;
+	} else if (irq < 27) {
+		/* QSTR1 interrupt: 23..26. */
+		MC_MASKR1 |= 1 << (irq-23);
+	} else if (irq < 59) {
+		/* QSTR2 interrupt: 27..58. */
+		MC_MASKR2 |= 1 << (irq-27);		
+	} else {
+		/* QSTR3 interrupt: 59..63. */
+		MC_MASKR3 |= 1 << (irq-59);
 	}
 #endif
 #ifdef ELVEES_NVCOM01

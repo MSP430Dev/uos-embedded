@@ -31,8 +31,8 @@ extern int main ();
 void __attribute ((noreturn))_init_ (void)
 {
 	unsigned *src, *dest, *limit;
-
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+	
+#ifdef ELVEES
 	unsigned int divisor;
 
 	/* Clear CAUSE register. Use special irq vector. */
@@ -46,6 +46,9 @@ void __attribute ((noreturn))_init_ (void)
 #endif
 #ifdef ELVEES_MC24
 		| ST_IM_MCU
+#endif
+#ifdef ELVEES_MC24R2
+		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2 | ST_IM_QSTR3
 #endif
 #ifdef ELVEES_NVCOM01
 		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2
@@ -150,6 +153,23 @@ void __attribute ((noreturn))_init_ (void)
 	MC_CSR = MC_CSR_FM | MC_CSR_CLK(KHZ/ELVEES_CLKIN) | MC_CSR_CLKEN;
 	MC_MASKR = 0;
 #endif
+
+#ifdef ELVEES_MC24R2
+	/* Clock: enable only core. */
+	MC_CLKEN = MC_CLKEN_CORE;
+
+	/* Clock multiply from CLKIN to KHZ. */
+	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ/ELVEES_CLKIN) |
+		   MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ/ELVEES_CLKIN);
+
+	/* Fixed mapping. */
+	MC_CSR = MC_CSR_FM;
+
+	MC_MASKR0 = 0;
+	MC_MASKR1 = 0;
+	MC_MASKR2 = 0;
+	MC_MASKR3 = 0;
+#endif
 	MC_ITCSR = 0;
 #ifdef MC_ITCSR1
 	MC_ITCSR1 = 0;
@@ -213,19 +233,8 @@ void __attribute ((noreturn))_init_ (void)
 	/*
 	 * Setup UART registers.
 	 * Compute the divisor for 115.2 kbaud.
-	 * Assume we have 80 MHz cpu clock.
 	 */
-#ifdef ELVEES_MC24
-/*	divisor = MC_DL_BAUD (ELVEES_CLKIN * 1000, 115200);*/
 	divisor = MC_DL_BAUD (KHZ * 1000, 115200);
-#endif
-#ifdef ELVEES_NVCOM01
-	divisor = MC_DL_BAUD (KHZ * 1000, 115200);
-#endif
-#ifdef ELVEES_NVCOM02
-	/* TODO */
-	divisor = MC_DL_BAUD (KHZ * 1000, 115200);
-#endif
 
 	MC_LCR = MC_LCR_8BITS | MC_LCR_DLAB;
 	MC_DLM = divisor >> 8;
@@ -243,8 +252,8 @@ void __attribute ((noreturn))_init_ (void)
 	(void) MC_MSR;
 	(void) MC_RBR;
 	(void) MC_IIR;
-
-#endif /* ELVEES_MC24 or ELVEES_NVCOM01 or ELVEES_NVCOM02 */
+	
+#endif /* ELVEES */
 
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
@@ -284,13 +293,13 @@ uos_valid_memory_address (void *ptr)
 		return 1;
 #endif /* PIC32MX */
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 #ifdef BOOT_SRAM_SIZE
 	/* Boot SRAM. */
 	if (address >= 0xbfc00000 && address < 0xbfc00000+BOOT_SRAM_SIZE)
 		return 1;
 #endif /* BOOT_SRAM_SIZE */
-#endif /* ELVEES_MC24 or ELVEES_NVCOM01 or ELVEES_NVCOM02 */
+#endif /* ELVEES */
 	return 0;
 }
 
@@ -300,7 +309,7 @@ _irq_handler_ ()
 	/* This is needed when no kernel is present. */
 }
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 static void dump_of_death (unsigned int context[])
 {
 	debug_printf ("                t0 = %8x   s0 = %8x   t8 = %8x   lo = %8x\n",
@@ -383,4 +392,4 @@ void _pagefault_handler_ (unsigned int context[])
 
 	dump_of_death (context);
 }
-#endif /* ELVEES_MC24 or ELVEES_NVCOM01 or ELVEES_NVCOM02 */
+#endif /* ELVEES */

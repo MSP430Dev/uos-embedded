@@ -20,7 +20,7 @@
 #   include "pic32.h"
 #endif
 
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 #   include "elvees.h"
 #endif
 

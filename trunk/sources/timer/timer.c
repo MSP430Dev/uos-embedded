@@ -46,6 +46,10 @@
 #   define TIMER_IRQ		29	/* Interval Timer interrupt */
 #endif
 
+#if ELVEES_MC24R2
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
 #if ELVEES_NVCOM01
 #   define TIMER_IRQ		22	/* Interval Timer interrupt */
 #endif
@@ -104,7 +108,7 @@ bool_t
 timer_handler (timer_t *t)
 {
 /*debug_printf ("<ms=%ld> ", t->milliseconds);*/
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 	/* Clear interrupt. */
 	MC_ITCSR &= ~MC_ITCSR_INT;
 #endif
@@ -270,7 +274,7 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	t->compare_step = (t->khz * t->msec_per_tick + 1) / 2;
 	mips_write_c0_register (C0_COMPARE, count + t->compare_step);
 #endif
-#if defined (ELVEES_MC24) || defined (ELVEES_NVCOM01) || defined (ELVEES_NVCOM02)
+#if defined (ELVEES)
 	/* Use interval timer with prescale 1:1. */
 	MC_ITCSR = 0;
 	MC_ITSCALE = 0;
