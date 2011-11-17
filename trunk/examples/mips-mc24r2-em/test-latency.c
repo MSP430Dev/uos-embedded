@@ -9,7 +9,7 @@
 #define MSEC_PER_TICK	100	/* Период таймера в миллисекундах */
 #define CS3_WAIT_STATES	3	/* Такты ожидания для flash-памяти на CS3 */
 
-ARRAY (task, 0x400);
+ARRAY (task, 2000);
 mutex_t timer_lock;
 
 volatile unsigned nirqs;
@@ -31,6 +31,15 @@ void print_rational (char *title, unsigned a, unsigned b)
  */
 void console (void *arg)
 {
+	/*
+	for (;;) {
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		unsigned cause = mips_read_c0_register (C0_CAUSE);
+		unsigned pending = status & cause & 0xff00;
+		debug_printf ("QSTR0 = %08X, MASKR0 = %08X, pending = %08X\n", MC_QSTR0, MC_MASKR0, pending);
+	}
+	*/
+
 	for (;;) {
 		mutex_wait (&timer_lock);
 		debug_puts ("\33[H");
@@ -56,17 +65,17 @@ void console (void *arg)
  */
 static bool_t timer_handler (void *arg)
 {
-debug_printf ("timer_handler\n");
 	/* Вычисляем количество тактов, затраченных на вход в прерывание. */
 	unsigned latency = MC_ITPERIOD - MC_ITCOUNT;
 
 	/* Снимаем бит прерывания. */
 	MC_ITCSR &= ~MC_ITCSR_INT;
+	
+	debug_printf ("<%u> ", latency);	
 
 	/* Заново открываем маску прерывания. */
 	arch_intr_allow (TIMER_IRQ);
 
-	/*debug_printf ("<%u> ", latency);*/
 	if (++nirqs > 10) {
 		if (latency_min > latency)
 			latency_min = latency;

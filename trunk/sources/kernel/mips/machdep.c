@@ -364,7 +364,7 @@ _arch_interrupt_ (void)
 #ifdef ELVEES_MC24R2
 		/* Read readme-mc24r2.txt for interrupt numbers. */
 		if (pending & ST_IM_COMPARE) {
-			/* Use number 30 for COMPARE interrupt. */
+			/* Use number 19 for COMPARE interrupt. */
 			irq = 19;
 			status &= ~ST_IM_COMPARE;
 			mips_write_c0_register (C0_STATUS, status);
@@ -595,7 +595,8 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	unsigned stacksz)
 {
 	unsigned i, *sp = (unsigned*) ((char*) t + stacksz);
-	extern void _gp;
+	//extern void _gp;
+	extern unsigned char _gp;
 
 	if ((unsigned) sp & 4)
 		*--sp = 0;		/* align of double word boundary */

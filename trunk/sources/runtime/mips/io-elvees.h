@@ -122,7 +122,8 @@
 #define CA_BD		0x80000000	/* исключение в слоте задержки перехода */
 
 
-/*
+/*-----------------------------------------------------------------------------
+ *
  * Регистры интерфейсов Space Wire, размещенных в контроллере (SWIC0, SWIC1)
  */
 #ifdef MC_HAVE_SWIC
@@ -141,7 +142,8 @@
 #define MC_SWIC_RX_BUF_EMPTY	0x00000200	/* Буфер приема пуст */
 #define MC_SWIC_TX_BUF_FULL	0x00000400	/* Буфер передачи полон */
 #define MC_SWIC_TX_BUF_EMPTY	0x00000800	/* Буфер передачи пуст */
-#define MC_SWIC_CONNECTED	0x00001000	/* Признак установленного соединения */
+#define MC_SWIC_GOT_FIRST_BIT	0x00001000	/* Признак получения первого бита */
+#define MC_SWIC_CONNECTED	0x00002000	/* Признак установленного соединения */
 #define MC_SWIC_GOT_TIME	0x00004000	/* Принят маркер времени из сети */
 #define MC_SWIC_GOT_INT		0x00008000	/* Принят код распределенного прерывания из сети */
 #define	MC_SWIC_GOT_POLL	0x00010000	/* Принят poll-код из сети */
@@ -172,13 +174,21 @@
 #define MC_SWIC_DS_RST		0x00000020	/* Установка DS-макроячейки в начальное состояние */
 #define MC_SWIC_SWCORE_RST	0x00000040	/* Установка контроллера в начальное состояние */
 #define MC_SWIC_WORK_TYPE	0x00000100	/* Тип режима работы */
+#define MC_SWIC_TIMING_WR_EN	0x00004000	/* Разрешение записи в поле TIMING регистра TX_SPEED */
+#define MC_SWIC_AUTO_TX_SPEED	0x00008000	/* Признак автоматического установления скорости передачи 
+						   после соединения (см. Спецификацию!!!) */
 #define MC_SWIC_LINK_MASK	0x00040000	/* Маска прерывания LINK */
 #define MC_SWIC_TIM_MASK	0x00080000	/* Маска прерывания TIM */
 #define MC_SWIC_ERR_MASK	0x00100000	/* Маска прерывания ERR */
 
 /* TX_SPEED */
-#define MC_SWIC_TXSPEED		0x000000FF	/* Установка коэффициента умножения TX_PLL */
-#define MC_SWIC_PLL_CTR		0x00000300	/* Разрешение работы TX_PLL */
+#define MC_SWIC_TX_SPEED_PRM_MASK	0xFF		/* Маска коэффициента умножения TX_PLL */
+#define MC_SWIC_TX_SPEED_PRM(x)	((x) & 0xFF)		/* Установка коэффициента умножения TX_PLL */
+#define MC_SWIC_PLL_TX_EN	0x00000100		/* Разрешение работы TX_PLL */
+#define MC_SWIC_LVDS_EN		0x00000200		/* Разрешение работы приемопередатчиков LVDS */
+#define MC_SWIC_TX_SPEED_CON(x)	(((x) & 0xFF) << 10)	/* Скорость передачи данных при установлении соединения */
+#define MC_SWIC_TIMING(x)	(((x) & 0xF) << 20)	/* В это поле необходимо записать код, равный тактовой 
+							   частоте работы CPU, деленной на 10*/
 
 /* TX_CODE */
 #define MC_SWIC_TXCODE		0x0000001F	/* Управляющий код (содержимое) */
@@ -219,14 +229,24 @@
 
 /* Регистр CSR для каналов DMA */
 #define MC_DMA_CSR_RUN		0x00000001	/* Состояние работы канала DMA */
-#define MC_DMA_CSR_2D		0x00000200	/* Режим модификации адреса памяти */
+#define MC_DMA_CSR_DIR		0x00000002	/* Направление передачи для каналов MEM_CH */
+#define MC_DMA_CSR_WN(n)	((n) << 2)	/* Установка длины пачки */
+#define MC_DMA_CSR_EN64		0x00000040	/* Передача 64-разрядных данных (для MEM_CH) */
+#define MC_DMA_CSR_IPD		0x00000040	/* Запрет прерывания по запросу от порта при выключенном канале DMA(RUN=0) */
+#define MC_DMA_CSR_START_DSP	0x00000080	/* Разрешение запуска DSP (для MEM_CH) */
+#define MC_DMA_CSR_MODE		0x00000100	/* Режим модификация адреса регистра IR0 */
+#define MC_DMA_CSR_2D		0x00000200	/* Режим модификации адреса регистра IR1 */
 #define MC_DMA_CSR_CHEN		0x00001000	/* Признак разрешения самоинициализации */
 #define MC_DMA_CSR_IM		0x00002000	/* Маска прерывания при окончании передачи блока */
 #define MC_DMA_CSR_END		0x00004000	/* Признак завершения передачи блока данных */
 #define MC_DMA_CSR_DONE		0x00008000	/* Признак завершения передачи цепочки блоков данных */
 #define MC_DMA_CSR_WCX_MASK	0xffff0000	/* Маска счетчика слов */
 #define MC_DMA_CSR_WCX(n)	((n) << 16)	/* Установка счетчика слов */
-#define MC_DMA_CSR_WN(n)	((n) << 2)	/* Установка длины пачки */
+
+/* Регистр OR для каналов DMA типа MEM_CH */
+#define MC_DMA_OR0(n)		(n)		/* Приращение регистра IR0 (в словах) */
+#define MC_DMA_OR1(n)		((n) << 16)	/* Приращение регистра IR1 (в словах) */
+
 
 /* Псевдорегистр управления RUN */
 #define MC_DMA_RUN		0x00000001	/* Управление битом RUN */
@@ -382,10 +402,121 @@
 #define MC_MASKR2_SRQ0		(1 << 0)	/* Запрос обслуживания от порта MFBSP0 */
 #endif
 
+#ifdef ELVEES_MC24R2
+/* TODO */
+#define MC_MASKR0_IT		(1 << 22)	/* от таймера IT */
+#define MC_MASKR0_RTT		(1 << 21)	/* от таймера RTT */
+#define MC_MASKR0_WDT		(1 << 20)	/* от таймера WDT */
+#define MC_MASKR0_UART0		(1 << 4)	/* Прерывание от UART0 */
+#define MC_MASKR0_IRQ3		(1 << 3)	/* Внешнее прерывание nIRQ3 */
+#define MC_MASKR0_IRQ2		(1 << 2)	/* Внешнее прерывание nIRQ2 */
+#define MC_MASKR0_IRQ1		(1 << 1)	/* Внешнее прерывание nIRQ1 */
+#define MC_MASKR0_IRQ0		(1 << 0)	/* Внешнее прерывание nIRQ0 */
+
+#define MC_MASKR1_DMAMEM_CH3	(1 << 3)	/* от канала DMA MEM_CH3 */
+#define MC_MASKR1_DMAMEM_CH2	(1 << 2)	/* от канала DMA MEM_CH2 */
+#define MC_MASKR1_DMAMEM_CH1	(1 << 1)	/* от канала DMA MEM_CH1 */
+#define MC_MASKR1_DMAMEM_CH0	(1 << 0)	/* от канала DMA MEM_CH0 */
+
+#define MC_MASKR2_DMA_MFBSP3	(1 << 15)	/* от канала DMA порта MFBSP3 */
+#define MC_MASKR2_MFBSP_TX3	(1 << 14)	/* готовность MFBSP3 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX3	(1 << 13)	/* готовность MFBSP3 к выдаче по DMA */
+#define MC_MASKR2_SRQ3		(1 << 12)	/* Запрос обслуживания от порта MFBSP3 */
+#define MC_MASKR2_DMA_MFBSP2	(1 << 11)	/* от канала DMA порта MFBSP2 */
+#define MC_MASKR2_MFBSP_TX2	(1 << 10)	/* готовность MFBSP2 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX2	(1 << 9)	/* готовность MFBSP2 к выдаче по DMA */
+#define MC_MASKR2_SRQ2		(1 << 8)	/* Запрос обслуживания от порта MFBSP2 */
+#define MC_MASKR2_DMA_MFBSP1	(1 << 7)	/* от канала DMA порта MFBSP1 */
+#define MC_MASKR2_MFBSP_TX1	(1 << 6)	/* готовность MFBSP1 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX1	(1 << 5)	/* готовность MFBSP1 к выдаче по DMA */
+#define MC_MASKR2_SRQ1		(1 << 4)	/* Запрос обслуживания от порта MFBSP1 */
+#define MC_MASKR2_DMA_MFBSP0	(1 << 3)	/* от канала DMA порта MFBSP0 */
+#define MC_MASKR2_MFBSP_TX0	(1 << 2)	/* готовность MFBSP0 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX0	(1 << 1)	/* готовность MFBSP0 к выдаче по DMA */
+#define MC_MASKR2_SRQ0		(1 << 0)	/* Запрос обслуживания от порта MFBSP0 */
+#endif
+
+
+#ifdef ELVEES_MCT02R
+#define MC_MASKR0_IT		(1 << 22)	/* от таймера IT */
+#define MC_MASKR0_RTT		(1 << 21)	/* от таймера RTT */
+#define MC_MASKR0_WDT		(1 << 20)	/* от таймера WDT */
+#define MC_MASKR0_UART3		(1 << 7)	/* Прерывание от UART3 */
+#define MC_MASKR0_UART2		(1 << 6)	/* Прерывание от UART2 */
+#define MC_MASKR0_UART1		(1 << 5)	/* Прерывание от UART1 */
+#define MC_MASKR0_UART0		(1 << 4)	/* Прерывание от UART0 */
+#define MC_MASKR0_IRQ3		(1 << 3)	/* Внешнее прерывание nIRQ3 */
+#define MC_MASKR0_IRQ2		(1 << 2)	/* Внешнее прерывание nIRQ2 */
+#define MC_MASKR0_IRQ1		(1 << 1)	/* Внешнее прерывание nIRQ1 */
+#define MC_MASKR0_IRQ0		(1 << 0)	/* Внешнее прерывание nIRQ0 */
+/* QSTR1 */
+#define MC_MASKR1_DMAMEM_CH7	(1 << 7)	/* от канала DMA MEM_CH3 */
+#define MC_MASKR1_DMAMEM_CH6	(1 << 6)	/* от канала DMA MEM_CH2 */
+#define MC_MASKR1_DMAMEM_CH5	(1 << 5)	/* от канала DMA MEM_CH1 */
+#define MC_MASKR1_DMAMEM_CH4	(1 << 4)	/* от канала DMA MEM_CH0 */
+#define MC_MASKR1_DMAMEM_CH3	(1 << 3)	/* от канала DMA MEM_CH3 */
+#define MC_MASKR1_DMAMEM_CH2	(1 << 2)	/* от канала DMA MEM_CH2 */
+#define MC_MASKR1_DMAMEM_CH1	(1 << 1)	/* от канала DMA MEM_CH1 */
+#define MC_MASKR1_DMAMEM_CH0	(1 << 0)	/* от канала DMA MEM_CH0 */
+/* QSTR2 */
+#define MC_MASKR2_SW3_TX_DT_CH0	(1 << 31)
+#define MC_MASKR2_SW3_TX_DS_CH0	(1 << 30)
+#define MC_MASKR2_SW3_RX_DT_CH0	(1 << 29)
+#define MC_MASKR2_SW3_RX_DS_CH0	(1 << 28)
+// 27
+#define MC_MASKR2_SW3_LINK	(1 << 26)
+#define MC_MASKR2_SW3_TIME	(1 << 25)
+#define MC_MASKR2_SW3_ERR	(1 << 24)
+#define MC_MASKR2_SW2_TX_DT_CH0	(1 << 23)
+#define MC_MASKR2_SW2_TX_DS_CH0	(1 << 22)
+#define MC_MASKR2_SW2_RX_DT_CH0	(1 << 21)
+#define MC_MASKR2_SW2_RX_DS_CH0	(1 << 20)
+// 19
+#define MC_MASKR2_SW2_LINK	(1 << 18)
+#define MC_MASKR2_SW2_TIME	(1 << 17)
+#define MC_MASKR2_SW2_ERR	(1 << 16)
+#define MC_MASKR2_SW1_TX_DT_CH0	(1 << 15)
+#define MC_MASKR2_SW1_TX_DS_CH0	(1 << 14)
+#define MC_MASKR2_SW1_RX_DT_CH0	(1 << 13)
+#define MC_MASKR2_SW1_RX_DS_CH0	(1 << 12)
+// 11
+#define MC_MASKR2_SW1_LINK	(1 << 10)
+#define MC_MASKR2_SW1_TIME	(1 << 9)
+#define MC_MASKR2_SW1_ERR	(1 << 8)
+#define MC_MASKR2_SW0_TX_DT_CH0	(1 << 7)
+#define MC_MASKR2_SW0_TX_DS_CH0	(1 << 6)
+#define MC_MASKR2_SW0_RX_DT_CH0	(1 << 5)
+#define MC_MASKR2_SW0_RX_DS_CH0	(1 << 4)
+// 3
+#define MC_MASKR2_SW0_LINK	(1 << 2)
+#define MC_MASKR2_SW0_TIME	(1 << 1)
+#define MC_MASKR2_SW0_ERR	(1 << 0)
+
+/* QSTR4 */
+
+#define MC_MASKR4_DMA_MFBSP3	(1 << 15)	/* от канала DMA порта MFBSP3 */
+#define MC_MASKR4_MFBSP_TX3	(1 << 14)	/* готовность MFBSP3 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX3	(1 << 13)	/* готовность MFBSP3 к выдаче по DMA */
+#define MC_MASKR4_SRQ3		(1 << 12)	/* Запрос обслуживания от порта MFBSP3 */
+#define MC_MASKR4_DMA_MFBSP2	(1 << 11)	/* от канала DMA порта MFBSP2 */
+#define MC_MASKR4_MFBSP_TX2	(1 << 10)	/* готовность MFBSP2 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX2	(1 << 9)	/* готовность MFBSP2 к выдаче по DMA */
+#define MC_MASKR4_SRQ2		(1 << 8)	/* Запрос обслуживания от порта MFBSP2 */
+#define MC_MASKR4_DMA_MFBSP1	(1 << 7)	/* от канала DMA порта MFBSP1 */
+#define MC_MASKR4_MFBSP_TX1	(1 << 6)	/* готовность MFBSP1 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX1	(1 << 5)	/* готовность MFBSP1 к выдаче по DMA */
+#define MC_MASKR4_SRQ1		(1 << 4)	/* Запрос обслуживания от порта MFBSP1 */
+#define MC_MASKR4_DMA_MFBSP0	(1 << 3)	/* от канала DMA порта MFBSP0 */
+#define MC_MASKR4_MFBSP_TX0	(1 << 2)	/* готовность MFBSP0 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX0	(1 << 1)	/* готовность MFBSP0 к выдаче по DMA */
+#define MC_MASKR4_SRQ0		(1 << 0)	/* Запрос обслуживания от порта MFBSP0 */
+#endif
+
 /*
  * Системный регистр CLKEN
  */
 #define MC_CLKEN_MCC		(1 << 31)	/* Включение тактовой частоты MCC */
+#define MC_CLKEN_SWIC(n)	(1 << (24+(n)))	/* Включение тактовой частоты SWIC */
 #define MC_CLKEN_USB		(1 << 22)	/* Включение тактовой частоты USB */
 #define MC_CLKEN_EMAC		(1 << 20)	/* Включение тактовой частоты EMAC */
 #define MC_CLKEN_VPOUT		(1 << 19)	/* Включение тактовой частоты VPOUT */
@@ -630,6 +761,58 @@
 #define	FCSR_COND_5	0x20000000	/* condition code 5 */
 #define	FCSR_COND_6	0x40000000	/* condition code 6 */
 #define	FCSR_COND_7	0x80000000	/* condition code 7 */
+
+/*
+ * MFBSP_CSR - регистр управления MFBSP
+ */
+#define MC_MFBSP_CSR_LEN		(1 << 0)
+#define MC_MFBSP_CSR_LTRAN		(1 << 1)
+#define MC_MFBSP_CSR_LCLK_RATE(n)	((((n) & 1) << 2) | (((n) & 0x1e) << 10))
+#define MC_MFBSP_CSR_LSTAT(n)		((n) << 3)
+#define MC_MFBSP_CSR_LRERR		(1 << 5)
+#define MC_MFBSP_CSR_LDW		(1 << 6)
+#define MC_MFBSP_CSR_SRQ_TX		(1 << 7)
+#define MC_MFBSP_CSR_SRQ_RX		(1 << 8)
+#define MC_MFBSP_CSR_SPI_I2S_EN		(1 << 9)
+
+#define MC_MFBSP_CSR_GET_LCLK_RATE(x)	(((x) >> 2) & 1) | (((x) >> 10) & 0x1e)
+
+/* 
+ * MFBSP_GPIO_DR и MFBSP_DIR
+ */
+#define MC_MFBSP_GPIO_LACK		(1 << 0)
+#define MC_MFBSP_GPIO_LCLK		(1 << 1)
+#define MC_MFBSP_GPIO_LDAT(n)		(1 << ((n) + 2))
+
+/*
+ * MFBSP_RSR
+ */
+#define MC_MFBSP_RSR_RBE		(1 << 0)
+#define MC_MFBSP_RSR_RBF		(1 << 1)
+#define MC_MFBSP_RSR_RBHF		(1 << 2)
+#define MC_MFBSP_RSR_RBHL		(1 << 3)
+#define MC_MFBSP_RSR_RSBE		(1 << 4)
+#define MC_MFBSP_RSR_RSBF		(1 << 5)
+#define MC_MFBSP_RSR_RXBUF_R		(1 << 8)
+#define MC_MFBSP_RSR_RXBUF_D		(1 << 9)
+#define MC_MFBSP_RSR_RXBUF		(1 << 10)
+#define MC_MFBSP_RSR_RLEV(n)		((n) << 16)
+#define MC_MFBSP_RSR_RB_DIFF(x)		(((x) >> 24) & 0xF)
+
+/*
+ * MFBSP_TSR
+ */
+#define MC_MFBSP_TSR_TBE		(1 << 0)
+#define MC_MFBSP_TSR_TBF		(1 << 1)
+#define MC_MFBSP_TSR_TBHF		(1 << 2)
+#define MC_MFBSP_TSR_TBLL		(1 << 3)
+#define MC_MFBSP_TSR_TXBUF_R		(1 << 8)
+#define MC_MFBSP_TSR_TXBUF_D		(1 << 9)
+#define MC_MFBSP_TSR_TXBUF		(1 << 10)
+#define MC_MFBSP_TSR_TLEV(n)		((n) << 16)
+#define MC_MFBSP_TSR_TBES(n)		((n) << 20)
+#define MC_MFBSP_TSR_TB_DIFF(x)		(((x) >> 24) & 0xF)
+
 
 /*--------------------------------------
  * Регистры контроллера Ethernet
