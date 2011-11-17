@@ -379,19 +379,19 @@ _arch_interrupt_ (void)
 			irq = 23 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
 			if (irq < 23)
 				break;
-			MC_MASKR1 &= ~(1 << irq);
+			MC_MASKR1 &= ~(1 << (irq - 23));
 		} else if (pending & ST_IM_QSTR2) {
 			/* QSTR2 interrupt: 27..58. */
 			irq = 27 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
 			if (irq < 27)
 				break;
-			MC_MASKR2 &= ~(1 << irq);
+			MC_MASKR2 &= ~(1 << (irq - 27));
 		} else if (pending & ST_IM_QSTR3) {
 			/* QSTR2 interrupt: 59..63. */
 			irq = 59 + 31 - mips_count_leading_zeroes (MC_QSTR3 & MC_MASKR3);
 			if (irq < 59)
 				break;
-			MC_MASKR3 &= ~(1 << irq);
+			MC_MASKR3 &= ~(1 << (irq - 59));
 		} else
 			break;
 #endif
@@ -413,13 +413,13 @@ _arch_interrupt_ (void)
 			irq = 32 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
 			if (irq < 32)
 				break;
-			MC_MASKR1 &= ~(1 << irq);
+			MC_MASKR1 &= ~(1 << (irq - 32));
 		} else if (pending & ST_IM_QSTR2) {
 			/* QSTR2 interrupt: 36..51. */
 			irq = 36 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
 			if (irq < 36)
 				break;
-			MC_MASKR2 &= ~(1 << irq);
+			MC_MASKR2 &= ~(1 << (irq - 36));
 		} else
 			break;
 #endif
@@ -442,13 +442,13 @@ _arch_interrupt_ (void)
 			irq = 32 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
 			if (irq < 32)
 				break;
-			MC_MASKR1 &= ~(1 << irq);
+			MC_MASKR1 &= ~(1 << (irq - 32));
 		} else if (pending & ST_IM_QSTR2) {
 			/* QSTR2 interrupt: 36..51. */
 			irq = 36 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
 			if (irq < 36)
 				break;
-			MC_MASKR2 &= ~(1 << irq);
+			MC_MASKR2 &= ~(1 << (irq - 36));
 		} else
 			break;
 #endif
@@ -480,7 +480,7 @@ _arch_interrupt_ (void)
 		/* Signal the interrupt handler, if any. */
 		mutex_activate (h->lock, 0);
 	}
-
+	
 	/* LY: copy a few lines of code from task_schedule() here. */
 	if (task_need_schedule)	{
 		task_t *t;

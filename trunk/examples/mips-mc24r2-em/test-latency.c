@@ -71,7 +71,7 @@ static bool_t timer_handler (void *arg)
 	/* Снимаем бит прерывания. */
 	MC_ITCSR &= ~MC_ITCSR_INT;
 	
-	debug_printf ("<%u> ", latency);	
+	//debug_printf ("<%u> ", latency);	
 
 	/* Заново открываем маску прерывания. */
 	arch_intr_allow (TIMER_IRQ);
