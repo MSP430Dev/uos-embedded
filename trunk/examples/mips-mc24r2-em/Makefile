@@ -4,7 +4,7 @@ include target.cfg
 
 CURRENT		= test-latency
 TESTS		+= test-debug.srec test-task.srec test-timer.srec
-TESTS		+= test-uart.srec #test-tcl.srec test-ram.srec
+TESTS		+= test-uart.srec test-ram.srec #test-tcl.srec
 TESTS		+= philosophers.srec test-latency.srec test-tswitch.srec
 #TESTS		+= test-fpu.srec
 OUTS		= $(TESTS:%.srec=%.elf)

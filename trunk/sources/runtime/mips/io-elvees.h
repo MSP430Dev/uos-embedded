@@ -578,7 +578,7 @@
 #define MC_SDRCON_INIT		(1 << 31)	/* Initialize SDRAM, 2 usec */
 #endif
 
-#ifdef ELVEES_NVCOM01
+#if defined(ELVEES_NVCOM01) || defined (ELVEES_MC24R2)
 #define MC_SDRCON_RFR(nsec,khz)	(((nsec*khz+999999)/1000000) << 16)
 						/* Refresh period */
 #define MC_SDRCON_CL_2		(2 << 4)	/* CAS latency 2 cycles */

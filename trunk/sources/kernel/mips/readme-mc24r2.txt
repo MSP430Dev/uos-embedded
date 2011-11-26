@@ -47,18 +47,18 @@ IRQ numbers for Elvees MC24R2 microcontroller:
    44 - Прерывание SWIC0 – ошибка в канале
    45 - Прерывание SWIC0 – получен маркер времени/распределенное прерывание
    46 - Unused
-   47 - Прерывание от канала DMA RxDatCh SWIC0
-   48 - Прерывание от канала DMA RxDesCh SWIC0
-   49 - Прерывание от канала DMA TxDatCh SWIC0
-   50 - Прерывание от канала DMA TxDesCh SWIC0
+   47 - Прерывание от канала DMA RxDesCh SWIC0
+   48 - Прерывание от канала DMA RxDatCh SWIC0
+   49 - Прерывание от канала DMA TxDesCh SWIC0
+   50 - Прерывание от канала DMA TxDatCh SWIC0
    51 - Прерывание SWIC1 – установлено соединение, получен пакет
    52 - Прерывание SWIC1 – ошибка в канале
    53 - Прерывание SWIC1 – получен маркер времени/распределенное прерывание
    54 - Unused
-   55 - Прерывание от канала DMA RxDatCh SWIC1
-   56 - Прерывание от канала DMA RxDesCh SWIC1
-   57 - Прерывание от канала DMA TxDatCh SWIC1
-   58 - Прерывание от канала DMA TxDesCh SWIC1
+   55 - Прерывание от канала DMA RxDesCh SWIC1
+   56 - Прерывание от канала DMA RxDatCh SWIC1
+   57 - Прерывание от канала DMA TxDesCh SWIC1
+   58 - Прерывание от канала DMA TxDatCh SWIC1
    59 - Прерывание код Хемминга от CRAM
    60 - Прерывание код Хемминга от ICACHE
    61 - Unused

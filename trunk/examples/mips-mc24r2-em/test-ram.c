@@ -5,7 +5,7 @@
 #include <kernel/uos.h>
 
 #define SDRAM_START	0xA0000000
-#define SDRAM_SIZE	(128*1024*1024)
+#define SDRAM_SIZE	(64*1024*1024)
 #define FLASH_START	0xBFC00000
 
 static inline unsigned word_check (unsigned addr, unsigned val)
@@ -100,12 +100,12 @@ void sdram_test_address_bus ()
 	int d, a, nerrors;
 
 	debug_printf ("\nTesting SDRAM address signals ");
-	debug_puts ("----------------");
+	debug_puts ("\n----------------");
 	debug_puts ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	nerrors = 0;
 	for (d=0; d<32; ++d) {
 		sdram_write (0x0000000, 0x55555555);
-		for (a=2; a<27; ++a) {
+		for (a=2; a<26; ++a) {
 			/* Пробегаем единицей по всем битам адреса,
 			 * записывая разные значения. */
 			sdram_write (1 << a, running_one (a+d));
@@ -113,7 +113,7 @@ void sdram_test_address_bus ()
 
 		/* Проверяем, не затёрлись ли данные. */
 		nerrors += sdram_check (0x0000000, 0x55555555);
-		for (a=2; a<27; ++a) {
+		for (a=2; a<26; ++a) {
 			nerrors += sdram_check (1 << a, running_one (a+d));
 		}
 
@@ -207,19 +207,25 @@ int main (void)
 		ELVEES_CLKIN/1000, ELVEES_CLKIN/100%10, KHZ/1000, KHZ/100%10);
 
 	/* Configure 16 Mbytes of external flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
 
-	/* Configure 128 Mbytes of external 64-bit SDRAM memory at nCS0. */
+	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
-		MC_CSCON_WS (0) |		/* Wait states  */
 		MC_CSCON_T |			/* Sync memory */
-		MC_CSCON_W64 |			/* 64-bit data width */
 		MC_CSCON_CSBA (0x00000000) |	/* Base address */
 		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
-	MC_SDRCON = MC_SDRCON_INIT |		/* Initialize SDRAM */
-		MC_SDRCON_BL_PAGE |		/* Bursh full page */
-		MC_SDRCON_RFR (64000000/8192, KHZ) |	/* Refresh period */
-		MC_SDRCON_PS_512;		/* Page size 512 */
+
+	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
+		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
+		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
+
+	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
+		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
+		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
+		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
+		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
+
+	MC_SDRCSR = 1;				/* Initialize SDRAM */
 	udelay (2);
 
 	for (;;)
