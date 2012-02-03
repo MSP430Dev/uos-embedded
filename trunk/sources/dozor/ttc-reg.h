@@ -11,6 +11,7 @@
  * Адрес контроллера на внешней шине (при использовании параллельной шины)
  */
 #define TTC_ADDR_BASE(n)	(0x10000000 + ((n) << 19))
+//#define TTC_ADDR_BASE(n)	0x10000000
 
 /*
  * Адреса внутренней памяти.
@@ -91,7 +92,7 @@
 #define TTC_IER			TTC_REG_ADDR (0x18)
 
 #define TTC_GSR_TDN		0x0001		/* передан пакет с данными */
-#define TTC_GSR_TSN		0x0002		/* передан старторвый пакет */
+#define TTC_GSR_TSN		0x0002		/* передан стартовый пакет */
 #define TTC_GSR_TABT		0x0004		/* передача оборвана на границе слота */
 #define TTC_GSR_TXP		0x0008		/* идет передача из текущего слота (этот признак не 
 						   устанавливается в GSR, он виден только в слове статуса
@@ -99,6 +100,7 @@
 #define TTC_GSR_HW_ST_FIN	0x0010		/* режим аппаратного старта закончился */
 #define TTC_GSR_HW_CON_LOST	0x0020		/* в течение 4-х циклов рабочего режима не получено ни одного пакета от других устройств */
 #define TTC_GSR_SMB_ELSE	0x0040		/* признак того, что данный узел получал в предыдущем цикле хотя бы один корректный пакет*/
+#define TTC_GSR_NM		0x0800		/* признак произошедшей смены режима */
 #define TTC_GSR_ISNR		0x1000		/* прошел слот с номером, указанном в регистре ISNR */
 #define TTC_GSR_SF		0x2000		/* закончился слот */
 #define TTC_GSR_SINT		0x4000		/* закончился слот с флагом INTR */
@@ -157,6 +159,7 @@
  * SCP – schedule current pointer, 16 R
  */
 #define TTC_SSR			TTC_REG_ADDR (0x2c)
+#define TTC_NSSR			TTC_REG_ADDR (0x90)
 #define TTC_SCP			TTC_REG_ADDR (0x30)
 
 /*
@@ -168,12 +171,14 @@
  * TPLR – transmit preamble length register, 16 R/W
  */
 #define TTC_TPLR		TTC_REG_ADDR (0x38)
+#define TTC_NTPLR		TTC_REG_ADDR (0x58)
 
 
 /*
  * BDR – baudrate divisor register, 16 R/W
  */
 #define TTC_BDR			TTC_REG_ADDR (0x3c)
+#define TTC_NBDR			TTC_REG_ADDR (0x5c)
 
 
 /*----------------------------------------------
@@ -215,6 +220,13 @@
 #define TTC_MTR			TTC_REG_ADDR (0x4c)
 #define TTC_NMTR		TTC_REG_ADDR (0x50)
 
+
+/*
+ * AKR - access key register, 32 R/W
+ */
+#define TTC_AKR			TTC_REG_ADDR (0x94)
+#define TTC_ACCESS_KEY		0x2012A2B3
+ 
 /*
  * MINLi – slowest node time, 32 R
  * MINUi – next to slowest node time, 32 R
@@ -267,6 +279,16 @@ struct _medl_t {
 #define TTC_MEDL_LAST_SLOT	0x0020		/* признак последнего слота */
 } __attribute__((__packed__));
 typedef struct _medl_t medl_t;
+
+/*----------------------------------------------
+ * Дескриптор режима
+ */
+struct _mode_t {
+	uint32_t	nssr;			/* Указатель расписания */
+	uint32_t	nmtr;			/* Длительность цикла */
+	uint32_t	ntplr;			/* Длина преамбулы */
+	uint32_t	nbdr;			/* Делитель частоты передачи */
+}
 
 
 /* Конец описания регистров контроллера TTP.
