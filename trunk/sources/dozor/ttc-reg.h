@@ -82,6 +82,7 @@
 #define TTC_GCR_N64		0x0040		/* 64 узла в кластере */
 #define TTC_GCR_IRQ_POSITIVE	0x0100		/* полярность IRQL: 1 - положительная */
 #define TTC_GCR_HW_START	0x0200		/* аппаратный старт */
+#define TTC_GSR_HW_CM		0x0800		/* включение аппаратного переключения режима */
 #define TTC_GCR_MASTER		0x0400		/* признак ведущего узла (важно только при старте) */
 
 /*
@@ -178,7 +179,7 @@
  * BDR – baudrate divisor register, 16 R/W
  */
 #define TTC_BDR			TTC_REG_ADDR (0x3c)
-#define TTC_NBDR			TTC_REG_ADDR (0x5c)
+#define TTC_NBDR		TTC_REG_ADDR (0x5c)
 
 
 /*----------------------------------------------
@@ -283,13 +284,13 @@ typedef struct _medl_t medl_t;
 /*----------------------------------------------
  * Дескриптор режима
  */
-struct _mode_t {
+struct _cluster_mode_t {
 	uint32_t	nssr;			/* Указатель расписания */
 	uint32_t	nmtr;			/* Длительность цикла */
 	uint32_t	ntplr;			/* Длина преамбулы */
 	uint32_t	nbdr;			/* Делитель частоты передачи */
-}
-
+};
+typedef struct _cluster_mode_t cluster_mode_t;
 
 /* Конец описания регистров контроллера TTP.
  *----------------------------------------------*/
