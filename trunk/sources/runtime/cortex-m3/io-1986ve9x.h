@@ -1475,5 +1475,99 @@ static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, 
 }
 
 
+#ifndef UART1_RX
+#define UART1_RX PA6
+#endif
+
+#if (UART1_RX!=PA6) && (UART1_RX!=PB6) && (UART1_RX!=PD7) && (UART1_RX!=PE12)
+#error "Impossible assignment of UART1_RX pin in CFLAGS of target.cfg"
+#endif
+
+#if (PORT(UART1_RX)==PORT_A)
+#	define UART1_RX_GPIO ARM_GPIOA
+#	define UART1_RX_FUNC FUNC_REDEF
+#elif (PORT(UART1_RX)==PORT_B)
+#	define UART1_RX_GPIO ARM_GPIOB
+#	define UART1_RX_FUNC FUNC_ALT
+#elif (PORT(UART1_RX)==PORT_D)
+#	define UART1_RX_GPIO ARM_GPIOD
+#	define UART1_RX_FUNC FUNC_REDEF
+#elif (PORT(UART1_RX)==PORT_E)
+#	define UART1_RX_GPIO ARM_GPIOE
+#	define UART1_RX_FUNC FUNC_REDEF
+#else
+#	error "UART1_RX pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+
+#ifndef UART1_TX
+#define UART1_TX PA7
+#endif
+
+#if (UART1_TX!=PA7) && (UART1_TX!=PB0) && (UART1_TX!=PB5) && (UART1_TX!=PD8) && (UART1_TX!=PE13)
+#error "Impossible assignment of UART1_TX pin in CFLAGS of target.cfg"
+#endif
+
+#if (PORT(UART1_TX)==PORT_A)
+#	define UART1_TX_GPIO ARM_GPIOA
+#	define UART1_TX_FUNC FUNC_REDEF
+#elif (PORT(UART1_TX)==PORT_B)
+#	define UART1_TX_GPIO ARM_GPIOB
+#	if (PIN(UART1_TX)==0)
+#		define UART1_TX_FUNC FUNC_REDEF
+#	elif (PIN(UART1_TX)==5)
+#		define UART1_TX_FUNC FUNC_ALT
+#	endif	
+#elif (PORT(UART1_TX)==PORT_D)
+#	define UART1_TX_GPIO ARM_GPIOD
+#	define UART1_TX_FUNC FUNC_REDEF
+#elif (PORT(UART1_TX)==PORT_E)
+#	define UART1_TX_GPIO ARM_GPIOE
+#	define UART1_TX_FUNC FUNC_REDEF
+#else
+#	error "UART1_TX pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+
+#ifndef UART2_RX
+#define UART2_RX PF0
+#endif
+
+#if (UART2_RX!=PB2) && (UART2_RX!=PD0) && (UART2_RX!=PF0)
+#error "Impossible assignment of UART2_RX pin in CFLAGS of target.cfg"
+#endif
+
+#if (PORT(UART2_RX)==PORT_B)
+#	define UART2_RX_GPIO ARM_GPIOB
+#	define UART2_RX_FUNC FUNC_REDEF
+#elif (PORT(UART2_RX)==PORT_D)
+#	define UART2_RX_GPIO ARM_GPIOD
+#	define UART2_RX_FUNC FUNC_ALT
+#elif (PORT(UART2_RX)==PORT_F)
+#	define UART2_RX_GPIO ARM_GPIOF
+#	define UART2_RX_FUNC FUNC_REDEF
+#else
+#	error "UART2_RX pin is not assigned in CFLAGS of target.cfg"
+#endif
+
+
+#ifndef UART2_TX
+#define UART2_TX PF1
+#endif
+
+#if (UART2_TX!=PD1) && (UART2_TX!=PF1)
+#error "Impossible assignment of UART2_TX pin in CFLAGS of target.cfg"
+#endif
+
+#if (PORT(UART2_TX)==PORT_D)
+#	define UART2_TX_GPIO ARM_GPIOD
+#	define UART2_TX_FUNC FUNC_ALT
+#elif (PORT(UART2_TX)==PORT_F)
+#	define UART2_TX_GPIO ARM_GPIOF
+#	define UART2_TX_FUNC FUNC_REDEF
+#else
+#	error "UART2_TX pin is not assigned in CFLAGS of target.cfg"
+#endif
+
 /* End of Milandr 1986BE9x register definitions.
  *----------------------------------------------*/

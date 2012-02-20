@@ -18,6 +18,7 @@
  */
 #include <runtime/lib.h>
 
+
 extern unsigned long _etext, __data_start, _edata, _end;
 extern void main (void);
 
@@ -70,17 +71,36 @@ _init_ (void)
 #else
 				ARM_CPU_CLOCK_HCLK_C3;
 #endif
-        /* Set UART2 for debug output. */
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOF;	// вкл. тактирования PORTF
-	ARM_GPIOF->FUNC |= ARM_FUNC_REDEF(0) |		// переопределенная функция для
-			   ARM_FUNC_REDEF(1);		// PF0(UART2_RXD) и PF1(UART2_TXD)
-	ARM_GPIOF->ANALOG |= 3;				// цифровые выводы
-	ARM_GPIOF->PWR &= ~(ARM_PWR_MASK(0) || ARM_PWR_MASK(1));
-	ARM_GPIOF->PWR |= ARM_PWR_SLOW(0) | ARM_PWR_SLOW(1);
-
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART2;	// вкл. тактирования UART2
+#ifdef ARM_UART1_DEBUG
+	/* Set UART1 for debug output. */
+	milandr_init_pin (UART1_RX_GPIO, PORT(UART1_RX), PIN(UART1_RX), UART1_RX_FUNC);
+	milandr_init_pin (UART1_TX_GPIO, PORT(UART1_TX), PIN(UART1_TX), UART1_TX_FUNC);
+	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART1;	// вкл. тактирования UART1
 
 	/* Set baud rate divisor: 115200 bit/sec. */
+#ifdef SETUP_HCLK_HSI
+	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN1 |	// разрешаем тактирование UART1
+		ARM_UART_CLOCK_BRG1(0);			// HCLK (8 МГц)
+	ARM_UART1->IBRD = ARM_UART_IBRD (8000000, 115200);
+	ARM_UART1->FBRD = ARM_UART_FBRD (8000000, 115200);
+#else
+	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN1 |	// разрешаем тактирование UART1
+		ARM_UART_CLOCK_BRG1(2);			// HCLK/4 (KHZ/4)
+	ARM_UART1->IBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
+	ARM_UART1->FBRD = ARM_UART_FBRD (KHZ*1000/4, 115200);
+#endif
+	/* Enable UART2, transmiter only. */
+	ARM_UART1->LCRH = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
+	ARM_UART1->CTL = ARM_UART_CTL_UARTEN |		// пуск приемопередатчика
+			ARM_UART_CTL_TXE;		// передача разрешена
+
+#else
+/* Set UART2 for debug output. */
+	milandr_init_pin (UART2_RX_GPIO, PORT(UART2_RX), PIN(UART2_RX), UART2_RX_FUNC);
+	milandr_init_pin (UART2_TX_GPIO, PORT(UART2_TX), PIN(UART2_TX), UART2_TX_FUNC);
+	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_UART2;	// вкл. тактирования UART2
+
+/* Set baud rate divisor: 115200 bit/sec. */
 #ifdef SETUP_HCLK_HSI
 	ARM_RSTCLK->UART_CLOCK = ARM_UART_CLOCK_EN2 |	// разрешаем тактирование UART2
 		ARM_UART_CLOCK_BRG2(0);			// HCLK (8 МГц)
@@ -92,11 +112,17 @@ _init_ (void)
 	ARM_UART2->IBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
 	ARM_UART2->FBRD = ARM_UART_FBRD (KHZ*1000/4, 115200);
 #endif
-	/* Enable UART2, transmiter only. */
+/* Enable UART2, transmiter only. */
 	ARM_UART2->LCRH = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
 	ARM_UART2->CTL = ARM_UART_CTL_UARTEN |		// пуск приемопередатчика
 			ARM_UART_CTL_TXE;		// передача разрешена
+#endif /* ARM_UART1_DEBUG */
+
+
+
 #endif /* ARM_1986BE9 */
+
+
 
 #ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.

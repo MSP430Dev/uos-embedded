@@ -51,18 +51,31 @@ debug_putchar (void *arg, short c)
 		arm_intr_restore (x);
 		return;
 	}
-
+#ifdef ARM_UART1_DEBUG
+	/* Wait for transmitter holding register empty. */
+	while (ARM_UART1->FR & ARM_UART_FR_TXFF)
+		continue;
+#else
 	/* Wait for transmitter holding register empty. */
 	while (ARM_UART2->FR & ARM_UART_FR_TXFF)
 		continue;
+#endif
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
+#ifdef ARM_UART1_DEBUG
+	ARM_UART1->DR = c;
+
+/* Wait for transmitter holding register empty. */
+	while (ARM_UART1->FR & ARM_UART_FR_TXFF)
+		continue;
+#else
 	ARM_UART2->DR = c;
 
-	/* Wait for transmitter holding register empty. */
+/* Wait for transmitter holding register empty. */
 	while (ARM_UART2->FR & ARM_UART_FR_TXFF)
 		continue;
+#endif
 
 	watchdog_alive ();
 	if (debug_onlcr && c == '\n') {
@@ -90,16 +103,31 @@ debug_getchar (void)
 	arm_intr_disable (&x);
 
 	/* Enable receiver. */
-	ARM_UART2->CTL |= ARM_UART_CTL_RXE;
+#ifdef ARM_UART1_DEBUG
+	ARM_UART1->CTL |= ARM_UART_CTL_RXE;
 
 	/* Wait until receive data available. */
+	while (ARM_UART1->FR & ARM_UART_FR_RXFE) {
+		watchdog_alive ();
+		arm_intr_restore (x);
+		arm_intr_disable (&x);
+	}
+#else
+	ARM_UART2->CTL |= ARM_UART_CTL_RXE;
+
+		/* Wait until receive data available. */
 	while (ARM_UART2->FR & ARM_UART_FR_RXFE) {
 		watchdog_alive ();
 		arm_intr_restore (x);
 		arm_intr_disable (&x);
 	}
+#endif
 	/* TODO: utf8 to unicode conversion. */
+#ifdef ARM_UART1_DEBUG
+	c = ARM_UART1->DR & ARM_UART_DR_DATA;
+#else
 	c = ARM_UART2->DR & ARM_UART_DR_DATA;
+#endif
 
 	arm_intr_restore (x);
 	return c;
@@ -119,6 +147,18 @@ debug_peekchar (void)
 
 	arm_intr_disable (&x);
 
+#ifdef ARM_UART1_DEBUG
+	/* Enable receiver. */
+	ARM_UART1->CTL |= ARM_UART_CTL_RXE;
+
+	/* Wait until receive data available. */
+	if (ARM_UART1->FR & ARM_UART_FR_RXFE) {
+		arm_intr_restore (x);
+		return -1;
+	}
+	/* TODO: utf8 to unicode conversion. */
+	c = ARM_UART1->DR & ARM_UART_DR_DATA;
+#else
 	/* Enable receiver. */
 	ARM_UART2->CTL |= ARM_UART_CTL_RXE;
 
@@ -129,7 +169,7 @@ debug_peekchar (void)
 	}
 	/* TODO: utf8 to unicode conversion. */
 	c = ARM_UART2->DR & ARM_UART_DR_DATA;
-
+#endif
 	arm_intr_restore (x);
 	debug_char = c;
 	return c;
