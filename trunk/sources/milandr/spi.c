@@ -103,19 +103,6 @@ bool_t spi_queue_is_empty (spi_queue_t *q)
 	return (q->count == 0);
 }
 
-static void spi_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, unsigned func)
-{
-//debug_printf ("SPI init: port = %d, pin = %d, func = %d\n", port, pin, func);
-	/* Подача синхроимпульсов */
-	ARM_RSTCLK->PER_CLOCK |= (ARM_PER_CLOCK_GPIOA << port);
-	/* Установка функции */
-	gpio->FUNC = (gpio->FUNC & ~ARM_FUNC_MASK(pin)) | ARM_FUNC(pin, func);
-	/* Цифровой вывод */
-	gpio->ANALOG |= (1 << pin);
-	/* Быстрый фронт */
-	gpio->PWR = (gpio->PWR & ~ARM_PWR_MASK(pin)) | ARM_PWR_FAST(pin);
-}
-
 /*
  * Инициализация внешних сигналов SSP1.
  */
@@ -407,12 +394,14 @@ int spi_input (spi_t *c, unsigned short *word)
  */
 void spi_input_wait (spi_t *c, unsigned short *word)
 {
+	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
 	mutex_lock (&c->lock);
 	while (spi_queue_is_empty (&c->inq)) {
 		/* Ждём приёма пакета. */
 		mutex_wait (&c->lock);
 	}
 	*word = spi_queue_get (&c->inq);
+
 	mutex_unlock (&c->lock);
 }
 
@@ -422,10 +411,15 @@ void spi_input_wait (spi_t *c, unsigned short *word)
 static bool_t spi_handle_interrupt (void *arg)
 {
 	spi_t *c = (spi_t*) arg;
+	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
 
 	c->interrupts++;
 	receive_data (c);
 	arch_intr_allow (c->irq);
+	if (!c->master) {
+		reg->CR1 = ARM_SSP_CR1_MS;
+		reg->CR1 |= ARM_SSP_CR1_SSE;
+	}
 	return 0;
 }
 
@@ -458,7 +452,7 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit, uns
 	if (c->master) {
 		/* Режим master. */
 		unsigned divisor = (KHZ * nsec_per_bit + 1000000) / 2000000;
-		reg->CR0 |= ARM_SSP_CR0_SCR (divisor);
+		reg->CR0 |= ARM_SSP_CR0_SCR (divisor - 1);
 		reg->CR1 = 0;
 		reg->CPSR = 2;
 		c->kbps = (KHZ / divisor + 1) / 2;
@@ -471,7 +465,7 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit, uns
 	}
 	reg->DMACR = 0;
 	reg->IM = ARM_SSP_IM_RX | ARM_SSP_IM_RT;
-	//reg->CR1 |= ARM_SSP_CR1_SSE;
+	reg->CR1 |= ARM_SSP_CR1_SSE;
 
 	/* Подключение к нужному номеру прерывания. */
 	mutex_lock_irq (&c->lock, c->irq, spi_handle_interrupt, c);

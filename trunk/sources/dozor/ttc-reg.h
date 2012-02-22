@@ -84,6 +84,8 @@
 #define TTC_GCR_HW_START	0x0200		/* аппаратный старт */
 #define TTC_GSR_HW_CM		0x0800		/* включение аппаратного переключения режима */
 #define TTC_GCR_MASTER		0x0400		/* признак ведущего узла (важно только при старте) */
+#define TTC_GCR_LC(n)		((n) << 13)	/* количество циклов подряд - 1, в которых AVEC=0, после которых
+						   в GSR выставляется признак TTC_GSR_HW_CON_LOST */
 
 /*
  * GSR – global status register, 16 R

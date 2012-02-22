@@ -34,7 +34,6 @@
 #define LCD_CMD_CGRAM_ADDR		0x40
 #define LCD_CMD_DDRAM_ADDR		0x80
 
-
 static void lcd_putchar (lcd_t *lcd, short c);
 
 static stream_interface_t lcd_interface = {
@@ -93,7 +92,7 @@ static inline void lcd_command (unsigned char cmd)
 {
 	ARM_GPIOE->DATA &= ~(1 << PORTE_RS);
 	LCD_REG = cmd;
-	udelay (1);
+	//udelay (1);
 }
 
 static inline unsigned char lcd_cursor_pos ()
@@ -102,39 +101,35 @@ static inline unsigned char lcd_cursor_pos ()
 	return LCD_REG & 0x7F;
 }
 
-static inline void lcd_carriage_return ()
+static void lcd_set_line (lcd_t * lcd, int line)
 {
-	unsigned char pos = lcd_cursor_pos ();
-	if (pos <= 0x13)			// first line
-		pos = 0x00;
-	else if (pos >= 0x40 && pos <= 0x53)	// second line
-		pos = 0x40;
-	else if (pos >= 0x14 && pos <= 0x27)	// third line
-		pos = 0x14;
-	else 					// fourth line
-		pos = 0x54;
+	unsigned char pos;
+	
+//debug_printf ("set line %d\n", line);
+	lcd->line = line;
+	lcd->col = 0;
+	switch (line) {
+	case 0: pos = 0x00; break;
+	case 1: pos = 0x40; break;
+	case 2: pos = 0x14; break;
+	case 3: pos = 0x54; break;
+	default: return;
+	}
 	lcd_command (LCD_CMD_DDRAM_ADDR | pos);
 }
 
-static inline void lcd_next_line ()
-{
-	unsigned char pos = lcd_cursor_pos ();
-	if (pos <= 0x13)			// first line
-		pos = 0x40;
-	else if (pos >= 0x40 && pos <= 0x53)	// second line
-		pos = 0x14;
-	else if (pos >= 0x14 && pos <= 0x27)	// third line
-		pos = 0x54;
-	else 					// fourth line
-		pos = 0x00;
-	lcd_command (LCD_CMD_DDRAM_ADDR | pos);
-}
-
-static inline void lcd_set_data (unsigned char data)
+static inline void lcd_set_data (lcd_t * lcd, unsigned char data)
 {
 	ARM_GPIOE->DATA |= (1 << PORTE_RS);
 	LCD_REG = data;
 	//udelay (1);
+	
+	lcd->new_line = 0;
+	if (++lcd->col == 20) {
+		lcd->new_line = 1;
+		lcd->line = (lcd->line + 1) & 3;
+		lcd_set_line (lcd, lcd->line);
+	}
 }
 
 void lcd_clear (lcd_t *lcd)
@@ -166,26 +161,86 @@ void lcd_init (lcd_t *lcd)
 	lcd->interface = &lcd_interface;
 	
 	lcd->esc_mode = 0;
+	lcd->unicode_char = 0;
+	lcd->col = 0;
+	lcd->line = 0;
+}
+
+/* Russian UTF-8 symbols decoding */
+static short translate_russian (lcd_t *lcd, short c)
+{
+	unsigned short ic = c | (lcd->unicode_char << 8);
+	
+	switch (ic) {
+	case 'А': case 'а': c = 'A';  break;
+	case 'Б': case 'б': c = 0x80; break;
+	case 'В': case 'в': c = 'B';  break;
+	case 'Г': case 'г': c = 0x92; break;			
+	case 'Д': case 'д': c = 0x81; break;
+	case 'Е': case 'е': c = 'E';  break;
+	case 'Ё': case 'ё': c = 0xCB; break;
+	case 'Ж': case 'ж': c = 0x82; break;
+	case 'З': case 'з': c = 0x83; break;
+	case 'И': case 'и': c = 0x84; break;
+	case 'Й': case 'й': c = 0x85; break;
+	case 'К': case 'к': c = 'K';  break;
+	case 'Л': case 'л': c = 0x86; break;
+	case 'М': case 'м': c = 'M';  break;			
+	case 'Н': case 'н': c = 'H';  break;
+	case 'О': case 'о': c = 'O';  break;
+	case 'П': case 'п': c = 0x87; break;
+	case 'Р': case 'р': c = 'P';  break;
+	case 'С': case 'с': c = 'C';  break;
+	case 'Т': case 'т': c = 'T';  break;
+	case 'У': case 'у': c = 0x88; break;
+	case 'Ф': case 'ф': c = 0xD8; break;
+	case 'Х': case 'х': c = 'X';  break;
+	case 'Ц': case 'ц': c = 0x89; break;
+	case 'Ч': case 'ч': c = 0x8A; break;			
+	case 'Ш': case 'ш': c = 0x8B; break;
+	case 'Щ': case 'щ': c = 0x8C; break;
+	case 'Ъ': case 'ъ': c = 0x8D; break;
+	case 'Ы': case 'ы': c = 0x8E; break;
+	case 'Ь': case 'ь': c = 'b';  break;
+	case 'Э': case 'э': c = 0x8F; break;
+	case 'Ю': case 'ю': c = 0xAC; break;
+	case 'Я': case 'я': c = 0xAD; break;
+	}
+	
+	return c;
 }
 
 static void lcd_putchar (lcd_t *lcd, short c)
 {
 	switch (lcd->esc_mode)  {
 	case 0:
-	
-		switch (c) {
-		case '\n':
-			lcd_next_line ();
-			return;
-		case '\t':		/* tab replaced by space */
-			c = ' ';
-			break;
-		case '\r':		/* carriage return - go to begin of line */
-			lcd_carriage_return ();
-			return;
-		case '\33':
-			lcd->esc_mode = 1;
-			return;
+		if (! lcd->unicode_char) {
+			switch (c) {
+			case '\n':
+				if (lcd->new_line) {
+					lcd->new_line = 0;
+					return;
+				}
+				lcd->line = (lcd->line + 1) & 3;
+				lcd_set_line (lcd, lcd->line);
+				return;
+			case '\t':		/* tab replaced by space */
+				c = ' ';
+				break;
+			case '\r':		/* carriage return - go to begin of line */
+				lcd_set_line (lcd, lcd->line);
+				return;
+			case '\33':
+				lcd->esc_mode = 1;
+				return;
+			case 0xD0:
+			case 0xD1:
+				lcd->unicode_char = c;
+				return;
+			}
+		} else {
+			c = translate_russian (lcd, c);
+			lcd->unicode_char = 0;
 		}
 	break;
 	
@@ -201,6 +256,7 @@ static void lcd_putchar (lcd_t *lcd, short c)
 	case 2:
 		if (c == 'H') {
 			lcd_command (LCD_CMD_CURSOR_HOME);
+			lcd->col = 0;
 			lcd->esc_mode = 0;
 			return;
 		} else if (c == '2') {
@@ -208,7 +264,7 @@ static void lcd_putchar (lcd_t *lcd, short c)
 			lcd->esc_buf = c;
 			return;
 		} else {
-			lcd_set_data ('[');
+			lcd_set_data (lcd, '[');
 			lcd->esc_mode = 0;
 		}
 	break;
@@ -216,11 +272,13 @@ static void lcd_putchar (lcd_t *lcd, short c)
 	case 3:
 		if (c == 'J') {
 			lcd_command (LCD_CMD_CLEAR_DISPLAY);
+			lcd->line = 0;
+			lcd->col = 0;
 			lcd->esc_mode = 0;
 			return;
 		} else {
-			lcd_set_data ('[');
-			lcd_set_data (lcd->esc_buf);
+			lcd_set_data (lcd, '[');
+			lcd_set_data (lcd, lcd->esc_buf);
 			lcd->esc_mode = 0;
 		}
 	break;
@@ -229,5 +287,5 @@ static void lcd_putchar (lcd_t *lcd, short c)
 	break;
 	}
 	
-	lcd_set_data (c);
+	lcd_set_data (lcd, c);
 }

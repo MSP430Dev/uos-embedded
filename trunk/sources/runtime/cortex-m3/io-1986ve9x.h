@@ -1348,7 +1348,7 @@ typedef struct
 #define PORT_C	2
 #define PORT_D	3
 #define PORT_E	4
-#define PORT_F	6
+#define PORT_F	8
 
 #define M1986VE91T_PIN(port,pin)	(((port) << 4) | (pin))
 #define PORT(x)				(((x) >> 4) & 0xF)

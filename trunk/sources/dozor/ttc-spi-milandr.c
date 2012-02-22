@@ -8,7 +8,7 @@ void ttc_spi_out (int port, unsigned short *data, int count)
 {
 	SSP_t *reg = (port == 0) ? ARM_SSP1 : ARM_SSP2;
 	int i;
-
+	
 	reg->CR1 &= ~ARM_SSP_CR1_SSE;
 	for (i = 0; i < count; ++i)
 		reg->DR = *(data + i);	
@@ -39,19 +39,6 @@ void ttc_spi_throw (int port, int count)
 		}
 		word = reg->DR;
 	}
-}
-
-static void spi_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, unsigned func)
-{
-//debug_printf ("SPI init: port = %d, pin = %d, func = %d\n", port, pin, func);
-	/* Подача синхроимпульсов */
-	ARM_RSTCLK->PER_CLOCK |= (ARM_PER_CLOCK_GPIOA << port);
-	/* Установка функции */
-	gpio->FUNC = (gpio->FUNC & ~ARM_FUNC_MASK(pin)) | ARM_FUNC(pin, func);
-	/* Цифровой вывод */
-	gpio->ANALOG |= (1 << pin);
-	/* Быстрый фронт */
-	gpio->PWR = (gpio->PWR & ~ARM_PWR_MASK(pin)) | ARM_PWR_FAST(pin);
 }
 
 void ttc_spi_init (int port, unsigned nsec_per_bit)

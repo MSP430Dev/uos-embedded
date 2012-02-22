@@ -119,7 +119,6 @@ _init_ (void)
 #endif /* ARM_UART1_DEBUG */
 
 
-
 #endif /* ARM_1986BE9 */
 
 
