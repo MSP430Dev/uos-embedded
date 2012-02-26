@@ -92,6 +92,16 @@
 #define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
 #endif
 
+#ifdef ELVEES_MCT02
+#define ST_IM_QSTR0	0x00000400	/* от IT, RTT, WDT, UART[3:0], nIRQ[3:0] */
+#define ST_IM_QSTR1	0x00000800	/* от DMA MEM */
+#define ST_IM_QSTR2	0x00001000	/* от SWIC */
+#define ST_IM_QSTR3	0x00002000	/* от контроллера Хэмминга */
+#define ST_IM_QSTR4	0x00004000	/* от MFBSP */
+#define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
+#endif
+
+
 /*
  * Сause register.
  */
@@ -437,7 +447,8 @@
 #endif
 
 
-#ifdef ELVEES_MCT02R
+#ifdef ELVEES_MCT02
+#define MC_MASKR0_MCC		(1 << 31)	/* Прерывание от МСС */
 #define MC_MASKR0_IT		(1 << 22)	/* от таймера IT */
 #define MC_MASKR0_RTT		(1 << 21)	/* от таймера RTT */
 #define MC_MASKR0_WDT		(1 << 20)	/* от таймера WDT */
@@ -578,7 +589,7 @@
 #define MC_SDRCON_INIT		(1 << 31)	/* Initialize SDRAM, 2 usec */
 #endif
 
-#if defined(ELVEES_NVCOM01) || defined (ELVEES_MC24R2)
+#if defined(ELVEES_NVCOM01) || defined (ELVEES_MC24R2) || defined (ELVEES_MCT02)
 #define MC_SDRCON_RFR(nsec,khz)	(((nsec*khz+999999)/1000000) << 16)
 						/* Refresh period */
 #define MC_SDRCON_CL_2		(2 << 4)	/* CAS latency 2 cycles */

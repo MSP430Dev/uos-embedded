@@ -43,6 +43,11 @@
 #   include <runtime/mips/io-nvcom02.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
+#ifdef ELVEES_MCT02
+#   define ELVEES	1
+#   include <runtime/mips/io-mct02.h>
+#   include <runtime/mips/io-elvees.h>
+#endif
 
 /*
  * Offsets of register values in saved context.
@@ -104,6 +109,9 @@
 #endif
 #ifdef ELVEES_NVCOM02
 #   define MIPS_FSPACE		24	/* TODO: for Elvees NVCom-02 */
+#endif
+#ifdef ELVEES_MCT02
+#   define MIPS_FSPACE		24	/* for Elvees MCT02-01 */
 #endif
 #ifndef MIPS_FSPACE
 #   define MIPS_FSPACE		16	/* default minimum */
@@ -241,7 +249,25 @@ do {								\
 static void inline __attribute__ ((always_inline))
 mips_intr_disable (int *x)
 {
-#if defined (ELVEES)
+#if defined (ELVEES_MCT02)
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile ("syscall");
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile (
+"	move	%0, $a0"
+	: "=r" (*x) : "K" (C0_STATUS) : "a0");
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile ("nop");
+	asm volatile ("nop");
+
+#elif defined (ELVEES)
 	/* This must be atomic operation.
 	 * On MIPS1 this could be done only using system call exception. */
 	asm volatile (

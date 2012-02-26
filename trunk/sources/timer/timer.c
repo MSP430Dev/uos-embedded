@@ -58,6 +58,10 @@
 #   define TIMER_IRQ		22	/* TODO: Interval Timer interrupt */
 #endif
 
+#if ELVEES_MCT02
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
 #if PIC32MX
 #   define TIMER_IRQ	PIC32_VECT_CT	/* Core Timer Interrupt */
 #endif

@@ -155,25 +155,6 @@ debug_getchar (void)
 	if (debug_char >= 0) {
 		c = debug_char;
 		debug_char = -1;
-/*debug_printf ("getchar -> 0x%02x\n", c);*/
-#if 0
-debug_putc ('g');
-debug_putc ('e');
-debug_putc ('t');
-debug_putc ('c');
-debug_putc ('h');
-debug_putc ('a');
-debug_putc ('r');
-debug_putc (' ');
-debug_putc ('-');
-debug_putc ('>');
-debug_putc (' ');
-debug_putc ('0');
-debug_putc ('x');
-debug_putc ("0123456789abcdef"[c >> 4]);
-debug_putc ("0123456789abcdef"[c & 15]);
-debug_putc ('\n');
-#endif
 		return c;
 	}
 	for (;;) {

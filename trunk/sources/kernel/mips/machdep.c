@@ -387,7 +387,7 @@ _arch_interrupt_ (void)
 				break;
 			MC_MASKR2 &= ~(1 << (irq - 27));
 		} else if (pending & ST_IM_QSTR3) {
-			/* QSTR2 interrupt: 59..63. */
+			/* QSTR3 interrupt: 59..63. */
 			irq = 59 + 31 - mips_count_leading_zeroes (MC_QSTR3 & MC_MASKR3);
 			if (irq < 59)
 				break;
@@ -449,6 +449,47 @@ _arch_interrupt_ (void)
 			if (irq < 36)
 				break;
 			MC_MASKR2 &= ~(1 << (irq - 36));
+		} else
+			break;
+#endif
+
+#ifdef ELVEES_MCT02
+		/* Read readme-mct02.txt for interrupt numbers. */
+		if (pending & ST_IM_COMPARE) {
+			/* Use number 19 for COMPARE interrupt. */
+			irq = 19;
+			status &= ~ST_IM_COMPARE;
+			mips_write_c0_register (C0_STATUS, status);
+		} else if (pending & ST_IM_QSTR0) {
+			/* QSTR0 interrupt: 0..22. */
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			if (irq < 0)
+				break;
+			MC_MASKR0 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR1) {
+			/* QSTR1 interrupt: 23..30. */
+			irq = 23 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			if (irq < 23)
+				break;
+			MC_MASKR1 &= ~(1 << (irq - 23));
+		} else if (pending & ST_IM_QSTR2) {
+			/* QSTR2 interrupt: 31..62. */
+			irq = 31 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			if (irq < 31)
+				break;
+			MC_MASKR2 &= ~(1 << (irq - 31));
+		} else if (pending & ST_IM_QSTR3) {
+			/* QSTR3 interrupt: 63..67. */
+			irq = 63 + 31 - mips_count_leading_zeroes (MC_QSTR3 & MC_MASKR3);
+			if (irq < 63)
+				break;
+			MC_MASKR3 &= ~(1 << (irq - 63));
+		} else if (pending & ST_IM_QSTR4) {
+			/* QSTR4 interrupt: 68..97. */
+			irq = 68 + 31 - mips_count_leading_zeroes (MC_QSTR4 & MC_MASKR4);
+			if (irq < 68)
+				break;
+			MC_MASKR4 &= ~(1 << (irq - 68));
 		} else
 			break;
 #endif
@@ -578,6 +619,29 @@ arch_intr_allow (int irq)
 	} else {
 		/* QSTR2 interrupt: 36..51. */
 		MC_MASKR2 |= 1 << (irq-36);
+	}
+#endif
+#ifdef ELVEES_MCT02
+	if (irq == 19) {
+		/* Use irq number 19 for COMPARE interrupt. */
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		status |= ST_IM_COMPARE;
+		mips_write_c0_register (C0_STATUS, status);
+	} else if (irq < 23) {
+		/* QSTR0 interrupt: 0..22. */
+		MC_MASKR0 |= 1 << irq;
+	} else if (irq < 31) {
+		/* QSTR1 interrupt: 23..30. */
+		MC_MASKR1 |= 1 << (irq-23);
+	} else if (irq < 63) {
+		/* QSTR2 interrupt: 31..62. */
+		MC_MASKR2 |= 1 << (irq-31);
+	} else if (irq < 68) {
+		/* QSTR3 interrupt: 63..67. */
+		MC_MASKR3 |= 1 << (irq-63);
+	} else {
+		/* QSTR4 interrupt: 68..97. */
+		MC_MASKR4 |= 1 << (irq-68);
 	}
 #endif
 }

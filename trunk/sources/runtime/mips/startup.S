@@ -183,9 +183,21 @@ _restore_regs_: .globl _restore_regs_
 
 		# Return from exception
 		.set mips3
+#ifdef ELVEES_MCT02
+		nop					# settle things down
+		nop
+		nop
+		nop
+		eret					# PC <= EPC; EXL <= 0
+		nop					# just to be safe
+		nop
+		nop
+		nop
+#else
 		sync					# settle things down
 		eret					# PC <= EPC; EXL <= 0
 		nop					# just to be safe
+#endif
 		.set mips0
 
 #---------------------------------------
@@ -229,9 +241,21 @@ _exception_vector_: .globl _exception_vector_
 
 		# Return from exception
 		.set mips3
+#ifdef ELVEES_MCT02
+		nop					# settle things down
+		nop
+		nop
+		nop
+		eret					# PC <= EPC; EXL <= 0
+		nop					# just to be safe
+		nop
+		nop
+		nop
+#else
 		sync					# Settle things down
 		eret					# PC <= EPC; EXL <= 0
 		nop					# just to be safe
+#endif
 		.set mips0
 
 #---------------------------------------

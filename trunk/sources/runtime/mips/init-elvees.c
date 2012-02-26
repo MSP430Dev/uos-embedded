@@ -57,6 +57,9 @@ void __attribute ((noreturn))_init_ (void)
 		/* TODO */
 		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2
 #endif
+#ifdef ELVEES_MCT02
+		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2 | ST_IM_QSTR3 | ST_IM_QSTR4
+#endif
 		);
 
 #if defined (ENABLE_ICACHE) || defined (ENABLE_DCACHE)
@@ -170,6 +173,25 @@ void __attribute ((noreturn))_init_ (void)
 	MC_MASKR2 = 0;
 	MC_MASKR3 = 0;
 #endif
+
+#ifdef ELVEES_MCT02
+	/* Clock: enable only core. */
+	MC_CLKEN = MC_CLKEN_CORE;
+
+	/* Clock multiply from CLKIN to KHZ. */
+	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ/ELVEES_CLKIN) |
+		   MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ/ELVEES_CLKIN);
+
+	/* Fixed mapping. */
+	MC_CSR = MC_CSR_FM;
+
+	MC_MASKR0 = 0;
+	MC_MASKR1 = 0;
+	MC_MASKR2 = 0;
+	MC_MASKR3 = 0;
+	MC_MASKR4 = 0;
+#endif
+
 	MC_ITCSR = 0;
 #ifdef MC_ITCSR1
 	MC_ITCSR1 = 0;
@@ -229,7 +251,7 @@ void __attribute ((noreturn))_init_ (void)
 #endif
 	MC_CSCON4 = MC_CSCON_WS (15);
 	MC_SDRCON = 0;
-
+	
 	/*
 	 * Setup UART registers.
 	 * Compute the divisor for 115.2 kbaud.
@@ -255,6 +277,7 @@ void __attribute ((noreturn))_init_ (void)
 	
 #endif /* ELVEES */
 
+#ifndef ELVEES_BOOT_SRAM
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
 	src = (unsigned*) &_etext;
@@ -262,7 +285,7 @@ void __attribute ((noreturn))_init_ (void)
 	limit = &_edata;
 	while (dest < limit)
 		*dest++ = *src++;
-
+#endif
 	/* Initialize .bss segment by zeroes. */
 	dest = &_edata;
 	limit = &_end;
