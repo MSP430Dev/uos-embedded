@@ -40,7 +40,9 @@ typedef struct __attribute__((__packed__)) _can_frame_t {
 /*
  * Queue of CAN packets.
  */
+#ifndef CAN_QUEUE_SIZE
 #define CAN_QUEUE_SIZE		64	/* max number of packets in queue */
+#endif
 
 typedef struct _can_queue_t {
 	unsigned count;

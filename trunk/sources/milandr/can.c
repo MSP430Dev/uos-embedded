@@ -137,7 +137,7 @@ static void can_setup_timing (can_t *c, int kbitsec)
 		CAN_BITTMNG_PSEG (2) | CAN_BITTMNG_BRP (3);
 */
 
-debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, KHZ / (brp + 1) / nq, brp, reg->BITTMNG);
+//debug_printf ("can: %u (%u) kbit/sec, brp=%u, BITTMNG = %08x\n", kbitsec, KHZ / (brp + 1) / nq, brp, reg->BITTMNG);
 }
 
 /*
@@ -318,6 +318,7 @@ static void can_setup (can_t *c, int kbitsec)
  */
 static int transmit_enqueue (can_t *c, const can_frame_t *fr)
 {
+//debug_printf ("snd frame, id = %08X, d0 = %08X, d1 = %08X\n", fr->id, fr->data[0], fr->data[1]);
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
 	/* Проверяем, что есть свободный буфер для передачи. */
@@ -483,6 +484,7 @@ static int can_get_next_frame (can_t *c, can_frame_t *fr)
 			}
 			/* Пакет успешно принят. */
 			c->in_packets++;
+//debug_printf ("rcv frame, id = %08X, d0 = %08X, d1 = %08X\n", fr->id, fr->data[0], fr->data[1]);
 			return 1;
 		}
 	}
@@ -499,7 +501,7 @@ int can_poll (can_t *c, can_frame_t *fr)
 #endif
 
 	res = can_get_next_frame (c, fr);
-
+	
 #ifndef CAN_NO_MUTEX
 	mutex_unlock (&c->lock);
 #endif

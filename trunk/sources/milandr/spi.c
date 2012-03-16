@@ -451,7 +451,7 @@ void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit, uns
 	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (bits_per_word) | mode;
 	if (c->master) {
 		/* Режим master. */
-		unsigned divisor = (KHZ * nsec_per_bit + 1000000) / 2000000;
+		unsigned divisor = (KHZ * nsec_per_bit + 1999999) / 2000000;
 		reg->CR0 |= ARM_SSP_CR0_SCR (divisor - 1);
 		reg->CR1 = 0;
 		reg->CPSR = 2;

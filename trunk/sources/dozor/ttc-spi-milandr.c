@@ -66,7 +66,7 @@ void ttc_spi_init (int port, unsigned nsec_per_bit)
 	 * Ловим прерывания от приёмника. */
 	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (16) | ARM_SSP_CR0_SPH;
 	/* Режим master. */
-	unsigned divisor = (KHZ * nsec_per_bit + 1000000) / 2000000;
+	unsigned divisor = (KHZ * nsec_per_bit + 1999999) / 2000000;
 	reg->CR0 |= ARM_SSP_CR0_SCR (divisor - 1);
 	reg->CR1 = 0;
 	reg->CPSR = 2;

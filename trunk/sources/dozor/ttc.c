@@ -59,6 +59,7 @@ void ttc_reset (ttc_t *ttc)
 	mutex_lock (&ttc->lock);
 	ttc->need_lock = 0;
 	ttc_write16 (ttc, TTC_GCR, TTC_GCR_GRST);
+	udelay (1);
 	ttc_write16 (ttc, TTC_GCR, 0);
 	if (ttc->irq_positive) {
 		ttc_write16 (ttc, TTC_GCR, TTC_GCR_IRQ_POSITIVE);
