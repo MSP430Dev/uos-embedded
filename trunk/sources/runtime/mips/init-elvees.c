@@ -115,6 +115,7 @@ void __attribute ((noreturn))_init_ (void)
 	mips_write_fpu_register (31, 0);
 #endif
 
+#ifndef EXTERNAL_SETUP
 	/*
 	 * Setup all essential system registers.
 	 */
@@ -251,6 +252,8 @@ void __attribute ((noreturn))_init_ (void)
 #endif
 	MC_CSCON4 = MC_CSCON_WS (15);
 	MC_SDRCON = 0;
+
+#endif // EXTERNAL_SETUP
 	
 	/*
 	 * Setup UART registers.
