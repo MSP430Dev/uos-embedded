@@ -30,7 +30,7 @@ extern int main ();
  */
 void __attribute ((noreturn))_init_ (void)
 {
-	unsigned *src, *dest, *limit;
+	unsigned *dest, *limit;
 	
 #ifdef ELVEES
 	unsigned int divisor;
@@ -136,13 +136,12 @@ void __attribute ((noreturn))_init_ (void)
 #endif
 
 #ifdef ELVEES_NVCOM02
-	/* TODO */
 	/* Clock: enable only core. */
-	MC_CLKEN = MC_CLKEN_CORE;
+	MC_CLKEN = MC_CLKEN_CORE | MC_CLKEN_CPU | MC_CLKEN_CORE2;
 
 	/* Clock multiply from CLKIN to KHZ. */
-	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
-		   MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
+	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ/ELVEES_CLKIN) |
+		   MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ/ELVEES_CLKIN);
 
 	/* Fixed mapping. */
 	MC_CSR = MC_CSR_FM;
@@ -281,6 +280,7 @@ void __attribute ((noreturn))_init_ (void)
 #endif /* ELVEES */
 
 #ifndef ELVEES_BOOT_SRAM
+	unsigned *src;
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */
 	src = (unsigned*) &_etext;

@@ -94,19 +94,19 @@
 /*
  * Регистры UART0, UART1
  */
-#define MC_RBR		MC_R (0x3000)	/* Приемный буферный регистр */
-#define MC_THR		MC_R (0x3000)	/* Передающий буферный регистр */
-#define MC_IER		MC_R (0x3004)	/* Регистр разрешения прерываний */
-#define MC_IIR		MC_R (0x3008)	/* Регистр идентификации прерывания */
-#define MC_FCR		MC_R (0x3008)	/* Регистр управления FIFO */
-#define MC_LCR		MC_R (0x300C)	/* Регистр управления линией */
-#define MC_MCR		MC_R (0x3010)	/* Регистр управления модемом */
-#define MC_LSR		MC_R (0x3014)	/* Регистр состояния линии */
-#define MC_MSR		MC_R (0x3018)	/* Регистр состояния модемом */
-#define MC_SPR		MC_R (0x301C)	/* Регистр Scratch Pad */
-#define MC_DLL		MC_R (0x3000)	/* Регистр делителя младший */
-#define MC_DLM		MC_R (0x3004)	/* Регистр делителя старший */
-#define MC_SCLR		MC_R (0x3014)	/* Регистр предделителя (scaler) */
+#define MC_RBR0		MC_R (0x3000)	/* Приемный буферный регистр */
+#define MC_THR0		MC_R (0x3000)	/* Передающий буферный регистр */
+#define MC_IER0		MC_R (0x3004)	/* Регистр разрешения прерываний */
+#define MC_IIR0		MC_R (0x3008)	/* Регистр идентификации прерывания */
+#define MC_FCR0		MC_R (0x3008)	/* Регистр управления FIFO */
+#define MC_LCR0		MC_R (0x300C)	/* Регистр управления линией */
+#define MC_MCR0		MC_R (0x3010)	/* Регистр управления модемом */
+#define MC_LSR0		MC_R (0x3014)	/* Регистр состояния линии */
+#define MC_MSR0		MC_R (0x3018)	/* Регистр состояния модемом */
+#define MC_SPR0		MC_R (0x301C)	/* Регистр Scratch Pad */
+#define MC_DLL0		MC_R (0x3000)	/* Регистр делителя младший */
+#define MC_DLM0		MC_R (0x3004)	/* Регистр делителя старший */
+#define MC_SCLR0	MC_R (0x3014)	/* Регистр предделителя (scaler) */
 
 #define MC_RBR1		MC_R (0x3400)	/* Приемный буферный регистр */
 #define MC_THR1		MC_R (0x3400)	/* Передающий буферный регистр */
@@ -121,6 +121,37 @@
 #define MC_DLL1		MC_R (0x3400)	/* Регистр делителя младший */
 #define MC_DLM1		MC_R (0x3404)	/* Регистр делителя старший */
 #define MC_SCLR1	MC_R (0x3414)	/* Регистр предделителя (scaler) */
+
+#ifdef UART1_DEBUG
+#define MC_RBR		MC_RBR1
+#define MC_THR		MC_THR1
+#define MC_IER		MC_IER1
+#define MC_IIR		MC_IIR1
+#define MC_FCR		MC_FCR1
+#define MC_LCR		MC_LCR1
+#define MC_MCR		MC_MCR1
+#define MC_LSR		MC_LSR1
+#define MC_MSR		MC_MSR1
+#define MC_SPR		MC_SPR1
+#define MC_DLL		MC_DLL1
+#define MC_DLM		MC_DLM1
+#define MC_SCLR		MC_SCLR1
+#else
+#define MC_RBR		MC_RBR0
+#define MC_THR		MC_THR0
+#define MC_IER		MC_IER0
+#define MC_IIR		MC_IIR0
+#define MC_FCR		MC_FCR0
+#define MC_LCR		MC_LCR0
+#define MC_MCR		MC_MCR0
+#define MC_LSR		MC_LSR0
+#define MC_MSR		MC_MSR0
+#define MC_SPR		MC_SPR0
+#define MC_DLL		MC_DLL0
+#define MC_DLM		MC_DLM0
+#define MC_SCLR		MC_SCLR0
+#endif
+
 
 /*
  * Регистры интервального таймера IT0, IT1

@@ -106,6 +106,7 @@ debug_peekchar (void)
 	}
 	/* TODO: utf8 to unicode conversion. */
 	c = MC_RBR;
+
 	mips_intr_restore (x);
 	debug_char = c;
 	return c;
