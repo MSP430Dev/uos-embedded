@@ -166,10 +166,16 @@ arch_idle ()
 {
 	mips_intr_enable ();
 	for (;;) {
+#ifdef POWER_SAVE
+#ifdef ELVEES
+	MC_CLKEN &= ~MC_CLKEN_CPU;
+#endif
+#else
 		asm volatile (
 			".set mips4 \n"
 		"	wait \n"
 		"	.set mips1");
+#endif
 	}
 }
 
