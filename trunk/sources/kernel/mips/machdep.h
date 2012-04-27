@@ -168,7 +168,13 @@ arch_idle ()
 	for (;;) {
 #ifdef POWER_SAVE
 #ifdef ELVEES
+	asm volatile (
+	    "	nop\n"
+	    "	nop\n");
 	MC_CLKEN &= ~MC_CLKEN_CPU;
+	asm volatile (
+	    "	nop\n"
+	    "	nop\n");
 #endif
 #else
 		asm volatile (
