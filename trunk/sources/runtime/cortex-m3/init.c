@@ -71,6 +71,8 @@ _init_ (void)
 #else
 				ARM_CPU_CLOCK_HCLK_C3;
 #endif
+
+#ifndef NDEBUG
 #ifdef ARM_UART1_DEBUG
 	/* Set UART1 for debug output. */
 	milandr_init_pin (UART1_RX_GPIO, PORT(UART1_RX), PIN(UART1_RX), UART1_RX_FUNC);
@@ -117,7 +119,7 @@ _init_ (void)
 	ARM_UART2->CTL = ARM_UART_CTL_UARTEN |		// пуск приемопередатчика
 			ARM_UART_CTL_TXE;		// передача разрешена
 #endif /* ARM_UART1_DEBUG */
-
+#endif /* NDEBUG */
 
 #endif /* ARM_1986BE9 */
 

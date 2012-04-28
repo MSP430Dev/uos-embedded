@@ -984,6 +984,77 @@ typedef struct
 #define ARM_DMA_PeriphID       	((DMA_Periph_Identification_t*) (ARM_DMA_BASE + 0x0FD0))
 #define ARM_DMA_PrimeCellID   	((DMA_PrimeCell_Identification_t*) (ARM_DMA_BASE + 0x0FF0))
 
+//======================================================================================
+// DMA state register masks
+//======================================================================================
+#define ARM_DMA_CHANNEL_MASK	0x001F0000
+#define ARM_DMA_CHANNEL1		0x00000000
+#define ARM_DMA_CHANNEL2		0x00010000
+#define ARM_DMA_CHANNEL3		0x00020000
+
+#define ARM_DMA_STATE_MASK							0x000000F0
+#define ARM_DMA_STATE_IDLE							0x00000000
+#define ARM_DMA_STATE_READ_CH_CONTROLLER_DATA		0x00000010
+#define ARM_DMA_STATE_READ_SRC_DATA_END_POINTER		0x00000020
+#define ARM_DMA_STATE_READ_DEST_DATA_END_POINTER	0x00000030
+#define ARM_DMA_STATE_READ_SRC_DATA					0x00000040
+#define ARM_DMA_STATE_WRITE_DEST_DATA				0x00000050
+#define ARM_DMA_STATE_WAIT_REQUEST_CLR				0x00000060
+#define ARM_DMA_STATE_WRITE_CH_CONTROLLER_DATA		0x00000070
+#define ARM_DMA_STATE_STALLED						0x00000080
+#define ARM_DMA_STATE_DONE							0x00000090
+#define ARM_DMA_STATE_PERIPH_SCT_GATH_TRANS			0x000000A0
+#define ARM_DMA_STATE_ENABLE						0x00000001
+//======================================================================================
+// DMA configuration register masks
+//======================================================================================
+#define ARM_DMA_CFG_CH_PROT1	0x00000020
+#define ARM_DMA_CFG_CH_PROT2	0x00000040
+#define ARM_DMA_CFG_CH_PROT3	0x00000080
+#define ARM_DMA_ENABLE			0x00000001
+#define ARM_DMA_DISABLE_ALL		0xFFFFFFFF
+#define ARM_DMA_SELECT(CHANNEL)	(0x00000001<<(CHANNEL))
+#define ARM_DMA_ERR_CLR			0x00000001
+//======================================================================================
+// DMA Control data configuration masks
+//======================================================================================
+#define ARM_DMA_BYTE		0
+#define ARM_DMA_HALFWORD	1
+#define ARM_DMA_WORD		2
+#define ARM_DMA_ADDR_NOINC	3
+//======================================================================================
+// R_power bits, DMA_PrimaryControlData->xxx_CONTROL |= xxx<<15 */
+//======================================================================================
+#define ARM_DMA_ALWAYS_ARBITR	0x00000000
+#define ARM_DMA_AFTER2_ARBITR	0x00000001
+#define ARM_DMA_AFTER4_ARBITR	0x00000002
+#define ARM_DMA_AFTER8_ARBITR	0x00000003
+#define ARM_DMA_AFTER16_ARBITR	0x00000004
+#define ARM_DMA_AFTER32_ARBITR	0x00000005
+#define ARM_DMA_AFTER64_ARBITR	0x00000006
+#define ARM_DMA_AFTER128_ARBITR	0x00000007
+#define ARM_DMA_AFTER256_ARBITR	0x00000008
+#define ARM_DMA_AFTER512_ARBITR	0x00000009
+#define ARM_DMA_NOT_ARBITR		0x0000000F
+//======================================================================================
+// n_minus_1 bits, DMA_PrimaryControlData->xxx_CONTROL |= xxx<<5
+//======================================================================================
+#define ARM_DMA_TRANSFERS(QUANTITY)	((QUANTITY-1)<<4)
+#define ARM_DMA_RPOWER(QUANTITY)	((QUANTITY-1)<<14)
+
+#define ARM_DMA_NEXT_USEBURST	0x00000008
+//======================================================================================
+// DMA cycle bits
+//======================================================================================
+#define ARM_DMA_STOP			0x00000000
+#define ARM_DMA_BASIC			1
+#define ARM_DMA_AUTOREQ			2
+#define ARM_DMA_PINGPONG		3
+#define ARM_DMA_MEMSG_PDS		4
+#define ARM_DMA_MEMSG_ADS		5
+#define ARM_DMA_PERIPHSG_PDS	6
+#define ARM_DMA_PERIPHSG_ADS	7
+
 /*------------------------------------------------------
  * Описание регистров контроллера Flash памяти программ.
  */
@@ -1337,7 +1408,7 @@ typedef struct
 /*
  * Каждому контакту микроконтроллера ставится в соответствие уникальное число, имеющее также и символическое имя.
  * Например, PA0, PC12 и т.д. Пользователь драйвера должен установить значения констант, обозначающих сигналы,
- * в файле target.cfg своего проекта, в переменной CFLAGS. Например, 
+ * в файле target.cfg своего проекта, в переменной CFLAGS. Например,
  *     CFLAGS += -DSSP1RXD=PD11
  * В коде драйвера можно препроцессором разобрать значение константы для сигнала и получить, к какому контакту
  * пользователь привязал сигнал, и правильно проинициализировать контакт.
