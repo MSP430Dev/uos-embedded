@@ -70,14 +70,14 @@ static void init_bus ()
 		ARM_PWR_FASTEST (2) | ARM_PWR_FASTEST (3) | ARM_PWR_FASTEST (4) | ARM_PWR_FASTEST (5);
 
 	/* OE, WE */
-	ARM_GPIOC->FUNC = (ARM_GPIOA->FUNC & ~(ARM_FUNC_MASK (PORTC_OE) | ARM_FUNC_MASK (PORTC_WE))) |
+	ARM_GPIOC->FUNC = (ARM_GPIOC->FUNC & ~(ARM_FUNC_MASK (PORTC_OE) | ARM_FUNC_MASK (PORTC_WE))) |
 		ARM_FUNC_MAIN (PORTC_OE) | ARM_FUNC_MAIN (PORTC_WE);
 	ARM_GPIOC->ANALOG |= (1 << PORTC_OE) | (1 << PORTC_WE);	/* Digital */
 	ARM_GPIOC->PWR = (ARM_GPIOC->PWR & ~(ARM_PWR_MASK (PORTC_OE) | ARM_PWR_MASK (PORTC_WE))) |
 		ARM_PWR_FASTEST(PORTC_OE) | ARM_PWR_FASTEST(PORTC_WE);
 		
 	/* RS */
-	ARM_GPIOE->FUNC = ARM_GPIOA->FUNC & ~ARM_FUNC_MASK (PORTE_RS);
+	ARM_GPIOE->FUNC = ARM_GPIOE->FUNC & ~ARM_FUNC_MASK (PORTE_RS);
 	ARM_GPIOE->ANALOG |= (1 << PORTE_RS);			/* Digital */
 	ARM_GPIOE->OE |= (1 << PORTE_RS);			/* Output */
 	ARM_GPIOE->PWR = (ARM_GPIOE->PWR & ~ARM_PWR_MASK (PORTE_RS)) | ARM_PWR_FASTEST(PORTE_RS);
@@ -212,6 +212,8 @@ static short translate_russian (lcd_t *lcd, short c)
 
 static void lcd_putchar (lcd_t *lcd, short c)
 {
+	int i;
+	
 	switch (lcd->esc_mode)  {
 	case 0:
 		if (! lcd->unicode_char) {
@@ -221,8 +223,10 @@ static void lcd_putchar (lcd_t *lcd, short c)
 					lcd->new_line = 0;
 					return;
 				}
-				lcd->line = (lcd->line + 1) & 3;
-				lcd_set_line (lcd, lcd->line);
+				for (i = lcd->col; i < 20; ++i)
+					lcd_set_data (lcd, ' ');
+				//lcd->line = (lcd->line + 1) & 3;
+				//lcd_set_line (lcd, lcd->line);
 				return;
 			case '\t':		/* tab replaced by space */
 				c = ' ';
@@ -256,6 +260,7 @@ static void lcd_putchar (lcd_t *lcd, short c)
 	case 2:
 		if (c == 'H') {
 			lcd_command (LCD_CMD_CURSOR_HOME);
+			lcd->line = 0;
 			lcd->col = 0;
 			lcd->esc_mode = 0;
 			return;
