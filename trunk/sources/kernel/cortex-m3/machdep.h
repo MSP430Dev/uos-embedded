@@ -110,6 +110,10 @@ arch_idle ()
 {
 	arm_intr_enable ();
 	for (;;) {
+#ifdef ARM_1986BE9
+		asm volatile ("nop;");
+#else
 		arm_bus_yield ();
+#endif
 	}
 }
