@@ -237,6 +237,9 @@ static void lcd_putchar (lcd_t *lcd, short c)
 			case '\33':
 				lcd->esc_mode = 1;
 				return;
+			case '&':
+				c = 0xB0;
+				break;
 			case 0xD0:
 			case 0xD1:
 				lcd->unicode_char = c;
