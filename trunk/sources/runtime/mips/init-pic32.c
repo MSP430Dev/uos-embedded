@@ -43,18 +43,39 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Clear CAUSE register: use special interrupt vector 0x200. */
 	mips_write_c0_register (C0_CAUSE, CA_IV);
-
+	
 	/*
 	 * Setup UART registers.
 	 * Compute the divisor for 115.2 kbaud.
-	 * Assume we have 80 MHz cpu clock.
+	 * Assume we have (KHZ * 1000) MHz cpu clock.
 	 */
+
+#ifdef OLIMEX_DUINOMITE_MEGA
+	/* Set all I/O digital */
+	AD1PCFG = 0xFFFF;
+	
+	/* Enable power for UART and other peripherals */
+	PORTB = (1 << 13);
+	TRISB &= ~(1 << 13);
+	PORTBCLR = (1 << 13);
+	mdelay (5);
+	
+	/* Setup debug UART */
+	U5BRG = PIC32_BRG_BAUD (KHZ * 1000, 115200);
+	U5MODE = 0;
+	U5STA = 0;
+	U5MODE = PIC32_UMODE_PDSEL_8NPAR |	/* 8-bit data, no parity */
+		 PIC32_UMODE_ON;		/* UART Enable */
+	U5STASET = PIC32_USTA_URXEN |		/* Receiver Enable */
+		   PIC32_USTA_UTXEN;		/* Transmit Enable */
+#else
 	U1BRG = PIC32_BRG_BAUD (KHZ * 1000, 115200);
 	U1STA = 0;
 	U1MODE = PIC32_UMODE_PDSEL_8NPAR |	/* 8-bit data, no parity */
 		 PIC32_UMODE_ON;		/* UART Enable */
 	U1STASET = PIC32_USTA_URXEN |		/* Receiver Enable */
 		   PIC32_USTA_UTXEN;		/* Transmit Enable */
+#endif
 
         /*
          * Setup wait states.

@@ -114,6 +114,16 @@ debug_peekchar (void)
 #endif /* ELVEES */
 
 #if defined (PIC32MX)
+
+#ifdef OLIMEX_DUINOMITE_MEGA
+#	define UxTXREG	U5TXREG
+#	define UxRXREG	U5RXREG
+#	define UxSTA	U5STA
+#else
+#	define UxTXREG	U1TXREG
+#	define UxRXREG	U1RXREG
+#	define UxSTA	U1STA
+#endif
 /*
  * Send a byte to the UART transmitter, with interrupts disabled.
  */
@@ -125,15 +135,16 @@ debug_putchar (void *arg, short c)
 	mips_intr_disable (&x);
 
 	/* Wait for transmitter shift register empty. */
-	while (! (U1STA & PIC32_USTA_TRMT))
+	while (! (UxSTA & PIC32_USTA_TRMT))
 		continue;
+		
 again:
 	/* Send byte. */
 	/* TODO: unicode to utf8 conversion. */
-	U1TXREG = c;
+	UxTXREG = c;
 
 	/* Wait for transmitter shift register empty. */
-	while (! (U1STA & PIC32_USTA_TRMT))
+	while (! (UxSTA & PIC32_USTA_TRMT))
 		continue;
 
 /*	watchdog_alive ();*/
@@ -152,7 +163,7 @@ debug_getchar (void)
 {
 	unsigned char c;
 	int x;
-
+	
 	if (debug_char >= 0) {
 		c = debug_char;
 		debug_char = -1;
@@ -163,8 +174,8 @@ debug_getchar (void)
 /*		watchdog_alive ();*/
 
 		/* Wait until receive data available. */
-		if (U1STA & PIC32_USTA_URXDA) {
-                        c = U1RXREG;
+		if (UxSTA & PIC32_USTA_URXDA) {
+                        c = UxRXREG;
                         break;
                 }
                 mips_intr_restore (x);
@@ -185,14 +196,15 @@ debug_peekchar (void)
 		return debug_char;
 
 	mips_intr_disable (&x);
-
+	
 	/* Wait until receive data available. */
-	if (! (U1STA & PIC32_USTA_URXDA)) {
+	if (! (UxSTA & PIC32_USTA_URXDA)) {
 		mips_intr_restore (x);
 		return -1;
 	}
 	/* TODO: utf8 to unicode conversion. */
-	c = U1RXREG;
+	c = UxRXREG;
+	
 	mips_intr_restore (x);
 	debug_char = c;
 	return c;

@@ -25,6 +25,11 @@
 #include <microchip/usb.h>
 #include <microchip/usb_device.h>
 
+#define LEDUSB	8	/* PE3: green */
+#define LED1	4	/* PE2: white */
+#define LED2	2	/* PE1: red */
+#define LED3	1	/* PE0: yellow */
+
 #if (USB_PING_PONG_MODE != USB_PING_PONG__FULL_PING_PONG)
     #error "PIC32 only supports full ping pong mode."
 #endif
@@ -67,10 +72,15 @@ volatile unsigned char CtrlTrfData[USB_EP0_BUFF_SIZE];
  * all of the internal variables, registers, and
  * interrupt flags.
  */
+unsigned nb_inits = 0; 
+
 void USBDeviceInit(void)
 {
+//debug_printf ("USBDeviceInit\n");
     unsigned char i;
-
+    
+    nb_inits++;
+    
     // Clear all USB error flags
     USBClearInterruptRegister(U1EIR);
 
@@ -94,7 +104,7 @@ void USBDeviceInit(void)
     U1ADDR = 0x00;
 
     //Clear all of the endpoint control registers
-    memset((void*)&U1EP1,0x00,(USB_MAX_EP_NUMBER-1));
+    memset((void*)&U1EP(1),0x00,(USB_MAX_EP_NUMBER-1));
 
     //Clear all of the BDT entries
     for(i=0;i<(sizeof(BDT)/sizeof(BDT_ENTRY));i++)
@@ -103,7 +113,7 @@ void USBDeviceInit(void)
     }
 
     // Initialize EP0 as a Ctrl EP
-    U1EP0 = EP_CTRL | USB_HANDSHAKE_ENABLED;
+    U1EP(0) = EP_CTRL | USB_HANDSHAKE_ENABLED;
 
     // Flush any pending transactions
     while (USBTransactionCompleteIF)
@@ -146,7 +156,7 @@ void USBDeviceInit(void)
 void USBDeviceTasks(void)
 {
     unsigned char i;
-
+    
 #ifdef USB_SUPPORT_OTG
     //SRP Time Out Check
     if (USBOTGSRPIsReady())
@@ -343,7 +353,9 @@ void USBDeviceTasks(void)
 		{						//utilization can be compromised, and the device won't be able to receive SETUP packets.
 		    if(USBTransactionCompleteIF)
 		    {
+//debug_printf ("USBTransactionCompleteIF, i = %d\n", i);
 		        USTATcopy = U1STAT;
+//debug_printf ("U1STAT = %X\n", USTATcopy);		        
 
 		        USBClearInterruptFlag(USBTransactionCompleteIFReg,USBTransactionCompleteIFBitNum);
 
@@ -364,6 +376,7 @@ void USBDeviceTasks(void)
  */
 void USBStallHandler(void)
 {
+//debug_printf ("USBStallHandler\n");
     /*
      * Does not really have to do anything here,
      * even for the control endpoint.
@@ -375,7 +388,7 @@ void USBStallHandler(void)
      */
 
     /* v2b fix */
-    if (U1EP0 & PIC32_U1EP_EPSTALL)
+    if (U1EP(0) & PIC32_U1EP_EPSTALL)
     {
         // UOWN - if 0, owned by CPU, if 1, owned by SIE
         if((pBDTEntryEP0OutCurrent->STAT.Val == _USIE) && (pBDTEntryIn[0]->STAT.Val == (_USIE|_BSTALL)))
@@ -384,7 +397,7 @@ void USBStallHandler(void)
             pBDTEntryEP0OutCurrent->STAT.Val = _USIE|_DAT0|_DTSEN|_BSTALL;
         }
 	// Clear stall status
-	U1EP0 &= ~PIC32_U1EP_EPSTALL;
+	U1EP(0) &= ~PIC32_U1EP_EPSTALL;
     }//end if
 
     USBClearInterruptFlag(USBStallIFReg,USBStallIFBitNum);
@@ -395,6 +408,7 @@ void USBStallHandler(void)
  */
 void USBSuspend(void)
 {
+//debug_printf ("USBSuspend\n");
     /*
      * NOTE: Do not clear UIR_ACTVIF here!
      * Reason:
@@ -435,6 +449,7 @@ void USBSuspend(void)
  */
 void USBWakeFromSuspend(void)
 {
+//debug_printf ("USBWakeFromSuspend\n");
     /*
      * If using clock switching, the place to restore the original
      * microcontroller core clock frequency is in the USBCBWakeFromSuspend() callback
@@ -478,6 +493,7 @@ void USBWakeFromSuspend(void)
  */
 void USBCtrlEPService(void)
 {
+//debug_printf ("USBCtrlEPService\n");
 	//If the last packet was a EP0 OUT packet
     if((USTATcopy & USTAT_EP0_PP_MASK) == USTAT_EP0_OUT_EVEN)
     {
@@ -542,6 +558,7 @@ void USBCtrlEPService(void)
  */
 void USBCtrlTrfSetupHandler(void)
 {
+//debug_printf ("USBCtrlTrfSetupHandler\n");
 	//if the SIE currently owns the buffer
     if(pBDTEntryIn[0]->STAT.UOWN != 0)
     {
@@ -578,6 +595,7 @@ void USBCtrlTrfSetupHandler(void)
  */
 void USBCtrlTrfOutHandler(void)
 {
+//debug_printf ("USBCtrlTrfOutHandler\n");
     if(controlTransferState == CTRL_TRF_RX)
     {
         USBCtrlTrfRxService();
@@ -602,6 +620,7 @@ void USBCtrlTrfOutHandler(void)
  */
 void USBCtrlTrfInHandler(void)
 {
+//debug_printf ("USBCtrlTrfInHandler, pBDTEntryIn[0] = %08X\n", pBDTEntryIn[0]);
     unsigned char lastDTS;
 
     lastDTS = pBDTEntryIn[0]->STAT.DTS;
@@ -635,6 +654,7 @@ void USBCtrlTrfInHandler(void)
             // If a short packet has been sent, don't want to send any more,
             // stall next time if host is still trying to read.
             pBDTEntryIn[0]->STAT.Val = _USIE|_BSTALL;
+//debug_printf ("shortPacketStatus == SHORT_PKT_SENT\n");
         }
         else
         {
@@ -660,6 +680,7 @@ void USBCtrlTrfInHandler(void)
  */
 void USBPrepareForNextSetupTrf(void)
 {
+//debug_printf ("USBPrepareForNextSetupTrf\n");
     /*
     Bug Fix: Feb 26, 2007 v2.1
     *********************************************************************
@@ -762,7 +783,10 @@ void USBPrepareForNextSetupTrf(void)
  */
 void USBCheckStdRequest(void)
 {
+//debug_printf ("USBCheckStdRequest\n");
     if(SetupPkt.RequestType != STANDARD) return;
+    
+//debug_printf ("bRequest = %02X, wLength = %d, addr = %d\n", SetupPkt.bRequest, SetupPkt.wLength, U1ADDR);
 
     switch(SetupPkt.bRequest)
     {
@@ -816,6 +840,7 @@ void USBCheckStdRequest(void)
  */
 void USBStdFeatureReqHandler(void)
 {
+//debug_printf ("USBStdFeatureReqHandler\n");
     BDT_ENTRY *p;
     uint32_t* pUEP;
 
@@ -887,7 +912,7 @@ void USBStdFeatureReqHandler(void)
         {
 			//If it was not a SET_FEATURE
 			//point to the appropriate UEP register
-            pUEP = (uint32_t*)(&U1EP0);
+            pUEP = (uint32_t*)(&U1EP(0));
             pUEP += (SetupPkt.EPNum*4);
 
 			//Clear the STALL bit in the UEP register
@@ -930,14 +955,26 @@ void USBStdFeatureReqHandler(void)
 }
 
 /*
+static void dump (const void *addr, int size)
+{
+    const unsigned char *p = addr;
+    int i;
+    for (i = 0; i < size; ++i)
+        debug_printf ("%02X ", p[i]);
+    debug_printf ("\n");
+}
+*/
+
+/*
  * This routine handles the standard GET_DESCRIPTOR request.
  */
 void USBStdGetDscHandler(void)
 {
+//debug_printf ("USBStdGetDscHandler\n");
     if(SetupPkt.bmRequestType == 0x80)
     {
         inPipes[0].info.Val = USB_INPIPES_ROM | USB_INPIPES_BUSY | USB_INPIPES_INCLUDE_ZERO;
-
+//debug_printf ("bDescriptorType = %d\n", SetupPkt.bDescriptorType);
         switch(SetupPkt.bDescriptorType)
         {
             case USB_DESCRIPTOR_DEVICE:
@@ -985,6 +1022,7 @@ void USBStdGetDscHandler(void)
  */
 void USBStdGetStatusHandler(void)
 {
+//debug_printf ("USBStdGetStatusHandler\n");
     CtrlTrfData[0] = 0;                 // Initialize content
     CtrlTrfData[1] = 0;
 
@@ -1055,12 +1093,12 @@ void USBStdGetStatusHandler(void)
  */
 void USBCtrlEPServiceComplete(void)
 {
+//debug_printf ("USBCtrlEPServiceComplete\n");
     /*
      * PKTDIS bit is set when a Setup Transaction is received.
      * Clear to resume packet processing.
      */
     U1CON &= ~PIC32_U1CON_PKTDIS;
-
     if(inPipes[0].info.bits.busy == 0)
     {
         if(outPipes[0].info.bits.busy == 1)
@@ -1087,6 +1125,7 @@ void USBCtrlEPServiceComplete(void)
         }
         else
         {
+//debug_printf ("================= v2b fix\n");
             /*
              * If no one knows how to service this request then stall.
              * Must also prepare EP0 to receive the next SETUP transaction.
@@ -1105,6 +1144,7 @@ void USBCtrlEPServiceComplete(void)
         {
 			if(SetupPkt.DataDir == DEV_TO_HOST)
 			{
+//debug_printf ("DEV_TO_HOST, USB_EP0_BUFF_SIZE = %d\n", USB_EP0_BUFF_SIZE);
 				if(SetupPkt.wLength < inPipes[0].wCount)
 				{
 					inPipes[0].wCount = SetupPkt.wLength;
@@ -1149,6 +1189,7 @@ void USBCtrlEPServiceComplete(void)
 			}
 			else   // (SetupPkt.DataDir == HOST_TO_DEVICE)
 			{
+//debug_printf ("HOST_TO_DEV\n");
 				controlTransferState = CTRL_TRF_RX;
 				/*
 				 * Control Write:
@@ -1189,6 +1230,7 @@ void USBCtrlEPServiceComplete(void)
  */
 void USBCtrlTrfTxService(void)
 {
+//debug_printf ("USBCtrlTrfTxService\n");
     unsigned byteToSend;
 
     /*
@@ -1213,6 +1255,7 @@ void USBCtrlTrfTxService(void)
     {
         byteToSend = USB_EP0_BUFF_SIZE;
     }
+//debug_printf ("byteToSend = %d\n", byteToSend);
 
     /*
      * Next, load the number of bytes to send to BC9..0 in buffer descriptor
@@ -1255,6 +1298,7 @@ void USBCtrlTrfTxService(void)
  */
 void USBCtrlTrfRxService(void)
 {
+//debug_printf ("USBCtrlTrfRxService\n");
     unsigned char byteToRead;
     unsigned char i;
 
@@ -1318,11 +1362,12 @@ void USBCtrlTrfRxService(void)
  */
 void USBStdSetCfgHandler(void)
 {
+//debug_printf ("USBStdSetCfgHandler\n");
     // This will generate a zero length packet
     inPipes[0].info.bits.busy = 1;
 
     //disable all endpoints except endpoint 0
-    memset((void*)&U1EP1,0x00,(USB_MAX_EP_NUMBER-1));
+    memset((void*)&U1EP(1),0x00,(USB_MAX_EP_NUMBER-1));
 
     //clear the alternate interface settings
     memset((void*)&USBAlternateInterface,0x00,USB_MAX_NUM_INT);
@@ -1354,6 +1399,7 @@ void USBStdSetCfgHandler(void)
  */
 void USBConfigureEndpoint (unsigned char EPNum, unsigned char direction)
 {
+//debug_printf ("USBConfigureEndpoint\n");
     volatile BDT_ENTRY* handle;
 
     handle = (volatile BDT_ENTRY*)&BDT[EP0_OUT_EVEN];
@@ -1430,12 +1476,13 @@ void USBConfigureEndpoint (unsigned char EPNum, unsigned char direction)
  */
 void USBEnableEndpoint (unsigned char ep, unsigned char options)
 {
+//debug_printf ("USBEnableEndpoint\n");
     //Set the options to the appropriate endpoint control register
     //*((unsigned char*)(&U1EP0+ep)) = options;
     {
         unsigned int* p;
 
-        p = (unsigned int*)(&U1EP0+(4*ep));
+        p = (unsigned int*)(&U1EP(0)+(4*ep));
         *p = options;
     }
 
@@ -1458,6 +1505,7 @@ void USBEnableEndpoint (unsigned char ep, unsigned char options)
  */
 void USBStallEndpoint (unsigned char ep, unsigned char dir)
 {
+//debug_printf ("USBStallEndpoint\n");
     BDT_ENTRY *p;
 
     if(ep == 0)
@@ -1501,6 +1549,7 @@ void USBStallEndpoint (unsigned char ep, unsigned char dir)
  */
 USB_HANDLE USBTransferOnePacket (unsigned char ep, unsigned char dir, unsigned char* data, unsigned char len)
 {
+//debug_printf ("USBTransferOnePacket\n");
     USB_HANDLE handle;
 
     //If the direction is IN
