@@ -1292,6 +1292,28 @@ typedef struct
 #define	CAN_DLC_IDE		(1 << 12)	/* Расширенный формат */
 
 /*-----------------------------------
+ * Описание регистров контроллера ЦАП
+ */
+typedef struct
+{
+	arm_reg_t DAC_CFG;
+	arm_reg_t DAC1_DATA;
+	arm_reg_t DAC2_DATA;
+} DAC_t;
+
+#define ARM_DAC			((DAC_t*) ARM_DAC_BASE)
+
+/*
+ * Регистр DAC_CFG
+ */
+
+#define	DAC1_REF			(1<<0)
+#define	DAC2_REF			(1<<1)
+#define	DAC1_ON				(1<<2)
+#define	DAC2_ON				(1<<3)
+#define	DAC1_DAC2_ASYNC		(1<<4);
+
+/*-----------------------------------
  * Описание регистров контроллера АЦП
  */
 typedef struct
