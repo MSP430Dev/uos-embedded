@@ -22,14 +22,17 @@ struct ksk_tx_area {
 	uint32_t	gcr;			/* Регистр управления */
 	uint32_t	grup1;			/* Параметры первой группы */
 	uint32_t	grup2;			/* Параметры второй группы */
-	uint32_t	word_num_overall;	/* Общая длина первой и второй групп */
 	uint32_t	reserve0;		/* Резерв */
+	uint32_t	reserve1;		/* Резерв */
 	uint32_t	tssr_ch1;		/* Статус передатчика первого канала */
 	uint32_t	tssr_ch2;		/* Статус передатчика второго канала */
 	uint32_t	tssr_ch3;		/* Статус передатчика третьего канала */
-	uint32_t	reserve1 [8];		/* Резерв */
+	uint32_t	reserve2 [8];		/* Резерв */
 	unsigned	data [512 - 16];	/* Данные для передачи */
 } __attribute__((packed));
+
+#define KSK_NOM_CYCLE_OS(n)	((n) << 19)
+#define KSK_NOM_CYCLE_RS(n)	((n) << 22)
 
 #define KSK_GRUP_WORDS_PER_ROUND(n)	((n) & 0x3FF)		/* Количество слов, выдаваемых в одном раунде TDMA */
 #define KSK_GRUP_WORDS_PER_CYCLE(n)	(((n) & 0x3FF) << 10)	/* Количество слов, выдаваемых в одном цикле системы */

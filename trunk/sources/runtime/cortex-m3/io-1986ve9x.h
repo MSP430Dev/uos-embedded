@@ -1534,7 +1534,6 @@ typedef struct
 
 static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, unsigned func)
 {
-//debug_printf ("milandr_init_pin: port = %d, pin = %d, func = %d\n", port, pin, func);
 	/* Подача синхроимпульсов */
 	ARM_RSTCLK->PER_CLOCK |= (ARM_PER_CLOCK_GPIOA << port);
 	/* Установка функции */

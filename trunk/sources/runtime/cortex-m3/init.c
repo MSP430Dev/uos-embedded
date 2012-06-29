@@ -33,6 +33,7 @@ _init_ (void)
 {
 	unsigned long *src, *dest, *limit;
 
+#ifndef SETUP_HCLK_HSI
 #ifdef ARM_1986BE9
 	/* Enable JTAG A and B debug ports. */
 //	ARM_BACKUP->BKP_REG_0E |= ARM_BKP_REG_0E_JTAG_A | ARM_BKP_REG_0E_JTAG_B;
@@ -61,6 +62,7 @@ _init_ (void)
 		ARM_PLL_CONTROL_CPU_ON;
 	while (! (ARM_RSTCLK->CLOCK_STATUS & ARM_CLOCK_STATUS_PLL_CPU_RDY))
 		continue;
+#endif
 
 	/* Use PLLCPUo for CPU_C2, CPU_C3 and HCLK. */
 	ARM_RSTCLK->CPU_CLOCK = ARM_CPU_CLOCK_C3_C2 |
@@ -91,7 +93,7 @@ _init_ (void)
 	ARM_UART1->IBRD = ARM_UART_IBRD (KHZ*1000/4, 115200);
 	ARM_UART1->FBRD = ARM_UART_FBRD (KHZ*1000/4, 115200);
 #endif
-	/* Enable UART2, transmiter only. */
+	/* Enable UART1, transmiter only. */
 	ARM_UART1->LCRH = ARM_UART_LCRH_WLEN8;		// длина слова 8 бит
 	ARM_UART1->CTL = ARM_UART_CTL_UARTEN |		// пуск приемопередатчика
 			ARM_UART_CTL_TXE;		// передача разрешена
