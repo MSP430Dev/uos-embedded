@@ -6,7 +6,7 @@ Uno32 board ([http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKIT%20U
 [http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKITUno32_rm.pdf manual],
 [http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKIT_Uno32_bysa.zip Eagle files])
 is compatible with Arduino platform, but based on
-[http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en534177 Microchip PIC32MX320]
+[http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en532434 Microchip PIC32MX320]
 microcontroller.
 
 Features:
