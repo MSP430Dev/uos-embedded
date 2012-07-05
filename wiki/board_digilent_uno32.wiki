@@ -86,3 +86,10 @@ Power can be sourced from miniUSB, or from external power supply +7 ... 15 VDC.
 || *LED* || *PIC32* || *Signal*               ||
 ||  LD4  || RG6     || 13 - PWM/Digital, SCK2 ||
 ||  LD5  || RF0     || --                     ||
+
+= JTAG port =
+|| *JTAG* || *PIC32* || *Signal*     ||
+||  TMS   || RB10    || A3 - Analog  ||
+||  TCK   || RB12    || A4 - Analog  ||
+||  TDO   || RB11    || A9 - Analog  ||
+||  TDI   || RB13    || A10 - Analog ||
