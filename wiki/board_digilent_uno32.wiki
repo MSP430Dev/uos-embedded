@@ -1,0 +1,94 @@
+#summary Target board: Digilent chipKIT Uno32.
+
+[http://www.digilentinc.com/Products/Detail.cfm?NavPath=2,719,895&Prod=CHIPKIT-UNO32 http://uos-embedded.googlecode.com/svn/wiki/images/digilent-uno32.jpg]
+
+Uno32 board ([http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKIT%20Uno32_bysa_sch.pdf schematics],
+[http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKIT%20Uno32_rm.pdf manual],
+[http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKIT_Uno32_bysa.zip Eagle files])
+is compatible with Arduino platform, but based on
+[http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en534177 Microchip PIC32MX320]
+microcontroller.
+
+Features:
+ * PIC32MX320 microcontroller 80 MHz (MIPS architecture)
+ * 43 usable i/o pins
+ * Compatible with Arduino shields
+ * MiniUSB connector with FTDI convertor to UART1
+ * Power select switch: from USB or from external source
+ * External power connector
+ * One power LED and two user LEDs
+ * Reset button
+
+Memory:
+ * 128 kbytes of Flash memory
+ * 12 kbytes of additional boot Flash memory
+ * 32 kbytes of RAM
+
+Digital outputs can sink or source up to 18 mA.
+A rich set of peripheral functions is available: UART, SPI, I2C, ADC, timers.
+Two internal oscillators available: 8 MHz and 32 kHz.
+Power can be sourced from miniUSB, or from external power supply +7 ... 15 VDC.
+
+= Signals =
+[http://uos-embedded.googlecode.com/svn/wiki/images/uno32-pinout.jpg]
+
+=== PWM/Digital connector ===
+|| *PIC32* || *Signal*|| *Signal*|| *PIC32*  ||
+|| RB1     ||    41   ||   AREF  || RB0      ||
+|| RF5     ||    40   ||   GND   ||  --      ||
+|| RF4     ||    39   ||   13    || RG6, LD5 ||
+|| RF6     ||    38   ||   12    || RG7/G8   ||
+|| RD7     ||    37   ||   11    || RG8/G7   ||
+|| RD6     ||    36   ||   10    || RD4/G9   ||
+|| RD11    ||    35   ||   9     || RD3      ||
+|| RD5     ||    34   ||   8     || RD10     ||
+|| RE7     ||    33   ||   7     || RD9      ||
+|| RE6     ||    32   ||   6     || RD2      ||
+|| RE5     ||    31   ||   5     || RD1      ||
+|| RE4     ||    30   ||   4     || RF1      ||
+|| RE3     ||    29   ||   3     || RD0      ||
+|| RE2     ||    28   ||   2     || RD8      ||
+|| RE1     ||    27   ||   1     || RF3      ||
+|| RE0     ||    26   ||   0     || RF2      ||
+
+=== Analog connector ===
+|| *Signal*|| *PIC32*  ||
+||  A0     ||     RB2  ||
+||  A1     ||     RB4  ||
+||  A2     ||     RB8  ||
+||  A3     ||     RB10 ||
+||  A4     || RG3/RB12 ||
+||  A5     || RG2/RB14 ||
+||  A6     ||     RB3  ||
+||  A7     ||     RB5  ||
+||  A8     ||     RB9  ||
+||  A9     ||     RB11 ||
+||  A10    ||     RB13 ||
+||  A11    ||     RB15 ||
+
+=== Power connector ===
+|| *Signal*|| *Function*              ||
+||  RST    || MCLR                    ||
+||  3V3    || VCC +3.3                ||
+||  5V0    || VCC +5.0                ||
+||  GND    || GND                     ||
+||  GND    || GND                     ||
+||  VIN    || External supply voltage ||
+
+= UART, SPI and I2C pins =
+|| *UART* || *SPI* || *I2C* || *PIC32* || *Connector*          ||
+||  U1RX  || SDI1  || --    || RF2     || 0 - PWM/Digital, USB ||
+||  U1TX  || SDO1  || --    || RF3     || 1 - PWM/Digital, USB ||
+||  U2RX  || --    || SDA2  || RF4     || 39 - PWM/Digital     ||
+||  U2TX  || --    || SCL2  || RF5     || 40 - PWM/Digital     ||
+||  --    || SCK1  || --    || RF6     || 38 - PWM/Digital     ||
+||  --    || SDI2  || --    || RG7     || 12/11 - PWM/Digital, JP7, J8 ||
+||  --    || SDO2  || --    || RG8     || 11/12 - PWM/Digital, JP7, J8 ||
+||  --    || SCK2  || --    || RG6     || 13 - PWM/Digital     ||
+||  --    || --    || SDA1  || RG3     || A4 - Analog, JP8     ||
+||  --    || --    || SCL1  || RG2     || A5 - Analog, JP8     ||
+
+= LEDs =
+|| *LED* || *PIC32* || *Signal*               ||
+||  LD4  || RG6     || 13 - PWM/Digital, SCK2 ||
+||  LD5  || RF0     || --                     ||
