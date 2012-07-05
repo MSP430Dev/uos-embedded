@@ -52,19 +52,13 @@ Power can be sourced from miniUSB, or from external power supply +7 ... 15 VDC.
 || RE0     ||    26   ||   0     || RF2      ||
 
 === Analog connector ===
-|| *Signal*|| *PIC32*  ||
-||  A0     ||     RB2  ||
-||  A1     ||     RB4  ||
-||  A2     ||     RB8  ||
-||  A3     ||     RB10 ||
-||  A4     || RG3/RB12 ||
-||  A5     || RG2/RB14 ||
-||  A6     ||     RB3  ||
-||  A7     ||     RB5  ||
-||  A8     ||     RB9  ||
-||  A9     ||     RB11 ||
-||  A10    ||     RB13 ||
-||  A11    ||     RB15 ||
+|| *PIC32*  || *Signal*|| *Signal*|| *PIC32*  ||
+||     RB2  ||  A0     ||  A6     ||     RB3  ||
+||     RB4  ||  A1     ||  A7     ||     RB5  ||
+||     RB8  ||  A2     ||  A8     ||     RB9  ||
+||     RB10 ||  A3     ||  A9     ||     RB11 ||
+|| RG3/RB12 ||  A4     ||  A10    ||     RB13 ||
+|| RG2/RB14 ||  A5     ||  A11    ||     RB15 ||
 
 === Power connector ===
 || *Signal*|| *Function*              ||
