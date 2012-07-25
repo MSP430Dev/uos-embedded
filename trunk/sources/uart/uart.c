@@ -263,7 +263,7 @@ uart_init (uart_t *u, small_uint_t port, int prio, unsigned int khz,
 	u->out_first = u->out_last = u->out_buf;
 	u->khz = khz;
 	u->onlcr = 1;
-#if ARM_1986BE9
+#if (ARM_1986BE9 || ARM_1986BE1)
 	u->port = (port == 0) ? ARM_UART1_BASE : ARM_UART2_BASE;
 #else
 	u->port = port;

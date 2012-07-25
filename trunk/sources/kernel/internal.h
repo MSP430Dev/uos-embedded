@@ -24,10 +24,12 @@
 #	include <kernel/avr/machdep.h>
 #endif
 #if defined (__arm__) || defined (__thumb__)
-#   ifdef ARM_CORTEX_M3
-#	include <kernel/cortex-m3/machdep.h>
+#   if defined (ARM_CORTEX_M1)
+#	    include <kernel/cortex-m1/machdep.h>
+#   elif defined (ARM_CORTEX_M3)
+#	    include <kernel/cortex-m3/machdep.h>
 #   else
-#	include <kernel/arm/machdep.h>
+#	    include <kernel/arm/machdep.h>
 #   endif
 #endif
 #if I386

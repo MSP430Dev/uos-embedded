@@ -70,6 +70,10 @@
 #   define TIMER_IRQ		32	/* Systick */
 #endif
 
+#if ARM_1986BE1
+#   define TIMER_IRQ		32	/* Systick */
+#endif
+
 #if MSP430
 #   ifdef TIMERA0_VECTOR
 #      define TIMER_IRQ		(TIMERA0_VECTOR / 2)
@@ -285,7 +289,7 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
 	MC_ITCSR = MC_ITCSR_EN;
 #endif
-#if ARM_1986BE9
+#if (ARM_1986BE9 || ARM_1986BE1)
 	ARM_SYSTICK->CTRL = 0;
 	ARM_SYSTICK->VAL = 0;
 #ifdef SETUP_HCLK_HSI
