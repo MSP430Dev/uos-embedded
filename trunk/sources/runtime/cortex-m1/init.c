@@ -201,7 +201,7 @@ static void dump_of_death (unsigned *frame, unsigned ipsr)
 	debug_printf ("r2 = %8x     r7 = %8x     r12 = %8x     ipsr = %8x\n",
 		       frame[10],   frame[3],    frame[12],    ipsr);
 	debug_printf ("r3 = %8x     r8 = %8x     sp  = %8x\n",
-		       frame[11],   frame[4],    frame+17,);
+		       frame[11],   frame[4],    frame+17);
 	debug_printf ("r4 = %8x     r9 = %8x     lr  = %8x\n",
 		       frame[0],    frame[5],    frame[13]);
 
