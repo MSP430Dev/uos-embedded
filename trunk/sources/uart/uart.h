@@ -11,7 +11,7 @@
 #   if __AVR__
 #      define UART_STACKSZ	0x100		/* 100 enough for AVR */
 #   endif
-#   if (ARM_CORTEX_M3 || ARM_CORTEX_M1)
+#   if ARM_CORTEX_M3
 #      define UART_STACKSZ	1		/* unused */
 #   elif defined (__arm__) || defined (__thumb__)
 #      define UART_STACKSZ	0x200
@@ -33,7 +33,9 @@
  * \~russian
  * Размер буфера ввода.
  */
+#ifndef UART_INBUFSZ
 #define UART_INBUFSZ	8
+#endif
 
 /**\~english
  * Size of output buffer.
@@ -41,7 +43,9 @@
  * \~russian
  * Размер буфера вывода.
  */
+#ifndef UART_OUTBUFSZ
 #define UART_OUTBUFSZ	32
+#endif
 
 /**\~english
  * Data structure of UART driver.
