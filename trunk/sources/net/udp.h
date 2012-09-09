@@ -1,7 +1,7 @@
 #ifndef __UDP_H_
 #define __UDP_H_ 1
 
-#define SOCKET_QUEUE_SIZE	8
+#define UDP_SOCKET_QUEUE_SIZE	8
 
 typedef struct _udp_socket_queue_t {
 	struct _buf_t	*buf;
@@ -23,7 +23,7 @@ typedef struct _udp_socket_t {
 	unsigned char	*gateway;
 
 	/* queue of received packets */
-	udp_socket_queue_t queue [SOCKET_QUEUE_SIZE];
+	udp_socket_queue_t queue [UDP_SOCKET_QUEUE_SIZE];
 	udp_socket_queue_t *head;
 	unsigned char	count;
 } udp_socket_t;

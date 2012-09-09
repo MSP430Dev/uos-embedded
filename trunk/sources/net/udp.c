@@ -28,7 +28,7 @@ udp_queue_get (udp_socket_t *q, unsigned char *paddr,
 		return 0;
 	}
 	assert (q->head >= q->queue);
-	assert (q->head < q->queue + SOCKET_QUEUE_SIZE);
+	assert (q->head < q->queue + UDP_SOCKET_QUEUE_SIZE);
 	assert (q->head->buf != 0);
 
 	/* Get the first packet from queue. */
@@ -42,7 +42,7 @@ udp_queue_get (udp_socket_t *q, unsigned char *paddr,
 	/* Advance head pointer. */
 	++q->head;
 	--q->count;
-	if (q->head >= q->queue + SOCKET_QUEUE_SIZE)
+	if (q->head >= q->queue + UDP_SOCKET_QUEUE_SIZE)
 		q->head = q->queue;
 
 	/*debug_printf ("udp_queue_get: returned 0x%04x\n", p);*/
@@ -54,7 +54,7 @@ udp_queue_free (udp_socket_t *q)
 {
 	while (q->count > 0) {
 		assert (q->head >= q->queue);
-		assert (q->head < q->queue + SOCKET_QUEUE_SIZE);
+		assert (q->head < q->queue + UDP_SOCKET_QUEUE_SIZE);
 		assert (q->head->buf != 0);
 
 		/* Remove packet from queue. */
@@ -63,7 +63,7 @@ udp_queue_free (udp_socket_t *q)
 		/* Advance head pointer. */
 		++q->head;
 		--q->count;
-		if (q->head >= q->queue + SOCKET_QUEUE_SIZE)
+		if (q->head >= q->queue + UDP_SOCKET_QUEUE_SIZE)
 			q->head = q->queue;
 	}
 }
@@ -71,14 +71,14 @@ udp_queue_free (udp_socket_t *q)
 static bool_t
 udp_queue_is_full (udp_socket_t *q)
 {
-	/*debug_printf ("udp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
-	return (q->count == SOCKET_QUEUE_SIZE);
+	/*debug_printf ("udp_queue_is_full: returned %d\n", (q->count == UDP_SOCKET_QUEUE_SIZE));*/
+	return (q->count == UDP_SOCKET_QUEUE_SIZE);
 }
 
 static bool_t
 udp_queue_is_empty (udp_socket_t *q)
 {
-	/*debug_printf ("udp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
+	/*debug_printf ("udp_queue_is_full: returned %d\n", (q->count == UDP_SOCKET_QUEUE_SIZE));*/
 	return (q->count == 0);
 }
 
@@ -91,15 +91,15 @@ udp_queue_put (udp_socket_t *q, buf_t *p,
 	/*debug_printf ("udp_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n", p, q->count, q->head);*/
 
 	/* Must be called ONLY when queue is not full. */
-	assert (q->count < SOCKET_QUEUE_SIZE);
+	assert (q->count < UDP_SOCKET_QUEUE_SIZE);
 
 	if (q->head == 0)
 		q->head = q->queue;
 
 	/* Compute the last place in the queue. */
 	tail = q->head + q->count;
-	if (tail >= q->queue + SOCKET_QUEUE_SIZE)
-		tail -= SOCKET_QUEUE_SIZE;
+	if (tail >= q->queue + UDP_SOCKET_QUEUE_SIZE)
+		tail -= UDP_SOCKET_QUEUE_SIZE;
 
 	/* Put the packet in. */
 	tail->buf = p;
@@ -204,11 +204,13 @@ udp_send_netif (udp_socket_t *s, buf_t *p, unsigned char *dest,
 {
 	udp_hdr_t *h;
 
+
 	/* Build UDP header. */
 	if (! buf_add_header (p, UDP_HLEN)) {
 		buf_free (p);	/* free buffer on error */
 		return 0;
 	}
+
 	h = (udp_hdr_t*) p->payload;
 	h->len_h = p->tot_len >> 8;
 	h->len_l = p->tot_len;
@@ -221,7 +223,7 @@ udp_send_netif (udp_socket_t *s, buf_t *p, unsigned char *dest,
 
 	h->chksum_h = 0x00;
 	h->chksum_l = 0x00;
-
+	
 #ifndef UDP_CHECKSUM_DISABLE
 	{
 	unsigned short chksum;
@@ -252,7 +254,8 @@ udp_send_netif (udp_socket_t *s, buf_t *p, unsigned char *dest,
 	}
 #endif
 	++s->ip->udp_out_datagrams;
-	return ip_output_netif (s->ip, p, dest, local_ip, IP_PROTO_UDP,
+
+    return ip_output_netif (s->ip, p, dest, local_ip, IP_PROTO_UDP,
 		gateway, netif, local_ip);
 }
 

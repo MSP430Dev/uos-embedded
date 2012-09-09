@@ -265,6 +265,7 @@
  * Системный регистр CSR
  */
 #define MC_CSR_FM		0x00000001	/* Fixed mapping */
+#define MC_CSR_TR		0x00000002	/* vectors in CRAM */
 #define MC_CSR_TST_CACHE	0x00000800	/* random access to cache */
 #define MC_CSR_FLUSH_I		0x00001000	/* instruction cache invalidate */
 #define MC_CSR_FLUSH_D		0x00004000	/* data cache invalidate */

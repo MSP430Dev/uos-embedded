@@ -1,23 +1,70 @@
-/*
- * Startup initialization and exception handlers for MIPS microcontrollers.
- *
- * Copyright (C) 2008-2010 Serge Vakulenko, <serge@vak.ru>
- *
- * This file is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.
- *
- * You can redistribute this file and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software Foundation;
- * either version 2 of the License, or (at your discretion) any later version.
- * See the accompanying file "COPYING.txt" for more details.
- *
- * As a special exception to the GPL, permission is granted for additional
- * uses of the text contained in this file.  See the accompanying file
- * "COPY-UOS.txt" for details.
- */
 #include <runtime/lib.h>
 
+extern void _etext();
+extern unsigned __data_start, _edata;
+
+int main (void)
+{
+#ifndef NVBOOT_SILENT_MODE
+	debug_printf ("\n\nNVBOOT\n");
+#endif
+	/* Configure 16 Mbyte of external Flash memory at nCS3. */
+	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
+
+	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
+	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
+		MC_CSCON_WS (0) |		/* Wait states  */
+		MC_CSCON_T |			/* Sync memory */
+		MC_CSCON_CSBA (0x00000000) |	/* Base address */
+		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
+
+	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
+		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
+		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
+
+	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
+		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
+		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
+		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
+		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
+
+	MC_SDRCSR = 1;				/* Initialize SDRAM */
+        udelay (2);
+
+	unsigned char *p = (unsigned char *)&_etext;  /* Flash image pointer */
+	p += (&_edata - &__data_start) << 2;
+	
+	/* Extracting size of application image which is written to img.bin as string */
+	unsigned size = strtoul(p, &p, 10);
+	p++;
+	
+#ifndef NVBOOT_SILENT_MODE
+	debug_printf ("Image at address %08x, size %d\n", p, size);
+	//debug_printf ("%08x %08x %08x %08x\n", *(p+0), *(p+1), *(p+2), *(p+3));
+	//debug_printf ("%08x %08x %08x %08x\n", *(p+4), *(p+5), *(p+6), *(p+7));
+#endif
+	
+	memcpy ((void *) NVBOOT_DEST_ADDRESS, p, size);
+#ifndef NVBOOT_SILENT_MODE
+	debug_printf ("Done copying, checking... ");
+	if (memcmp ((void *) NVBOOT_DEST_ADDRESS, p, size) == 0)
+	    debug_printf ("OK\n");
+	else
+	    debug_printf ("FAIL\n");
+
+	//p = (unsigned *) DEST_ADDRESS;
+	//debug_printf ("%08x %08x %08x %08x\n", *(p+0), *(p+1), *(p+2), *(p+3));
+	//debug_printf ("%08x %08x %08x %08x\n", *(p+4), *(p+5), *(p+6), *(p+7));
+#endif
+	
+	typedef void (*uos_entry) (void);
+	uos_entry entry = (uos_entry) (NVBOOT_DEST_ADDRESS);
+	entry();	
+	
+	return 0;
+}
+
+#if 0
 extern void _etext();
 extern unsigned __data_start, _edata, _end, _estack[];
 extern int main ();
@@ -31,6 +78,8 @@ extern int main ();
 void __attribute ((noreturn))_init_ (void)
 {
 	unsigned *dest, *limit;
+	
+#ifdef ELVEES
 	unsigned int divisor;
 
 	/* Clear CAUSE register. Use special irq vector. */
@@ -38,10 +87,7 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Initialize STATUS register: CP0 usable, ROM vectors used,
 	 * internal interrupts enabled, master interrupt disable. */
-	mips_write_c0_register (C0_STATUS, ST_CU0
-#ifndef MIPS_NOBEV
-		| ST_BEV
-#endif
+	mips_write_c0_register (C0_STATUS, ST_BEV | ST_CU0
 #ifdef ARCH_HAVE_FPU
 		| ST_CU1
 #endif
@@ -130,10 +176,6 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Fixed mapping. */
 	MC_CSR = MC_CSR_FM;
-	
-#ifdef ELVEES_VECT_CRAM
-	MC_CSR |= MC_CSR_TR;
-#endif
 
 	MC_MASKR0 = 0;
 	MC_MASKR1 = 0;
@@ -150,10 +192,6 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Fixed mapping. */
 	MC_CSR = MC_CSR_FM;
-
-#ifdef ELVEES_VECT_CRAM
-	MC_CSR |= MC_CSR_TR;
-#endif
 
 	MC_MASKR0 = 0;
 	MC_MASKR1 = 0;
@@ -248,7 +286,6 @@ void __attribute ((noreturn))_init_ (void)
 	MC_LDIR(3) = 0;
 #endif
 
-#if 0
 	/* Disable all external memory except nCS3.
 	 * Set to default values. */
 	MC_CSCON0 = MC_CSCON_WS (15);
@@ -261,9 +298,8 @@ void __attribute ((noreturn))_init_ (void)
 #endif
 	MC_CSCON4 = MC_CSCON_WS (15);
 	MC_SDRCON = 0;
-#endif
 
-#endif /* EXTERNAL_SETUP */
+#endif // EXTERNAL_SETUP
 	
 	/*
 	 * Setup UART registers.
@@ -287,6 +323,8 @@ void __attribute ((noreturn))_init_ (void)
 	(void) MC_MSR;
 	(void) MC_RBR;
 	(void) MC_IIR;
+	
+#endif /* ELVEES */
 
 #ifndef DONT_COPY_DATA_SEGS
 	unsigned *src;
@@ -299,12 +337,11 @@ void __attribute ((noreturn))_init_ (void)
 		*dest++ = *src++;
 #endif
 	/* Initialize .bss segment by zeroes. */
-	
 	dest = &_edata;
 	limit = &_end;
 	while (dest < limit)
 		*dest++ = 0;
-		
+
 	for (;;)
 		main ();
 }
@@ -348,84 +385,17 @@ _irq_handler_ ()
 #if defined (ELVEES)
 static void dump_of_death (unsigned int context[])
 {
-	debug_printf ("                t0 = %8x   s0 = %8x   t8 = %8x   lo = %8x\n",
-		context [CONTEXT_R8], context [CONTEXT_R16],
-		context [CONTEXT_R24], context [CONTEXT_LO]);
-	debug_printf ("at = %8x   t1 = %8x   s1 = %8x   t9 = %8x   hi = %8x\n",
-		context [CONTEXT_R1], context [CONTEXT_R9], context [CONTEXT_R17],
-		context [CONTEXT_R25], context [CONTEXT_HI]);
-	debug_printf ("v0 = %8x   t2 = %8x   s2 = %8x               status = %8x\n",
-		context [CONTEXT_R2], context [CONTEXT_R10],
-		context [CONTEXT_R18], context [CONTEXT_STATUS]);
-	debug_printf ("v1 = %8x   t3 = %8x   s3 = %8x                  epc = %8x\n",
-		context [CONTEXT_R3], context [CONTEXT_R11],
-		context [CONTEXT_R19], context [CONTEXT_PC]);
-	debug_printf ("a0 = %8x   t4 = %8x   s4 = %8x   gp = %8x\n",
-		context [CONTEXT_R4], context [CONTEXT_R12],
-		context [CONTEXT_R20], context [CONTEXT_GP]);
-	debug_printf ("a1 = %8x   t5 = %8x   s5 = %8x   sp = %8x\n",
-		context [CONTEXT_R5], context [CONTEXT_R13],
-		context [CONTEXT_R21], context + CONTEXT_WORDS);
-	debug_printf ("a2 = %8x   t6 = %8x   s6 = %8x   fp = %8x\n",
-		context [CONTEXT_R6], context [CONTEXT_R14],
-		context [CONTEXT_R22], context [CONTEXT_FP]);
-	debug_printf ("a3 = %8x   t7 = %8x   s7 = %8x   ra = %8x\n",
-		context [CONTEXT_R7], context [CONTEXT_R15],
-		context [CONTEXT_R23], context [CONTEXT_RA]);
-
-	debug_printf ("\nHalt...\n\n");
 	asm volatile ("1: j 1b; nop");
 }
 
 void _exception_handler_ (unsigned int context[])
 {
-	unsigned int cause, badvaddr, config;
-	const char *code = 0;
-
-	debug_printf ("\n\n*** 0x%08x: exception ", context [CONTEXT_PC]);
-
-	cause = mips_read_c0_register (C0_CAUSE);
-	switch (cause >> 2 & 31) {
-	case 0:	code = "Interrupt"; break;
-	case 1: code = "TLB Modification"; break;
-	case 2: code = "TLB Load"; break;
-	case 3: code = "TLB Save"; break;
-	case 4: code = "Address Load"; break;
-	case 5: code = "Address Save"; break;
-	case 8: code = "System"; break;
-	case 9: code = "BBreakpoint"; break;
-	case 10: code = "Reserved Instruction"; break;
-	case 11: code = "Coprocessor Unavailable"; break;
-	case 12: code = "Integer Overflow"; break;
-	case 13: code = "Trap"; break;
-	case 15: code = "FPU"; break;
-	case 24: code = "MCheck"; break;
-	}
-	if (code)
-		debug_printf ("'%s'\n", code);
-	else
-		debug_printf ("%d\n", cause >> 2 & 31);
-
-	badvaddr = mips_read_c0_register (C0_BADVADDR);
-	config = mips_read_c0_register (C0_CONFIG);
-	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x\n",
-		cause, badvaddr, config);
-
 	dump_of_death (context);
 }
 
 void _pagefault_handler_ (unsigned int context[])
 {
-	unsigned int cause, badvaddr, config;
-
-	debug_printf ("\n\n*** 0x%08x: page fault\n", context [CONTEXT_PC]);
-
-	cause = mips_read_c0_register (C0_CAUSE);
-	badvaddr = mips_read_c0_register (C0_BADVADDR);
-	config = mips_read_c0_register (C0_CONFIG);
-	debug_printf ("*** cause=0x%08x, badvaddr=0x%08x, config=0x%08x\n",
-		cause, badvaddr, config);
-
 	dump_of_death (context);
 }
 #endif /* ELVEES */
+#endif

@@ -11,14 +11,8 @@
 #include <timer/timer.h>
 #include <elvees/eth.h>
 
-#ifdef ENABLE_DCACHE
-#   define SDRAM_START	0x80000000
-#else
-#   define SDRAM_START	0xA0000000
-#endif
-#define SDRAM_SIZE	(64*1024*1024)
-
 ARRAY (stack_tcp, 1500);
+ARRAY (stack_con, 1500);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
@@ -30,17 +24,17 @@ ip_t ip;
 tcp_socket_t *user_socket;
 
 #define PORT 		0xBBBB
-#define MSG_SIZE	256
+#define MSG_SIZE	365
 int     tmsg[MSG_SIZE];
 int     rmsg[MSG_SIZE];
+
+unsigned tcount = 0, rcount = 0;
+unsigned errors = 0;
 
 void tcp_task (void *data)
 {
 	tcp_socket_t *lsock;
 	int sz, i;
-	int tcount = 0, old_tcount = 0;
-	int rcount = 0, old_rcount = 0;
-	unsigned long start = 0, end, elapsed;
 
 	lsock = tcp_listen (&ip, 0, PORT);
 	if (! lsock) {
@@ -70,23 +64,18 @@ void tcp_task (void *data)
 					if (rmsg[i] != rcount) {
 						debug_printf("bad counter: %d, expected: %d\n", rmsg[i], rcount);
 						rcount = rmsg[i] + 1;
+						errors++;
 						continue;
 					}
 					++rcount;
 				}
 			}
 			if (sz < 0) break;
-
-			if ((tcount - old_tcount) >= (256 * sizeof(tmsg))) {
-				end = timer_milliseconds (&timer);
-				elapsed = end - start;
-				debug_printf ("rcv rate: %ld (bytes/sec), snd rate: %ld\n", 
-					((rcount - old_rcount) << 2) * 1000 / elapsed, ((tcount - old_tcount) << 2) * 1000 / elapsed);
-				old_rcount = rcount;
-				old_tcount = tcount;
-				start = end;
+			
+			if (debug_peekchar () >= 0) {
+			    debug_getchar ();
+			    debug_printf ("KEY PRESSED\n");
 			}
-
 		}
 	
 		debug_printf ("Disconnected\n");
@@ -96,40 +85,34 @@ void tcp_task (void *data)
 	}
 }
 
+void console (void *unused)
+{
+	unsigned old_tcount = 0, old_rcount = 0;
+	unsigned long start, end, elapsed;
+	unsigned long long tbytes, rbytes;
+	
+	start = timer_milliseconds (&timer);
+
+    for (;;) {
+        timer_delay (&timer, 1000);
+		end = timer_milliseconds (&timer);
+		elapsed = end - start;
+		tbytes = (tcount - old_tcount) << 2;
+		rbytes = (rcount - old_rcount) << 2;
+		old_tcount = tcount;
+		old_rcount = rcount;
+		debug_printf ("snd rate: %lu, rcv rate: %lu (bytes/sec), errors: %u, tcp_in_errors: %u, tcp_in_discards: %u, mem: %d\n", (unsigned) (tbytes * 1000 / elapsed), (unsigned) (rbytes * 1000 / elapsed), errors, ip.tcp_in_errors, ip.tcp_in_discards, mem_available (&pool));
+		start = end;
+    }
+}
+
 void uos_init (void)
 {
-	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
-
-	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
-	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
-		MC_CSCON_WS (0) |		/* Wait states  */
-		MC_CSCON_T |			/* Sync memory */
-		MC_CSCON_CSBA (0x00000000) |	/* Base address */
-		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
-
-	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
-		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
-		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
-
-	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
-		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
-		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
-		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
-		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
-
-	MC_SDRCSR = 1;				/* Initialize SDRAM */
-        udelay (2);
-
-#if 0
-	/* Используем внешнюю память SRAM. */
-	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
-#else
 	/* Используем только внутреннюю память CRAM.
 	 * Оставляем 256 байтов для задачи "idle". */
 	extern unsigned __bss_end[], _estack[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
-#endif
+
 	timer_init (&timer, KHZ, 50);
 
 	/*
@@ -150,7 +133,10 @@ void uos_init (void)
 
 	unsigned char my_ip[] = { 192, 168, 1, 20 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
-
-	task_create (tcp_task, 0, "tcp", 20,
+	
+	task_create (tcp_task, 0, "tcp", 75,
 		stack_tcp, sizeof (stack_tcp));
+		
+    	task_create (console, 0, "con", 1,
+		stack_con, sizeof (stack_con));
 }

@@ -372,6 +372,9 @@ chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 		if (! (csr & MC_DMA_CSR_RUN))
 			break;
 	}
+#ifdef ENABLE_DCACHE
+    MC_CSR |= MC_CSR_FLUSH_D;
+#endif
 	if (count == 0) {
 		debug_printf ("eth: RX DMA failed, CSR=%08x\n", csr);
 		MC_CSR_EMAC(0) = 0;
@@ -397,7 +400,7 @@ chip_transmit_packet (eth_t *u, buf_t *p)
 		memcpy (buf, q->payload, q->len);
 		buf += q->len;
 	}
-
+	
 	unsigned len = p->tot_len;
 	if (len < 60) {
 		len = 60;
@@ -440,7 +443,7 @@ eth_output (eth_t *u, buf_t *p, small_uint_t prio)
 	}
 /*debug_printf ("eth_output: transmit %d bytes\n", p->tot_len);*/
 
-	if (! (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ)) {
+	if (! (MC_MAC_STATUS_TX & STATUS_TX_ONTX_REQ) && buf_queue_is_empty (&u->outq)) {
 		/* Смело отсылаем. */
 		chip_transmit_packet (u, p);
 		mutex_unlock (&u->tx_lock);
@@ -448,6 +451,7 @@ eth_output (eth_t *u, buf_t *p, small_uint_t prio)
 		return 1;
 	}
 	/* Занято, ставим в очередь. */
+	#if 0
 	if (buf_queue_is_full (&u->outq)) {
 		/* Нет места в очереди: теряем пакет. */
 		++u->netif.out_discards;
@@ -456,6 +460,12 @@ eth_output (eth_t *u, buf_t *p, small_uint_t prio)
 		buf_free (p);
 		return 0;
 	}
+	#else
+	while (buf_queue_is_full (&u->outq)) {
+	    mutex_wait (&u->tx_lock);
+	}
+	#endif
+	
 	buf_queue_put (&u->outq, p);
 	mutex_unlock (&u->tx_lock);
 	return 1;

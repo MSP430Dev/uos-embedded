@@ -382,7 +382,7 @@ uos_valid_memory_address (void *ptr)
 void uos_init (void)
 {
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
 
 	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */

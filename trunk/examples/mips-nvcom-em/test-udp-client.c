@@ -6,13 +6,13 @@
 #include <mem/mem.h>
 #include <net/route.h>
 #include <net/ip.h>
-#include <net/tcp.h>
+#include <net/udp.h>
 #include <net/arp.h>
+#include <buf/buf.h>
 #include <timer/timer.h>
 #include <elvees/eth.h>
 
-ARRAY (stack_tcp, 1500);
-ARRAY (stack_con, 1500);
+ARRAY (stack_udp, 1500);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
@@ -21,67 +21,48 @@ eth_t eth_data, *eth = &eth_data;
 route_t route;
 timer_t timer;
 ip_t ip;
-tcp_socket_t *user_socket;
+udp_socket_t sock;
 
 #define PORT 		0xBBBB
-#define BUF_SIZE	365
-int     buf [BUF_SIZE];
+#define BUF_SIZE	    365
+unsigned buf [BUF_SIZE];
 unsigned char server_ip [] = { 192, 168, 1, 52 };
+
 unsigned count = 0;
 
-void tcp_task (void *data)
+void udp_task (void *data)
 {
 	int i;
-
-	for (;;) {
-		debug_printf ("Press ENTER to connect to %d.%d.%d.%d:%d\n", server_ip[0],
-			server_ip[1], server_ip[2], server_ip[3], PORT);
-		debug_getchar ();
-
-		user_socket = tcp_connect (&ip, server_ip, PORT);
-		if (! user_socket) {
-			debug_printf ("Failed to connect!\n");
-			continue;
-		}
-
-		debug_printf ("Connected to server\n");
-
-		for (;;) {
-
-			for (i = 0; i < BUF_SIZE; ++i) buf[i] = count++;
-
-			/* send a message to the server PORT on machine HOST */
-			if (tcp_write (user_socket, buf, sizeof(buf)) < 0) {
-				debug_printf ("Disconnected\n");
-				break;
-			}
-			
-			if (count % 1000000 == 0)
-		        mdelay (1);
-		}
-	
-		tcp_close (user_socket);
-		mem_free (user_socket);
-		user_socket = 0;
-	}
-}
-
-void console (void *unused)
-{
+	buf_t *p;
 	unsigned old_count = 0;
 	unsigned long start, end, elapsed;
 	unsigned long long bytes;
 	
 	start = timer_milliseconds (&timer);
 
+	debug_printf ("Press ENTER to start sending to %d.%d.%d.%d:%d\n", server_ip[0],
+		server_ip[1], server_ip[2], server_ip[3], PORT);
+	debug_getchar ();
+	
+	udp_socket (&sock, &ip, PORT);
+
 	for (;;) {
-		timer_delay (&timer, 1000);
-		end = timer_milliseconds (&timer);
-		elapsed = end - start;
-		bytes = (count - old_count) << 2;
-		old_count = count;
-		debug_printf ("snd rate: %lu (bytes/sec)\n", (unsigned) (bytes * 1000 / elapsed));
-		start = end;
+		p = buf_alloc (&pool, BUF_SIZE * 4, 42);
+
+		for (i = 0; i < BUF_SIZE; ++i) 
+			buf[i] = count++;
+		memcpy (p->payload, buf, sizeof(buf));
+
+		udp_sendto (&sock, p, server_ip, PORT);
+		
+		if (timer_passed (&timer, start, 1000)) {
+			end = timer_milliseconds (&timer);
+			elapsed = end - start;
+			bytes = (count - old_count) << 2;
+			old_count = count;
+			debug_printf ("snd rate: %lu (bytes/sec)\n", (unsigned) (bytes * 1000 / elapsed));
+			start = end;
+		}
 	}
 }
 
@@ -114,9 +95,5 @@ void uos_init (void)
 	unsigned char my_ip[] = { 192, 168, 1, 20 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
 	
-	task_create (tcp_task, 0, "tcp", 75,
-		stack_tcp, sizeof (stack_tcp));
-		
-    	task_create (console, 0, "con", 1,
-		stack_con, sizeof (stack_con));
+	task_create (udp_task, 0, "udp", 65,	stack_udp, sizeof (stack_udp));
 }

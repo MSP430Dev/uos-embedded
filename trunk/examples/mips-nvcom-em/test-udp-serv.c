@@ -6,13 +6,14 @@
 #include <mem/mem.h>
 #include <net/route.h>
 #include <net/ip.h>
-#include <net/tcp.h>
+#include <net/udp.h>
 #include <net/arp.h>
+#include <buf/buf.h>
 #include <timer/timer.h>
 #include <elvees/eth.h>
 
 ARRAY (stack_con, 1500);
-ARRAY (stack_tcp, 1500);
+ARRAY (stack_udp, 1500);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
@@ -21,62 +22,45 @@ eth_t eth_data, *eth = &eth_data;
 route_t route;
 timer_t timer;
 ip_t ip;
-tcp_socket_t *user_socket;
+udp_socket_t sock;
 
 #define PORT 		0xBBBB
-#define MSG_SIZE	    375
-int     msg[MSG_SIZE];
 
 unsigned count = 0;
 unsigned errors = 0;
 
-void tcp_task (void *data)
+void udp_task (void *data)
 {
-	tcp_socket_t *lsock;
 	int sz;
 	unsigned i;
-	unsigned cycle = 0;
-
-	lsock = tcp_listen (&ip, 0, PORT);
-	if (! lsock) {
-		printf (&debug, "Error on listen, aborted\n");
-		uos_halt (0);
-	}
-	for (;;) {
-		printf (&debug, "Server waiting on port %d...\n", PORT);
-		printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
-		user_socket = tcp_accept (lsock);
-		if (! user_socket) {
-			printf (&debug, "Error on accept\n");
-			uos_halt (0);
-		}
-		debug_printf ("Client connected\n");
-
-		for (;;) {
-			sz = tcp_read (user_socket, msg, sizeof(msg));
-
-			if (sz < 0) break;
-
-			if (cycle % 5 == 0)
-				tcp_ack_now (user_socket);
-			cycle++;
-            
-			sz >>= 2;
-
-			for (i = 0; i < sz; ++i) {
-				if (msg[i] != count) {
-					//debug_printf("bad counter: %d, expected: %d\n", msg[i], count);
-					count = msg[i] + 1;
-					errors++;
-					continue;
-				}
-				++count;
-			}
-		}
+	unsigned char addr [4];
+	unsigned short port;
+	buf_t *p;
+	unsigned *msg;	
 	
-		tcp_close (user_socket);
-		mem_free (user_socket);
-		user_socket = 0;
+	udp_socket (&sock, &ip, PORT);
+	printf (&debug, "Server waiting on port %d...\n", PORT);
+	printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
+
+	for (;;) {
+	    p = udp_recvfrom (&sock, addr, &port);
+	    
+		if (!p) continue;
+		
+		sz = (p->tot_len >> 2);
+		msg = (unsigned *) p->payload;
+
+		for (i = 0; i < sz; ++i) {
+			if (msg[i] != count) {
+				//debug_printf("bad counter: %d, expected: %d\n", msg[i], count);
+				count = msg[i] + 1;
+				errors++;
+				continue;
+			}
+			++count;
+		}
+		
+		buf_free (p);
 	}
 }
 
@@ -123,12 +107,10 @@ void uos_init (void)
 	 */
 	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
 	eth_init (eth, "eth0", 80, &pool, arp, my_macaddr);
+
 	unsigned char my_ip[] = { 192, 168, 1, 20 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
-	
-	task_create (tcp_task, 0, "tcp", 20,
-		stack_tcp, sizeof (stack_tcp));
-		
-    	task_create (console, 0, "con", 1,
-		stack_con, sizeof (stack_con));
+
+	task_create (udp_task, 0, "udp", 75, stack_udp, sizeof (stack_udp));		
+	task_create (console, 0, "con", 1, stack_con, sizeof (stack_con));
 }

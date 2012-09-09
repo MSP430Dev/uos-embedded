@@ -2,25 +2,28 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-dcache
-TESTS		= $(TEST).srec
-TESTS		+= test-debug.srec test-task.srec test-timer.srec test-uart.srec
-#TESTS		+= philosophers.srec test-ram.srec #test-tcl.srec
-TESTS           += test-latency.srec test-tswitch.srec
-#TESTS           += test-fpu.srec
-TESTS           += test-slip.srec test-snmp.srec
-TESTS           += test-mac.srec test-eth.srec test-tcp.srec test-udp.srec test-telnetd.srec
-TESTS		+= test-tcp-serv.srec test-tcp-client.srec test-tcp-2way.srec
-TESTS		+= test-dcache.srec
-OUTS		= $(TESTS:%.srec=%.elf)
+TEST		= test-timer
+TESTS		+= test-debug.bin test-task.bin test-timer.bin test-uart.bin
+TESTS		+= philosophers.bin test-ram.bin
+TESTS           += test-latency.bin test-tswitch.bin
+#TESTS           += test-fpu.bin
+#TESTS           +=  test-snmp.bin test-telnetd.bin
+TESTS           += test-slip.bin test-mac.bin test-eth.bin test-tcp.bin test-udp.bin
+TESTS		+= test-tcp-serv.bin test-tcp-client.bin test-tcp-2way.bin
+TESTS		+= test-udp.bin test-udp-serv.bin test-udp-client.bin
+TESTS		+= test-dcache.bin
+TESTS		+= dhrystone.bin
+OUTS		= $(TESTS:%.bin=%.elf)
+SREC		= $(TESTS:%.bin=%.srec)
+DIS		= $(TESTS:%.bin=%.dis)
 
-all:		$(OUTS) $(TESTS) $(TEST).dis
+all:		$(OUTS) $(TESTS) $(SREC) $(DIS)
 		$(SIZE) *.elf
 
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.bin *.srec *.lst *.dis *.map .deps $(MODULES)
 
 load:		$(TEST).srec
 		mcprog $(TEST).srec

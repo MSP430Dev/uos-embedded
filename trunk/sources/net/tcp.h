@@ -143,8 +143,8 @@ struct _tcp_socket_t {
 	tcp_state_t state;		/* TCP state */
 
 	/* queue of received packets */
-#define SOCKET_QUEUE_SIZE	8
-	struct _buf_t *queue [SOCKET_QUEUE_SIZE];
+#define TCP_SOCKET_QUEUE_SIZE	16
+	struct _buf_t *queue [TCP_SOCKET_QUEUE_SIZE];
 	struct _buf_t **head;
 	unsigned char count;
 
@@ -264,14 +264,14 @@ void tcp_queue_free (tcp_socket_t *q);
 static inline int
 tcp_queue_is_full (tcp_socket_t *q)
 {
-	/*debug_printf ("tcp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
-	return (q->count == SOCKET_QUEUE_SIZE);
+	/*debug_printf ("tcp_queue_is_full: returned %d\n", (q->count == TCP_SOCKET_QUEUE_SIZE));*/
+	return (q->count == TCP_SOCKET_QUEUE_SIZE);
 }
 
 static inline int
 tcp_queue_is_empty (tcp_socket_t *q)
 {
-	/*debug_printf ("tcp_queue_is_full: returned %d\n", (q->count == SOCKET_QUEUE_SIZE));*/
+	/*debug_printf ("tcp_queue_is_full: returned %d\n", (q->count == TCP_SOCKET_QUEUE_SIZE));*/
 	return (q->count == 0);
 }
 

@@ -1,8 +1,9 @@
 #
 # Startup code for Elvees MIPS32 microcontrollers.
-# Using BEV mode: vectors in flash memory.
+# Vectors in CRAM
 #
-# Copyright (C) 2008-2010 Serge Vakulenko, <serge@vak.ru>
+# Copyright (C) 2012 Serge Vakulenko, <serge@vak.ru>
+#                    Dmitry Podkhvatilin, <vatilin@gmail.com>
 #
 # This file is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -26,20 +27,20 @@
 		.section .init
 		.set	noreorder
 		.set	mips32
-		
+
 #---------------------------------------
 # Macro: flush cache
 #
 	.macro FLUSH_CACHE
 #ifdef FLUSH_CACHE_IN_EXCEPTION
-		li  $k0, MC_CSR_A
+		li  $k0, 0xB82F4008
 		lw  $k1, 0($k0)
 		ori $k1, 0x5000
 		sw  $k1, 0($k0)
 		lw  $k1, 0($k0)
 #endif
-	.endm		
-
+	.endm
+	
 #---------------------------------------
 # Reset vector at 0xBFC00000
 #
@@ -47,26 +48,16 @@
 _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
+		mtc0    $zero, $C0_COUNT                # Zero count registers (needed for RTL model)
 		la	$sp, _estack			# Stack at end of internal SRAM
 #if 1
 		lui	$gp, 0xb840			# Set global pointer
 		mfc0	$a0, $C0_COUNT			# Get CPU tick counter
 		sw	$a0, ($gp)			# Store start time to XYRAM0
 #endif
-
 		lui	$gp, RAM_HI			# Set global pointer
 		j	_init_				# Jump to _init_()
 		nop
-
-#ifdef BOOT_CHECKSUM
-		#
-		# Длина и контрольная сумма flash-памяти по адресу 0xBFC00020.
-		# Заполняется утилитой загрузки mcprog.
-		#
-		.org	0x020
-		.word	0				# Длина в байтах
-		.word	0				# Контрольная сумма
-#endif
 
 #---------------------------------------
 # Macro: save all registers in stack
@@ -127,6 +118,84 @@ _reset_vector_:	.globl	_reset_vector_
 		sw	$a0, (CONTEXT_STATUS * 4) ($sp)
 		.endm
 
+        .set mips0
+
+#---------------------------------------
+# TLB refill vector at 0x80000200
+#
+#		.org	0x0200
+#_pagefault_vector_: .globl _pagefault_vector_
+#
+#		FLUSH_CACHE
+#		SAVE_REGS				# Save all registers in stack
+#		move	$a0, $sp			# Arg0: pointer to saved state
+#		addi	$sp, -MIPS_FSPACE		# Make an arg frame
+#
+#		.extern _pagefault_handler_
+#		j	_pagefault_handler_		# Jump to C code, no return
+#		lui	$gp, RAM_HI			# Set global pointer (delay slot)
+
+#---------------------------------------
+# Exception vector at 0x80000180
+#
+		.org 0x0180
+_exception_vector_: .globl _exception_vector_
+
+		FLUSH_CACHE
+		mfc0	$k0, $C0_CAUSE			# Get CAUSE
+		andi	$k0, CA_EXC_CODE		# Extract exception code
+		li	$k1, CA_Sys			# Is it syscall?
+		bne	$k1, $k0, exception		# No - jump to handler.
+		nop					# (delay slot)
+
+		mfc0	$k0, $C0_EPC			# Get EPC
+		add	$k0, 4				# Return to next instruction
+		mtc0	$k0, $C0_EPC			# Put EPC back
+
+		#
+		# Инструкция SYSCALL: чтение регистра STATUS и запрет прерываний.
+		#
+		mfc0	$a0, $C0_STATUS			# Get SR
+		li	$k0, -1 - ST_IE			# Prepare bitmask
+		and	$k0, $a0			# Clear IE bit
+		mtc0	$k0, $C0_STATUS			# Put SR back
+		xori	$a0, ST_EXL			# Clear EXL for user
+
+		# Return from exception
+		.set mips3
+#ifdef ELVEES_MCT02
+		nop					# settle things down
+		nop
+		nop
+		nop
+		eret					# PC <= EPC; EXL <= 0
+		nop					# just to be safe
+		nop
+		nop
+		nop
+#else
+		sync					# Settle things down
+		eret					# PC <= EPC; EXL <= 0
+		nop					# just to be safe
+#endif
+		.set mips0
+
+#---------------------------------------
+# Interrupt vector at 0x80000200
+#
+		.org 0x0200
+_interrupt_vector_: .globl _interrupt_vector_
+
+		FLUSH_CACHE
+		SAVE_REGS				# Save all registers in stack
+		addi	$sp, -MIPS_FSPACE		# Make an arg frame
+
+		.extern _irq_handler_
+		lui	$gp, RAM_HI			# Set global pointer
+		j	_irq_handler_			# Jump to C code, no return
+		nop
+
+		.set	mips32
 #---------------------------------------
 # Hangle exceptions
 #
@@ -220,77 +289,3 @@ _restore_regs_: .globl _restore_regs_
 #endif
 		.set mips0
 
-#---------------------------------------
-# TLB refill vector at 0xBFC00200
-#
-		.org	0x0200
-_pagefault_vector_: .globl _pagefault_vector_
-		FLUSH_CACHE
-		SAVE_REGS				# Save all registers in stack
-		move	$a0, $sp			# Arg0: pointer to saved state
-		addi	$sp, -MIPS_FSPACE		# Make an arg frame
-
-		.extern _pagefault_handler_
-		lui	$gp, RAM_HI			# Set global pointer
-		j	_pagefault_handler_		# Jump to C code, no return
-		nop
-
-#---------------------------------------
-# Exception vector at 0xBFC00380
-#
-		.org	0x0380
-_exception_vector_: .globl _exception_vector_
-
-		FLUSH_CACHE
-		mfc0	$k0, $C0_CAUSE			# Get CAUSE
-		andi	$k0, CA_EXC_CODE		# Extract exception code
-		li	$k1, CA_Sys			# Is it syscall?
-		bne	$k1, $k0, exception		# No - jump to handler.
-		nop					# (delay slot)
-
-		mfc0	$k0, $C0_EPC			# Get EPC
-		add	$k0, 4				# Return to next instruction
-		mtc0	$k0, $C0_EPC			# Put EPC back
-
-		#
-		# Инструкция SYSCALL: чтение регистра STATUS и запрет прерываний.
-		#
-		mfc0	$a0, $C0_STATUS			# Get SR
-		li	$k0, -1 - ST_IE			# Prepare bitmask
-		and	$k0, $a0			# Clear IE bit
-		mtc0	$k0, $C0_STATUS			# Put SR back
-		xori	$a0, ST_EXL			# Clear EXL for user
-
-		# Return from exception
-		.set mips3
-#ifdef ELVEES_MCT02
-		nop					# settle things down
-		nop
-		nop
-		nop
-		eret					# PC <= EPC; EXL <= 0
-		nop					# just to be safe
-		nop
-		nop
-		nop
-#else
-		sync					# Settle things down
-		eret					# PC <= EPC; EXL <= 0
-		nop					# just to be safe
-#endif
-		.set mips0
-
-#---------------------------------------
-# Interrupt vector at 0xBFC00400
-#
-		.org	0x0400
-_interrupt_vector_: .globl _interrupt_vector_
-		
-		FLUSH_CACHE
-		SAVE_REGS				# Save all registers in stack
-		addi	$sp, -MIPS_FSPACE		# Make an arg frame
-
-		.extern _irq_handler_
-		lui	$gp, RAM_HI			# Set global pointer
-		j	_irq_handler_			# Jump to C code, no return
-		nop

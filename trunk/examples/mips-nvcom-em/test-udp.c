@@ -134,17 +134,19 @@ void udp_task (void *data)
 {
 	const unsigned serv_port = 7777;
 	buf_t *p;
-	unsigned char addr [4];
-	unsigned short port;
+	unsigned char addr [4] = {192, 168, 20, 53};
+	unsigned short port = 7777;
 
 	udp_socket (&sock, &ip, serv_port);
 	printf (&debug, "Server waiting on port %d...\n", serv_port);
 	printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
+	
 	for (;;) {
-		p = udp_recvfrom (&sock, addr, &port);
+		//p = udp_recvfrom (&sock, addr, &port);
 
-		print_packet (p, addr, port);
+		//print_packet (p, addr, port);
 
+		p = buf_alloc (&pool, 1500, 42);
 		udp_sendto (&sock, p, addr, port);
 	}
 }
@@ -152,7 +154,7 @@ void udp_task (void *data)
 void uos_init (void)
 {
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
 
 	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
@@ -204,7 +206,7 @@ void uos_init (void)
 
 	unsigned char my_ip[] = { 192, 168, 20, 222 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth.netif);
-
+	
 	task_create (udp_task, 0, "udp", 10,
 		stack_udp, sizeof (stack_udp));
 	task_create (console_task, 0, "cons", 20,

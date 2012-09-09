@@ -280,7 +280,7 @@ tcp_queue_get (tcp_socket_t *q)
 		return 0;
 	}
 	assert (q->head >= q->queue);
-	assert (q->head < q->queue + SOCKET_QUEUE_SIZE);
+	assert (q->head < q->queue + TCP_SOCKET_QUEUE_SIZE);
 	assert (*q->head != 0);
 
 	/* Get the first packet from queue. */
@@ -289,7 +289,7 @@ tcp_queue_get (tcp_socket_t *q)
 	/* Advance head pointer. */
 	++q->head;
 	--q->count;
-	if (q->head >= q->queue + SOCKET_QUEUE_SIZE)
+	if (q->head >= q->queue + TCP_SOCKET_QUEUE_SIZE)
 		q->head = q->queue;
 
 	/* Advertise a larger window when the data has been processed. */
@@ -309,15 +309,15 @@ tcp_queue_put (tcp_socket_t *q, buf_t *p)
 	/*tcp_debug ("tcp_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n", p, q->count, q->head);*/
 
 	/* Must be called ONLY when queue is not full. */
-	assert (q->count < SOCKET_QUEUE_SIZE);
+	assert (q->count < TCP_SOCKET_QUEUE_SIZE);
 
 	if (q->head == 0)
 		q->head = q->queue;
 
 	/* Compute the last place in the queue. */
 	tail = q->head + q->count;
-	if (tail >= q->queue + SOCKET_QUEUE_SIZE)
-		tail -= SOCKET_QUEUE_SIZE;
+	if (tail >= q->queue + TCP_SOCKET_QUEUE_SIZE)
+		tail -= TCP_SOCKET_QUEUE_SIZE;
 
 	/* Put the packet in. */
 	*tail = p;
@@ -330,7 +330,7 @@ tcp_queue_free (tcp_socket_t *q)
 {
 	while (q->count > 0) {
 		assert (q->head >= q->queue);
-		assert (q->head < q->queue + SOCKET_QUEUE_SIZE);
+		assert (q->head < q->queue + TCP_SOCKET_QUEUE_SIZE);
 		assert (*q->head != 0);
 
 		/* Remove packet from queue. */
@@ -339,7 +339,7 @@ tcp_queue_free (tcp_socket_t *q)
 		/* Advance head pointer. */
 		++q->head;
 		--q->count;
-		if (q->head >= q->queue + SOCKET_QUEUE_SIZE)
+		if (q->head >= q->queue + TCP_SOCKET_QUEUE_SIZE)
 			q->head = q->queue;
 	}
 }

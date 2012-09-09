@@ -8,6 +8,8 @@
 ARRAY (task, 1000);
 timer_t timer;
 
+extern unsigned intr_count;
+
 void hello (void *arg)
 {
 	for (;;) {
