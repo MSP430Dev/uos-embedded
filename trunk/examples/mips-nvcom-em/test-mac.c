@@ -65,13 +65,13 @@ void poll_eth (void *data)
 void uos_init (void)
 {
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (3);		/* Wait states  */
+	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
 
 	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
-		MC_CSCON_T |			/* Sync memory */
-		MC_CSCON_CSBA (0x00000000) |	/* Base address */
-		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
+	MC_CSCON_T |			/* Sync memory */
+	MC_CSCON_CSBA (0x00000000) |	/* Base address */
+	MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
 
 	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
 		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
@@ -84,7 +84,7 @@ void uos_init (void)
 		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
 
 	MC_SDRCSR = 1;				/* Initialize SDRAM */
-        udelay (2);
+	udelay (2);
 
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 

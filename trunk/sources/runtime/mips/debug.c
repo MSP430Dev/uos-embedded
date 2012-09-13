@@ -29,9 +29,11 @@ static int debug_char = -1;
 void
 debug_putchar (void *arg, short c)
 {
-	int x;
+	int x = 0;
+	int in_exception = mips_read_c0_register (C0_STATUS) & (ST_EXL | ST_ERL);
 
-	mips_intr_disable (&x);
+	if (! in_exception)
+		mips_intr_disable (&x);
 
 	/* Wait for transmitter holding register empty. */
 	while (! (MC_LSR & MC_LSR_TXRDY))
@@ -50,7 +52,8 @@ again:
 		c = '\r';
 		goto again;
 	}
-	mips_intr_restore (x);
+	if (! in_exception)
+		mips_intr_restore (x);
 }
 
 /*
@@ -130,9 +133,11 @@ debug_peekchar (void)
 void
 debug_putchar (void *arg, short c)
 {
-	int x;
+	int x = 0;
+	int in_exception = mips_read_c0_register (C0_STATUS) & (ST_EXL | ST_ERL);
 
-	mips_intr_disable (&x);
+	if (! in_exception)
+		mips_intr_disable (&x);
 
 	/* Wait for transmitter shift register empty. */
 	while (! (UxSTA & PIC32_USTA_TRMT))
@@ -152,7 +157,8 @@ again:
 		c = '\r';
 		goto again;
 	}
-	mips_intr_restore (x);
+	if (! in_exception)
+		mips_intr_restore (x);
 }
 
 /*

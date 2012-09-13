@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-timer
+TEST		= test-latency
 TESTS		+= test-debug.bin test-task.bin test-timer.bin test-uart.bin
 TESTS		+= philosophers.bin test-ram.bin
 TESTS           += test-latency.bin test-tswitch.bin
@@ -12,12 +12,13 @@ TESTS           += test-slip.bin test-mac.bin test-eth.bin test-tcp.bin test-udp
 TESTS		+= test-tcp-serv.bin test-tcp-client.bin test-tcp-2way.bin
 TESTS		+= test-udp.bin test-udp-serv.bin test-udp-client.bin
 TESTS		+= test-dcache.bin
-TESTS		+= dhrystone.bin
+TESTS		+= dhrystone.bin linpack.bin whetstone.bin #livermore.bin
+#TESTS		+= coremark.bin
 OUTS		= $(TESTS:%.bin=%.elf)
 SREC		= $(TESTS:%.bin=%.srec)
-DIS		= $(TESTS:%.bin=%.dis)
+#DIS		= $(TESTS:%.bin=%.dis)
 
-all:		$(OUTS) $(TESTS) $(SREC) $(DIS)
+all:		$(OUTS) $(TESTS) $(SREC) $(DIS) $(TEST).dis
 		$(SIZE) *.elf
 
 $(OUTS) $(TESTS): startup.o libuos.a

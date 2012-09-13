@@ -86,8 +86,9 @@ static bool_t timer_handler (void *arg)
 
 void uos_init (void)
 {
-	/* Задаём количество wait states для внешней flash-памяти на nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (CS3_WAIT_STATES);
+	debug_printf ("\n\nTesting latency\n");
+	/* Configure 16 Mbyte of external Flash memory at nCS3. */
+	MC_CSCON3 = MC_CSCON_WS (5);		/* Wait states  */
 
 	/* Стираем экран. */
 	debug_puts ("\33[H\33[2J");
