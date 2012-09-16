@@ -10,7 +10,7 @@ MEMORY
 {
   /*flash  (rx)   : ORIGIN = 0x9fc00000,	LENGTH = 16M*/
   ccode	 (rx)   : ORIGIN = 0x98000000,  LENGTH = 127K
-  cdata	 (rw!x) : ORIGIN = 0xb8000400,  LENGTH = 1K
+  cdata	 (rw!x) : ORIGIN = 0xb801fc00,  LENGTH = 1K
   sdram  (rw!x) : ORIGIN = 0xa0000000,	LENGTH = 32M
   xyram0 (rw!x) : ORIGIN = 0xb8400000,	LENGTH = 128K
   pram0  (rw!x) : ORIGIN = 0xb8440000,	LENGTH = 32K

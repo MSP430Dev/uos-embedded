@@ -18,7 +18,7 @@ OUTS		= $(TESTS:%.bin=%.elf)
 SREC		= $(TESTS:%.bin=%.srec)
 #DIS		= $(TESTS:%.bin=%.dis)
 
-all:		$(OUTS) $(TESTS) $(SREC) $(DIS) $(TEST).dis
+all:		$(OUTS) $(TESTS) $(SREC) $(DIS)
 		$(SIZE) *.elf
 
 $(OUTS) $(TESTS): startup.o libuos.a
