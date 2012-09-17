@@ -43,12 +43,11 @@ again:
 	/* TODO: unicode to utf8 conversion. */
 	MC_THR = c;
 
-	/* Wait for transmitter holding register empty. */
-	while (! (MC_LSR & MC_LSR_TXRDY))
-		continue;
-
 /*	watchdog_alive ();*/
 	if (debug_onlcr && c == '\n') {
+		/* Wait for transmitter holding register empty. */
+		while (! (MC_LSR & MC_LSR_TXRDY))
+			continue;	
 		c = '\r';
 		goto again;
 	}

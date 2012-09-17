@@ -8,7 +8,7 @@ set 0x182f1014 0x030d0030  # for SDRAM
 set 0x182f1018 0x00f50222  # for SDRAM
 set 0x182f101c 0x00000001  # init SDRAM
 
-loadelf test-latency.elf
+loadelf test-tcp-serv.elf
 
 run
 

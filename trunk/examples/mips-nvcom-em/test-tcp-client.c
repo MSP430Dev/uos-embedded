@@ -22,6 +22,7 @@ route_t route;
 timer_t timer;
 ip_t ip;
 tcp_socket_t *user_socket;
+task_t *console_task;
 
 #define PORT 		0xBBBB
 #define BUF_SIZE	365
@@ -80,8 +81,10 @@ void console (void *unused)
 		elapsed = end - start;
 		bytes = (count - old_count) << 2;
 		old_count = count;
-		debug_printf ("snd rate: %lu (bytes/sec)\n", (unsigned) (bytes * 1000 / elapsed));
 		start = end;
+		task_set_priority (console_task, 1);
+		debug_printf ("snd rate: %lu (bytes/sec)\n", (unsigned) (bytes * 1000 / elapsed));
+		task_set_priority (console_task, 100);
 	}
 }
 
@@ -90,29 +93,19 @@ void uos_init (void)
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
 	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
 
-	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
-	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
-	MC_CSCON_T |			/* Sync memory */
-	MC_CSCON_CSBA (0x00000000) |	/* Base address */
-	MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
-
-	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
-		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
-		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
-
-	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
-		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
-		MC_SDRTMR_TRCD(2) |		/* Между Active и Read/Write */
-		MC_SDRTMR_TRAS(5) |		/* Между * Active и Precharge */
-		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
-
-	MC_SDRCSR = 1;				/* Initialize SDRAM */
-	udelay (2);
-
-	/* Используем только внутреннюю память CRAM.
-	 * Оставляем 256 байтов для задачи "idle". */
-	extern unsigned __bss_end[], _estack[];
+	/* Выделяем место для динамической памяти */
+	extern unsigned __bss_end[];
+#ifdef ELVEES_DATA_SDRAM
+	/* Динамическая память в SDRAM */
+	if (((unsigned) __bss_end & 0xF0000000) == 0x80000000)
+		mem_init (&pool, (unsigned) __bss_end, 0x82000000);
+	else
+		mem_init (&pool, (unsigned) __bss_end, 0xa2000000);
+#else
+	/* Динамическая память в CRAM */
+	extern unsigned _estack[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
+#endif
 
 	timer_init (&timer, KHZ, 50);
 
@@ -138,6 +131,6 @@ void uos_init (void)
 	task_create (tcp_task, 0, "tcp", 75,
 		stack_tcp, sizeof (stack_tcp));
 		
-    	task_create (console, 0, "con", 1,
+    	console_task = task_create (console, 0, "con", 1,
 		stack_con, sizeof (stack_con));
 }
