@@ -5,13 +5,12 @@ include target.cfg
 TEST		= test-latency
 TESTS		+= test-debug.bin test-task.bin test-timer.bin test-uart.bin
 TESTS		+= philosophers.bin test-ram.bin
-TESTS           += test-latency.bin test-tswitch.bin
-#TESTS           += test-fpu.bin
-#TESTS           +=  test-snmp.bin test-telnetd.bin
-TESTS           += test-slip.bin test-mac.bin test-eth.bin test-tcp.bin test-udp.bin
+TESTS           += test-latency.bin test-tswitch.bin test-fpu.bin
+#TESTS           +=  test-snmp.bin test-telnetd.bin test-slip.bin
+TESTS           += test-mac.bin test-eth.bin test-tcp.bin test-udp.bin
 TESTS		+= test-tcp-serv.bin test-tcp-client.bin
-TESTS		+= test-udp.bin test-udp-serv.bin test-udp-client.bin
-TESTS		+= test-dcache.bin
+TESTS		+= test-udp-serv.bin test-udp-client.bin
+TESTS		+= test-dcache.bin test-tcl.bin
 TESTS		+= dhrystone.bin linpack.bin whetstone.bin #livermore.bin
 #TESTS		+= coremark.bin
 OUTS		= $(TESTS:%.bin=%.elf)

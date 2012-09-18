@@ -10,8 +10,8 @@
 
 #define CTL(c)		((c) & 037)
 
-#define SDRAM_START	0xA0000000
-#define SDRAM_SIZE	(64*1024*1024)
+#define SDRAM_START	0xA1000000
+#define SDRAM_SIZE	(16*1024*1024)
 
 ARRAY (stack_console, 1500);		/* Task: menu on console */
 ARRAY (stack_test, 1000);		/* Task: transmit/receive packets */

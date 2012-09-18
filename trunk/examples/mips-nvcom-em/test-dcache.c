@@ -7,11 +7,11 @@
 #include <random/rand15.h>
 
 #ifdef ENABLE_DCACHE
-#   define SDRAM_START	0x80000000
+#   define SDRAM_START	0x81000000
 #else
-#   define SDRAM_START	0xA0000000
+#   define SDRAM_START	0xA1000000
 #endif
-#define SDRAM_SIZE	(64*1024*1024)
+#define SDRAM_SIZE	(16*1024*1024)
 
 ARRAY (test_stack, 1000);
 
