@@ -10,7 +10,7 @@ set 0x182f101c 0x00000001  # init SDRAM
 
 loadelf test-debug.elf
 
-run
+#run
 
 
 

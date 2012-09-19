@@ -1,0 +1,13 @@
+reset
+conf set blkio
+set 0xb82f4008 0x00010061  # 60 MHz
+
+set 0xb82f1000 0x003000f8  # CSCON0
+set 0x182f1014 0x00071d50  # SDRCON
+
+loadelf test-debug.elf
+
+#run
+
+
+

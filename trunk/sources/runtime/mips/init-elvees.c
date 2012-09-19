@@ -34,15 +34,29 @@ void __attribute ((noreturn))_init_ (void)
 	unsigned int divisor;
 
 #ifdef ELVEES_INIT_SDRAM
+#ifdef ELVEES_MC24
+	/* Configure 128 Mbytes of external 64-bit SDRAM memory at nCS0. */
+	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
+		MC_CSCON_WS (0) |		/* Wait states  */
+		MC_CSCON_T |			/* Sync memory */
+		MC_CSCON_W64 |			/* 64-bit data width */
+		MC_CSCON_CSBA (0x00000000) |	/* Base address */
+		MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
+
+	MC_SDRCON = MC_SDRCON_INIT |				/* Initialize SDRAM */
+		MC_SDRCON_BL_PAGE |				/* Bursh full page */
+		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ) |	/* Refresh period */
+		MC_SDRCON_PS_512;				/* Page size 512 */
+#else
 	/* Configure 64 Mbytes of external 32-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
 	MC_CSCON_T |			/* Sync memory */
 	MC_CSCON_CSBA (0x00000000) |	/* Base address */
 	MC_CSCON_CSMASK (0xF8000000);	/* Address mask */
 
-	MC_SDRCON = MC_SDRCON_PS_512 |		/* Page size 512 */
-		MC_SDRCON_CL_3 |		/* CAS latency 3 cycles */
-		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); /* Refresh period */
+	MC_SDRCON = MC_SDRCON_PS_512 |				/* Page size 512 */
+		MC_SDRCON_CL_3 |				/* CAS latency 3 cycles */
+		MC_SDRCON_RFR (64000000/8192, MPORT_KHZ); 	/* Refresh period */
 
 	MC_SDRTMR = MC_SDRTMR_TWR(2) |		/* Write recovery delay */
 		MC_SDRTMR_TRP(2) |		/* Минимальный период Precharge */
@@ -51,6 +65,7 @@ void __attribute ((noreturn))_init_ (void)
 		MC_SDRTMR_TRFC(15);		/* Интервал между Refresh */
 
 	MC_SDRCSR = 1;				/* Initialize SDRAM */
+#endif
 	udelay (2);
 #endif
 
