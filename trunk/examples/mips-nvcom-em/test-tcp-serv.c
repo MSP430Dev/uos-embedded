@@ -29,6 +29,7 @@ task_t *console_task;
 int     msg[MSG_SIZE];
 
 unsigned count = 0;
+unsigned old_count = 0;
 unsigned errors = 0;
 
 void tcp_task (void *data)
@@ -52,6 +53,8 @@ void tcp_task (void *data)
 			uos_halt (0);
 		}
 		debug_printf ("Client connected\n");
+		count = 0;
+		old_count = 0;
 
 		for (;;) {
 			sz = tcp_read (user_socket, msg, sizeof(msg));
@@ -83,7 +86,6 @@ void tcp_task (void *data)
 
 void console (void *unused)
 {
-	unsigned old_count = 0;
 	unsigned long start, end, elapsed;
 	unsigned long long bytes;
 	

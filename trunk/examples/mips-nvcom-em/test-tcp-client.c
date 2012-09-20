@@ -28,7 +28,9 @@ task_t *console_task;
 #define BUF_SIZE	365
 int     buf [BUF_SIZE];
 unsigned char server_ip [] = { 192, 168, 1, 52 };
+
 unsigned count = 0;
+unsigned old_count = 0;
 
 void tcp_task (void *data)
 {
@@ -46,6 +48,8 @@ void tcp_task (void *data)
 		}
 
 		debug_printf ("Connected to server\n");
+		count = 0;
+		old_count = 0;
 
 		for (;;) {
 
@@ -69,7 +73,6 @@ void tcp_task (void *data)
 
 void console (void *unused)
 {
-	unsigned old_count = 0;
 	unsigned long start, end, elapsed;
 	unsigned long long bytes;
 	

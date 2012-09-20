@@ -44,7 +44,7 @@ void udp_task (void *data)
 	printf (&debug, "Free memory: %d bytes\n", mem_available (&pool));
 
 	for (;;) {
-	    p = udp_recvfrom (&sock, addr, &port);
+		p = udp_recvfrom (&sock, addr, &port);
 	    
 		if (!p) continue;
 		
