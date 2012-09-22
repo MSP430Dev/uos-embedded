@@ -85,7 +85,7 @@ void uos_init (void)
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
 #endif
 
-	timer_init (&timer, KHZ, 50);
+	timer_init (&timer, KHZ, 20);
 
 	/*
 	 * Create a group of two locks: timer and eth.
