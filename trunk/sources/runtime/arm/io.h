@@ -7,6 +7,9 @@
 #ifdef ARM_AT91SAM
 #	include <runtime/arm/io-at91sam.h>
 #endif
+#ifdef ARM_OMAP44XX
+#	include <runtime/arm/io-omap44xx.h>
+#endif
 
 /*
  * Handle stack pointer register.
