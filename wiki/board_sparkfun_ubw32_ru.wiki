@@ -134,11 +134,10 @@ idProduct          0x003c USB HID Bootloader
 Стартует программа с адреса `9d006000`.
 Для обработки прерываний и исключений рекомендуется использовать `9d005200`.
 
-Фил Бургес разработал для Linux и Mac OS X простую утилиту
-[http://www.paintyourdragon.com/uc/ubw32/index.html ubw32],
-которая позволяет загружать HEX-файлы в плату. Например:
+Для загрузки HEX-файлов в плату рекомендуется утилита
+[http://code.google.com/p/pic32prog/wiki/README pic32prog]. Например:
 {{{
-ubw32 -write test.hex -reset
+pic32prog test.hex 
 }}}
 
 = Сигналы =
