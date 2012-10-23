@@ -227,7 +227,7 @@ ubw32 -write test.hex -reset
 ||  J4 / 2 - G6   || SD-WP   || WP  ||
 ||  J5 / 3 - GND  || GND     || COM ||
 
-= Тесты =
+= Примеры =
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32/test-debug.c test-debug.c]
 - Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
 Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
@@ -265,3 +265,18 @@ Slow speed: 250000 kbit/sec
 
 Command: _
 }}}
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32-usb-cdc/usb-hello.c usb-hello.c]
+- Проверка драйвера виртуального COM-порта USB. Микроядро отсутствует.
+Программа принимает данные от виртуального COM-порта и возвращает обратно строку вида:
+"Received 2 bytes: 61..."
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32-usb-cdc/usb-hid.c usb-hid.c]
+- Проверка драйвера виртуального COM-порта USB. Микроядро отсутствует.
+Программа принимает данные от виртуального COM-порта и возвращает обратно строку вида:
+"Received 2 bytes: 61..."
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32-usb-cdc/usb-hid.c usb-hid.c]
+- Проверка драйвера виртуального устройства ввода USB. Микроядро отсутствует.
+Программа принимает данные от компьютера в формате запросов HID (human interface device)
+и возвращает их же обратно (эхо-режим).
