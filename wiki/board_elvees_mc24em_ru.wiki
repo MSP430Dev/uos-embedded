@@ -61,26 +61,26 @@ mcprog -w test_tcl.bin
 }}}
 
 = Тесты =
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24em/test_debug.c test_debug.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-em/test_debug.c test_debug.c]
 - Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
 Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24em/test_task.c test_task.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-em/test_task.c test_task.c]
 - Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
 общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24em/test_timer.c test_timer.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-em/test_timer.c test_timer.c]
 - Проверка драйвера таймера. Одна задача: программа пользователя, которая
 каждые 100 миллисекунд печатает строку на консоли.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24em/test_uart.c test_uart.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-em/test_uart.c test_uart.c]
 - Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
 циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24em/philosophers.c philosophers.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-em/philosophers.c philosophers.c]
 - Пять обедающих философов. Шесть задач: драйвер UART и пять задач философов.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24em/test_ram.c test_ram.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-em/test_ram.c test_ram.c]
 - Проверка внешней оперативной памяти SDRAM. Задача пользователя с простым диалоговым меню.
 Позволяет запускать:
  * Тест адресных сигналов (бегущая единица). Запись данных по специально подобранным адресам и проверка.
@@ -105,7 +105,7 @@ Generator 8.0 MHz, CPU clock 80.0 MHz
 Command: _
 }}}
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24em/test_tcl.c test_tcl.c]
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-mc24-em/test_tcl.c test_tcl.c]
 - Проверка реализации встроенного языка TCL. Выдаёт диалоговое приглашение:
 {{{
 Embedded TCL
