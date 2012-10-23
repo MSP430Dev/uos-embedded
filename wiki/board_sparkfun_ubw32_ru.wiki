@@ -271,11 +271,6 @@ Command: _
 Программа принимает данные от виртуального COM-порта и возвращает обратно строку вида:
 "Received 2 bytes: 61..."
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32-usb-cdc/usb-hello.c usb-hello.c]
-- Проверка драйвера виртуального COM-порта USB. Микроядро отсутствует.
-Программа принимает данные от виртуального COM-порта и возвращает обратно строку вида:
-"Received 2 bytes: 61..."
-
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32-usb-hid/usb-hid.c usb-hid.c]
 - Проверка драйвера виртуального устройства ввода USB. Микроядро отсутствует.
 Программа принимает данные от компьютера в формате запросов HID (human interface device)
