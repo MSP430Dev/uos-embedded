@@ -226,3 +226,42 @@ ubw32 -write test.hex -reset
 ||  J4 / 3 - G7   || SD-CD#  || CD  ||
 ||  J4 / 2 - G6   || SD-WP   || WP  ||
 ||  J5 / 3 - GND  || GND     || COM ||
+
+= Тесты =
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32/test-debug.c test-debug.c]
+- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
+Программа циклически выдаёт на консоль строку "Hello, World!" и ждёт нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32/test-leds.c test-leds.c]
+- Проверка светодиодов. Микроядро отсутствует.
+Программа циклически зажигает и гасит все светодиоды.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32/test-task.c test-task.c]
+- Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
+общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32/test-timer.c test-timer.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+каждые 100 миллисекунд печатает строку на консоли.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32/test-uart.c test-uart.c]
+- Проверка драйвера UART. Две задачи: драйвер UART и программа пользователя,
+циклически выдающая строку "Hello, World!" и ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-ubw32/test-sd.c test-sd.c]
+- Проверка карточки flash-памяти SD. Задача пользователя с простым диалоговым меню.
+Позволяет запрашивать размер карточки, читать и писать сектора.
+{{{
+Testing SD card.
+Slow speed: 250000 kbit/sec
+
+  1. Initialize a card
+  2. Get card size
+  3. Read sector #0
+  4. Read sector #1
+  5. Read sector #99
+  6. Write sector #0
+  7. Write-read sectors #0...200
+
+Command: _
+}}}

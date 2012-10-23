@@ -689,7 +689,7 @@ void menu ()
                                 SDADDR->brg = (KHZ / FAST + 1) / 2 - 1;
                                 SDADDR->con = PIC32_SPICON_MSTEN | PIC32_SPICON_CKE |
                                         PIC32_SPICON_ON;
-                                printf (&debug, "Fast speed: %d bits/sec\n",
+                                printf (&debug, "Fast speed: %d kbit/sec\n",
                                         (KHZ / (SDADDR->brg + 1) + 1) / 2);
                         }
 			break;
@@ -758,7 +758,7 @@ void uos_init (void)
                 PIC32_SPICON_ON;
 
 	printf (&debug, "\nTesting SD card.\n");
-	printf (&debug, "Slow speed: %d bits/sec\n",
+	printf (&debug, "Slow speed: %d kbit/sec\n",
                 (KHZ / (SDADDR->brg + 1) + 1) / 2);
 
 	task_create (console_task, 0, "console", 10,
