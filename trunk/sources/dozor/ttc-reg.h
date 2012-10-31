@@ -123,8 +123,8 @@
 #define TTC_RSR(n)		TTC_REG_ADDR (0xA0 + ((n)<<5))
 #define TTC_RIER		TTC_REG_ADDR (0x20)
 
-#define TTC_RSR_RDN		0x0001		/* успешно принят пакет */
-#define TTC_RSR_STRT		0x0002		/* принят стартовый пакет */
+#define TTC_RSR_RDN		0x0001		/* успешно принят пакет с данными */
+#define TTC_RSR_STRT		0x0002		/* успешно принят стартовый пакет */
 #define TTC_RSR_REV		0x0004		/* ошибка кодирования приёмника */
 #define TTC_RSR_RABT		0x0008		/* приём оборван на границе слота */
 #define TTC_RSR_RLE		0x0010		/* неверная длина пакета */

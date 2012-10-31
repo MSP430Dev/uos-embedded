@@ -43,5 +43,7 @@ void		ttc_led_off (ttc_t *ttc, int led_num);
 void		ttc_led_sw (ttc_t *ttc, int led_num);
 int		ttc_get_led (ttc_t *ttc, int led_num);
 
+void		ttc_spi_init_pins (int port);
+
 #endif /* _TTC_H_ */
 
