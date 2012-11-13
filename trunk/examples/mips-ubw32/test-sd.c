@@ -235,7 +235,6 @@ card_init (unit)
                 /* Illegal command: card type 1. */
                 spi_select (unit, 0);
                 sd_type[unit] = 1;
-debug_printf ("sd%d: card type 1, reply=%02x\n", unit, reply);
         } else {
                 response[0] = spi_io (0xFF);
                 response[1] = spi_io (0xFF);
@@ -248,7 +247,6 @@ debug_printf ("sd%d: card type 1, reply=%02x\n", unit, reply);
                         return 0;
                 }
                 sd_type[unit] = 2;
-debug_printf ("sd%d: card type 2, reply=%02x\n", unit, reply);
         }
 
 	/* Send repeatedly SEND_OP until Idle terminates. */
@@ -258,12 +256,10 @@ debug_printf ("sd%d: card type 2, reply=%02x\n", unit, reply);
 		reply = card_cmd (CMD_SEND_OP_SDC,
                         sd_type[unit] == 2 ? 0x40000000 : 0);
 		spi_select (unit, 0);
-//debug_printf ("card_init: SEND_OP reply = %02x\n", reply);
 		if (reply == 0)
 			break;
 		if (i >= 10000) {
 			/* Init timed out. */
-debug_printf ("card_init: SEND_OP timed out, reply = %02x\n", reply);
 			return 0;
 		}
 	}
@@ -283,10 +279,8 @@ debug_printf ("card_init: SEND_OP timed out, reply = %02x\n", reply);
                 response[2] = spi_io (0xFF);
                 response[3] = spi_io (0xFF);
                 spi_select (unit, 0);
-//debug_printf ("sd%d: READ_OCR response=%02x-%02x-%02x-%02x\n", unit, response[0], response[1], response[2], response[3]);
                 if ((response[0] & 0xC0) == 0xC0) {
                         sd_type[unit] = 3;
-debug_printf ("sd%d: card type SDHC\n", unit);
                 }
         }
 	return 1;
@@ -359,17 +353,12 @@ card_read (unit, offset, data, bcount)
 	char *data;
 {
 	int reply, i;
-#if 0
-	debug_printf ("sd%d: read offset %u, length %u bytes, addr %p\n",
-		unit, offset, bcount, data);
-#endif
 again:
 	/* Send READ command. */
 	spi_select (unit, 1);
 	reply = card_cmd (CMD_READ_SINGLE, sd_type[unit] == 3 ? offset>>9 : offset);
 	if (reply != 0) {
 		/* Command rejected. */
-debug_printf ("card_read: bad READ_SINGLE reply = %02x, offset = %08x\n", reply, offset);
 		spi_select (unit, 0);
 		return 0;
 	}
@@ -378,15 +367,12 @@ debug_printf ("card_read: bad READ_SINGLE reply = %02x, offset = %08x\n", reply,
 	for (i=0; ; i++) {
 		if (i >= 250000) {
 			/* Command timed out. */
-debug_printf ("card_read: READ_SINGLE timed out, reply = %02x\n", reply);
 			spi_select (unit, 0);
 			return 0;
 		}
 		reply = spi_io (0xFF);
 		if (reply == DATA_START_BLOCK)
 			break;
-//if (reply != 0xFF) debug_printf ("card_read: READ_SINGLE reply = %02x\n", reply);
-//if (reply == 0x07) goto again;
 	}
 
 	/* Read data. */
@@ -420,10 +406,7 @@ card_write (unit, offset, data, bcount)
 	char *data;
 {
 	unsigned reply, i;
-#if 0
-	debug_printf ("sd%d: write offset %u, length %u bytes, addr %p\n",
-		unit, offset, bcount, data);
-#endif
+
 	/* Send pre-erase count. */
 	spi_select (unit, 1);
         card_cmd (CMD_APP, 0);
@@ -432,7 +415,6 @@ card_write (unit, offset, data, bcount)
 	if (reply != 0) {
 		/* Command rejected. */
 		spi_select (unit, 0);
-debug_printf ("card_write: bad SET_WBECNT reply = %02x, count = %u\n", reply, (bcount + SECTSIZE - 1) / SECTSIZE);
 		return 0;
 	}
 
@@ -442,7 +424,6 @@ debug_printf ("card_write: bad SET_WBECNT reply = %02x, count = %u\n", reply, (b
 	if (reply != 0) {
 		/* Command rejected. */
 		spi_select (unit, 0);
-debug_printf ("card_write: bad WRITE_MULTIPLE reply = %02x\n", reply);
 		return 0;
 	}
 	spi_select (unit, 0);
@@ -465,7 +446,6 @@ again:
 	if ((reply & 0x1f) != 0x05) {
 		/* Data rejected. */
 		spi_select (unit, 0);
-debug_printf ("card_write: data rejected, reply = %02x\n", reply);
 		return 0;
 	}
 
@@ -474,7 +454,6 @@ debug_printf ("card_write: data rejected, reply = %02x\n", reply);
 		if (i >= 250000) {
 			/* Write timed out. */
 			spi_select (unit, 0);
-debug_printf ("card_write: timed out, reply = %02x\n", reply);
 			return 0;
 		}
 		reply = spi_io (0xFF);
@@ -494,20 +473,6 @@ debug_printf ("card_write: timed out, reply = %02x\n", reply);
         spi_wait_ready ();
 	spi_io (STOP_TRAN_TOKEN);
         spi_wait_ready ();
-#if 0
-	/* Wait for write completion. */
-	for (i=0; ; i++) {
-		if (i >= 250000) {
-			/* Write timed out. */
-			spi_select (unit, 0);
-debug_printf ("card_write: stop timed out, reply = %02x\n", reply);
-			return 0;
-		}
-		reply = spi_io (0xFF);
-		if (reply != 0)
-			break;
-	}
-#endif
 	spi_select (unit, 0);
 	return 1;
 }
@@ -620,7 +585,6 @@ void test_sectors (unsigned first, unsigned last)
                         printf (&debug, "Sector %u: write error.\n", i);
                         break;
                 }
-                //putchar (&debug, '.');
         }
         w1 = mips_read_c0_register (C0_COUNT);
         printf (&debug, " done\n");
@@ -635,7 +599,6 @@ void test_sectors (unsigned first, unsigned last)
                         printf (&debug, "Sector %u: data error.\n", i);
                         break;
                 }
-                //putchar (&debug, '.');
         }
         r1 = mips_read_c0_register (C0_COUNT);
         printf (&debug, " done\n");
