@@ -5,7 +5,7 @@ include target.cfg
 CFLAGS          += -g
 PROGTOOL        = $(AVRDUDE) -c stk500v2 -p pic32 -b 115200
 
-TEST		= test-latency
+TEST		= philosophers
 TESTS		= $(TEST).srec
 TESTS		+= test-debug.srec test-leds.srec test-task.srec test-timer.srec test-uart.srec
 TESTS           += philosophers.srec test-latency.srec test-tswitch.srec
