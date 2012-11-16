@@ -7,15 +7,15 @@ OUTPUT_ARCH(mips)
 ENTRY(_reset_vector_)
 MEMORY
 {
-  flash                (rx)  : ORIGIN = 0x9d000000, LENGTH = 512K
-  ram                 (rw!x) : ORIGIN = 0x80000000, LENGTH = 128K
+  flash                (rx)  : ORIGIN = 0x9d000000, LENGTH = 128K
+  ram                  (rw!x): ORIGIN = 0x80000000, LENGTH = 16K
 
   /* Required by Microchip C32 linker */
   kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x80000
   kseg0_boot_mem             : ORIGIN = 0x9FC00490, LENGTH = 0x970
   exception_mem              : ORIGIN = 0x9FC01000, LENGTH = 0x1000
   kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x490
-  kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 0x20000
+  kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 0x8000
 }
 
 /* higher address of the user mode stack */

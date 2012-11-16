@@ -43,7 +43,7 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Clear CAUSE register: use special interrupt vector 0x200. */
 	mips_write_c0_register (C0_CAUSE, CA_IV);
-	
+
 	/*
 	 * Setup UART registers.
 	 * Compute the divisor for 115.2 kbaud.
@@ -53,15 +53,15 @@ void __attribute ((noreturn))_init_ (void)
 #ifdef OLIMEX_DUINOMITE_MEGA
 	/* Set all I/O digital */
 	AD1PCFG = 0xFFFF;
-	
+
 	/* Enable power for UART and other peripherals */
 	PORTB = (1 << 13);
 	TRISB &= ~(1 << 13);
 	PORTBCLR = (1 << 13);
 	mdelay (5);
-	
+
 	/* Setup debug UART */
-	U5BRG = PIC32_BRG_BAUD (KHZ * 1000, 115200);
+	U5BRG = PIC32_BRG_BAUD (KHZ * 500, 115200);
 	U5MODE = 0;
 	U5STA = 0;
 	U5MODE = PIC32_UMODE_PDSEL_8NPAR |	/* 8-bit data, no parity */
@@ -89,13 +89,20 @@ void __attribute ((noreturn))_init_ (void)
 	 */
 	INTCON = 0;				/* Interrupt Control */
 	IPTMR = 0;				/* Temporal Proximity Timer */
-	IFS(0) = IFS(1) = IFS(2) = 0;		/* Interrupt Flag Status */
-	IEC(0) = IEC(1) = IEC(2) = 0;		/* Interrupt Enable Control */
+	IFS(0) = IFS(1) = 0;                    /* Interrupt Flag Status */
+	IEC(0) = IEC(1) = 0;                    /* Interrupt Enable Control */
 	IPC(0) = IPC(1) = IPC(2) = IPC(3) = 	/* Interrupt Priority Control */
 	IPC(4) = IPC(5) = IPC(6) = IPC(7) =
-	IPC(8) = IPC(9) = IPC(10) = IPC(11) =
+	IPC(8) = IPC(9) = IPC(11) =
 		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
 		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
+#if defined(PIC32MX7)
+	IFS(2) = 0;                             /* MX5/6/7 series has */
+	IEC(2) = 0;                             /* additional registers */
+	IPC(10) = IPC(12) =
+		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
+		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
+#endif
 #ifndef SIMULATOR
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */

@@ -2,13 +2,13 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-CFLAGS          += -g #-DSIMULATOR
+CFLAGS          += -g
 PROGTOOL        = $(AVRDUDE) -c stk500v2 -p pic32 -b 115200
 
 TEST		= test-leds
 TESTS		= $(TEST).srec
 TESTS		+= test-debug.srec test-leds.srec test-task.srec test-timer.srec test-uart.srec
-#TESTS          += philosophers.srec test-latency.srec test-tswitch.srec
+TESTS           += philosophers.srec test-latency.srec test-tswitch.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis

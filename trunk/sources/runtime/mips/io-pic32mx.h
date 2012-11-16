@@ -3,18 +3,23 @@
  *
  * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
  *
- * This file is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for any purpose and without fee is hereby
+ * granted, provided that the above copyright notice appear in all
+ * copies and that both that the copyright notice and this
+ * permission notice and warranty disclaimer appear in supporting
+ * documentation, and that the name of the author not be used in
+ * advertising or publicity pertaining to distribution of the
+ * software without specific, written prior permission.
  *
- * You can redistribute this file and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software Foundation;
- * either version 2 of the License, or (at your discretion) any later version.
- * See the accompanying file "COPYING.txt" for more details.
- *
- * As a special exception to the GPL, permission is granted for additional
- * uses of the text contained in this file.  See the accompanying file
- * "COPY-UOS.txt" for details.
+ * The author disclaim all warranties with regard to this
+ * software, including all implied warranties of merchantability
+ * and fitness.  In no event shall the author be liable for any
+ * special, indirect or consequential damages or any damages
+ * whatsoever resulting from loss of use, data or profits, whether
+ * in an action of contract, negligence or other tortious action,
+ * arising out of or in connection with the use or performance of
+ * this software.
  */
 #ifndef _IO_PIC32MX_H
 #define _IO_PIC32MX_H
@@ -28,11 +33,16 @@
 #define C0_COMPARE	11	/* Timer interrupt control */
 #define C0_STATUS	12	/* Processor status and control */
 #define C0_INTCTL	12	/* Select 1: interrupt control */
+#define C0_SRSCTL	12	/* Select 2: GPR shadow set control */
+#define C0_SRSMAP	12	/* Select 3: vector to shadow set mapping */
 #define C0_CAUSE	13	/* Cause of last exception */
 #define C0_EPC		14	/* Program counter at last exception */
 #define C0_PRID		15	/* Processor identification (read only) */
-#define C0_EBASE	15	/* Select 1: Exception base address */
+#define C0_EBASE	15	/* Select 1: exception base address */
 #define C0_CONFIG	16	/* Configuration */
+#define C0_CONFIG1	16	/* Select 1: configuration 1 */
+#define C0_CONFIG2	16	/* Select 2: configuration 2 */
+#define C0_CONFIG3	16	/* Select 3: configuration 3 */
 #define C0_DEBUG	23	/* Debug control and status */
 #define C0_DEPC		24	/* Program counter at last debug exception */
 #define C0_ERROREPC	30	/* Program counter at last error */
@@ -78,18 +88,31 @@
 #define CA_Ov		(12 << 2)	/* Arithmetic overflow */
 #define CA_Tr		(13 << 2)	/* Trap */
 
+#define DB_DBD          (1 << 31)       /* Debug exception in a branch delay slot */
+#define DB_DM           (1 << 30)       /* Debug mode */
+#define DB_NODCR        (1 << 29)       /* No dseg present */
+#define DB_LSNM         (1 << 28)       /* Load/stores in dseg go to main memory */
+#define DB_DOZE         (1 << 27)       /* Processor was in low-power mode */
+#define DB_HALT         (1 << 26)       /* Internal system bus clock was running */
+#define DB_COUNTDM      (1 << 25)       /* Count register is running in Debug mode */
+#define DB_IBUSEP       (1 << 24)       /* Instruction fetch bus error exception */
+#define DB_DBUSEP       (1 << 21)       /* Data access bus error exception */
+#define DB_IEXI         (1 << 20)       /* Imprecise error exception */
+#define DB_VER          (7 << 15)       /* EJTAG version number */
+#define DB_DEXCCODE     (0x1f << 10)    /* Cause of exception in Debug mode */
+#define DB_SST          (1 << 8)        /* Single step exception enabled */
+#define DB_DIBImpr      (1 << 6)        /* Imprecise debug instruction break */
+#define DB_DINT         (1 << 5)        /* Debug interrupt exception */
+#define DB_DIB          (1 << 4)        /* Debug instruction break exception */
+#define DB_DDBS         (1 << 3)        /* Debug data break exception on store */
+#define DB_DDBL         (1 << 2)        /* Debug data break exception on load */
+#define DB_DBP          (1 << 1)        /* Debug software breakpoint exception */
+#define DB_DSS          (1 << 0)        /* Debug single-step exception */
+
 /*--------------------------------------
  * Peripheral registers.
  */
 #define PIC32_R(a)		*(volatile unsigned*)(0xBF800000 + (a))
-
-/*--------------------------------------
- * Configuration registers (located in boot flash memory).
- */
-#define DEVCFG0		*(volatile unsigned*)(0xBFC02FF0)
-#define DEVCFG1		*(volatile unsigned*)(0xBFC02FF4)
-#define DEVCFG2		*(volatile unsigned*)(0xBFC02FF8)
-#define DEVCFG3		*(volatile unsigned*)(0xBFC02FFC)
 
 /*--------------------------------------
  * UART registers.
@@ -254,14 +277,10 @@
 
 /*
  * Compute the 16-bit baud rate divisor, given
- * the oscillator frequency and baud rate.
+ * the bus frequency and baud rate.
  * Round to the nearest integer.
  */
-#ifdef OLIMEX_DUINOMITE_MEGA
-#	define PIC32_BRG_BAUD(fr,bd)	((((fr) / 2) / (16 * (bd))) - 1)
-#else
-#	define PIC32_BRG_BAUD(fr,bd)	((((fr)/8 + (bd)) / (bd) / 2) - 1)
-#endif
+#define PIC32_BRG_BAUD(fr,bd)	((((fr)/8 + (bd)) / (bd) / 2) - 1)
 
 /*--------------------------------------
  * Port A-G registers.
@@ -643,7 +662,7 @@
 #define PIC32_U1EI_BTS		0x0080 /*  */
 
 #define PIC32_U1STAT_PPBI	0x0004 /*  */
-#define PIC32_U1STAT_TX		0x0008 /*  */
+#define PIC32_U1STAT_DIR	0x0008 /*  */
 #define PIC32_U1STAT_ENDPT(x)	(((x) >> 4) & 0xF) /*  */
 
 #define PIC32_U1ADDR_DEVADDR	0x007F /*  */
@@ -798,6 +817,7 @@
 #define PIC32_SPICON_SIDL	0x00002000      /* Stop in Idle mode */
 #define PIC32_SPICON_FRZ	0x00004000      /* Freeze in Debug mode */
 #define PIC32_SPICON_ON		0x00008000      /* SPI Peripheral is enabled */
+#define PIC32_SPICON_ENHBUF	0x00010000      /* Enhanced buffer enable */
 #define PIC32_SPICON_SPIFE	0x00020000      /* Frame synchronization pulse
 						 * coincides with the first bit clock */
 #define PIC32_SPICON_FRMPOL	0x20000000      /* Frame pulse is active-high */
@@ -808,7 +828,9 @@
  * SPI Status register.
  */
 #define PIC32_SPISTAT_SPIRBF	0x00000001      /* Receive buffer is full */
+#define PIC32_SPISTAT_SPITBF	0x00000002      /* Transmit buffer is full */
 #define PIC32_SPISTAT_SPITBE	0x00000008      /* Transmit buffer is empty */
+#define PIC32_SPISTAT_SPIRBE    0x00000020      /* Receive buffer is empty */
 #define PIC32_SPISTAT_SPIROV	0x00000040      /* Receive overflow flag */
 #define PIC32_SPISTAT_SPIBUSY	0x00000800      /* SPI is busy */
 
@@ -829,9 +851,29 @@
 #define OSCCON          PIC32_R (0xf000)
 #define OSCTUN          PIC32_R (0xf010)
 #define DDPCON          PIC32_R (0xf200)        /* Debug Data Port Control */
+#define DEVID           PIC32_R (0xf220)
 #define SYSKEY          PIC32_R (0xf230)
 #define RCON            PIC32_R (0xf600)
+#define RCONCLR         PIC32_R (0xf604)
+#define RCONSET         PIC32_R (0xf608)
+#define RCONINV         PIC32_R (0xf60C)
 #define RSWRST          PIC32_R (0xf610)
+#define RSWRSTCLR       PIC32_R (0xf614)
+#define RSWRSTSET       PIC32_R (0xf618)
+#define RSWRSTINV       PIC32_R (0xf61C)
+
+/*
+ * Reset control register.
+ */
+#define PIC32_RCON_POR          0x00000001
+#define PIC32_RCON_BOR          0x00000002
+#define PIC32_RCON_IDLE         0x00000004
+#define PIC32_RCON_SLEEP        0x00000008
+#define PIC32_RCON_WDTO         0x00000010
+#define PIC32_RCON_SWR          0x00000040
+#define PIC32_RCON_EXTR         0x00000080
+#define PIC32_RCON_VREGS        0x00000100
+#define PIC32_RCON_CMR          0x00000200
 
 /*--------------------------------------
  * Prefetch cache controller registers.
@@ -858,6 +900,173 @@
 #define BMXBOOTSZ       PIC32_R (0x82070)       /* Boot Flash size */
 
 /*--------------------------------------
+ * Non-volatile memory control registers.
+ */
+#define NVMCON          PIC32_R (0x0F400)
+#define NVMCONCLR       PIC32_R (0x0F404)
+#define NVMCONSET       PIC32_R (0x0F408)
+#define NVMCONINV       PIC32_R (0x0F40C)
+#define NVMKEY          PIC32_R (0x0F410)
+#define NVMADDR         PIC32_R (0x0F420)
+#define NVMADDRCLR      PIC32_R (0x0F424)
+#define NVMADDRSET      PIC32_R (0x0F428)
+#define NVMADDRINV      PIC32_R (0x0F42C)
+#define NVMDATA         PIC32_R (0x0F430)
+#define NVMSRCADDR      PIC32_R (0x0F440)
+
+#define PIC32_NVMCON_NVMOP      0x0000000F
+#define PIC32_NVMCON_NOP                 0 /* No operation */
+#define PIC32_NVMCON_WORD_PGM            1 /* Word program */
+#define PIC32_NVMCON_ROW_PGM             3 /* Row program */
+#define PIC32_NVMCON_PAGE_ERASE          4 /* Page erase */
+
+#define PIC32_NVMCON_LVDSTAT    0x00000800
+#define PIC32_NVMCON_LVDERR     0x00001000
+#define PIC32_NVMCON_WRERR      0x00002000
+#define PIC32_NVMCON_WREN       0x00004000
+#define PIC32_NVMCON_WR         0x00008000
+
+/*--------------------------------------
+ * Configuration registers.
+ */
+#define DEVCFG0		*(volatile unsigned*)0x9fc02ffc
+#define DEVCFG1		*(volatile unsigned*)0x9fc02ff8
+#define DEVCFG2		*(volatile unsigned*)0x9fc02ff4
+#define DEVCFG3		*(volatile unsigned*)0x9fc02ff0
+
+#define PIC32_DEVCFG(cfg0, cfg1, cfg2, cfg3) \
+    asm (".section .config"); \
+    unsigned __DEVCFG0 __attribute__ ((section (".config0"))) = (cfg0) ^ 0x7fffffff; \
+    unsigned __DEVCFG1 __attribute__ ((section (".config1"))) = (cfg1) | DEVCFG1_UNUSED; \
+    unsigned __DEVCFG2 __attribute__ ((section (".config2"))) = (cfg2) | DEVCFG2_UNUSED; \
+    unsigned __DEVCFG3 __attribute__ ((section (".config3"))) = (cfg3) | DEVCFG3_UNUSED
+
+/*
+ * Config0 register at 1fc02ffc, inverted.
+ */
+#define DEVCFG0_DEBUG_MASK      0x00000003 /* Debugger enable bits */
+#define DEVCFG0_DEBUG_DISABLED  0x00000000 /* Debugger disabled */
+#define DEVCFG0_DEBUG_ENABLED   0x00000002 /* Debugger enabled */
+#define DEVCFG0_ICESEL          0x00000008 /* Use PGC1/PGD1 (default PGC2/PGD2) */
+#define DEVCFG0_PWP_MASK        0x000ff000 /* Program flash write protect */
+#define DEVCFG0_BWP             0x01000000 /* Boot flash write protect */
+#define DEVCFG0_CP              0x10000000 /* Code protect */
+
+/*
+ * Config1 register at 1fc02ff8.
+ */
+#define DEVCFG1_UNUSED          0xff600858
+#define DEVCFG1_FNOSC_MASK      0x00000007 /* Oscillator selection */
+#define DEVCFG1_FNOSC_FRC       0x00000000 /* Fast RC */
+#define DEVCFG1_FNOSC_FRCDIVPLL 0x00000001 /* Fast RC with divide-by-N and PLL */
+#define DEVCFG1_FNOSC_PRI       0x00000002 /* Primary oscillator XT, HS, EC */
+#define DEVCFG1_FNOSC_PRIPLL    0x00000003 /* Primary with PLL */
+#define DEVCFG1_FNOSC_SEC       0x00000004 /* Secondary oscillator */
+#define DEVCFG1_FNOSC_LPRC      0x00000005 /* Low-power RC */
+#define DEVCFG1_FNOSC_FRCDIV    0x00000007 /* Fast RC with divide-by-N */
+#define DEVCFG1_FSOSCEN         0x00000020 /* Secondary oscillator enable */
+#define DEVCFG1_IESO            0x00000080 /* Internal-external switch over */
+#define DEVCFG1_POSCMOD_MASK    0x00000300 /* Primary oscillator config */
+#define DEVCFG1_POSCMOD_EXT     0x00000000 /* External mode */
+#define DEVCFG1_POSCMOD_XT      0x00000100 /* XT oscillator */
+#define DEVCFG1_POSCMOD_HS      0x00000200 /* HS oscillator */
+#define DEVCFG1_POSCMOD_DISABLE 0x00000300 /* Disabled */
+#define DEVCFG1_OSCIOFNC        0x00000400 /* CLKO output active */
+#define DEVCFG1_FPBDIV_MASK     0x00003000 /* Peripheral bus clock divisor */
+#define DEVCFG1_FPBDIV_1        0x00000000 /* SYSCLK / 1 */
+#define DEVCFG1_FPBDIV_2        0x00001000 /* SYSCLK / 2 */
+#define DEVCFG1_FPBDIV_4        0x00002000 /* SYSCLK / 4 */
+#define DEVCFG1_FPBDIV_8        0x00003000 /* SYSCLK / 8 */
+#define DEVCFG1_FCKM_DISABLE    0x00004000 /* Fail-safe clock monitor disable */
+#define DEVCFG1_FCKS_DISABLE    0x00008000 /* Clock switching disable */
+#define DEVCFG1_WDTPS_MASK      0x001f0000 /* Watchdog postscale */
+#define DEVCFG1_WDTPS_1         0x00000000 /* 1:1 */
+#define DEVCFG1_WDTPS_2         0x00010000 /* 1:2 */
+#define DEVCFG1_WDTPS_4         0x00020000 /* 1:4 */
+#define DEVCFG1_WDTPS_8         0x00030000 /* 1:8 */
+#define DEVCFG1_WDTPS_16        0x00040000 /* 1:16 */
+#define DEVCFG1_WDTPS_32        0x00050000 /* 1:32 */
+#define DEVCFG1_WDTPS_64        0x00060000 /* 1:64 */
+#define DEVCFG1_WDTPS_128       0x00070000 /* 1:128 */
+#define DEVCFG1_WDTPS_256       0x00080000 /* 1:256 */
+#define DEVCFG1_WDTPS_512       0x00090000 /* 1:512 */
+#define DEVCFG1_WDTPS_1024      0x000a0000 /* 1:1024 */
+#define DEVCFG1_WDTPS_2048      0x000b0000 /* 1:2048 */
+#define DEVCFG1_WDTPS_4096      0x000c0000 /* 1:4096 */
+#define DEVCFG1_WDTPS_8192      0x000d0000 /* 1:8192 */
+#define DEVCFG1_WDTPS_16384     0x000e0000 /* 1:16384 */
+#define DEVCFG1_WDTPS_32768     0x000f0000 /* 1:32768 */
+#define DEVCFG1_WDTPS_65536     0x00100000 /* 1:65536 */
+#define DEVCFG1_WDTPS_131072    0x00110000 /* 1:131072 */
+#define DEVCFG1_WDTPS_262144    0x00120000 /* 1:262144 */
+#define DEVCFG1_WDTPS_524288    0x00130000 /* 1:524288 */
+#define DEVCFG1_WDTPS_1048576   0x00140000 /* 1:1048576 */
+#define DEVCFG1_FWDTEN          0x00800000 /* Watchdog enable */
+
+/*
+ * Config2 register at 1fc02ff4.
+ */
+#define DEVCFG2_UNUSED          0xfff87888
+#define DEVCFG2_FPLLIDIV_MASK   0x00000007 /* PLL input divider */
+#define DEVCFG2_FPLLIDIV_1      0x00000000 /* 1x */
+#define DEVCFG2_FPLLIDIV_2      0x00000001 /* 2x */
+#define DEVCFG2_FPLLIDIV_3      0x00000002 /* 3x */
+#define DEVCFG2_FPLLIDIV_4      0x00000003 /* 4x */
+#define DEVCFG2_FPLLIDIV_5      0x00000004 /* 5x */
+#define DEVCFG2_FPLLIDIV_6      0x00000005 /* 6x */
+#define DEVCFG2_FPLLIDIV_10     0x00000006 /* 10x */
+#define DEVCFG2_FPLLIDIV_12     0x00000007 /* 12x */
+#define DEVCFG2_FPLLMUL_MASK    0x00000070 /* PLL multiplier */
+#define DEVCFG2_FPLLMUL_15      0x00000000 /* 15x */
+#define DEVCFG2_FPLLMUL_16      0x00000010 /* 16x */
+#define DEVCFG2_FPLLMUL_17      0x00000020 /* 17x */
+#define DEVCFG2_FPLLMUL_18      0x00000030 /* 18x */
+#define DEVCFG2_FPLLMUL_19      0x00000040 /* 19x */
+#define DEVCFG2_FPLLMUL_20      0x00000050 /* 20x */
+#define DEVCFG2_FPLLMUL_21      0x00000060 /* 21x */
+#define DEVCFG2_FPLLMUL_24      0x00000070 /* 24x */
+#define DEVCFG2_UPLLIDIV_MASK   0x00000700 /* USB PLL input divider */
+#define DEVCFG2_UPLLIDIV_1      0x00000000 /* 1x */
+#define DEVCFG2_UPLLIDIV_2      0x00000100 /* 2x */
+#define DEVCFG2_UPLLIDIV_3      0x00000200 /* 3x */
+#define DEVCFG2_UPLLIDIV_4      0x00000300 /* 4x */
+#define DEVCFG2_UPLLIDIV_5      0x00000400 /* 5x */
+#define DEVCFG2_UPLLIDIV_6      0x00000500 /* 6x */
+#define DEVCFG2_UPLLIDIV_10     0x00000600 /* 10x */
+#define DEVCFG2_UPLLIDIV_12     0x00000700 /* 12x */
+#define DEVCFG2_UPLLDIS         0x00008000 /* Disable USB PLL */
+#define DEVCFG2_FPLLODIV_MASK   0x00070000 /* Default postscaler for PLL */
+#define DEVCFG2_FPLLODIV_1      0x00000000 /* 1x */
+#define DEVCFG2_FPLLODIV_2      0x00010000 /* 2x */
+#define DEVCFG2_FPLLODIV_4      0x00020000 /* 4x */
+#define DEVCFG2_FPLLODIV_8      0x00030000 /* 8x */
+#define DEVCFG2_FPLLODIV_16     0x00040000 /* 16x */
+#define DEVCFG2_FPLLODIV_32     0x00050000 /* 32x */
+#define DEVCFG2_FPLLODIV_64     0x00060000 /* 64x */
+#define DEVCFG2_FPLLODIV_256    0x00070000 /* 256x */
+
+/*
+ * Config3 register at 1fc02ff0.
+ */
+#define DEVCFG3_UNUSED          0x38f80000
+#define DEVCFG3_USERID_MASK     0x0000ffff /* User-defined ID */
+#define DEVCFG3_USERID(x)       ((x) & 0xffff)
+#define DEVCFG3_FSRSSEL_MASK    0x00070000 /* SRS select */
+#define DEVCFG3_FSRSSEL_ALL     0x00000000 /* All irqs assigned to shadow set */
+#define DEVCFG3_FSRSSEL_1       0x00010000 /* Assign irq priority 1 to shadow set */
+#define DEVCFG3_FSRSSEL_2       0x00020000 /* Assign irq priority 2 to shadow set */
+#define DEVCFG3_FSRSSEL_3       0x00030000 /* Assign irq priority 3 to shadow set */
+#define DEVCFG3_FSRSSEL_4       0x00040000 /* Assign irq priority 4 to shadow set */
+#define DEVCFG3_FSRSSEL_5       0x00050000 /* Assign irq priority 5 to shadow set */
+#define DEVCFG3_FSRSSEL_6       0x00060000 /* Assign irq priority 6 to shadow set */
+#define DEVCFG3_FSRSSEL_7       0x00070000 /* Assign irq priority 7 to shadow set */
+#define DEVCFG3_FMIIEN          0x01000000 /* Ethernet MII enable */
+#define DEVCFG3_FETHIO          0x02000000 /* Ethernet pins default */
+#define DEVCFG3_FCANIO          0x04000000 /* CAN pins default */
+#define DEVCFG3_FUSBIDIO        0x40000000 /* USBID pin: controlled by USB */
+#define DEVCFG3_FVBUSONIO       0x80000000 /* VBuson pin: controlled by USB */
+
+/*--------------------------------------
  * Interrupt controller registers.
  */
 #define INTCON		PIC32_R (0x81000)	/* Interrupt Control */
@@ -877,7 +1086,7 @@
 #define IECCLR(n)	PIC32_R (0x81064+((n)<<4))
 #define IECSET(n)	PIC32_R (0x81068+((n)<<4))
 #define IECINV(n)	PIC32_R (0x8106C+((n)<<4))
-#define IPC(n)		PIC32_R (0x81090+((n)<<4)) /* IPC(0..11) - Interrupt Priority Control */
+#define IPC(n)		PIC32_R (0x81090+((n)<<4)) /* IPC(0..12) - Interrupt Priority Control */
 #define IPCCLR(n)	PIC32_R (0x81094+((n)<<4))
 #define IPCSET(n)	PIC32_R (0x81098+((n)<<4))
 #define IPCINV(n)	PIC32_R (0x8109C+((n)<<4))
@@ -915,7 +1124,7 @@
 #define PIC32_IPC_IP3(x)	((x)<<26)	/* Interrupt 3 priority */
 
 /*
- * IRQ numbers for PIC32MX3xx/4xx.
+ * IRQ numbers for PIC32MX3xx/4xx/5xx/6xx/7xx
  */
 #define PIC32_IRQ_CT        0   /* Core Timer Interrupt */
 #define PIC32_IRQ_CS0       1   /* Core Software Interrupt 0 */
@@ -943,9 +1152,17 @@
 #define PIC32_IRQ_SPI1E     23  /* SPI1 Fault */
 #define PIC32_IRQ_SPI1TX    24  /* SPI1 Transfer Done */
 #define PIC32_IRQ_SPI1RX    25  /* SPI1 Receive Done */
+
+#define PIC32_IRQ_SPI3E     26  /* SPI3 Fault */
+#define PIC32_IRQ_SPI3TX    27  /* SPI3 Transfer Done */
+#define PIC32_IRQ_SPI3RX    28  /* SPI3 Receive Done */
 #define PIC32_IRQ_U1E       26  /* UART1 Error */
 #define PIC32_IRQ_U1RX      27  /* UART1 Receiver */
 #define PIC32_IRQ_U1TX      28  /* UART1 Transmitter */
+#define PIC32_IRQ_I2C3B     26  /* I2C3 Bus Collision Event */
+#define PIC32_IRQ_I2C3S     27  /* I2C3 Slave Event */
+#define PIC32_IRQ_I2C3M     28  /* I2C3 Master Event */
+
 #define PIC32_IRQ_I2C1B     29  /* I2C1 Bus Collision Event */
 #define PIC32_IRQ_I2C1S     30  /* I2C1 Slave Event */
 #define PIC32_IRQ_I2C1M     31  /* I2C1 Master Event */
@@ -954,12 +1171,27 @@
 #define PIC32_IRQ_PMP       34  /* Parallel Master Port */
 #define PIC32_IRQ_CMP1      35  /* Comparator Interrupt */
 #define PIC32_IRQ_CMP2      36  /* Comparator Interrupt */
+
 #define PIC32_IRQ_SPI2E     37  /* SPI2 Fault */
 #define PIC32_IRQ_SPI2TX    38  /* SPI2 Transfer Done */
 #define PIC32_IRQ_SPI2RX    39  /* SPI2 Receive Done */
+#define PIC32_IRQ_U3E       37  /* UART3 Error */
+#define PIC32_IRQ_U3RX      38  /* UART3 Receiver */
+#define PIC32_IRQ_U3TX      39  /* UART3 Transmitter */
+#define PIC32_IRQ_I2C4B     37  /* I2C4 Bus Collision Event */
+#define PIC32_IRQ_I2C4S     38  /* I2C4 Slave Event */
+#define PIC32_IRQ_I2C4M     39  /* I2C4 Master Event */
+
+#define PIC32_IRQ_SPI4E     40  /* SPI4 Fault */
+#define PIC32_IRQ_SPI4TX    41  /* SPI4 Transfer Done */
+#define PIC32_IRQ_SPI4RX    42  /* SPI4 Receive Done */
 #define PIC32_IRQ_U2E       40  /* UART2 Error */
 #define PIC32_IRQ_U2RX      41  /* UART2 Receiver */
 #define PIC32_IRQ_U2TX      42  /* UART2 Transmitter */
+#define PIC32_IRQ_I2C5B     40  /* I2C5 Bus Collision Event */
+#define PIC32_IRQ_I2C5S     41  /* I2C5 Slave Event */
+#define PIC32_IRQ_I2C5M     42  /* I2C5 Master Event */
+
 #define PIC32_IRQ_I2C2B     43  /* I2C2 Bus Collision Event */
 #define PIC32_IRQ_I2C2S     44  /* I2C2 Slave Event */
 #define PIC32_IRQ_I2C2M     45  /* I2C2 Master Event */
@@ -969,11 +1201,33 @@
 #define PIC32_IRQ_DMA1      49  /* DMA Channel 1 */
 #define PIC32_IRQ_DMA2      50  /* DMA Channel 2 */
 #define PIC32_IRQ_DMA3      51  /* DMA Channel 3 */
+#define PIC32_IRQ_DMA4      52  /* DMA Channel 4 */
+#define PIC32_IRQ_DMA5      53  /* DMA Channel 5 */
+#define PIC32_IRQ_DMA6      54  /* DMA Channel 6 */
+#define PIC32_IRQ_DMA7      55  /* DMA Channel 7 */
 #define PIC32_IRQ_FCE       56  /* Flash Control Event */
 #define PIC32_IRQ_USB       57  /* USB */
+#define PIC32_IRQ_CAN1      58  /* Control Area Network 1 */
+#define PIC32_IRQ_CAN2      59  /* Control Area Network 2 */
+#define PIC32_IRQ_ETH       60  /* Ethernet Interrupt */
+#define PIC32_IRQ_IC1E      61  /* Input Capture 1 Error */
+#define PIC32_IRQ_IC2E      62  /* Input Capture 2 Error */
+#define PIC32_IRQ_IC3E      63  /* Input Capture 3 Error */
+#define PIC32_IRQ_IC4E      64  /* Input Capture 4 Error */
+#define PIC32_IRQ_IC5E      65  /* Input Capture 5 Error */
+#define PIC32_IRQ_PMPE      66  /* Parallel Master Port Error */
+#define PIC32_IRQ_U4E       67  /* UART4 Error */
+#define PIC32_IRQ_U4RX      68  /* UART4 Receiver */
+#define PIC32_IRQ_U4TX      69  /* UART4 Transmitter */
+#define PIC32_IRQ_U6E       70  /* UART6 Error */
+#define PIC32_IRQ_U6RX      71  /* UART6 Receiver */
+#define PIC32_IRQ_U6TX      72  /* UART6 Transmitter */
+#define PIC32_IRQ_U5E       73  /* UART5 Error */
+#define PIC32_IRQ_U5RX      74  /* UART5 Receiver */
+#define PIC32_IRQ_U5TX      75  /* UART5 Transmitter */
 
 /*
- * Interrupt vector numbers for PIC32MX3xx/4xx.
+ * Interrupt vector numbers for PIC32MX3xx/4xx/5xx/6xx/7xx
  */
 #define PIC32_VECT_CT       0   /* Core Timer Interrupt */
 #define PIC32_VECT_CS0      1   /* Core Software Interrupt 0 */
@@ -999,15 +1253,26 @@
 #define PIC32_VECT_IC5      21  /* Input Capture 5 */
 #define PIC32_VECT_OC5      22  /* Output Compare 5 */
 #define PIC32_VECT_SPI1     23  /* SPI1 */
+
+#define PIC32_VECT_SPI3     24  /* SPI3 */
 #define PIC32_VECT_U1       24  /* UART1 */
+#define PIC32_VECT_I2C3     24  /* I2C3 */
+
 #define PIC32_VECT_I2C1     25  /* I2C1 */
 #define PIC32_VECT_CN       26  /* Input Change Interrupt */
 #define PIC32_VECT_AD1      27  /* ADC1 Convert Done */
 #define PIC32_VECT_PMP      28  /* Parallel Master Port */
 #define PIC32_VECT_CMP1     29  /* Comparator Interrupt */
 #define PIC32_VECT_CMP2     30  /* Comparator Interrupt */
+
 #define PIC32_VECT_SPI2     31  /* SPI2 */
+#define PIC32_VECT_U3       31  /* UART3 */
+#define PIC32_VECT_I2C4     31  /* I2C4 */
+
+#define PIC32_VECT_SPI4     32  /* SPI4 */
 #define PIC32_VECT_U2       32  /* UART2 */
+#define PIC32_VECT_I2C5     32  /* I2C5 */
+
 #define PIC32_VECT_I2C2     33  /* I2C2 */
 #define PIC32_VECT_FSCM     34  /* Fail-Safe Clock Monitor */
 #define PIC32_VECT_RTCC     35  /* Real-Time Clock and Calendar */
@@ -1015,7 +1280,17 @@
 #define PIC32_VECT_DMA1     37  /* DMA Channel 1 */
 #define PIC32_VECT_DMA2     38  /* DMA Channel 2 */
 #define PIC32_VECT_DMA3     39  /* DMA Channel 3 */
+#define PIC32_VECT_DMA4     40  /* DMA Channel 4 */
+#define PIC32_VECT_DMA5     41  /* DMA Channel 5 */
+#define PIC32_VECT_DMA6     42  /* DMA Channel 6 */
+#define PIC32_VECT_DMA7     43  /* DMA Channel 7 */
 #define PIC32_VECT_FCE      44  /* Flash Control Event */
 #define PIC32_VECT_USB      45  /* USB */
+#define PIC32_VECT_CAN1     46  /* Control Area Network 1 */
+#define PIC32_VECT_CAN2     47  /* Control Area Network 2 */
+#define PIC32_VECT_ETH      48  /* Ethernet Interrupt */
+#define PIC32_VECT_U4       49  /* UART4 */
+#define PIC32_VECT_U6       50  /* UART6 */
+#define PIC32_VECT_U5       51  /* UART5 */
 
 #endif /* _IO_PIC32MX_H */
