@@ -1,0 +1,150 @@
+#summary Target board: Digilent chipKIT Uno32.
+
+[http://www.digilentinc.com/Products/Detail.cfm?NavPath=2,719,895&Prod=CHIPKIT-UNO32 http://uos-embedded.googlecode.com/svn/wiki/images/digilent-uno32.jpg]
+
+Плата Uno32 ([http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKIT%20Uno32_bysa_sch.pdf schematics],
+[http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKITUno32_rm.pdf manual],
+[http://www.digilentinc.com/Data/Products/CHIPKIT-UNO32/chipKIT_Uno32_bysa.zip Eagle files])
+представляет собой универсальную отладочную платформу, совместимую с Arduino,
+но построенную на основе 32-битного микроконтроллера
+[http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en532434 Microchip PIC32MX320]
+с архитектурой MIPS.
+
+Основные характеристики:
+ * Микроконтроллер PIC32MX320 с частотой 80 MHz (архитектура MIPS)
+ * 43 сигнала ввода-вывода общего назначения
+ * Совместимость с платами расширения Arduino
+ * Порт miniUSB с конвертером FTDI к UART1
+ * Переключатель питания: от USB или от внешнего источника
+ * Разъем внешнего питания
+ * Один светодиод питания и два программно-управляемых светодиода
+ * Кнопка Reset
+
+Память:
+ * 128 кбайт памяти программ (Flash)
+ * 12 кбайт дополнительной Flash-памяти для загрузчика
+ * 32 кбайт памяти данных (RAM)
+
+Цифровые выходы обеспечивают ток до 18 mA.
+Имеется богатый набор периферийных функций: UART, SPI, I2C, ADC, таймеры.
+Есть два опорных генератора: 8 MHz и 32 kHz.
+Питать плату можно от miniUSB, или от внешнего источника +7 ... 15 VDC.
+
+= Сигналы =
+[http://uos-embedded.googlecode.com/svn/wiki/images/uno32-pinout.jpg]
+
+=== Разъем PWM/Digital ===
+|| *PIC32* || *Signal*|| *Signal*|| *PIC32*  ||
+|| RB1     ||    41   ||   AREF  || RB0      ||
+|| RF5     ||    40   ||   GND   ||  --      ||
+|| RF4     ||    39   ||   13    || RG6, LD5 ||
+|| RF6     ||    38   ||   12    || RG7/G8   ||
+|| RD7     ||    37   ||   11    || RG8/G7   ||
+|| RD6     ||    36   ||   10    || RD4/G9   ||
+|| RD11    ||    35   ||   9     || RD3      ||
+|| RD5     ||    34   ||   8     || RD10     ||
+|| RE7     ||    33   ||   7     || RD9      ||
+|| RE6     ||    32   ||   6     || RD2      ||
+|| RE5     ||    31   ||   5     || RD1      ||
+|| RE4     ||    30   ||   4     || RF1      ||
+|| RE3     ||    29   ||   3     || RD0      ||
+|| RE2     ||    28   ||   2     || RD8      ||
+|| RE1     ||    27   ||   1     || RF3      ||
+|| RE0     ||    26   ||   0     || RF2      ||
+
+=== Разъем Analog ===
+|| *PIC32*  || *Signal*|| *Signal*|| *PIC32*  ||
+||     RB2  ||  A0     ||  A6     ||     RB3  ||
+||     RB4  ||  A1     ||  A7     ||     RB5  ||
+||     RB8  ||  A2     ||  A8     ||     RB9  ||
+||     RB10 ||  A3     ||  A9     ||     RB11 ||
+|| RG3/RB12 ||  A4     ||  A10    ||     RB13 ||
+|| RG2/RB14 ||  A5     ||  A11    ||     RB15 ||
+
+=== Разъем питания ===
+|| *Signal*|| *Function*              ||
+||  RST    || MCLR                    ||
+||  3V3    || VCC +3.3                ||
+||  5V0    || VCC +5.0                ||
+||  GND    || GND                     ||
+||  GND    || GND                     ||
+||  VIN    || External supply voltage ||
+
+= Сигналы UART, SPI и I2C =
+|| *UART* || *SPI* || *I2C* || *PIC32* || *Connector*          ||
+||  U1RX  || SDI1  || --    || RF2     || 0 - PWM/Digital, USB ||
+||  U1TX  || SDO1  || --    || RF3     || 1 - PWM/Digital, USB ||
+||  U2RX  || --    || SDA2  || RF4     || 39 - PWM/Digital     ||
+||  U2TX  || --    || SCL2  || RF5     || 40 - PWM/Digital     ||
+||  --    || SCK1  || --    || RF6     || 38 - PWM/Digital     ||
+||  --    || SDI2  || --    || RG7     || 12/11 - PWM/Digital, JP7, J8 ||
+||  --    || SDO2  || --    || RG8     || 11/12 - PWM/Digital, JP7, J8 ||
+||  --    || SCK2  || --    || RG6     || 13 - PWM/Digital     ||
+||  --    || --    || SDA1  || RG3     || A4 - Analog, JP8     ||
+||  --    || --    || SCL1  || RG2     || A5 - Analog, JP8     ||
+
+= Светодиоды =
+|| *LED* || *PIC32* || *Signal*               ||
+||  LD4  || RG6     || 13 - PWM/Digital, SCK2 ||
+||  LD5  || RF0     || --                     ||
+
+= Порт JTAG =
+|| *JTAG* || *PIC32* || *Signal*     ||
+||  TMS   || RB10    || A3 - Analog  ||
+||  TCK   || RB12    || A4 - Analog  ||
+||  TDO   || RB11    || A9 - Analog  ||
+||  TDI   || RB13    || A10 - Analog ||
+
+
+= Примеры uOS =
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32 examples/mips-uno32]
+находятся примеры сборки uOS для Uno32. Их можно скомпилировать командой "make".
+ * test-debug.hex - Проверка runtime-библиотеки и отладочной печати.
+ * test-leds.hex - Проверка светодиодов основной платы.
+ * test-timer.hex - Проверка драйвера таймера.
+ * test-uart.hex - Проверка драйвера UART.
+ * philosophers.hex - Пять обедающих философов.
+ * test-tswitch.hex - Измерение времени переключения задач.
+ * test-latency.hex - Измерение времени входа в обработчик прерывания.
+
+Загрузить готовые бинарные файлы в плату можно утилитой avrdude, входящей в состав chipKIT MPIDE.
+Например:
+{{{
+/opt/mpide-0022-linux32-20110822/hardware/tools/avrdude \
+    -C /opt/mpide-0022-linux32-20110822/hardware/tools/avrdude.conf \
+    -P /dev/ttyUSB0 -c stk500v2 -p pic32 -b 115200 -v -U flash:w:philosophers.hex:i
+}}}
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32/test-debug.c test-debug.c]
+- Проверка runtime-библиотеки и отладочной печати. Микроядро отсутствует.
+Программа циклически выдаёт на консоль UART строку "Hello, World!" и ждёт нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32/test-leds.c test-leds.c]
+- Проверка светодиодов основной платы. Микроядро отсутствует.
+Программа поочередно мигает двумя светодиодами.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32/test-timer.c test-timer.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+каждые 100 миллисекунд печатает строку на консоли UART.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32/test-uart.c test-uart.c]
+- Проверка драйвера UART. Одна задача: программа пользователя,
+циклически выдающая на консоль UART строку "Hello, World!" и ждущая нажатия клавиши.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32/philosophers.c philosophers.c]
+- [http://en.wikipedia.org/wiki/Dining_philosophers Пять обедающих философов] (пять задач). Вывод на UART.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32/test-tswitch.c test-tswitch.c]
+- Измерение времени переключения задач. Выдача на UART.
+Две задачи: консольная (с приоритетом 1) и измерительная (с более высоким приоритетом 2).
+Измерительная задача ожидает сообщения на мутексе.
+Консольная задача посылает сообщение, содержащее значение текущего времени (аппаратный таймер SysTick).
+Происходит переключение задач, и измерительная задача фиксирует задержку переключения.
+Затем консольная задача печатает полученное значение в порт UART.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-uno32/test-latency.c test-latency.c]
+- Измерение времени входа в прерывание. Выдача на экран LCD.
+Для прерывания от аппаратного таймера SysTick устанавливается быстрый обработчик.
+Каждые 100 миллисекунд измеряется время, потраченное на вход в обработчик
+(разница между начальным значением таймера LOAD и текущим значением VAL).
+Консольная задача печатает полученное значение на экране LCD.
