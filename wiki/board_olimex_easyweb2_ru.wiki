@@ -1,6 +1,6 @@
 #summary Target board: Olimex MSP430-easyWeb2.
 
-[http://www.olimex.com/dev/msp-easyweb2.html http://www.olimex.com/dev/images/eweb2.jpg]
+[https://www.olimex.com/Products/MSP430/Starter/MSP430-EASYWEB-2/ https://www.olimex.com/Products/MSP430/Starter/MSP430-EASYWEB-2/images/thumbs/310x230/MSP430-EASYWEB-2.jpg]
 
 Плата Olimex MSP430-easyWeb2 ([http://www.olimex.com/dev/images/msp430-easyweb2-sch.gif схема])
 построена на микроконтроллере MSP430F149. Дополнительная информация доступна
@@ -51,7 +51,7 @@
 || [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/msp430-easyweb2/test_eth.c test_eth.c]         || Проверка Ethernet. Одна задача: опрос драйвера CS8900A.                                   || 14130 байт (23%)  || 1102 байт (54%) ||
 
 = Программатор и отладчик =
-[http://www.olimex.com/dev/msp-jtag.html http://www.olimex.com/dev/images/msp430-jtag.jpg]
+[https://www.olimex.com/Products/MSP430/JTAG/MSP430-JTAG/ https://www.olimex.com/Products/MSP430/JTAG/MSP430-JTAG/images/thumbs/200x150/MSP430-JTAG-01.jpg]
 
 В качестве аппаратного интерфейса к JTAG-порту я использую LPT-адаптер [http://www.olimex.com/dev/msp-jtag.html Olimex MSP430-JTAG].
 
