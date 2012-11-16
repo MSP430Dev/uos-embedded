@@ -521,7 +521,7 @@ _arch_interrupt_ (void)
 		/* Signal the interrupt handler, if any. */
 		mutex_activate (h->lock, 0);
 	}
-	
+
 	/* LY: copy a few lines of code from task_schedule() here. */
 	if (task_need_schedule)	{
 		task_t *t;
@@ -580,7 +580,7 @@ arch_intr_allow (int irq)
 		MC_MASKR1 |= 1 << (irq-23);
 	} else if (irq < 59) {
 		/* QSTR2 interrupt: 27..58. */
-		MC_MASKR2 |= 1 << (irq-27);		
+		MC_MASKR2 |= 1 << (irq-27);
 	} else {
 		/* QSTR3 interrupt: 59..63. */
 		MC_MASKR3 |= 1 << (irq-59);

@@ -5,7 +5,7 @@ include target.cfg
 CFLAGS          += -g
 PROGTOOL        = $(AVRDUDE) -c stk500v2 -p pic32 -b 115200
 
-TEST		= test-leds
+TEST		= test-latency
 TESTS		= $(TEST).srec
 TESTS		+= test-debug.srec test-leds.srec test-task.srec test-timer.srec test-uart.srec
 TESTS           += philosophers.srec test-latency.srec test-tswitch.srec
@@ -27,6 +27,9 @@ hex:		$(TESTS)
 load:		$(TEST).srec
 		$(OBJCOPY) -O ihex $(TEST).srec $(TEST).hex
 		$(PROGTOOL) -v -U flash:w:$(TEST).hex:i
+
+debug:		$(TEST).srec
+		$(GDB) $(TEST).elf
 
 include $(OS)/sources/rules.mak
 

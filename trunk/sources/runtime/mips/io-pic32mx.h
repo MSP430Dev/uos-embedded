@@ -132,7 +132,7 @@
 #define U1BRGSET	PIC32_R (0x6048)
 #define U1BRGINV	PIC32_R (0x604C)
 
-#ifdef PIC32MX4
+#if defined(PIC32MX3) || defined(PIC32MX4)
 #define U2MODE		PIC32_R (0x6200) /* Mode */
 #define U2MODECLR	PIC32_R (0x6204)
 #define U2MODESET	PIC32_R (0x6208)
@@ -727,7 +727,7 @@
 /*--------------------------------------
  * SPI registers.
  */
-#ifdef PIC32MX4
+#if defined(PIC32MX3) || defined(PIC32MX4)
 #define SPI1CON		PIC32_R (0x5800) /* Control */
 #define SPI1CONCLR	PIC32_R (0x5804)
 #define SPI1CONSET	PIC32_R (0x5808)

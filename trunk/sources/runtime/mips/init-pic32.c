@@ -93,9 +93,14 @@ void __attribute ((noreturn))_init_ (void)
 	IEC(0) = IEC(1) = 0;                    /* Interrupt Enable Control */
 	IPC(0) = IPC(1) = IPC(2) = IPC(3) = 	/* Interrupt Priority Control */
 	IPC(4) = IPC(5) = IPC(6) = IPC(7) =
-	IPC(8) = IPC(9) = IPC(11) =
+	IPC(8) = IPC(11) =
 		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
 		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
+#if defined(PIC32MX4)
+	IPC(9) =                                /* MX4 series has IPC9 */
+		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
+		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
+#endif
 #if defined(PIC32MX7)
 	IFS(2) = 0;                             /* MX5/6/7 series has */
 	IEC(2) = 0;                             /* additional registers */
