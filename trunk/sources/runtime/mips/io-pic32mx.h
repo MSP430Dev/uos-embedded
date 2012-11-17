@@ -1,7 +1,7 @@
 /*
- * Hardware register defines for all Microchip PIC32MX microcontrollers.
+ * Hardware register defines for Microchip PIC32MX microcontrollers.
  *
- * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ * Copyright (C) 2010-2012 Serge Vakulenko, <serge@vak.ru>
  *
  * Permission to use, copy, modify, and distribute this software
  * and its documentation for any purpose and without fee is hereby
@@ -132,7 +132,8 @@
 #define U1BRGSET	PIC32_R (0x6048)
 #define U1BRGINV	PIC32_R (0x604C)
 
-#if defined(PIC32MX3) || defined(PIC32MX4)
+#if defined(PIC32MX1) || defined(PIC32MX2) || \
+    defined(PIC32MX3) || defined(PIC32MX4)
 #define U2MODE		PIC32_R (0x6200) /* Mode */
 #define U2MODECLR	PIC32_R (0x6204)
 #define U2MODESET	PIC32_R (0x6208)
@@ -285,6 +286,8 @@
 /*--------------------------------------
  * Port A-G registers.
  */
+#if defined(PIC32MX3) || defined(PIC32MX4) || \
+    defined(PIC32MX7)
 #define TRISA		PIC32_R (0x86000) /* Port A: mask of inputs */
 #define TRISACLR	PIC32_R (0x86004)
 #define TRISASET	PIC32_R (0x86008)
@@ -416,6 +419,72 @@
 #define CNPUECLR	PIC32_R (0x861E4)
 #define CNPUESET	PIC32_R (0x861E8)
 #define CNPUEINV	PIC32_R (0x861EC)
+#endif
+
+#ifdef PIC32MX2
+#define ANSELA		PIC32_R (0x86000) /* Port A: analog select */
+#define ANSELACLR	PIC32_R (0x86004)
+#define ANSELASET	PIC32_R (0x86008)
+#define ANSELAINV	PIC32_R (0x8600C)
+#define TRISA		PIC32_R (0x86010) /* Port A: mask of inputs */
+#define TRISACLR	PIC32_R (0x86014)
+#define TRISASET	PIC32_R (0x86018)
+#define TRISAINV	PIC32_R (0x8601C)
+#define PORTA		PIC32_R (0x86020) /* Port A: read inputs, write outputs */
+#define PORTACLR	PIC32_R (0x86024)
+#define PORTASET	PIC32_R (0x86028)
+#define PORTAINV	PIC32_R (0x8602C)
+#define LATA		PIC32_R (0x86030) /* Port A: read/write outputs */
+#define LATACLR		PIC32_R (0x86034)
+#define LATASET		PIC32_R (0x86038)
+#define LATAINV		PIC32_R (0x8603C)
+#define ODCA		PIC32_R (0x86040) /* Port A: open drain configuration */
+#define ODCACLR		PIC32_R (0x86044)
+#define ODCASET		PIC32_R (0x86048)
+#define ODCAINV		PIC32_R (0x8604C)
+
+#define ANSELB		PIC32_R (0x86100) /* Port B: analog select */
+#define ANSELBCLR	PIC32_R (0x86104)
+#define ANSELBSET	PIC32_R (0x86108)
+#define ANSELBINV	PIC32_R (0x8610C)
+#define TRISB		PIC32_R (0x86110) /* Port B: mask of inputs */
+#define TRISBCLR	PIC32_R (0x86114)
+#define TRISBSET	PIC32_R (0x86118)
+#define TRISBINV	PIC32_R (0x8611C)
+#define PORTB		PIC32_R (0x86120) /* Port B: read inputs, write outputs */
+#define PORTBCLR	PIC32_R (0x86124)
+#define PORTBSET	PIC32_R (0x86128)
+#define PORTBINV	PIC32_R (0x8612C)
+#define LATB		PIC32_R (0x86130) /* Port B: read/write outputs */
+#define LATBCLR		PIC32_R (0x86134)
+#define LATBSET		PIC32_R (0x86138)
+#define LATBINV		PIC32_R (0x8613C)
+#define ODCB		PIC32_R (0x86140) /* Port B: open drain configuration */
+#define ODCBCLR		PIC32_R (0x86144)
+#define ODCBSET		PIC32_R (0x86148)
+#define ODCBINV		PIC32_R (0x8614C)
+
+#define ANSELC		PIC32_R (0x86200) /* Port C: analog select */
+#define ANSELCCLR	PIC32_R (0x86204)
+#define ANSELCSET	PIC32_R (0x86208)
+#define ANSELCINV	PIC32_R (0x8620C)
+#define TRISC		PIC32_R (0x86210) /* Port C: mask of inputs */
+#define TRISCCLR	PIC32_R (0x86214)
+#define TRISCSET	PIC32_R (0x86218)
+#define TRISCINV	PIC32_R (0x8621C)
+#define PORTC		PIC32_R (0x86220) /* Port C: read inputs, write outputs */
+#define PORTCCLR	PIC32_R (0x86224)
+#define PORTCSET	PIC32_R (0x86228)
+#define PORTCINV	PIC32_R (0x8622C)
+#define LATC		PIC32_R (0x86230) /* Port C: read/write outputs */
+#define LATCCLR		PIC32_R (0x86234)
+#define LATCSET		PIC32_R (0x86238)
+#define LATCINV		PIC32_R (0x8623C)
+#define ODCC		PIC32_R (0x86240) /* Port CB: open drain configuration */
+#define ODCCCLR		PIC32_R (0x86244)
+#define ODCCSET		PIC32_R (0x86248)
+#define ODCCINV		PIC32_R (0x8624C)
+#endif
 
 /*--------------------------------------
  * A/D Converter registers.
@@ -727,7 +796,8 @@
 /*--------------------------------------
  * SPI registers.
  */
-#if defined(PIC32MX3) || defined(PIC32MX4)
+#if defined(PIC32MX1) || defined(PIC32MX2) || \
+    defined(PIC32MX3) || defined(PIC32MX4)
 #define SPI1CON		PIC32_R (0x5800) /* Control */
 #define SPI1CONCLR	PIC32_R (0x5804)
 #define SPI1CONSET	PIC32_R (0x5808)
@@ -742,6 +812,7 @@
 #define SPI1BRGSET	PIC32_R (0x5838)
 #define SPI1BRGINV	PIC32_R (0x583C)
 #endif
+
 #ifdef PIC32MX7
 #define SPI3CON		PIC32_R (0x5800) /* Control */
 #define SPI3CONCLR	PIC32_R (0x5804)
@@ -848,19 +919,22 @@
 /*--------------------------------------
  * System controller registers.
  */
-#define OSCCON          PIC32_R (0xf000)
-#define OSCTUN          PIC32_R (0xf010)
-#define DDPCON          PIC32_R (0xf200)        /* Debug Data Port Control */
-#define DEVID           PIC32_R (0xf220)
-#define SYSKEY          PIC32_R (0xf230)
-#define RCON            PIC32_R (0xf600)
-#define RCONCLR         PIC32_R (0xf604)
-#define RCONSET         PIC32_R (0xf608)
-#define RCONINV         PIC32_R (0xf60C)
-#define RSWRST          PIC32_R (0xf610)
-#define RSWRSTCLR       PIC32_R (0xf614)
-#define RSWRSTSET       PIC32_R (0xf618)
-#define RSWRSTINV       PIC32_R (0xf61C)
+#define OSCCON          PIC32_R (0xF000)
+#define OSCTUN          PIC32_R (0xF010)
+#define DDPCON          PIC32_R (0xF200)        /* Debug Data Port Control */
+#define DDPCONCLR	PIC32_R (0xF204)
+#define DDPCONSET	PIC32_R (0xF208)
+#define DDPCONINV	PIC32_R (0xF20C)
+#define DEVID           PIC32_R (0xF220)
+#define SYSKEY          PIC32_R (0xF230)
+#define RCON            PIC32_R (0xF600)
+#define RCONCLR         PIC32_R (0xF604)
+#define RCONSET         PIC32_R (0xF608)
+#define RCONINV         PIC32_R (0xF60C)
+#define RSWRST          PIC32_R (0xF610)
+#define RSWRSTCLR       PIC32_R (0xF614)
+#define RSWRSTSET       PIC32_R (0xF618)
+#define RSWRSTINV       PIC32_R (0xF61C)
 
 /*
  * Reset control register.
@@ -892,27 +966,90 @@
 #define BMXCONSET	PIC32_R (0x82008)
 #define BMXCONINV	PIC32_R (0x8200C)
 #define BMXDKPBA        PIC32_R (0x82010)       /* Data RAM kernel program base address */
+#define BMXDKPBACLR	PIC32_R (0x82014)
+#define BMXDKPBASET	PIC32_R (0x82018)
+#define BMXDKPBAINV	PIC32_R (0x8201C)
 #define BMXDUDBA        PIC32_R (0x82020)       /* Data RAM user data base address */
+#define BMXDUDBACLR	PIC32_R (0x82024)
+#define BMXDUDBASET	PIC32_R (0x82028)
+#define BMXDUDBAINV	PIC32_R (0x8202C)
 #define BMXDUPBA        PIC32_R (0x82030)       /* Data RAM user program base address */
+#define BMXDUPBACLR	PIC32_R (0x82034)
+#define BMXDUPBASET	PIC32_R (0x82038)
+#define BMXDUPBAINV	PIC32_R (0x8203C)
 #define BMXDRMSZ        PIC32_R (0x82040)       /* Data RAM size */
 #define BMXPUPBA        PIC32_R (0x82050)       /* Program Flash user program base address */
+#define BMXPUPBACLR	PIC32_R (0x82054)
+#define BMXPUPBASET	PIC32_R (0x82058)
+#define BMXPUPBAINV	PIC32_R (0x8205C)
 #define BMXPFMSZ        PIC32_R (0x82060)       /* Program Flash size */
 #define BMXBOOTSZ       PIC32_R (0x82070)       /* Boot Flash size */
 
 /*--------------------------------------
+ * Real time clock and calendar.
+ */
+#define RTCCON          PIC32_R (0x0200)  /* RTC control */
+#define RTCALRM         PIC32_R (0x0210)  /* RTC alarm control */
+#define RTCTIME         PIC32_R (0x0220)  /* RTC time value */
+#define RTCDATE         PIC32_R (0x0230)  /* RTC date value */
+#define ALRMTIME        PIC32_R (0x0240)  /* Alarm time value */
+#define ALRMDATE        PIC32_R (0x0250)  /* Alarm date value */
+
+/*--------------------------------------
+ * Timer registers.
+ */
+#define T1CON           PIC32_R (0x0600)  /* Timer 1 control */
+#define TMR1            PIC32_R (0x0610)  /* Timer 1 count */
+#define PR1             PIC32_R (0x0620)  /* Timer 1 period */
+#define T2CON           PIC32_R (0x0800)  /* Timer 2 control */
+#define TMR2            PIC32_R (0x0810)  /* Timer 2 count */
+#define PR2             PIC32_R (0x0820)  /* Timer 2 period */
+#define T3CON           PIC32_R (0x0A00)  /* Timer 3 control */
+#define TMR3            PIC32_R (0x0A10)  /* Timer 3 count */
+#define PR3             PIC32_R (0x0A20)  /* Timer 3 period */
+#define T4CON           PIC32_R (0x0C00)  /* Timer 4 control */
+#define TMR4            PIC32_R (0x0C10)  /* Timer 4 count */
+#define PR4             PIC32_R (0x0C20)  /* Timer 4 period */
+#define T5CON           PIC32_R (0x0E00)  /* Timer 5 control */
+#define TMR5            PIC32_R (0x0E10)  /* Timer 5 count */
+#define PR5             PIC32_R (0x0E20)  /* Timer 5 period */
+
+/*
+ * Timer Control register.
+ */
+#define PIC32_TCON_ON           0x8000  /* Timer is enabled */
+#define PIC32_TCON_FRZ          0x4000  /* Freeze when CPU is in Debug mode */
+#define PIC32_TCON_SIDL         0x2000  /* Stop in Idle mode */
+#define PIC32_TCON_TWDIS        0x1000  /* (Timer A) Asynchronous Timer Write Disable */
+#define PIC32_TCON_TWIP         0x0800  /* (Timer A) Asynchronous Timer Write in Progress */
+#define PIC32_TCON_TGATE        0x0080  /* Enable gated time accumulation (only when TCS=0) */
+#define PIC32_TCON_TCKPS_MASK   0x0070  /* Timer Input Clock Prescale Select */
+#define PIC32_TCON_TCKPS_256    0x0070  /* 1:256 */
+#define PIC32_TCON_TCKPS_64     0x0060  /* 1:64 */
+#define PIC32_TCON_TCKPS_32     0x0050  /* 1:32 */
+#define PIC32_TCON_TCKPS_16     0x0040  /* 1:16 */
+#define PIC32_TCON_TCKPS_8      0x0030  /* 1:8 */
+#define PIC32_TCON_TCKPS_4      0x0020  /* 1:4 */
+#define PIC32_TCON_TCKPS_2      0x0010  /* 1:2 */
+#define PIC32_TCON_TCKPS_1      0x0000  /* 1:1 */
+#define PIC32_TCON_T32          0x0008  /* (Timer B) TMRx and TMRy form a 32-bit timer */
+#define PIC32_TCON_TSYNC        0x0004  /* (Timer A) External clock input is synchronized */
+#define PIC32_TCON_TCS          0x0002  /* External clock from TxCKI pin */
+
+/*--------------------------------------
  * Non-volatile memory control registers.
  */
-#define NVMCON          PIC32_R (0x0F400)
-#define NVMCONCLR       PIC32_R (0x0F404)
-#define NVMCONSET       PIC32_R (0x0F408)
-#define NVMCONINV       PIC32_R (0x0F40C)
-#define NVMKEY          PIC32_R (0x0F410)
-#define NVMADDR         PIC32_R (0x0F420)
-#define NVMADDRCLR      PIC32_R (0x0F424)
-#define NVMADDRSET      PIC32_R (0x0F428)
-#define NVMADDRINV      PIC32_R (0x0F42C)
-#define NVMDATA         PIC32_R (0x0F430)
-#define NVMSRCADDR      PIC32_R (0x0F440)
+#define NVMCON          PIC32_R (0xF400)
+#define NVMCONCLR       PIC32_R (0xF404)
+#define NVMCONSET       PIC32_R (0xF408)
+#define NVMCONINV       PIC32_R (0xF40C)
+#define NVMKEY          PIC32_R (0xF410)
+#define NVMADDR         PIC32_R (0xF420)
+#define NVMADDRCLR      PIC32_R (0xF424)
+#define NVMADDRSET      PIC32_R (0xF428)
+#define NVMADDRINV      PIC32_R (0xF42C)
+#define NVMDATA         PIC32_R (0xF430)
+#define NVMSRCADDR      PIC32_R (0xF440)
 
 #define PIC32_NVMCON_NVMOP      0x0000000F
 #define PIC32_NVMCON_NOP                 0 /* No operation */
@@ -929,17 +1066,21 @@
 /*--------------------------------------
  * Configuration registers.
  */
-#define DEVCFG0		*(volatile unsigned*)0x9fc02ffc
-#define DEVCFG1		*(volatile unsigned*)0x9fc02ff8
-#define DEVCFG2		*(volatile unsigned*)0x9fc02ff4
-#define DEVCFG3		*(volatile unsigned*)0x9fc02ff0
-
 #define PIC32_DEVCFG(cfg0, cfg1, cfg2, cfg3) \
     asm (".section .config"); \
     unsigned __DEVCFG0 __attribute__ ((section (".config0"))) = (cfg0) ^ 0x7fffffff; \
     unsigned __DEVCFG1 __attribute__ ((section (".config1"))) = (cfg1) | DEVCFG1_UNUSED; \
     unsigned __DEVCFG2 __attribute__ ((section (".config2"))) = (cfg2) | DEVCFG2_UNUSED; \
     unsigned __DEVCFG3 __attribute__ ((section (".config3"))) = (cfg3) | DEVCFG3_UNUSED
+
+#ifndef __ASSEMBLER__
+extern unsigned __devcfg__[];           /* Declared in linker script */
+#define DEVCFG0 __devcfg__[3]
+#define DEVCFG1 __devcfg__[2]
+#define DEVCFG2 __devcfg__[1]
+#define DEVCFG3 __devcfg__[0]
+#endif
+
 
 /*
  * Config0 register at 1fc02ffc, inverted.
@@ -958,7 +1099,7 @@
 #define DEVCFG1_UNUSED          0xff600858
 #define DEVCFG1_FNOSC_MASK      0x00000007 /* Oscillator selection */
 #define DEVCFG1_FNOSC_FRC       0x00000000 /* Fast RC */
-#define DEVCFG1_FNOSC_FRCDIVPLL 0x00000001 /* Fast RC with divide-by-N and PLL */
+#define DEVCFG1_FNOSC_FRCPLL    0x00000001 /* Fast RC with PLL */
 #define DEVCFG1_FNOSC_PRI       0x00000002 /* Primary oscillator XT, HS, EC */
 #define DEVCFG1_FNOSC_PRIPLL    0x00000003 /* Primary with PLL */
 #define DEVCFG1_FNOSC_SEC       0x00000004 /* Secondary oscillator */
@@ -971,7 +1112,7 @@
 #define DEVCFG1_POSCMOD_XT      0x00000100 /* XT oscillator */
 #define DEVCFG1_POSCMOD_HS      0x00000200 /* HS oscillator */
 #define DEVCFG1_POSCMOD_DISABLE 0x00000300 /* Disabled */
-#define DEVCFG1_OSCIOFNC        0x00000400 /* CLKO output active */
+#define DEVCFG1_OSCIOFNC_OFF    0x00000400 /* CLKO output active */
 #define DEVCFG1_FPBDIV_MASK     0x00003000 /* Peripheral bus clock divisor */
 #define DEVCFG1_FPBDIV_1        0x00000000 /* SYSCLK / 1 */
 #define DEVCFG1_FPBDIV_2        0x00001000 /* SYSCLK / 2 */

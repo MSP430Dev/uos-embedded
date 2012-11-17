@@ -14,9 +14,6 @@ MEMORY
 /* higher address of the user mode stack */
 _estack = ORIGIN(ram) + LENGTH(ram);
 
-/* configuration registers */
-__devcfg__ = 0x9fc02ff0;
-
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */
