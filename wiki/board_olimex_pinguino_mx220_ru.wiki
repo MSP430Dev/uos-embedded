@@ -112,7 +112,7 @@
 ||  TDI   || RA9     || SDO1 - UEXT  ||
 
 = Графический дисплей LCD4884 =
-[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://www.sainsmart.com/media/catalog/product/cache/1/image/500x500/b97a0c6c1d16e76f7464abfcbb6a0a8d/i/m/img_8287.jpg]
+[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/515DpNt8UpL._SL500_AA300_.jpg]
 
 Характеристики:
   * Графический дисплей 84x48
@@ -131,7 +131,7 @@
 ||  A0     || KEY_IN    ||
 
 = Текстовый дисплей 1602 LCD =
-[http://www.sainsmart.com/module/lcd-module/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://www.sainsmart.com/media/catalog/product/cache/1/image/265x265/b97a0c6c1d16e76f7464abfcbb6a0a8d/i/m/img_2210.jpg]
+[http://www.sainsmart.com/module/lcd-module/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/513XhPP-1OL._SL500_AA300_.jpg]
 
 Характеристики:
   * Текстовый дисплей 16x2
