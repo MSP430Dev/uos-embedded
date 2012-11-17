@@ -121,14 +121,14 @@
   * Кнопка Reset
   * Управление подсветкой
 
-|| *Signal*|| *Function*||
-||  D2     || SPI_SCK   ||
-||  D3     || SPI_MOSI  ||
-||  D4     || LCD_DC    ||
-||  D5     || SPI_CS    ||
-||  D6     || LCD_RST   ||
-||  D7     || LCD_BL    ||
-||  A0     || KEY_IN    ||
+|| *Signal*|| *Function*|| *PIC32* ||
+||  D2     || SPI_SCK   ||  RC2    ||
+||  D3     || SPI_MOSI  ||  RC3    ||
+||  D4     || LCD_DC    ||  RC4    ||
+||  D5     || SPI_CS    ||  RC5    ||
+||  D6     || LCD_RST   ||  RC6    ||
+||  D7     || LCD_BL    ||  RC7    ||
+||  A0     || KEY_IN    ||  RC0    ||
 
 = Текстовый дисплей 1602 LCD =
 [http://www.sainsmart.com/module/lcd-module/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/513XhPP-1OL._SL500_AA300_.jpg]
@@ -140,11 +140,11 @@
   * Кнопка Reset
   * Регулировка подсветки
 
-|| *Signal*|| *Function*||
-||  D4     || LCD_DB4   ||
-||  D5     || LCD_DB5   ||
-||  D6     || LCD_DB6   ||
-||  D7     || LCD_DB7   ||
-||  D8     || LCD_RS    ||
-||  D9     || LCD_E     ||
-||  A0     || KEY_IN    ||
+|| *Signal*|| *Function*|| *PIC32* ||
+||  D4     || LCD_DB4   ||  RC4    ||
+||  D5     || LCD_DB5   ||  RC5    ||
+||  D6     || LCD_DB6   ||  RC6    ||
+||  D7     || LCD_DB7   ||  RC7    ||
+||  D8     || LCD_RS    ||  RB7    ||
+||  D9     || LCD_E     ||  RA10   ||
+||  A0     || KEY_IN    ||  RC0    ||
