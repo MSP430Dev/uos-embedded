@@ -110,3 +110,6 @@
 ||  TCK   || RA7     || /CS - UEXT   ||
 ||  TDO   || RA8     || SDI1 - UEXT  ||
 ||  TDI   || RA9     || SDO1 - UEXT  ||
+
+= Дисплей LCD4884 =
+[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://www.sainsmart.com/media/catalog/product/cache/1/image/500x500/b97a0c6c1d16e76f7464abfcbb6a0a8d/i/m/img_8287.jpg]
