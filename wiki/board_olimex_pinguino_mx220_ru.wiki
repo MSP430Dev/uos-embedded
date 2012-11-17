@@ -128,3 +128,4 @@
 ||  D5  ||  SPI_CS    ||
 ||  D6  ||  LCD_RST    ||
 ||  D7  ||  LCD_BL    ||
+||  A0  ||  KEY_IN    ||
