@@ -7,7 +7,7 @@ OUTPUT_ARCH(mips)
 ENTRY(_reset_vector_)
 MEMORY
 {
-  flash  (rx)   : ORIGIN = 0x9d003000,	LENGTH = 125K
+  flash  (rx)   : ORIGIN = 0x9d003000,	LENGTH = 20K
   ram    (rw!x) : ORIGIN = 0x80000000,	LENGTH = 8K
 }
 

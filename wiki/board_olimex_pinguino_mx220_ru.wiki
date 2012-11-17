@@ -1,0 +1,112 @@
+#summary Target board: Olimex Pinguino-MX220.
+
+[https://www.olimex.com/Products/Duino/PIC32/PIC32-PINGUINO-MX220/ https://www.olimex.com/Products/Duino/PIC32/PIC32-PINGUINO-MX220/images/PIC32-PINGUINO-MX220-01.jpg]
+
+Плата Pinguino-MX220 ([https://www.olimex.com/Products/Duino/PIC32/PIC32-PINGUINO-MX220/resources/PIC32-PINGUINO-MX220-REV-A-SCHEMATIC.pdf schematics],
+[https://www.olimex.com/Products/Duino/PIC32/PIC32-PINGUINO-MX220/resources/PIC32-PINGUINO-MX220-Rev-A.pdf manual])
+представляет собой простую отладочную платформу, совместимую с Arduino,
+но построенную на основе 32-битного микроконтроллера
+[http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en556010 Microchip PIC32MX220]
+с архитектурой MIPS.
+
+Основные характеристики:
+ * Микроконтроллер PIC32MX320F032D с частотой 40 MHz (архитектура MIPS)
+ * 28 сигналов ввода-вывода общего назначения
+ * Совместимость с платами расширения Arduino
+ * Порт miniUSB
+ * Разъем внешнего питания
+ * Питание от USB или от внешней литиевой батареи 3.7V
+ * Два программно-управляемых светодиода
+ * Кнопка Reset
+ * Программно-управляемая кнопка
+ * Разъем 2x5 для подключения внешней периферии в стандарте Olimex UEXT
+
+Память:
+ * 32 кбайт памяти программ (Flash)
+ * 3 кбайт дополнительной Flash-памяти для загрузчика
+ * 8 кбайт памяти данных (RAM)
+
+Цифровые выходы обеспечивают ток до 18 mA.
+Имеется богатый набор периферийных функций: UART, SPI, I2C, ADC, таймеры.
+Опорный кварц 8 MHz.
+Питать плату можно от miniUSB, или от внешней батареи 3.7V.
+
+= Сигналы =
+
+=== Разъемы Digital CON5, CON4 ===
+|| *Signal*|| *PIC32*||
+||   AREF  ||  --    ||
+||   GND   ||  --    ||
+||   D13   ||  RB15  ||
+||   D12   ||  RB13  ||
+||   D11   ||  RB5   ||
+||   D10   ||  RA1   ||
+||   D9    ||  RA10  ||
+||   D8    ||  RB7   ||
+||   D7    ||  RC7   ||
+||   D6    ||  RC6   ||
+||   D5    ||  RC5   ||
+||   D4    ||  RC4   ||
+||   D3    ||  RC3   ||
+||   D2    ||  RC2   ||
+||   D1    ||  RC9   ||
+||   D0    ||  RC8   ||
+
+=== Разъем Analog ===
+|| *Signal*|| *PIC32*||
+||  A0     ||  RC0   ||
+||  A1     ||  RC1   ||
+||  A2     ||  RB0   ||
+||  A3     ||  RB1   ||
+||  A4     ||  RB2   ||
+||  A5     ||  RB3   ||
+
+=== Разъем UEXT ===
+|| *Pin*|| *Signal*|| *PIC32*||
+||  1   || +3.3v   ||  --    ||
+||  2   || GND     ||  --    ||
+||  3   || U1TX    ||  RB4   ||
+||  4   || U1RX    ||  RA4   ||
+||  5   || SCL1    ||  RB8   ||
+||  6   || SDA1    ||  RB9   ||
+||  7   || SDI1    ||  RA8   ||
+||  8   || SDO1    ||  RA9   ||
+||  9   || SCK1    ||  RB14  ||
+||  10  || /CS     ||  RA7   ||
+
+=== Разъем питания ===
+|| *Signal*|| *Function*              ||
+||  RST    || MCLR                    ||
+||  3V3    || VCC +3.3                ||
+||  5V0    || VCC +5.0                ||
+||  GND    || GND                     ||
+||  GND    || GND                     ||
+||  VIN    || External supply voltage ||
+
+= Сигналы UART, SPI и I2C =
+Следующие периферийные блоки можно программным способом
+назначить на любые сигналы ввода-вывода.
+  * UART1: сигналы U1RX, U1TX
+  * UART2: сигналы U2RX, U2TX
+  * SPI1: сигналы SDI1, SDO1
+  * SPI2: сигналы SDI2, SDO2
+
+|| *SPI*|| *I2C*|| *PIC32* || *Connector*    ||
+|| SCK1 || --   || RB14    || 9 - UEXT       ||
+|| SCK2 || --   || RB15    || D13 - Digital  ||
+||  --  || SDA2 || RB2     || A5 - Analog    ||
+||  --  || SCL2 || RB3     || A4 - Analog    ||
+||  --  || SDA1 || RB9     || 6 - UEXT       ||
+||  --  || SCL1 || RB8     || 5 - UEXT       ||
+
+= Светодиоды =
+|| *LED*         || *PIC32* || *Signal*      ||
+||  LED1 зеленый || RB15    || D13 - Digital ||
+||  LED2 красный || RA10    || D9  - Digital ||
+
+= Порт JTAG =
+|| *JTAG* || *PIC32* || *Signal*     ||
+||  TMS   || RA10    || D9 - Digital ||
+||  TCK   || RA7     || /CS - UEXT   ||
+||  TDO   || RA8     || SDI1 - UEXT  ||
+||  TDI   || RA9     || SDO1 - UEXT  ||
