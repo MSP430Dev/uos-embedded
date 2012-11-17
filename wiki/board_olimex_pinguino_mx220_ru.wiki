@@ -37,11 +37,11 @@
 || *Signal*|| *PIC32*||
 ||   AREF  ||  --    ||
 ||   GND   ||  --    ||
-||   D13   ||  RB15  ||
+||   D13   ||  RB15 - LED1, SCK2 ||
 ||   D12   ||  RB13  ||
 ||   D11   ||  RB5   ||
 ||   D10   ||  RA1   ||
-||   D9    ||  RA10  ||
+||   D9    ||  RA10 - LED2, TMS ||
 ||   D8    ||  RB7   ||
 ||   D7    ||  RC7   ||
 ||   D6    ||  RC6   ||
@@ -58,8 +58,8 @@
 ||  A1     ||  RC1   ||
 ||  A2     ||  RB0   ||
 ||  A3     ||  RB1   ||
-||  A4     ||  RB2   ||
-||  A5     ||  RB3   ||
+||  A4     ||  RB2 - SDA2  ||
+||  A5     ||  RB3 - SCL2  ||
 
 === Разъем UEXT ===
 || *Pin*|| *Signal*|| *PIC32*||
@@ -69,10 +69,10 @@
 ||  4   || U1RX    ||  RA4   ||
 ||  5   || SCL1    ||  RB8   ||
 ||  6   || SDA1    ||  RB9   ||
-||  7   || SDI1    ||  RA8   ||
-||  8   || SDO1    ||  RA9   ||
+||  7   || SDI1    ||  RA8 - TDO  ||
+||  8   || SDO1    ||  RA9 - TDI  ||
 ||  9   || SCK1    ||  RB14  ||
-||  10  || /CS     ||  RA7   ||
+||  10  || /CS     ||  RA7 - TCK  ||
 
 === Разъем питания ===
 || *Signal*|| *Function*              ||
@@ -94,8 +94,8 @@
 || *SPI*|| *I2C*|| *PIC32* || *Connector*    ||
 || SCK1 || --   || RB14    || 9 - UEXT       ||
 || SCK2 || --   || RB15    || D13 - Digital  ||
-||  --  || SDA2 || RB2     || A5 - Analog    ||
-||  --  || SCL2 || RB3     || A4 - Analog    ||
+||  --  || SDA2 || RB2     || A4 - Analog    ||
+||  --  || SCL2 || RB3     || A5 - Analog    ||
 ||  --  || SDA1 || RB9     || 6 - UEXT       ||
 ||  --  || SCL1 || RB8     || 5 - UEXT       ||
 
