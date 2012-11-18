@@ -106,10 +106,10 @@
 
 = Порт JTAG =
 || *JTAG* || *PIC32* || *Signal*     ||
-||  TMS   || RA10    || D9 - Digital ||
-||  TCK   || RA7     || /CS - UEXT   ||
-||  TDO   || RA8     || SDI1 - UEXT  ||
-||  TDI   || RA9     || SDO1 - UEXT  ||
+||  TMS - синий  || RA10    || D9 - Digital ||
+||  TCK - зеленый  || RA7     || /CS - UEXT   ||
+||  TDO - желтый  || RA8     || SDI1 - UEXT  ||
+||  TDI - красный  || RA9     || SDO1 - UEXT  ||
 
 = Графический дисплей LCD4884 =
 [http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/515DpNt8UpL._SL500_AA300_.jpg]
