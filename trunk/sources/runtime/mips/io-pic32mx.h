@@ -509,10 +509,14 @@
 #define AD1CSSLCLR	PIC32_R (0x9054)
 #define AD1CSSLSET	PIC32_R (0x9058)
 #define AD1CSSLINV	PIC32_R (0x905C)
+
+#if defined(PIC32MX3) || defined(PIC32MX4) || \
+    defined(PIC32MX7)
 #define AD1PCFG		PIC32_R (0x9060) /* Port configuration */
 #define AD1PCFGCLR	PIC32_R (0x9064)
 #define AD1PCFGSET	PIC32_R (0x9068)
 #define AD1PCFGINV	PIC32_R (0x906C)
+#endif
 #define ADC1BUF0	PIC32_R (0x9070) /* Result words */
 #define ADC1BUF1	PIC32_R (0x9080)
 #define ADC1BUF2	PIC32_R (0x9090)
@@ -529,6 +533,44 @@
 #define ADC1BUFD	PIC32_R (0x9140)
 #define ADC1BUFE	PIC32_R (0x9150)
 #define ADC1BUFF	PIC32_R (0x9160)
+
+/*
+ * ADC Control 1 register.
+ */
+#define PIC32_AD1CON1_DONE	0x0001      /* Conversion is done */
+#define PIC32_AD1CON1_SAMP	0x0002      /* Sample enable */
+#define PIC32_AD1CON1_ASAM	0x0004      /* Sample auto-start */
+#define PIC32_AD1CON1_CLRASAM	0x0010      /* Stop conversion */
+#define PIC32_AD1CON1_SSRC(n)	((n) << 5)  /* Conversion trigger source select */
+#define PIC32_AD1CON1_FORM(n)	((n) << 8)  /* Data output format */
+#define PIC32_AD1CON1_SIDL	0x2000      /* Stop in idle */
+#define PIC32_AD1CON1_ON	0x8000      /* ADC is operating */
+
+/*
+ * ADC Control 2 register.
+ */
+#define PIC32_AD1CON2_ALTS	0x0001      /* Alternate sample mode */
+#define PIC32_AD1CON2_BUFM	0x0002      /* Two 8-bit buffers */
+#define PIC32_AD1CON2_SMPI(n)	((n) << 2)  /* Samples per interrupt */
+#define PIC32_AD1CON2_BUFS	0x0080      /* Buffer fill status */
+#define PIC32_AD1CON2_CSCNA	0x0400      /* Scan inputs */
+#define PIC32_AD1CON2_OFFCAL	0x1000      /* Offset calibration */
+#define PIC32_AD1CON2_VCFG(n)	((n) << 13) /* Voltage reference configuration */
+
+/*
+ * ADC Control 3 register.
+ */
+#define PIC32_AD1CON3_ADCS(n)	(n)         /* Clock select */
+#define PIC32_AD1CON3_SAMC(n)	((n) << 8)  /* Auto-sample time */
+#define PIC32_AD1CON3_ADRC	0x8000      /* Internal RC clock */
+
+/*
+ * ADC Input Select register.
+ */
+#define PIC32_AD1CHS_CH0SA(n)	((n) << 16) /* Positive input for mux A */
+#define PIC32_AD1CHS_CH0NA	0x00800000  /* Negative input for mux A */
+#define PIC32_AD1CHS_CH0SB(n)	((n) << 24) /* Positive input for mux B */
+#define PIC32_AD1CHS_CH0NB	0x80000000  /* Negative input for mux B */
 
 /*--------------------------------------
  * Parallel master port registers.
@@ -952,11 +994,14 @@
 /*--------------------------------------
  * Prefetch cache controller registers.
  */
+#if defined(PIC32MX3) || defined(PIC32MX4) || \
+    defined(PIC32MX7)
 #define CHECON          PIC32_R (0x84000)       /* Prefetch cache control */
 #define CHECONCLR	PIC32_R (0x84004)
 #define CHECONSET	PIC32_R (0x84008)
 #define CHECONINV	PIC32_R (0x8400C)
 // TODO: other prefetech registers
+#endif
 
 /*--------------------------------------
  * Bus matrix control registers.

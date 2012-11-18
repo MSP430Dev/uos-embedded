@@ -53,13 +53,13 @@
 ||   D0    || RC8               ||
 
 === Разъем Analog ===
-|| *Signal*|| *PIC32*     ||
-||  A0     ||  RC0        ||
-||  A1     ||  RC1        ||
-||  A2     ||  RB0        ||
-||  A3     ||  RB1        ||
-||  A4     ||  RB2 - SDA2 ||
-||  A5     ||  RB3 - SCL2 ||
+|| *Signal*|| *PIC32*     || *Analog Input*||
+||  A0     ||  RC0        ||  AN6  ||
+||  A1     ||  RC1        ||  AN7  ||
+||  A2     ||  RB0        ||  AN2  ||
+||  A3     ||  RB1        ||  AN3  ||
+||  A4     ||  RB2 - SDA2 ||  AN4  ||
+||  A5     ||  RB3 - SCL2 ||  AN5  ||
 
 === Разъем UEXT ===
 || *Pin*|| *Signal*|| *PIC32*    ||
@@ -121,14 +121,14 @@
   * Кнопка Reset
   * Управление подсветкой
 
-|| *Signal*|| *Function*|| *PIC32* ||
-||  D2     || SPI_SCK   ||  RC2    ||
-||  D3     || SPI_MOSI  ||  RC3    ||
-||  D4     || LCD_DC    ||  RC4    ||
-||  D5     || SPI_CS    ||  RC5    ||
-||  D6     || LCD_RST   ||  RC6    ||
-||  D7     || LCD_BL    ||  RC7    ||
-||  A0     || KEY_IN    ||  RC0    ||
+|| *Signal*|| *Function*|| *PIC32*    ||
+||  D2     || SPI_SCK   ||  RC2       ||
+||  D3     || SPI_MOSI  ||  RC3       ||
+||  D4     || LCD_DC    ||  RC4       ||
+||  D5     || SPI_CS    ||  RC5       ||
+||  D6     || LCD_RST   ||  RC6       ||
+||  D7     || LCD_BL    ||  RC7       ||
+||  A0     || KEY_IN    ||  RC0 - AN6 ||
 
 = Текстовый дисплей 1602 LCD =
 [http://www.sainsmart.com/module/lcd-module/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/513XhPP-1OL._SL500_AA300_.jpg]

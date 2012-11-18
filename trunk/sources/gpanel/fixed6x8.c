@@ -4453,7 +4453,7 @@ static const unsigned short font_offset[] = {
 };
 
 /* Exported structure definition. */
-gpanel_font_t font_fixed6x8 = {
+const gpanel_font_t font_fixed6x8 = {
   "fixed6x8",
   6,
   8,

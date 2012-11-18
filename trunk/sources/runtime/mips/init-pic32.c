@@ -80,9 +80,11 @@ void __attribute ((noreturn))_init_ (void)
         /*
          * Setup wait states.
          */
+#if defined(PIC32MX3) || defined(PIC32MX4) || defined(PIC32MX7)
         CHECON = 2;
         BMXCONCLR = 0x40;
         CHECONSET = 0x30;
+#endif
 
 	/*
 	 * Setup interrupt controller.
@@ -91,23 +93,37 @@ void __attribute ((noreturn))_init_ (void)
 	IPTMR = 0;				/* Temporal Proximity Timer */
 	IFS(0) = IFS(1) = 0;                    /* Interrupt Flag Status */
 	IEC(0) = IEC(1) = 0;                    /* Interrupt Enable Control */
+#if defined(PIC32MX7)
+	IFS(2) = 0;                             /* MX5/6/7 series have IFS2 */
+	IEC(2) = 0;
+#endif
 	IPC(0) = IPC(1) = IPC(2) = IPC(3) = 	/* Interrupt Priority Control */
 	IPC(4) = IPC(5) = IPC(6) = IPC(7) =
-	IPC(8) = IPC(11) =
+	IPC(8) =
 		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
 		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
-#if defined(PIC32MX4)
-	IPC(9) =                                /* MX4 series has IPC9 */
+
+#if defined(PIC32MX1) || defined(PIC32MX2) || defined(PIC32MX4)
+	IPC(9) =                                /* MX1/2 and MX4 series have IPC9 */
+		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
+		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
+#endif
+#if defined(PIC32MX1) || defined(PIC32MX2) || defined(PIC32MX7)
+	IPC(10) =                               /* MX1/2 and MX7 series have IPC10 */
+		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
+		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
+#endif
+#if defined(PIC32MX3) || defined(PIC32MX4) || defined(PIC32MX7)
+        IPC(11) =                               /* MX3/4 and MX7 series have IPC11 */
 		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
 		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
 #endif
 #if defined(PIC32MX7)
-	IFS(2) = 0;                             /* MX5/6/7 series has */
-	IEC(2) = 0;                             /* additional registers */
-	IPC(10) = IPC(12) =
+	IPC(12) =                               /* MX5/6/7 series have IPC12 */
 		PIC32_IPC_IP0(1) | PIC32_IPC_IP1(1) |
 		PIC32_IPC_IP2(1) | PIC32_IPC_IP3(1);
 #endif
+
 #ifndef SIMULATOR
 	/* Copy the .data image from flash to ram.
 	 * Linker places it at the end of .text segment. */

@@ -1,12 +1,13 @@
 TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
+GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
 CFLAGS          += -g
 
-TEST		= test-leds
+TEST		= test-lcd
 TESTS		= $(TEST).srec
-TESTS		+= test-leds.srec
+TESTS		+= test-leds.srec test-lcd.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis
@@ -23,7 +24,10 @@ hex:		$(TESTS)
 		done
 
 load:		$(TEST).srec
-		pic32prog $(TEST).srec
+		pic32prog -S $(TEST).srec
+
+debug:          $(TEST).srec
+		$(GDB) $(TEST).elf
 
 include $(OS)/sources/rules.mak
 

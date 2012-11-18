@@ -41,6 +41,13 @@ _reset_vector_:	.globl	_reset_vector_
 		.org	0
 _exception_base_: .globl _exception_base_
 
+                # Vector NMI interrupts
+		.type	_entry_vector_, @function
+_nmi_vector_:   .globl  _nmi_vector_
+                la      $k0, _reset_vector_
+                jr      $k0
+                nop
+
 #---------------------------------------
 # Restore CPU state and return from interrupt
 #
