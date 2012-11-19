@@ -111,6 +111,8 @@
 ||  TDO - желтый  || RA8     || SDI1 - UEXT 7  ||
 ||  TDI - красный  || RA9     || SDO1 - UEXT 8  ||
 
+----
+
 = Графический дисплей LCD4884 =
 [http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/515DpNt8UpL._SL500_AA300_.jpg]
 
@@ -167,6 +169,7 @@
 Кнопка LEFT вращает падающую фигуру, кнопки UP и DOWN сдвигают её влево-вправо, кнопка RIGHT роняет фигуру.
 При заполнении стакана игра начинается заново.
 
+----
 
 = Текстовый дисплей 1602 LCD =
 [http://www.sainsmart.com/module/lcd-module/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/513XhPP-1OL._SL500_AA300_.jpg]
