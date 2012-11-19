@@ -115,9 +115,9 @@
 [http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/515DpNt8UpL._SL500_AA300_.jpg]
 
 Характеристики:
-  * Графический дисплей 84x48
-  * Интерфейс SPI
-  * 5-кнопочный джойстик
+  * Графический дисплей 84x48 типа Nokia 5110.
+  * Интерфейс SPI, совместимый с [http://www.sparkfun.com/datasheets/LCD/Monochrome/Nokia5110.pdf Philips PCD8544]
+  * 5-кнопочный джойстик с вводом через аналоговый сигнал A0.
   * Кнопка Reset
   * Управление подсветкой
 
@@ -129,6 +129,44 @@
 ||  D6     || LCD_RST   ||  RC6       ||
 ||  D7     || LCD_BL    ||  RC7       ||
 ||  A0     || KEY_IN    ||  RC0 - AN6 ||
+
+=== Примеры uOS ===
+В каталоге [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-pinguino-mx220 examples/mips-pinguino-mx220]
+находятся примеры сборки uOS для Pinguino-mx220. Их можно скомпилировать командой "make".
+ * test-leds.hex - Проверка светодиодов основной платы.
+ * test-lcd.hex - Проверка вывода на графический дисплей и джойстика.
+ * test-task.hex - Проверка формирования задач.
+ * test-timer.hex - Проверка драйвера таймера.
+ * philosophers.hex - Пять обедающих философов.
+ * tetris.hex - Игра "Тетрис".
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-pinguino-mx220/test-leds.c test-leds.c]
+- Проверка светодиодов основной платы. Микроядро отсутствует.
+Программа поочередно мигает двумя светодиодами.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-pinguino-mx220/test-lcd.c test-lcd.c]
+- Проверка драйвера графического индикатора. Микроядро отсутствует.
+Программа выдаёт на экран LCD текст, рисует прямоугольники и окружности.
+Кнопками LEFT и RIGHT можно переключать варианты теста,
+кнопкой DOWN отключать подсветку, кнопкой UP регулировать контраст.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-pinguino-mx220/test-task.c test-task.c]
+- Проверка переключения задач. Одна задача пользователя, циклически печатающая свой
+общий размер стека и размер свободной части, затем ждущая нажатия клавиши.
+Вывод производится на экран LCD.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-pinguino-mx220/test-timer.c test-timer.c]
+- Проверка драйвера таймера. Одна задача: программа пользователя, которая
+выдаёт на экран LCD время в минутах и секундах с момента старта системы.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-pinguino-mx220/philosophers.c philosophers.c]
+- [http://en.wikipedia.org/wiki/Dining_philosophers Пять обедающих философов] (пять задач). Вывод картинки на экран LCD.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-pinguino-mx220/tetris.c tetris.c]
+- Игра "Тетрис" на экране LCD. Микроядро uOS не используется.
+Кнопка LEFT вращает падающую фигуру, кнопки UP и DOWN сдвигают её влево-вправо, кнопка RIGHT роняет фигуру.
+При заполнении стакана игра начинается заново.
+
 
 = Текстовый дисплей 1602 LCD =
 [http://www.sainsmart.com/module/lcd-module/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/513XhPP-1OL._SL500_AA300_.jpg]
