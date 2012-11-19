@@ -17,12 +17,26 @@ static void draw (unsigned page)
 	gpanel_clear (&display, 0);
 	switch (page) {
 	case 0:
-		/* Show text. */
+		/* Show latin text. */
 		gpanel_move (&display, 0, 0);
-		puts (&display, "Debugging:\nRemoving the\nneedles from\nthe haystack.\r\n");
-		puts (&display, "\r\n");
+		puts (&display, "0123456789+=*\n");
+		puts (&display, "abcdefghijklm\n");
+		puts (&display, "nopqrstuvwxyz\n");
+		puts (&display, "ABCDEFGHIJKLM\n");
+		puts (&display, "NOPQRSTUVWXYZ\n");
+		puts (&display, "[]{}()!?~$%&#\n");
 		break;
 	case 1:
+		/* Show cyrillic text. */
+		gpanel_move (&display, 0, 0);
+		puts (&display, "абвгдеёжзийклм\n");
+                puts (&display, "нопрстуфхцчшщъ\n");
+                puts (&display, "ыьэюя\n");
+		puts (&display, "АБВГДЕЁЖЗИЙКЛМ\n");
+                puts (&display, "НОПРСТУФХЦЧШЩЪ\n");
+                puts (&display, "ЫЬЭЮЯ\n");
+		break;
+	case 2:
 		/* Boxes. */
 		for (y=0; y<display.ncol/4; y+=4)
 			gpanel_rect (&display, y+y, y, display.ncol-1-y-y, display.nrow-1-y, 1);
@@ -36,7 +50,7 @@ void draw_next (unsigned page)
 	int x1, y1;
 
 	switch (page) {
-	case 2:
+	case 3:
 		/* Rain. */
 		if (radius == 0) {
 			/* Generate next circle. */
@@ -57,7 +71,7 @@ void draw_next (unsigned page)
 			mdelay (20);
 		}
 		break;
-	case 3:
+	case 4:
 		/* Rectangles. */
 		do {
 			x0 = rand15() % display.ncol;
@@ -72,9 +86,9 @@ void draw_next (unsigned page)
 
 int main (void)
 {
-	unsigned pagenum = 0;
-	unsigned left_pressed = 0;
-	unsigned right_pressed = 0;
+	unsigned pagenum = 0, backlight, contrast = 0x3f;
+	unsigned left_pressed = 0, right_pressed = 0;
+	unsigned up_pressed = 0, down_pressed = 0;
 	extern const gpanel_font_t font_fixed6x8;
 
         led_init();
@@ -82,7 +96,8 @@ int main (void)
 	gpanel_init (&display, &font_fixed6x8);
 
 	draw (pagenum);
-        gpanel_backlight (&display, 1);
+        backlight = 1;
+        gpanel_backlight (&display, backlight);
 
 	/*
 	 * Poll buttons.
@@ -115,6 +130,28 @@ int main (void)
 			right_pressed = 1;
 			pagenum = (pagenum + 1) % 4;
 			draw (pagenum);
+		}
+
+		if (key != JOYSTICK_DOWN)
+			down_pressed = 0;
+		else if (! down_pressed) {
+			/* Down button: switch backlight. */
+			down_pressed = 1;
+                        backlight = !backlight;
+                        gpanel_backlight (&display, backlight);
+		}
+
+		if (key != JOYSTICK_UP)
+			up_pressed = 0;
+		else if (! up_pressed) {
+			/* Up button: contrast control. */
+			up_pressed = 1;
+                        contrast++;
+                        if (contrast >= 127)
+                            contrast = 0;
+                        gpanel_contrast (&display, contrast);
+                        gpanel_move (&display, 0, 0);
+                        printf (&display, "Vop = %-8u\n", contrast);
 		}
 	}
 }
