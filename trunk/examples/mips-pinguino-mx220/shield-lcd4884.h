@@ -33,9 +33,9 @@ inline int joystick_get()
     static const unsigned adc_key[5] = { 50, 200, 400, 600, 800 };
     unsigned input, k;
 
-#if 1
-    AD1CON1SET = 0x0002;    // start Converting
-    while (! (AD1CON1 & 1)) // conversion done?
+#if 0
+    AD1CON1SET = PIC32_AD1CON1_SAMP;            // Atart converting
+    while (! (AD1CON1 & PIC32_AD1CON1_DONE))    // Conversion done?
         continue;
 #endif
     input = ADC1BUF0;
@@ -55,7 +55,8 @@ inline void joystick_init()
     ANSELCSET = MASKC_JOYSTICK;
 
     /* Enable and configure the ADC. */
-    AD1CON1 = PIC32_AD1CON1_ASAM;       // Sample auto-start
+    AD1CON1 = PIC32_AD1CON1_ASAM |      // Sample auto-start
+              PIC32_AD1CON1_SAMP;
     AD1CHS = PIC32_AD1CHS_CH0SA(6);     // Connect AN6 as CH0 input
     AD1CSSL = 0;
     AD1CON3 = PIC32_AD1CON3_ADCS(2);    // Sample time manual, TAD = internal 6 TPB

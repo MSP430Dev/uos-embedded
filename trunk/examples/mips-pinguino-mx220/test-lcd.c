@@ -6,53 +6,12 @@
 #include <gpanel/gpanel.h>
 #include <random/rand15.h>
 #include "shield-lcd4884.h"
+#include "devcfg.h"
 
 #define MASKB_LED1	(1 << 15)   /* RB15: green */
 #define MASKA_LED2	(1 << 10)   /* RA10: red */
 
 gpanel_t display;
-
-static void lcd_write (unsigned byte, unsigned data_flag)
-{
-    unsigned i;
-
-    LATCCLR = MASKC_LCD_CS;
-    if (data_flag)
-        LATCSET = MASKC_LCD_DC;
-    else
-        LATCCLR = MASKC_LCD_DC;
-    asm volatile ("nop");
-    asm volatile ("nop");
-    asm volatile ("nop");
-    asm volatile ("nop");
-    asm volatile ("nop");
-
-    for (i=0; i<8; i++, byte<<=1) {
-        if (byte & 0x80) {
-            LATCSET = MASKC_LCD_MOSI;  /* SDIN = 1 */
-        } else {
-            LATCCLR = MASKC_LCD_MOSI;  /* SDIN = 0 */
-        }
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        LATCCLR = MASKC_LCD_SCK;       /* SCLK = 0 */
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        LATCSET = MASKC_LCD_SCK;       /* SCLK = 1 */
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-    }
-    LATCSET = MASKC_LCD_CS;
-}
 
 static void draw (unsigned page)
 {
@@ -63,22 +22,17 @@ static void draw (unsigned page)
 	case 0:
 		/* Show text. */
 		gpanel_move (&display, 0, 0);
-		puts (&display, "Hello World\r\n");
+		puts (&display, "Hello, World!\r\n");
 		break;
 	case 1:
 		/* Boxes. */
-lcd_write (0x40, 0);
-lcd_write (0x80, 0);
-for (y=0; y<8; y++)
-    lcd_write (0xff, 1);
-
-//		for (y=0; y<display.ncol/4; y+=5)
-//			gpanel_rect (&display, y+y, y, display.ncol-1-y-y, display.nrow-1-y, 1);
+		for (y=0; y<display.ncol/4; y+=4)
+			gpanel_rect (&display, y+y, y, display.ncol-1-y-y, display.nrow-1-y, 1);
 		break;
 	}
 }
 
-static void draw_next (unsigned page)
+void draw_next (unsigned page)
 {
 	static int x0, y0, radius;
 	int x1, y1;
@@ -120,13 +74,10 @@ static void draw_next (unsigned page)
 
 int main (void)
 {
-	unsigned pagenum = 1;
-	unsigned left_pressed = 0;
-	unsigned right_pressed = 0;
+	unsigned pagenum = 0;
+//	unsigned left_pressed = 0;
+//	unsigned right_pressed = 0;
 	extern const gpanel_font_t font_fixed6x8;
-
-        /* Disable JTAG and Trace ports, to make more pins available. */
-        DDPCONCLR = 3 << 2;
 
         /* Use all ports as digital. */
         ANSELA = 0;
@@ -138,56 +89,29 @@ int main (void)
 	LATACLR = MASKA_LED2;
 	TRISACLR = MASKA_LED2;
 
-//        BMXDUPBA = BMXDUDBA = BMXDKPBA = BMXDRMSZ;
-
-//	joystick_init ();
-int i;
-for (i=0; i<5; i++) { LATBINV = MASKB_LED1; udelay (100000); }
-#if 1
-    /* Set pins as outputs. */
-    LATCSET = MASKC_LCD_RST;
-    TRISCCLR = MASKC_LCD_SCK | MASKC_LCD_MOSI | MASKC_LCD_DC |
-               MASKC_LCD_CS  | MASKC_LCD_RST  | MASKC_LCD_BL;
-
-    /* Reset the display. */
-    LATCCLR = MASKC_LCD_RST | MASKC_LCD_CS;
-    udelay (1);
-    LATCSET = MASKC_LCD_RST;
-    udelay (1);
-
-    lcd_write (0x21, 0);
-    lcd_write (0xbf, 0);
-    lcd_write (0x04, 0);
-    lcd_write (0x14, 0);
-    lcd_write (0x20, 0);
-    lcd_write (0x0c, 0);
-
-    /* Turn on backlight. */
-    LATCSET = MASKC_LCD_BL;
-    LATCSET = MASKC_LCD_CS;
-
-    /* Clear data */
-    lcd_write (0x40, 0);
-    lcd_write (0x80, 0);
-    for (i=0; i<504; i++) {
-        lcd_write (0, 1);
-    }
-#endif
+	joystick_init ();
 	gpanel_init (&display, &font_fixed6x8);
-for (i=0; i<5; i++) { LATAINV = MASKA_LED2; mdelay (100); }
 
 	draw (pagenum);
-for (i=0; i<5; i++) { LATBINV = MASKB_LED1; mdelay (100); }
+        gpanel_backlight (&display, 1);
 
 	/*
 	 * Poll buttons.
 	 */
 	for (;;) {
-		LATBINV = MASKB_LED1;
-		mdelay (20);
-		draw_next (pagenum);
+//		mdelay (20);
+//		draw_next (pagenum);
 
-                unsigned key = joystick_get();
+#if 1
+static unsigned n = 0;
+printf (&display, "%u) %x. \r\n", ++n, ADC1BUF0);
+mdelay (500);
+#else
+                int key = joystick_get();
+		if (key > JOYSTICK_IDLE)
+                    LATBSET = MASKB_LED1;
+                else
+                    LATBCLR = MASKB_LED1;
 
 		if (key != JOYSTICK_LEFT)
 			left_pressed = 0;
@@ -208,5 +132,6 @@ for (i=0; i<5; i++) { LATBINV = MASKB_LED1; mdelay (100); }
 			pagenum = (pagenum + 1) % 4;
 			draw (pagenum);
 		}
+#endif
 	}
 }

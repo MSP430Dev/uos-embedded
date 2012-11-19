@@ -30,11 +30,6 @@ static void lcd_write (unsigned byte, unsigned data_flag)
         LATCSET = MASKC_LCD_DC;
     else
         LATCCLR = MASKC_LCD_DC;
-    asm volatile ("nop");
-    asm volatile ("nop");
-    asm volatile ("nop");
-    asm volatile ("nop");
-    asm volatile ("nop");
 
     for (i=0; i<8; i++, byte<<=1) {
         if (byte & 0x80) {
@@ -42,23 +37,8 @@ static void lcd_write (unsigned byte, unsigned data_flag)
         } else {
             LATCCLR = MASKC_LCD_MOSI;  /* SDIN = 0 */
         }
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
         LATCCLR = MASKC_LCD_SCK;       /* SCLK = 0 */
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
         LATCSET = MASKC_LCD_SCK;       /* SCLK = 1 */
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
-        asm volatile ("nop");
     }
     LATCSET = MASKC_LCD_CS;
 }
@@ -87,9 +67,9 @@ void gpanel_clear (gpanel_t *gp, unsigned color)
 }
 
 /*
- * Set up hardware for communication to Nokia 6100 LCD Display.
- * Internally, the controller has 132x132 pixels.
- * But visible area is only 130x130.
+ * Set up hardware for communication to Nokia 5110 LCD Display.
+ * Do not clear the display.
+ * Leave backlight turned off.
  */
 void gpanel_init (gpanel_t *gp, const gpanel_font_t *font)
 {
@@ -106,45 +86,14 @@ void gpanel_init (gpanel_t *gp, const gpanel_font_t *font)
     gp->col = 0;
     gp->c1 = 0;
     gp->c2 = 0;
-#if 1
+
     /* Set pins as outputs. */
-    LATCSET = MASKC_LCD_RST;
+    LATCSET = MASKC_LCD_RST | MASKC_LCD_CS;
     TRISCCLR = MASKC_LCD_SCK | MASKC_LCD_MOSI | MASKC_LCD_DC |
                MASKC_LCD_CS  | MASKC_LCD_RST  | MASKC_LCD_BL;
 
-    /* Reset the display. */
-    LATCCLR = MASKC_LCD_RST | MASKC_LCD_CS;
-    udelay (1);
-    LATCSET = MASKC_LCD_RST;
-    udelay (1);
-
-    lcd_write (0x21, 0);
-    lcd_write (0xbf, 0);
-    lcd_write (0x04, 0);
-    lcd_write (0x14, 0);
-    lcd_write (0x20, 0);
-    lcd_write (0x0c, 0);
-
-    /* Turn on backlight. */
-    LATCSET = MASKC_LCD_BL;
-    LATCSET = MASKC_LCD_CS;
-
-    /* Clear data */
-    lcd_write (0x40, 0);
-    lcd_write (0x80, 0);
-    int i;
-    for (i=0; i<504; i++) {
-        lcd_write (0, 1);
-    }
-#else
-    /* Set pins as outputs. */
-    LATCSET = MASKC_LCD_CS | MASKC_LCD_RST;
-    TRISCCLR = MASKC_LCD_SCK | MASKC_LCD_MOSI | MASKC_LCD_DC |
-               MASKC_LCD_CS  | MASKC_LCD_RST  | MASKC_LCD_BL;
-
-    /* Toggle chip select. */
-    LATCCLR = MASKC_LCD_CS;
-    udelay (1);
+    /* Turn off backlight. */
+    LATCCLR = MASKC_LCD_BL;
 
     /* Reset the display. */
     LATCCLR = MASKC_LCD_RST;
@@ -152,18 +101,12 @@ void gpanel_init (gpanel_t *gp, const gpanel_font_t *font)
     LATCSET = MASKC_LCD_RST;
     udelay (1);
 
-    lcd_write (0x21, 0);
-    lcd_write (0xbf, 0);
-    lcd_write (0x04, 0);
-    lcd_write (0x14, 0);
-    lcd_write (0x20, 0);
-//    gpanel_clear (gp, 0);
-    lcd_write (0x0c, 0);
-
-    /* Turn on backlight. */
-    LATCSET = MASKC_LCD_BL;
-    LATCSET = MASKC_LCD_CS;
-#endif
+    lcd_write (0x21, 0);    // Enable extended instruction set
+    lcd_write (0xbf, 0);    // Set Vop - contrast level
+    lcd_write (0x04, 0);    // Set temperature coefficient to 0
+    lcd_write (0x14, 0);    // Set bias to 4
+    lcd_write (0x20, 0);    // Back to normal instruction set
+    lcd_write (0x0c, 0);    // Set normal mode
 }
 
 /*
@@ -183,8 +126,8 @@ void gpanel_pixel (gpanel_t *gp, int x, int y, int color)
     else
         *data &= ~(1 << (y & 7));
 
-    lcd_write (0x40 | x, 0);
-    lcd_write (0x80 | (y >> 3), 0);
+    lcd_write (0x40 | (y >> 3), 0);
+    lcd_write (0x80 | x, 0);
     lcd_write (*data, 1);
 }
 
@@ -225,8 +168,8 @@ static void graw_glyph8 (gpanel_t *gp, unsigned width, unsigned height,
     }
 
     /* Write graphics memory. */
-    lcd_write (0x40 | gp->col, 0);
-    lcd_write (0x80 | ypage, 0);
+    lcd_write (0x40 | ypage, 0);
+    lcd_write (0x80 | gp->col, 0);
     for (x=0; x<width; x++) {
         lcd_write (data[x], 1);
     }
@@ -289,10 +232,13 @@ void gpanel_rect_filled (gpanel_t *gp, int x0, int y0, int x1, int y1, int color
 }
 
 /*
- * No contrast control.
+ * Contrast control.
  */
 void gpanel_contrast (gpanel_t *gp, int contrast)
 {
+    lcd_write (0x21, 0);            // Enable extended instruction set
+    lcd_write (0x80 | contrast, 0); // Set Vop - contrast level
+    lcd_write (0x20, 0);            // Back to normal instruction set
 }
 
 /*
@@ -300,7 +246,10 @@ void gpanel_contrast (gpanel_t *gp, int contrast)
  */
 void gpanel_backlight (gpanel_t *gp, int on)
 {
-    // TODO
+    if (on)
+        LATCSET = MASKC_LCD_BL;
+    else
+        LATCCLR = MASKC_LCD_BL;
 }
 
 /*

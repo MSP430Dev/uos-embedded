@@ -155,6 +155,17 @@ int gpanel_text_width (gpanel_t *gp, const unsigned char *text)
 #endif
 
 /*
+ * Start a new line: increase row.
+ */
+static void gpanel_newline (gpanel_t *gp)
+{
+        gp->col = 0;
+        gp->row += gp->font->height;
+        if (gp->row > gp->nrow - gp->font->height)
+                gp->row = 0;
+}
+
+/*
  * Print one symbol. Decode from UTF8.
  * Some characters are handled specially.
  */
@@ -165,8 +176,7 @@ static void gpanel_putchar (gpanel_t *gp, short c)
 
 	switch (c) {
 	case '\n':		/* goto next line */
-		gp->row += gp->font->height;
-		gp->col = 0;
+                gpanel_newline (gp);
 		return;
 	case '\t':		/* tab replaced by space */
 		c = ' ';
@@ -223,10 +233,7 @@ static void gpanel_putchar (gpanel_t *gp, short c)
 
 	/* Scrolling. */
 	if (gp->col > gp->ncol - width) {
-		gp->col = 0;
-		gp->row += gp->font->height;
-		if (gp->row > gp->nrow - gp->font->height)
-			gp->row = 0;
+                gpanel_newline (gp);
 	}
 
 	/* Draw a character. */
