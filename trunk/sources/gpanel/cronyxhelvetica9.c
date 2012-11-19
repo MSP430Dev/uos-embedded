@@ -5914,7 +5914,7 @@ static const unsigned char cronyxhelvetica9_width[] = {
 };
 
 /* Exported structure definition. */
-gpanel_font_t font_cronyxhelvetica9 = {
+const gpanel_font_t font_cronyxhelvetica9 = {
   "cronyxhelvetica9",
   7,
   9,

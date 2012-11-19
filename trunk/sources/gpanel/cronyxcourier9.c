@@ -4807,7 +4807,7 @@ static const unsigned short cronyxcourier9_offset[] = {
 };
 
 /* Exported structure definition. */
-gpanel_font_t font_cronyxcourier9 = {
+const gpanel_font_t font_cronyxcourier9 = {
   "cronyxcourier9",
   5,
   9,

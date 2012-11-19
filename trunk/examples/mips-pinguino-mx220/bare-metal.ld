@@ -1,5 +1,5 @@
 /*
- * Linker script for PIC32 MX220F032 using HID bootloader.
+ * Linker script for PIC32 MX220F032.
  */
 OUTPUT_FORMAT("elf32-littlemips", "elf32-bigmips",
 	      "elf32-littlemips")
@@ -8,7 +8,7 @@ ENTRY(_reset_vector_)
 MEMORY
 {
   ram                  (rw!x): ORIGIN = 0x80000000, LENGTH = 8k
-  flash                (rx)  : ORIGIN = 0x9D003000, LENGTH = 32k-12k
+  devcfg               (r)   : ORIGIN = 0x9FC00BF0, LENGTH = 16
 
   /* Required by Microchip C32 linker */
   kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 32k
@@ -65,13 +65,16 @@ SECTIONS
   .rela.plt       : { *(.rela.plt) }
   .plt            : { *(.plt) }
 
+  .boot           :
+  {
+    /* Execution starts here. */
+    *(.init)
+  } > kseg0_boot_mem
+
   .text           :
   {
     /* Exception handlers. */
     *(.exception)
-    . = 0x1000;
-    /* Execution starts here. */
-    *(.init)
     *(.text .stub .text.* .gnu.linkonce.t.*)
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
@@ -81,7 +84,7 @@ SECTIONS
     /* Align here to ensure that the .text section ends on word boundary. */
     . = ALIGN (32 / 8);
     _etext = .;
-  } > flash
+  } > kseg0_program_mem
 
   /* Start data (internal SRAM).  */
   .data		  : AT (ADDR (.text) + SIZEOF (.text))
@@ -96,6 +99,16 @@ SECTIONS
     *(.eh_frame)
     _edata = .;
   } > ram
+
+  /* Device configuration registers.  */
+  .config         :
+  {
+    __devcfg__ = .;
+    *(.config3)
+    *(.config2)
+    *(.config1)
+    *(.config0)
+  } > devcfg
 
   .bss ADDR (.data) + SIZEOF (.data) (NOLOAD) :
   {

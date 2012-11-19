@@ -123,7 +123,7 @@ int main (void)
 	unsigned pagenum = 1;
 	unsigned left_pressed = 0;
 	unsigned right_pressed = 0;
-	extern gpanel_font_t font_fixed6x8;
+	extern const gpanel_font_t font_fixed6x8;
 
         /* Disable JTAG and Trace ports, to make more pins available. */
         DDPCONCLR = 3 << 2;
@@ -138,22 +138,19 @@ int main (void)
 	LATACLR = MASKA_LED2;
 	TRISACLR = MASKA_LED2;
 
+//        BMXDUPBA = BMXDUDBA = BMXDKPBA = BMXDRMSZ;
+
 //	joystick_init ();
 int i;
 for (i=0; i<5; i++) { LATBINV = MASKB_LED1; udelay (100000); }
 #if 1
-
     /* Set pins as outputs. */
-    LATCSET = MASKC_LCD_CS | MASKC_LCD_RST;
+    LATCSET = MASKC_LCD_RST;
     TRISCCLR = MASKC_LCD_SCK | MASKC_LCD_MOSI | MASKC_LCD_DC |
                MASKC_LCD_CS  | MASKC_LCD_RST  | MASKC_LCD_BL;
 
-    /* Toggle chip select. */
-    LATCCLR = MASKC_LCD_CS;
-    udelay (1);
-
     /* Reset the display. */
-    LATCCLR = MASKC_LCD_RST;
+    LATCCLR = MASKC_LCD_RST | MASKC_LCD_CS;
     udelay (1);
     LATCSET = MASKC_LCD_RST;
     udelay (1);
@@ -177,10 +174,10 @@ for (i=0; i<5; i++) { LATBINV = MASKB_LED1; udelay (100000); }
     }
 #endif
 	gpanel_init (&display, &font_fixed6x8);
-for (i=0; i<5; i++) { LATAINV = MASKA_LED2; udelay (100000); }
+for (i=0; i<5; i++) { LATAINV = MASKA_LED2; mdelay (100); }
 
 	draw (pagenum);
-for (i=0; i<5; i++) { LATBINV = MASKB_LED1; udelay (100000); }
+for (i=0; i<5; i++) { LATBINV = MASKB_LED1; mdelay (100); }
 
 	/*
 	 * Poll buttons.

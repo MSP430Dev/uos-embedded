@@ -91,7 +91,7 @@ void gpanel_clear (gpanel_t *gp, unsigned color)
  * Internally, the controller has 132x132 pixels.
  * But visible area is only 130x130.
  */
-void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
+void gpanel_init (gpanel_t *gp, const gpanel_font_t *font)
 {
     extern stream_interface_t gpanel_interface;
 
@@ -106,12 +106,42 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
     gp->col = 0;
     gp->c1 = 0;
     gp->c2 = 0;
-#if 0
+#if 1
+    /* Set pins as outputs. */
+    LATCSET = MASKC_LCD_RST;
+    TRISCCLR = MASKC_LCD_SCK | MASKC_LCD_MOSI | MASKC_LCD_DC |
+               MASKC_LCD_CS  | MASKC_LCD_RST  | MASKC_LCD_BL;
+
+    /* Reset the display. */
+    LATCCLR = MASKC_LCD_RST | MASKC_LCD_CS;
+    udelay (1);
+    LATCSET = MASKC_LCD_RST;
+    udelay (1);
+
+    lcd_write (0x21, 0);
+    lcd_write (0xbf, 0);
+    lcd_write (0x04, 0);
+    lcd_write (0x14, 0);
+    lcd_write (0x20, 0);
+    lcd_write (0x0c, 0);
+
+    /* Turn on backlight. */
+    LATCSET = MASKC_LCD_BL;
+    LATCSET = MASKC_LCD_CS;
+
+    /* Clear data */
+    lcd_write (0x40, 0);
+    lcd_write (0x80, 0);
+    int i;
+    for (i=0; i<504; i++) {
+        lcd_write (0, 1);
+    }
+#else
     /* Set pins as outputs. */
     LATCSET = MASKC_LCD_CS | MASKC_LCD_RST;
     TRISCCLR = MASKC_LCD_SCK | MASKC_LCD_MOSI | MASKC_LCD_DC |
                MASKC_LCD_CS  | MASKC_LCD_RST  | MASKC_LCD_BL;
-#if 1
+
     /* Toggle chip select. */
     LATCCLR = MASKC_LCD_CS;
     udelay (1);
@@ -121,8 +151,7 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
     udelay (1);
     LATCSET = MASKC_LCD_RST;
     udelay (1);
-#endif
-#if 1
+
     lcd_write (0x21, 0);
     lcd_write (0xbf, 0);
     lcd_write (0x04, 0);
@@ -130,7 +159,7 @@ void gpanel_init (gpanel_t *gp, gpanel_font_t *font)
     lcd_write (0x20, 0);
 //    gpanel_clear (gp, 0);
     lcd_write (0x0c, 0);
-#endif
+
     /* Turn on backlight. */
     LATCSET = MASKC_LCD_BL;
     LATCSET = MASKC_LCD_CS;

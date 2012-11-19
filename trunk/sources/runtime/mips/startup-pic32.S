@@ -27,11 +27,13 @@
 #
 		.section .init
 		.org	0
+		.type	_reset_vector_, @function
 _reset_vector_:	.globl	_reset_vector_
 
 		.extern	_init_
 		la	$sp, _estack			# Stack at end of internal SRAM
-		j	_init_				# Jump to _init_()
+		la	$v0, _init_
+		jr	$v0				# Jump to _init_()
 		lui	$gp, 0x8000			# Set global pointer (delay slot)
 
 #---------------------------------------
@@ -42,7 +44,7 @@ _reset_vector_:	.globl	_reset_vector_
 _exception_base_: .globl _exception_base_
 
                 # Vector NMI interrupts
-		.type	_entry_vector_, @function
+		.type	_nmi_vector_, @function
 _nmi_vector_:   .globl  _nmi_vector_
                 la      $k0, _reset_vector_
                 jr      $k0
@@ -51,7 +53,8 @@ _nmi_vector_:   .globl  _nmi_vector_
 #---------------------------------------
 # Restore CPU state and return from interrupt
 #
-_restore_regs_: .globl _restore_regs_
+		.type	_restore_regs_, @function
+_restore_regs_: .globl  _restore_regs_
 		addi	$sp, MIPS_FSPACE		# Remove an arg frame
 
 		lw	$a0, (CONTEXT_LO * 4) ($sp)	# Load HI, LO registers
@@ -116,6 +119,7 @@ _restore_regs_: .globl _restore_regs_
 # Exception vector at 0x0x9D005200
 #
 		.org	0x200
+		.type	_exception_vector_, @function
 _exception_vector_: .globl _exception_vector_
 		addi	$sp, -CONTEXT_WORDS*4		# Allocate space for registers
 

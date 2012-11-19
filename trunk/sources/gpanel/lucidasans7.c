@@ -5902,7 +5902,7 @@ static const unsigned char lucidasans7_width[] = {
 };
 
 /* Exported structure definition. */
-gpanel_font_t font_lucidasans7 = {
+const gpanel_font_t font_lucidasans7 = {
   "lucidasans7",
   10,
   9,

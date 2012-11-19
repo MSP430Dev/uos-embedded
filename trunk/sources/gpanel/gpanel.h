@@ -19,7 +19,7 @@ typedef struct {
 	struct _stream_interface_t *interface;	/* for printf */
 	unsigned nrow;			/* number of rows */
 	unsigned ncol;			/* number of columns */
-	gpanel_font_t *font;		/* selected font */
+	const gpanel_font_t *font;	/* selected font */
 	unsigned foreground;		/* color for putchar */
 	unsigned background;		/* background for putchar */
 	unsigned contrast;		/* current contrast */
@@ -43,7 +43,7 @@ typedef struct {
 #define GPANEL_ORANGE	0xFA0
 #define GPANEL_PINK	0xF6A
 
-void gpanel_init (gpanel_t *lcd, gpanel_font_t *font);
+void gpanel_init (gpanel_t *lcd, const gpanel_font_t *font);
 void gpanel_backlight (gpanel_t *lcd, int on);
 void gpanel_contrast (gpanel_t *lcd, int contrast);
 void gpanel_pixel (gpanel_t *lcd, int x, int y, int color);

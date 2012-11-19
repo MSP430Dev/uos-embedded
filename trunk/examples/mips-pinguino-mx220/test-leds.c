@@ -2,6 +2,7 @@
  * Testing LEDs.
  */
 #include <runtime/lib.h>
+#include "devcfg.h"
 
 #define MASKB_LED1	(1 << 15)   /* RB15: green */
 #define MASKA_LED2	(1 << 10)   /* RA10: red */

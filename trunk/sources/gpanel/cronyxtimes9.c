@@ -5914,7 +5914,7 @@ static const unsigned char cronyxtimes9_width[] = {
 };
 
 /* Exported structure definition. */
-gpanel_font_t font_cronyxtimes9 = {
+const gpanel_font_t font_cronyxtimes9 = {
   "cronyxtimes9",
   7,
   9,

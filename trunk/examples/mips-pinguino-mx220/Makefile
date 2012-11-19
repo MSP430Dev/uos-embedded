@@ -5,7 +5,7 @@ GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
 CFLAGS          += -g
 
-TEST		= test-lcd
+TEST		= test-leds
 TESTS		= $(TEST).srec
 TESTS		+= test-leds.srec test-lcd.srec
 OUTS		= $(TESTS:%.srec=%.elf)
