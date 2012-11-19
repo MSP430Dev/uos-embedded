@@ -114,10 +114,10 @@
 ----
 
 = Графический дисплей LCD4884 =
-[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/515DpNt8UpL._SL500_AA300_.jpg]
+[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/51PzMVi-n%2BL.jpg]
 
 Характеристики:
-  * Графический дисплей 84x48 типа Nokia 5110.
+  * Графический дисплей 84x48 типа Nokia 5110 ([http://www.amazon.com/SainSmart-Graphic-LCD4884-Arduino-Duemilanove/dp/B0073Z5XAW на Amazon.com], [http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html на SainSmart.com].
   * Интерфейс SPI, совместимый с [http://www.sparkfun.com/datasheets/LCD/Monochrome/Nokia5110.pdf Philips PCD8544]
   * 5-кнопочный джойстик с вводом через аналоговый сигнал A0.
   * Кнопка Reset
