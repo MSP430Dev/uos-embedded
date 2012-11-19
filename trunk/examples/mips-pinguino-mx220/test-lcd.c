@@ -8,9 +8,6 @@
 #include "shield-lcd4884.h"
 #include "devcfg.h"
 
-#define MASKB_LED1	(1 << 15)   /* RB15: green */
-#define MASKA_LED2	(1 << 10)   /* RA10: red */
-
 gpanel_t display;
 
 static void draw (unsigned page)
@@ -22,7 +19,8 @@ static void draw (unsigned page)
 	case 0:
 		/* Show text. */
 		gpanel_move (&display, 0, 0);
-		puts (&display, "Hello, World!\r\n");
+		puts (&display, "Debugging:\nRemoving the\nneedles from\nthe haystack.\r\n");
+		puts (&display, "\r\n");
 		break;
 	case 1:
 		/* Boxes. */
@@ -75,20 +73,11 @@ void draw_next (unsigned page)
 int main (void)
 {
 	unsigned pagenum = 0;
-//	unsigned left_pressed = 0;
-//	unsigned right_pressed = 0;
+	unsigned left_pressed = 0;
+	unsigned right_pressed = 0;
 	extern const gpanel_font_t font_fixed6x8;
 
-        /* Use all ports as digital. */
-        ANSELA = 0;
-        ANSELB = 0;
-        ANSELC = 0;
-
-	LATBCLR = MASKB_LED1;
-	TRISBCLR = MASKB_LED1;
-	LATACLR = MASKA_LED2;
-	TRISACLR = MASKA_LED2;
-
+        led_init();
 	joystick_init ();
 	gpanel_init (&display, &font_fixed6x8);
 
@@ -99,26 +88,22 @@ int main (void)
 	 * Poll buttons.
 	 */
 	for (;;) {
-//		mdelay (20);
-//		draw_next (pagenum);
+		mdelay (20);
+		draw_next (pagenum);
 
-#if 1
-static unsigned n = 0;
-printf (&display, "%u) %x. \r\n", ++n, ADC1BUF0);
-mdelay (500);
-#else
                 int key = joystick_get();
+
+                /* Light LED when a key is pressed. */
 		if (key > JOYSTICK_IDLE)
-                    LATBSET = MASKB_LED1;
+		    led_control (1);
                 else
-                    LATBCLR = MASKB_LED1;
+		    led_control (0);
 
 		if (key != JOYSTICK_LEFT)
 			left_pressed = 0;
 		else if (! left_pressed) {
-			left_pressed = 1;
-
 			/* Left button: show previous page of symbols. */
+			left_pressed = 1;
 			pagenum = (pagenum - 1) % 4;
 			draw (pagenum);
 		}
@@ -126,12 +111,10 @@ mdelay (500);
 		if (key != JOYSTICK_RIGHT)
 			right_pressed = 0;
 		else if (! right_pressed) {
-			right_pressed = 1;
-
 			/* Right button: show next page of symbols. */
+			right_pressed = 1;
 			pagenum = (pagenum + 1) % 4;
 			draw (pagenum);
 		}
-#endif
 	}
 }
