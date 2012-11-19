@@ -12,6 +12,11 @@ bigdigits.c:	convbdf ../../contrib/nanox/fonts/Lucida_Sans_Unicode.ttf
 		./convbdf -c -a12 -d15 bigdigits.bdf
 		rm -f bigdigits.bdf
 
+middigits.c:	convbdf ../../contrib/nanox/fonts/Lucida_Sans_Unicode.ttf
+		-otf2bdf -p 20 -l "32 48_58" ../../contrib/nanox/fonts/Lucida_Sans_Unicode.ttf > middigits.bdf
+		./convbdf -c -a9 -d11 middigits.bdf
+		rm -f middigits.bdf
+
 lucidasans11.c:	convbdf ../../contrib/nanox/fonts/Lucida_Sans_Unicode.ttf
 		-otf2bdf -p 11 -l "20_126 164 1025 1105 1040_1103" ../../contrib/nanox/fonts/Lucida_Sans_Unicode.ttf > lucidasans11.bdf
 		./convbdf -c -u164 -a2 -d3 lucidasans11.bdf

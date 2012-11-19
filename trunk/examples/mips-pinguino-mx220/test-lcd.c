@@ -8,6 +8,8 @@
 #include "shield-lcd4884.h"
 #include "devcfg.h"
 
+#define NPAGES 5
+
 gpanel_t display;
 
 static void draw (unsigned page)
@@ -19,12 +21,12 @@ static void draw (unsigned page)
 	case 0:
 		/* Show latin text. */
 		gpanel_move (&display, 0, 0);
-		puts (&display, "0123456789+=*\n");
-		puts (&display, "abcdefghijklm\n");
-		puts (&display, "nopqrstuvwxyz\n");
-		puts (&display, "ABCDEFGHIJKLM\n");
-		puts (&display, "NOPQRSTUVWXYZ\n");
-		puts (&display, "[]{}()!?~$%&#\n");
+		puts (&display, "0123456789+=*/\n");
+		puts (&display, "abcdefghijklmn\n");
+		puts (&display, "opqrstuvwxyz\n");
+		puts (&display, "ABCDEFGHIJKLMN\n");
+		puts (&display, "OPQRSTUVWXYZ\n");
+		puts (&display, "[]{}()!?~$%&#@\n");
 		break;
 	case 1:
 		/* Show cyrillic text. */
@@ -119,7 +121,7 @@ int main (void)
 		else if (! left_pressed) {
 			/* Left button: show previous page of symbols. */
 			left_pressed = 1;
-			pagenum = (pagenum - 1) % 4;
+			pagenum = (pagenum - 1 + NPAGES) % NPAGES;
 			draw (pagenum);
 		}
 
@@ -128,7 +130,7 @@ int main (void)
 		else if (! right_pressed) {
 			/* Right button: show next page of symbols. */
 			right_pressed = 1;
-			pagenum = (pagenum + 1) % 4;
+			pagenum = (pagenum + 1) % NPAGES;
 			draw (pagenum);
 		}
 

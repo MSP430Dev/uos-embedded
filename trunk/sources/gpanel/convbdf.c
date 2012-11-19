@@ -919,7 +919,7 @@ gen_c_source(font_t *pf, char *path)
 		sprintf(buf, "%s_width,", pf->name);
 	else sprintf(buf, "0,  /* fixed width*/");
 	fprintf(ofp, 	"/* Exported structure definition. */\n"
-		"gpanel_font_t font_%s = {\n"
+		"const gpanel_font_t font_%s = {\n"
 		"  \"%s\",\n"
 		"  %d,\n"
 		"  %d,\n"

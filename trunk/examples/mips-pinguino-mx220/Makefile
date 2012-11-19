@@ -5,9 +5,10 @@ GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
 CFLAGS          += -g
 
-TEST		= test-lcd
+TEST		= tetris
 TESTS		= $(TEST).srec
-TESTS		+= test-leds.srec test-lcd.srec
+TESTS		+= test-leds.srec test-lcd.srec test-timer.srec test-task.srec
+TESTS		+= philosophers.srec tetris.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis
