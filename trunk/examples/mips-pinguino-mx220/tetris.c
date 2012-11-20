@@ -122,17 +122,22 @@ void draw_block (int h, int w, int visible)
 	h *= 4;
 	w *= 4;
 	if (visible) {
-		gpanel_rect_filled (&display, h, w, h + 3, w + 3, 1);
+		gpanel_rect_filled (&display,
+                    display.ncol-1 - h, w, display.ncol-1 - (h + 3), w + 3, 1);
 	} else {
-		gpanel_rect_filled (&display, h, w, h + 3, w + 3, 0);
+		gpanel_rect_filled (&display,
+                    display.ncol-1 - h, w, display.ncol-1 - (h + 3), w + 3, 0);
 
 		if (h == (PITDEPTH-1)*5)
-			gpanel_pixel (&display, h + 3, w + 2, 1);
+			gpanel_pixel (&display,
+                            display.ncol-1 - (h + 3), w + 2, 1);
 
 		if (w == 0)
-			gpanel_pixel (&display, h + 2, w, 1);
+			gpanel_pixel (&display,
+                            display.ncol-1 - (h + 2), w, 1);
 		else if (w % 16 == 12)
-			gpanel_pixel (&display, h + 2, w + 3, 1);
+			gpanel_pixel (&display,
+                            display.ncol-1 - (h + 2), w + 3, 1);
 	}
 }
 
@@ -306,12 +311,12 @@ ok:
 		}
 
                 int key = joystick_get();
-		if (key != JOYSTICK_LEFT)
-			left_pressed = 0;
-		else if (! left_pressed) {
-			left_pressed = 1;
+		if (key != JOYSTICK_RIGHT)
+			right_pressed = 0;
+		else if (! right_pressed) {
+			right_pressed = 1;
 
-			/* Left: rotate */
+			/* Right: rotate */
 			if (--anew < 0)
 				anew = 3;
 			translate (&shape[ptype], cnew, anew, chk);
@@ -344,10 +349,10 @@ ok:
 			goto check;
 		}
 
-		if (key != JOYSTICK_RIGHT)
-			right_pressed = 0;
-		else if (! right_pressed) {
-			right_pressed = 1;
+		if (key != JOYSTICK_LEFT)
+			left_pressed = 0;
+		else if (! left_pressed) {
+			left_pressed = 1;
 
 			/* Right: drop */
 			for (;;) {
