@@ -188,4 +188,5 @@
 ||  D7     || LCD_DB7   ||  RC7    ||
 ||  D8     || LCD_RS    ||  RB7    ||
 ||  D9     || LCD_E     ||  RA10   ||
+||  D10    || LCD_BL    ||  RA1    ||
 ||  A0     || KEY_IN    ||  RC0    ||
