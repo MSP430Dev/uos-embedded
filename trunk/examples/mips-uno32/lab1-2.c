@@ -2,53 +2,31 @@
 // Пример для платы Uno32 и среды програмирования MPIDE.
 // Copyright (C) 2012 Сергей Вакуленко
 //
-#include <WProgram.h>
+#include "runtime/lib.h"
+#include "kernel/uos.h"
+#include "timer/timer.h"
+
+// Память для стека задачи.
+ARRAY (task, 1000);
+
+// Драйвер таймера.
+timer_t timer;
 
 // Кнопки на контактах 11 и 12.
-const int button1 = 11;
-const int button2 = 12;
+#define MASKG_BUTTON1   (1 << 8)    // 11 - RG8
+#define MASKG_BUTTON2   (1 << 7)    // 12 - RG7
 
 // 7-сегментный индикатор на контактах 2-9.
-const int segm_a = 2;
-const int segm_b = 3;
-const int segm_c = 4;
-const int segm_d = 5;
-const int segm_e = 6;
-const int segm_f = 7;
-const int segm_g = 8;
-const int segm_h = 9;
+#define MASKD_SEGM_A    (1 << 8)    // Контакт 2 - сигнал RD8
+#define MASKD_SEGM_B    (1 << 0)    // Контакт 3 - сигнал RD0
+#define MASKF_SEGM_C    (1 << 1)    // Контакт 4 - сигнал RF1
+#define MASKD_SEGM_D    (1 << 1)    // Контакт 5 - сигнал RD1
+#define MASKD_SEGM_E    (1 << 2)    // Контакт 6 - сигнал RD2
+#define MASKD_SEGM_F    (1 << 9)    // Контакт 7 - сигнал RD9
+#define MASKD_SEGM_G    (1 << 10)   // Контакт 8 - сигнал RD10
+#define MASKD_SEGM_H    (1 << 3)    // Контакт 9 - сигнал RD3
 
-// Время в миллисекундах.
-unsigned msec;
-
-// Состояние кнопок.
-int button1_was_pressed, button2_was_pressed;
-
-// Моменты нажатия кнопок.
-unsigned time1, time2;
-
-void setup ()
-{
-    // Сигналы от кнопок используем как входы.
-    pinMode (button1, INPUT);
-    pinMode (button2, INPUT);
-
-    // Сигналы управления светодиодами - выходы.
-    pinMode (segm_a, OUTPUT);
-    pinMode (segm_b, OUTPUT);
-    pinMode (segm_c, OUTPUT);
-    pinMode (segm_d, OUTPUT);
-    pinMode (segm_e, OUTPUT);
-    pinMode (segm_f, OUTPUT);
-    pinMode (segm_g, OUTPUT);
-    pinMode (segm_h, OUTPUT);
-
-    // Устанавливаем прерывание от таймера с частотой 1000 Гц.
-    OpenTimer2 (T2_ON | T2_PS_1_256, F_CPU / 256 / 1000);
-    ConfigIntTimer2 (T2_INT_ON | T2_INT_PRIOR_3);
-}
-
-// Отображение одной цифры на дисплее
+// Отображение одной цифры на дисплее.
 void display (unsigned digit)
 {
     static const unsigned pattern[10] = {
@@ -68,61 +46,78 @@ void display (unsigned digit)
         digit = 9;
     unsigned mask = pattern[digit];
 
-    if (mask & 1)   LATDSET = 1 << 8;   // Контакт 2 - сигнал RD8
-    else            LATDCLR = 1 << 8;
-    if (mask & 2)   LATDSET = 1 << 0;   // Контакт 3 - сигнал RD0
-    else            LATDCLR = 1 << 0;
-    if (mask & 4)   LATFSET = 1 << 1;   // Контакт 4 - сигнал RF1
-    else            LATFCLR = 1 << 1;
-    if (mask & 8)   LATDSET = 1 << 1;   // Контакт 5 - сигнал RD1
-    else            LATDCLR = 1 << 1;
-    if (mask & 16)  LATDSET = 1 << 2;   // Контакт 6 - сигнал RD2
-    else            LATDCLR = 1 << 2;
-    if (mask & 32)  LATDSET = 1 << 9;   // Контакт 7 - сигнал RD9
-    else            LATDCLR = 1 << 9;
-    if (mask & 64)  LATDSET = 1 << 10;  // Контакт 8 - сигнал RD10
-    else            LATDCLR = 1 << 10;
-    if (mask & 128) LATDSET = 1 << 3;   // Контакт 9 - сигнал RD3
-    else            LATDCLR = 1 << 3;
+    if (mask & 1)   LATDSET = MASKD_SEGM_A;
+    else            LATDCLR = MASKD_SEGM_A;
+    if (mask & 2)   LATDSET = MASKD_SEGM_B;
+    else            LATDCLR = MASKD_SEGM_B;
+    if (mask & 4)   LATFSET = MASKF_SEGM_C;
+    else            LATFCLR = MASKF_SEGM_C;
+    if (mask & 8)   LATDSET = MASKD_SEGM_D;
+    else            LATDCLR = MASKD_SEGM_D;
+    if (mask & 16)  LATDSET = MASKD_SEGM_E;
+    else            LATDCLR = MASKD_SEGM_E;
+    if (mask & 32)  LATDSET = MASKD_SEGM_F;
+    else            LATDCLR = MASKD_SEGM_F;
+    if (mask & 64)  LATDSET = MASKD_SEGM_G;
+    else            LATDCLR = MASKD_SEGM_G;
+    if (mask & 128) LATDSET = MASKD_SEGM_H;
+    else            LATDCLR = MASKD_SEGM_H;
 }
 
-void loop ()
+// Задача опроса кнопок.
+void loop (void *arg)
 {
-    // Опрашиваем кнопки.
-    int button1_pressed = (digitalRead (button1) == LOW);
-    int button2_pressed = (digitalRead (button2) == LOW);
+    // Состояние кнопок.
+    int button1_was_pressed = 0, button2_was_pressed = 0;
 
-    // Если кнопки были нажаты - запоминаем время.
-    if (button1_pressed && ! button1_was_pressed)
-        time1 = msec;
-    if (button2_pressed && ! button2_was_pressed)
-        time2 = msec;
-    button1_was_pressed = button1_pressed;
-    button2_was_pressed = button2_pressed;
+    // Моменты нажатия кнопок.
+    unsigned time1 = 0, time2 = 0;
 
-    if (button1_pressed && button2_pressed) {
-        // Обе кнопки нажаты: показываем разность.
-        if (time1 > time2) {
-            display (time1 - time2);
+    for (;;) {
+        // Время в миллисекундах.
+        unsigned msec = timer_milliseconds (&timer);
+
+        // Опрашиваем кнопки.
+        int button1_pressed = ! (PORTG & MASKG_BUTTON1);
+        int button2_pressed = ! (PORTG & MASKG_BUTTON2);
+
+        // Если кнопки были нажаты - запоминаем время.
+        if (button1_pressed && ! button1_was_pressed)
+            time1 = msec;
+        if (button2_pressed && ! button2_was_pressed)
+            time2 = msec;
+        button1_was_pressed = button1_pressed;
+        button2_was_pressed = button2_pressed;
+
+        if (button1_pressed && button2_pressed) {
+            // Обе кнопки нажаты: показываем разность.
+            if (time1 > time2) {
+                display (time1 - time2);
+            } else {
+                display (time2 - time1);
+            }
         } else {
-            display (time2 - time1);
+            // Отображаем текущее время, десятые доли секунды.
+            display (msec / 100 % 10);
         }
-    } else {
-        // Отображаем текущее время, десятые доли секунды.
-        display (msec / 100 % 10);
+        timer_delay (&timer, 1);
     }
-    delay (1);
 }
 
-// Обработчик прерывания от таймера.
-extern "C" {
-    __ISR (_TIMER_2_VECTOR, IPL3AUTO)
-    void timer2_handler (void)
-    {
-        // Сбрасываем флаг прерывания.
-        mT2ClearIntFlag ();
+// Начальная инициализация системы.
+void uos_init()
+{
+    // Сигналы от кнопок используем как входы.
+    TRISGSET = MASKG_BUTTON1 | MASKG_BUTTON2;
 
-        // Наращиваем счётчик миллисекунд.
-        msec++;
-    }
+    // Сигналы управления 7-сегментным индикатором - выходы.
+    TRISDCLR = MASKD_SEGM_A | MASKD_SEGM_B | MASKD_SEGM_D | MASKD_SEGM_E |
+               MASKD_SEGM_F | MASKD_SEGM_G | MASKD_SEGM_H;
+    TRISFCLR = MASKF_SEGM_C;
+
+    // Устанавливаем прерывание от таймера с периодом 1 мсек.
+    timer_init (&timer, KHZ, 1);
+
+    // Запускаем одну задачу.
+    task_create (loop, "task", 0, 1, task, sizeof (task));
 }
