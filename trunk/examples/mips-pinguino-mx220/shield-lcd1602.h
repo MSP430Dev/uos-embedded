@@ -18,11 +18,11 @@
  * Button values are determined by resistors on a board.
  */
 enum {
-    BUTTON_LEFT,
-    BUTTON_SELECT,
-    BUTTON_DOWN,
     BUTTON_RIGHT,
     BUTTON_UP,
+    BUTTON_DOWN,
+    BUTTON_LEFT,
+    BUTTON_SELECT,
     BUTTON_IDLE = -1,
 };
 
@@ -55,7 +55,7 @@ inline void led_init()
  * Get a state of buttons.
  * Convert ADC value to key number.
  * Input buttons are connected to a series network of resistors:
- * GND - 3.3k - 1k - 620 - 330 - 2k - +5V
+ * GND - 3.3k - 1k - 620 - 330 - 2k - +3.3V
  * Expected values are:
  * 0 - 144 - 329 - 506 - 741 - 1023
  */

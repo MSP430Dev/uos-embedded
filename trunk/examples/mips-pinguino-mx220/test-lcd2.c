@@ -10,7 +10,6 @@ lcd_t line1, line2;
 ARRAY (task, 1000);
 
 const char message1[] = "\fThere are 10 kinds of people. Those who understand binary notation, and those who do not.";
-const char message2[] = "\fOh, really!";
 
 void display_page (unsigned char n)
 {
@@ -36,20 +35,15 @@ void display_page (unsigned char n)
  */
 void poll_buttons (void *data)
 {
-	printf (&line1, "Testing LCD.");
-	printf (&line2, "Use buttons.");
-
-	for (;;) {
-#if 1
-		timer_delay (&timer, 500);
-                button_get();
-                printf (&line1, "%d            ", ADC1BUF0);
-#else
 	unsigned char pagenum = 0;
 	unsigned char up_pressed = 0, left_pressed = 0;
 	unsigned char center_pressed = 0, right_pressed = 0;
 	unsigned char down_pressed = 0;
 
+	printf (&line1, "Testing LCD.");
+	printf (&line2, "Use buttons.");
+
+	for (;;) {
 		timer_delay (&timer, 10);
 
                 int key = button_get();
@@ -94,10 +88,7 @@ void poll_buttons (void *data)
 
 			/* Down button: scroll long message. */
 			printf (&line2, message1);
-			timer_delay (&timer, 500);
-			printf (&line2, message2);
 		}
-#endif
 	}
 }
 

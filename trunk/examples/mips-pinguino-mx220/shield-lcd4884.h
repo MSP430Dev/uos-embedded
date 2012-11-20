@@ -57,7 +57,7 @@ inline void led_init()
  * Get a state of joystick.
  * Convert ADC value to key number.
  * Input buttons are connected to a series network of resistors:
- * GND - 3.3k - 1k - 620 - 330 - 2k - +5V
+ * GND - 3.3k - 1k - 620 - 330 - 2k - +3.3V
  * Expected values are:
  * 0 - 144 - 329 - 506 - 741 - 1023
  */
