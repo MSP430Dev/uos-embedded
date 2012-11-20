@@ -9,6 +9,7 @@ TEST		= philosophers
 TESTS		= $(TEST).srec
 TESTS		+= test-debug.srec test-leds.srec test-task.srec test-timer.srec test-uart.srec
 TESTS           += philosophers.srec test-latency.srec test-tswitch.srec
+TESTS           += lab1-1.srec #lab1-2.srec lab5.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis
