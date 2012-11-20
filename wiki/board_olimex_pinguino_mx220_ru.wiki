@@ -175,11 +175,14 @@
 [http://www.sainsmart.com/module/lcd-module/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/513XhPP-1OL._SL500_AA300_.jpg]
 
 Характеристики:
-  * Текстовый дисплей 16x2
-  * Параллельный интерфейс
+  * Текстовый дисплей 16x2 стандартного типа ([http://www.amazon.com/SainSmart-Keypad-Shield-Arduino-Duemilanove/dp/B006OVYI1G на Amazon.com], [http://www.sainsmart.com/sainsmart-1602-lcd-keypad-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html на SainSmart.com].
+  * Параллельный интерфейс [http://www.sparkfun.com/datasheets/LCD/HD44780.pdf Hitachi HD44780]
   * 5 кнопок управления
   * Кнопка Reset
-  * Регулировка подсветки
+  * Управление подсветкой
+  * Ручная подстройка контраста
+
+Исходно плата рассчитана на работу с 5-вольтовым интерфейсом Arduino.  Чтобы переделать ее на +3.3V для PIC32, надо выкусить резистор 2кОм, расположенный над кнопкой Reset, и впаять резистор 2кОм между левой стороной кнопки Right и +3.3V - второй слева ножкой разъема питания.
 
 || *Signal*|| *Function*|| *PIC32* ||
 ||  D4     || LCD_DB4   ||  RC4    ||
