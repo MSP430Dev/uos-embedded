@@ -6,18 +6,18 @@
 #include <timer/timer.h>
 #include "lcd.h"
 
+#define RS		0x01            /* 0 - command, 1 - data */
+#define E		0x04            /* strobe */
+#define D4		0x10		/* data */
+#define D5		0x20
+#define D6		0x40
+#define D7		0x80
+
 #ifdef __AVR__
 /*
  * Olimex MT-128 board.
  * LCD indicator is connected to port C.
  */
-#define RS		0b00000001	/* 0 - command, 1 - data */
-#define E		0b00000100	/* strobe */
-#define D4		0b00010000	/* data */
-#define D5		0b00100000
-#define D6		0b01000000
-#define D7		0b10000000
-
 static void inline __attribute__((always_inline))
 set_bits (small_uint_t bits)
 {
@@ -36,12 +36,10 @@ clear_bits (small_uint_t bits)
  * Olimex easyWeb2 board.
  * LCD indicator is connected to port 2.
  */
+#undef RS
 #define RS		0x04		/* 0 - command, 1 - data */
+#undef E
 #define E		0x08		/* strobe */
-#define D4		0x10		/* data */
-#define D5		0x20
-#define D6		0x40
-#define D7		0x80
 
 static void inline __attribute__((always_inline))
 set_bits (small_uint_t bits)
@@ -53,6 +51,41 @@ static void inline __attribute__((always_inline))
 clear_bits (small_uint_t bits)
 {
 	P2OUT &= ~bits;
+}
+#endif
+
+#ifdef PIC32MX
+/*
+ * SainSmart 1602 LCD Keypad Shield.
+ */
+#define MASKC_LCD_DB4   (1 << 4)    /* signal D4, pin RC4 */
+#define MASKC_LCD_DB5   (1 << 5)    /* signal D5, pin RC5 */
+#define MASKC_LCD_DB6   (1 << 6)    /* signal D6, pin RC6 */
+#define MASKC_LCD_DB7   (1 << 7)    /* signal D7, pin RC7 */
+#define MASKB_LCD_RS    (1 << 7)    /* signal D8, pin RB7 */
+#define MASKA_LCD_E     (1 << 10)   /* signal D9, pin RA10 */
+#define MASKA_LCD_BL    (1 << 1)    /* signal D10, pin RA1 */
+
+static void inline __attribute__((always_inline))
+set_bits (small_uint_t bits)
+{
+        if (bits & (D4 | D5 | D6 | D7))
+                LATCSET = bits & (D4 | D5 | D6 | D7);
+        if (bits & RS)
+                LATBSET = MASKB_LCD_RS;
+        if (bits & E)
+                LATASET = MASKA_LCD_E;
+}
+
+static void inline __attribute__((always_inline))
+clear_bits (small_uint_t bits)
+{
+        if (bits & (D4 | D5 | D6 | D7))
+                LATCCLR = bits & (D4 | D5 | D6 | D7);
+        if (bits & RS)
+                LATBCLR = MASKB_LCD_RS;
+        if (bits & E)
+                LATACLR = MASKA_LCD_E;
 }
 #endif
 
@@ -236,12 +269,23 @@ void lcd_init (lcd_t *line1, lcd_t *line2, timer_t *timer)
 
 	clear_bits (RS | E | D4 | D5 | D6 | D7);
 
+        /* Set pins as outputs, initial 0. */
 #ifdef __AVR__
 	DDRC |= RS | E | D4 | D5 | D6 | D7;
 #endif
 #ifdef MSP430
 	P2SEL &= ~(RS | E | D4 | D5 | D6 | D7);
 	P2DIR |= RS | E | D4 | D5 | D6 | D7;
+#endif
+#ifdef PIC32MX
+        LATCCLR = MASKC_LCD_DB4 | MASKC_LCD_DB5 |
+                  MASKC_LCD_DB6 | MASKC_LCD_DB7;
+        TRISCCLR = MASKC_LCD_DB4 | MASKC_LCD_DB5 |
+                  MASKC_LCD_DB6 | MASKC_LCD_DB7;
+        LATBCLR = MASKB_LCD_RS;
+        TRISBCLR = MASKB_LCD_RS;
+        LATACLR = MASKA_LCD_E | MASKA_LCD_BL;
+        TRISACLR = MASKA_LCD_E | MASKA_LCD_BL;
 #endif
 	mdelay (110);
 
