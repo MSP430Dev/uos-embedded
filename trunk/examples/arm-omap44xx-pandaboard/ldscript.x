@@ -8,8 +8,8 @@ OUTPUT_ARCH(arm)
 ENTRY(_start_)
 MEMORY
 {
-  text   (rx)   : ORIGIN = 0x40300000,	LENGTH = 128K
-  data   (rw!x) : ORIGIN = 0x00200000,	LENGTH = 1M
+  text   (rx)   : ORIGIN = 0x40300000,	LENGTH = 32K
+  data   (rw!x) : ORIGIN = 0x40308000,	LENGTH = 16K
 }
 SECTIONS
 {

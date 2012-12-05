@@ -3,6 +3,14 @@
 extern unsigned long _etext, __data_start, _edata, _end;
 extern void main (void);
 
+void __attribute ((weak)) _irq_handler_ () {};
+void _undef_handler_ (unsigned long pc, unsigned long cpsr, unsigned long lr);
+void _swi_handler_ (unsigned long pc, unsigned long cpsr, unsigned long lr);
+void _prefetch_handler_ (unsigned long pc, unsigned long cpsr, unsigned long lr);
+void _fiq_handler_ (unsigned long pc, unsigned long cpsr, unsigned long lr);
+void _abort_handler_ (unsigned long pc, unsigned long cpsr, unsigned long lr);
+
+
 /*
  * Initialize the system configuration, cache, intermal SRAM,
  * and set up the stack. Then call main().
@@ -117,6 +125,90 @@ _init_ (void)
 	while (! (*AT91C_PMC_SR & AT91C_PMC_MCKRDY))
 		continue;
 #endif /* ARM_AT91SAM && !AT91BOOTSTRAP */
+
+#ifdef ARM_OMAP44XX
+	extern unsigned _undefined_ [];
+	extern unsigned _swi_ [];
+	extern unsigned _prefetch_ [];
+	extern unsigned _abort_ [];
+	extern unsigned _irq_ [];
+	extern unsigned _fiq_ [];
+	
+	OMAP_UNDEF_EXCEPTION_VECT = (unsigned)_undefined_;
+	OMAP_SWI_VECT             = (unsigned)_swi_;
+	OMAP_PREFETCH_ABORT_VECT  = (unsigned)_prefetch_;
+	OMAP_DATA_ABORT_VECT      = (unsigned)_abort_;
+	OMAP_IRQ_VECT             = (unsigned)_irq_;
+	OMAP_FIQ_VECT             = (unsigned)_fiq_;
+	
+	ARM_ICCPMR = 0xFF;
+
+#if (KHZ_CLKIN==12000)
+	CM_SYS_CLKSEL = 1;
+#elif (KHZ_CLKIN==16800)
+	CM_SYS_CLKSEL = 3;
+#elif (KHZ_CLKIN==19200)
+	CM_SYS_CLKSEL = 4;
+#elif (KHZ_CLKIN==26000)
+	CM_SYS_CLKSEL = 5;
+#elif (KHZ_CLKIN==38400)
+	CM_SYS_CLKSEL = 7;
+#else
+#error Bad KHZ_CLKIN in target.cfg
+#endif
+	
+	/* DPLL_PER (OPP100) recommended settings */
+	CM_CLKSEL_DPLL_PER = DPLL_DIV(1) | DPLL_MULT(40);
+	CM_DIV_M2_DPLL_PER = DPLL_CLKx_DIV(8);
+	CM_DIV_M3_DPLL_PER = DPLL_CLKx_DIV(6);
+	CM_DIV_M4_DPLL_PER = DPLL_CLKx_DIV(12);
+	CM_DIV_M5_DPLL_PER = DPLL_CLKx_DIV(9);
+	CM_DIV_M6_DPLL_PER = DPLL_CLKx_DIV(4);
+	CM_DIV_M7_DPLL_PER = DPLL_CLKx_DIV(5);
+	
+	/* DPLL_CORE (OPP100) recommended settings */
+	CM_CLKSEL_DPLL_CORE = DPLL_DIV(5) | DPLL_MULT(125);
+	CM_DIV_M2_DPLL_CORE = DPLL_CLKx_DIV(1);
+	CM_DIV_M3_DPLL_CORE = DPLL_CLKx_DIV(5);
+	CM_DIV_M4_DPLL_CORE = DPLL_CLKx_DIV(8);
+	CM_DIV_M5_DPLL_CORE = DPLL_CLKx_DIV(4);
+	CM_DIV_M6_DPLL_CORE = DPLL_CLKx_DIV(6);
+	CM_DIV_M7_DPLL_CORE = DPLL_CLKx_DIV(6);
+	
+	/* DPLL_MPU (OPP100) recommended settings */
+	CM_CLKSEL_DPLL_MPU = DPLL_DIV(7) | DPLL_MULT(125);
+	CM_DIV_M2_DPLL_MPU = DPLL_CLKx_DIV(1);
+
+#endif
+
+#ifdef ARM_PANDABOARD
+	/* Switch off watchdog timer */
+	*((unsigned *) 0x4A314010) |= 2;
+	/* Enable clocks for UART3 */
+	CM_L4PER_UART3_CLKCTRL = MODULEMODE(2);
+	/* Setting UART3 for debug output */
+	UART_MDR1(3) = UART_MODE_DISABLE;
+	/* Set 115200 kbps */
+	UART_LCR(3) = UART_CONF_MODE_B;
+	UART_DLL(3) = 0x1A;
+	UART_DLH(3) = 0x00;
+	/* Enable FIFOs */
+	UART_EFR(3) |=  UART_EFR_ENHANCED_EN;
+	UART_LCR(3)  =  UART_CONF_MODE_A;
+	UART_MCR(3) |=  UART_MCR_TCR_TLR;
+	UART_FCR(3) |=  UART_FCR_FIFO_EN;
+	UART_MCR(3) &= ~UART_MCR_TCR_TLR;
+	UART_LCR(3)  =  UART_CONF_MODE_B;
+	UART_EFR(3) &= ~UART_EFR_ENHANCED_EN;
+	/* Set frame format: 8 bit/char, no parity, 1 stop bit */
+	UART_LCR(3) = UART_LCR_CHAR_LENGTH_8_BIT;
+	/* Enable UART mode with 16x divisor */
+	UART_MDR1(3) = UART_MODE_16X;
+	/* Set pin functions for UART3 */
+	CONTROL_CORE_PAD0_UART3_RX_IRRX_PAD1_UART3_TX_IRTX = MUXMODE1(0) | 
+		INPUTENABLE1 | MUXMODE2(0) | INPUTENABLE2;
+#endif /* ARM_PANDABOARD */
+
 
 #ifndef EMULATOR /* not needed on emulator */
 	/* Copy the .data image from flash to ram.

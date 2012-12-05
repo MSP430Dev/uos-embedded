@@ -14,7 +14,7 @@ void my_delay(unsigned int count)
 		asm volatile ("nop");
 }
 
-void _init_ (void)
+void main (void)
 {
 	// Включение синхров для GPIO1
 	CM_WKUP_GPIO1_CLKCTRL = MODULEMODE(1);

@@ -1,5 +1,5 @@
 /*
- * Machine-dependent part of uOS for: ARM7TDMI (Samsung S3C4530A), GCC.
+ * Machine-dependent part of uOS for: ARM7, GCC.
  *
  * Copyright (C) 2000-2005 Serge Vakulenko, <vak@cronyx.ru>
  *
@@ -91,8 +91,18 @@ _irq_handler_ (void)
 {
 	mutex_irq_t *h;
 	int irq;
+	
+#ifdef ARM_OMAP44XX
+	irq = 1023;
+#endif
 
 	for (;;) {
+#ifdef ARM_OMAP44XX
+		/* End of interrupt for previously acknowledged interrupt, 
+		   if it is not spurious */
+		if (irq != 1023)
+			ARM_ICCEOIR = irq;
+#endif
 		/* Get the current irq number */
 #ifdef ARM_S3C4530
 		irq = ARM_INTOFFSET_IRQ >> 2;
@@ -100,6 +110,9 @@ _irq_handler_ (void)
 #ifdef ARM_AT91SAM
 		irq = *AT91C_AIC_IVR;		/* get most priority irq */
 		*AT91C_AIC_EOICR = 0;		/* clear it */
+#endif
+#ifdef ARM_OMAP44XX
+		irq = ARM_ICCIAR;		/* get irq and acknowledge it */
 #endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
@@ -111,6 +124,9 @@ _irq_handler_ (void)
 #endif
 #ifdef ARM_AT91SAM
 		*AT91C_AIC_IDCR = 1 << irq;	/* disable */
+#endif
+#ifdef ARM_OMAP44XX
+		ARM_ICDICER(irq >> 5) = (1 << (irq & 0x1F));	/* disable */
 #endif
 /*debug_printf ("<%d> ", irq);*/
 		h = &mutex_irq [irq];
@@ -190,6 +206,9 @@ void arch_intr_allow (int irq)
 #ifdef ARM_AT91SAM
 	*AT91C_AIC_IECR = 1 << irq;
 /*debug_printf ("<IECR:=%x> ", 1 << irq);*/
+#endif
+#ifdef ARM_OMAP44XX
+	ARM_ICDISER(irq >> 5) = (1 << (irq & 0x1F));
 #endif
 }
 

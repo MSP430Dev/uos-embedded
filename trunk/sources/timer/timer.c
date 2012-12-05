@@ -42,6 +42,10 @@
 #   define TIMER_IRQ	AT91C_ID_SYS
 #endif
 
+#if ARM_OMAP44XX
+#   define TIMER_IRQ		29	/* Private Timer interrupt */
+#endif
+
 #if ELVEES_MC24
 #   define TIMER_IRQ		29	/* Interval Timer interrupt */
 #endif
@@ -123,6 +127,10 @@ timer_handler (timer_t *t)
 #if ARM_AT91SAM
 	/* Clear interrupt. */
 	*AT91C_PITC_PIVR;
+#endif
+#if ARM_OMAP44XX
+	/* Clear interrupt. */
+	ARM_PRT_INT_STATUS = ARM_PRT_EVENT;
 #endif
 #if PIC32MX
 	/* Increment COMPARE register. */
@@ -275,6 +283,11 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 #if ARM_AT91SAM
 	*AT91C_PITC_PIMR = (((t->khz * t->msec_per_tick + 8) >> 4) - 1) |
 		AT91C_PITC_PITEN | AT91C_PITC_PITIEN;
+#endif
+#if ARM_OMAP44XX
+	ARM_PRT_LOAD = khz * msec_per_tick - 1;
+	ARM_PRT_CONTROL = ARM_PRT_TIMER_EN | ARM_PRT_AUTO_RELOAD | 
+		ARM_PRT_IRQ_EN;
 #endif
 #if PIC32MX
 	/* Use core timer. */

@@ -239,6 +239,99 @@ debug_peekchar (void)
 }
 #endif /* ARM_AT91SAM */
 
+
+#ifdef ARM_PANDABOARD
+/*
+ * Send a byte to the UART transmitter, with interrupts disabled.
+ */
+void
+debug_putchar (void *arg, short c)
+{
+	int x;
+
+	arm_intr_disable (&x);
+
+	if (hook) {
+		hook (hook_arg, c);
+		arm_intr_restore (x);
+		return;
+	}
+
+again:
+	/* Wait for transmitter holding register empty. */
+	while (UART_SSR(3) & UART_SSR_TX_FIFO_FULL);
+
+	/* Send byte. */
+	/* TODO: unicode to utf8 conversion. */
+	UART_THR(3) = (unsigned char) c;
+
+	if (debug_onlcr && c == '\n') {
+		c = '\r';
+		goto again;
+	}
+	arm_intr_restore (x);
+}
+
+/*
+ * Wait for the byte to be received and return it.
+ */
+unsigned short
+debug_getchar (void)
+{
+	unsigned char c;
+	int x;
+
+	if (debug_char >= 0) {
+		c = debug_char;
+		debug_char = -1;
+		return c;
+	}
+	arm_intr_disable (&x);
+
+	/* Wait until receive data available. */
+	while (! (UART_LSR(3) & UART_LSR_RX_FIFO_E)) {
+		arm_intr_restore (x);
+		arm_intr_disable (&x);
+	}
+
+	/* Get byte. */
+	/* TODO: utf8 to unicode conversion. */
+	c = UART_RHR(3);
+
+	arm_intr_restore (x);
+	return c;
+}
+
+/*
+ * Get the received byte without waiting.
+ */
+int
+debug_peekchar (void)
+{
+	unsigned char c;
+	int x;
+
+	if (debug_char >= 0)
+		return debug_char;
+
+	arm_intr_disable (&x);
+
+	/* Wait until receive data available. */
+	if (! (UART_LSR(3) & UART_LSR_RX_FIFO_E)) {
+		arm_intr_restore (x);
+		return -1;
+	}
+
+	/* Get byte. */
+	/* TODO: utf8 to unicode conversion. */
+	c = UART_RHR(3);
+
+	arm_intr_restore (x);
+	debug_char = c;
+	return c;
+}
+#endif /* ARM_OMAP44XX */
+
 void
 debug_puts (const char *p)
 {

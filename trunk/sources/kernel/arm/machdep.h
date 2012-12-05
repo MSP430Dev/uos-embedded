@@ -1,5 +1,5 @@
 /*
- * Machine-dependent uOS declarations for: ARM7TDMI (Samsung S3C4530A), GCC.
+ * Machine-dependent uOS declarations for: ARM7, GCC.
  *
  * Copyright (C) 2000-2005 Serge Vakulenko, <vak@cronyx.ru>
  *
@@ -28,6 +28,9 @@
 #endif
 #ifdef ARM_AT91SAM
 #   define ARCH_INTERRUPTS		32
+#endif
+#ifdef ARM_OMAP44XX
+#   define ARCH_INTERRUPTS		160
 #endif
 
 /*

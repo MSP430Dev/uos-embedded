@@ -30,3 +30,4 @@
 #define GPIO_SETWKUENA(i)       OMAP_R(((i)==1) ? (0x4A310184) : (0x48055184+(i)*0x2000))
 #define GPIO_CLEARDATAOUT(i)    OMAP_R(((i)==1) ? (0x4A310190) : (0x48055190+(i)*0x2000))
 #define GPIO_SETDATAOUT(i)      OMAP_R(((i)==1) ? (0x4A310194) : (0x48055194+(i)*0x2000))
+

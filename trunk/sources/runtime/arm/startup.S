@@ -1,8 +1,9 @@
 		.section .init
 		.code	32
-_start_:	.global	_start_
 
 #ifdef AT91BOOTSTRAP
+_start_:	.global	_start_
+
 		@
 		@ Branch instruction could address only lower 64 Mbytes.
 		@ We use LDR instruction to jump to higher flash memory.
@@ -23,7 +24,57 @@ _start_:	.global	_start_
 		.word	_reset_			@ cannot happen
 		.word	_irq_
 		.word	_fiq_
+		
+#elif defined(ARM_OMAP44XX)
+
+		.extern	_etext
+		.extern _init_
+		
+		.org	0x0
+		.global	_start_
+		.global _irq_
+		.global _undefined_
+		.global _swi_
+		.global _prefetch_
+		.global _fiq_
+		.global _abort_
+		
+		@
+		@ Configuration header for OMAP 44xx
+		@
+		.word	0x40		@ CHSETTINGS item offset
+		.word	0x0c		@ CHSETTINGS item size
+		.word	0x00		@ unused
+		.word	0x00		@ unused
+		.word	0x00		@ unused
+		.string	"CHSETTINGS"	@ section name, 12 bytes
+		.byte	0x00
+		.word	0xffffffff	@ other sections not used
+		.word	0xffffffff	@ other sections not used
+		.word	0xffffffff	@ other sections not used
+		.word	0xffffffff	@ other sections not used
+		.word	0xffffffff	@ other sections not used
+		.word	0xffffffff	@ other sections not used
+		.word	0xffffffff	@ other sections not used
+		.word	0xffffffff	@ other sections not used
+		
+		@ CHSETTINGS item
+		.word	0xc0c0c0c1	@ section key
+		.byte	0x00		@ disabled section
+		.byte	0x01		@ version
+		.byte	0x00		@ reserved
+		.byte	0x00		@ reserved
+		.word	0x00		@ clocking section (not used here)
+		
+		.org	0x0200		@ GP header
+		.word	_etext-_start_	@ size of image
+		.word	_start_		@ image destination
+		
+_start_:	b	_reset_
+
 #else
+_start_:	.global	_start_
+
 		@
 		@ Jump to exception handlers.
 		@

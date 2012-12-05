@@ -795,3 +795,1131 @@
 #define SR_CORE_IRQENABLE_CLR           OMAP_R(0x4A0DD030)
 #define SR_CORE_SENERROR                OMAP_R(0x4A0DD034)
 #define SR_CORE_ERRCONFIG               OMAP_R(0x4A0DD038)
+
+///////////////////////////////////////////////////////////////////
+// Bit Fields
+///////////////////////////////////////////////////////////////////
+// 
+// !!! PLEASE NOTE
+// that not all flags are applicable to all registers! Refer to
+// datasheet.
+//
+// Registers with only one field starting from bit 0 are
+// often left undescribed.
+//
+// In most cases names of fields are given the same as in the 
+// datasheet. But in some cases they are
+// 1) generalized for several registers in order to shorten 
+//    the description (and this file also).
+// 2) mangled in order to solve name conflicts because a few fields
+//    are named identically in the datasheet.
+//
+
+// PRM_IRQSTATUS_MPU_A9
+// PRM_IRQENABLE_MPU_A9
+// PRM_IRQSTATUS_MPU_M3
+// PRM_IRQENABLE_MPU_M3
+// PRM_IRQSTATUS_DSP
+// PRM_IRQENABLE_DSP
+#define DPLL_CORE_RECAL                 (1 << 0)
+#define DPLL_MPU_RECAL                  (1 << 1)
+#define DPLL_IVA_RECAL                  (1 << 2)
+#define DPLL_PER_RECAL                  (1 << 3)
+#define DPLL_ABE_RECAL                  (1 << 4)
+#define TRANSITION                      (1 << 8)
+#define IO                              (1 << 9)
+#define FORCEWKUP_ST                    (1 << 10)
+#define VC_SAERR                        (1 << 11)
+#define VC_RAERR                        (1 << 12)
+#define VC_TOERR                        (1 << 13)
+#define VC_BYPASSACK                    (1 << 14)
+#define VP_CORE_OPPCHANGEDONE           (1 << 16)
+#define VP_CORE_MINVDD                  (1 << 17)
+#define VP_CORE_MAXVDD                  (1 << 18)
+#define VP_CORE_NOSMPSACK               (1 << 19)
+#define VP_CORE_EQVALUE                 (1 << 20)
+#define VP_CORE_TRANXDONE               (1 << 21)
+#define VC_CORE_VPACK                   (1 << 22)
+#define VP_IVA_OPPCHANGEDONE            (1 << 24)
+#define VP_IVA_MINVDD                   (1 << 25)
+#define VP_IVA_MAXVDD                   (1 << 26)
+#define VP_IVA_NOSMPSACK                (1 << 27)
+#define VP_IVA_EQVALUE                  (1 << 28)
+#define VP_IVA_TRANXDONE                (1 << 29)
+#define VC_IVA_VPACK                    (1 << 30)
+#define ABB_IVA_DONE                    (1 << 31)
+
+// PRM_IRQSTATUS_MPU_A9_2
+// PRM_IRQENABLE_MPU_A9_2
+#define VP_MPU_OPPCHANGEDONE            (1 << 0)
+#define VP_MPU_MINVDD                   (1 << 1)
+#define VP_MPU_MAXVDD                   (1 << 2)
+#define VP_MPU_NOSMPSACK                (1 << 3)
+#define VP_MPU_EQVALUE                  (1 << 4)
+#define VP_MPU_TRANXDONE                (1 << 5)
+#define VC_MPU_VPACK                    (1 << 6)
+#define ABB_MPU_DONE                    (1 << 7)
+
+// *_CLKCTRL
+#define MODULEMODE(x)                   ((x) & 0x3)
+#define SAR_MODE                        (1 << 4)
+#define OPTFCLKEN_DBCLK                 (1 << 8)
+#define OPTFCLKEN_BGAP_32K              (1 << 8)
+#define OPTFCLKEN_FCLK0                 (1 << 8)
+#define OPTFCLKEN_CLK32K                (1 << 8)
+#define OPTFCLKEN_DLL_CLK               (1 << 8)
+#define OPTFCLKEN_CTRLCLK               (1 << 8)
+#define OPTFCLKEN_DSSCLK                (1 << 8)
+#define OPTFCLKEN_UTMI_P1_CLK           (1 << 8)
+#define OPTFCLKEN_XCLK                  (1 << 8)
+#define OPTFCLKEN_USB_CH0_CLK           (1 << 8)
+#define OPTFCLKEN_PHY_48M               (1 << 8)
+#define OPTFCLKEN_DBCLK                 (1 << 8)
+#define OPTFCLKEN_PER24MC_FCLK          (1 << 8)
+#define OPTFCLKEN_FCLK1                 (1 << 9)
+#define OPTFCLKEN_48MHZ_CLK             (1 << 9)
+#define OPTFCLKEN_UTMI_P2_CLK           (1 << 9)
+#define OPTFCLKEN_USB_CH1_CLK           (1 << 9)
+#define OPTFCLKEN_PERABE24M_FCLK        (1 << 9)
+#define OPTFCLKEN_FCLK2                 (1 << 10)
+#define OPTFCLKEN_SYS_CLK               (1 << 10)
+#define OPTFCLKEN_UTMI_P3_CLK           (1 << 10)
+#define OPTFCLKEN_ABE_SLIMBUS_CLK       (1 << 10)
+#define OPTFCLKEN_L4PER_SLIMBUS_CLK     (1 << 11)
+#define OPTFCLKEN_TV_FCLK               (1 << 11)
+#define OPTFCLKEN_HSIC60M_P1_CLK        (1 << 11)
+#define OPTFCLKEN_HSIC60M_P2_CLK        (1 << 12)
+#define OPTFCLKEN_HSIC480M_P1_CLK       (1 << 13)
+#define OPTFCLKEN_HSIC480M_P2_CLK       (1 << 14)
+#define OPTFCLKEN_FUNC48MCLK            (1 << 15)
+#define IDLEST(x)                       (((x) & 0x3) << 16)
+#define GET_IDLEST(reg)                 (((reg) >> 16) & 0x3)
+#define STBYST                          (1 << 18)
+#define PMD_STM_MUX_CTRL(x)             (((x) & 0x3) << 20)
+#define PMD_TRACE_MUX_CTRL(x)           (((x) & 0x3) << 22)
+#define CLKSEL_PMD_TRACE_CLK(x)         (((x) & 0x7) << 24)
+#define CLKSEL_SOURCE(x)                (((x) & 0x3) << 24)
+#define CLKSEL_FCLK(x)                  (((x) & 0x3) << 24)
+#define CLKSEL_HSI(x)                   (((x) & 0x3) << 24)
+#define CLKSEL_AESS_FCLK                (1 << 24)
+#define CLKSEL_GPTIMER                  (1 << 24)
+#define CLKSEL_HSMMC                    (1 << 24)
+#define CLKSEL_SGX_FCLK                 (1 << 24)
+#define CLKSEL_UTMI_P1                  (1 << 24)
+#define CLKSEL_60M                      (1 << 24)
+#define CLKSEL_SOURCE_MCBSP             (1 << 24)
+#define CLKSEL_UTMI_P2                  (1 << 25)
+#define CLKSEL_INTERNAL_SOURCE_MCBSP    (1 << 25)
+#define CLKSEL_INTERNAL_SOURCE(x)       (((x) & 0x3) << 26)
+#define CLKSEL_PMD_STM_CLK(x)           (((x) & 0x7) << 27)
+
+// *_DEBUG_CFG
+#define SEL0(x)                         ((x) & 0x7F)
+#define SEL1(x)                         (((x) & 0x7F) << 8)
+#define SEL2(x)                         (((x) & 0x7F) << 16)
+#define SEL3(x)                         (((x) & 0x7F) << 24)
+
+// CM_ABE_DSS_SYS_CLKSEL
+// CM_L4_WKUP_CLKSEL
+// CM_ABE_PLL_REF_CLKSEL
+// CM_CLKSEL_MPU_M3_ISS_ROOT
+// CM_CLKSEL_USB_60MHZ
+#define CLKSEL                          (1 << 0)
+
+// CM_SYS_CLKSEL
+#define SYS_CLKSEL(x)                   ((x) & 0x7)
+
+// CM_SCALE_FCLK
+#define SCALE_FCLK                      (1 << 0)
+
+// CM_*_DVFS_PERF*
+#define PERF_REQ(x)                     ((x) & 0xFF)
+
+// CM_*_DVFS_CURRENT
+#define PERF_CURRENT(x)                 ((x) & 0xFF)
+
+// *_PWRSTCTRL
+#define POWERSTATE(x)                   ((x) & 0x3)
+#define LOGICRETSTATE                   (1 << 2)
+#define LOWPOWERSTATECHANGE             (1 << 4)
+#define MPU_L1_RETSTATE                 (1 << 8)
+#define DSP_L1_RETSTATE                 (1 << 8)
+#define AESSMEM_RETSTATE                (1 << 8)
+#define CORE_OTHER_BANK_RETSTATE        (1 << 8)
+#define HWA_MEM_RETSTATE                (1 << 8)
+#define DSS_MEM_RETSTATE                (1 << 8)
+#define L3INIT_BANK1_RETSTATE           (1 << 8)
+#define RETAINED_BANK_RETSTATE          (1 << 8)
+#define MPU_L2_RETSTATE                 (1 << 9)
+#define DSP_L2_RETSTATE                 (1 << 9)
+#define CORE_OCMRAM_RETSTATE            (1 << 9)
+#define SL2_MEM_RETSTATE                (1 << 9)
+#define NONRETAINED_BANK_RETSTATE       (1 << 9)
+#define MPU_RAM_RETSTATE                (1 << 10)
+#define DSP_EDMA_RETSTATE               (1 << 10)
+#define PERIPHMEM_RETSTATE              (1 << 10)
+#define MPU_M3_L2RAM_RETSTATE           (1 << 10)
+#define TCM1_MEM_RETSTATE               (1 << 10)
+#define MPU_M3_UNICACHE_RETSTATE        (1 << 11)
+#define TCM2_MEM_RETSTATE               (1 << 11)
+#define INTRCONN_NRET_BANK_RETSTATE     (1 << 12)
+#define MPU_L1_ONSTATE(x)               (((x) & 0x3) << 16)
+#define DSP_L1_ONSTATE(x)               (((x) & 0x3) << 16)
+#define AESSMEM_ONSTATE(x)              (((x) & 0x3) << 16)
+#define CORE_OTHER_BANK_ONSTATE(x)      (((x) & 0x3) << 16)
+#define HWA_MEM_ONSTATE(x)              (((x) & 0x3) << 16)
+#define CAM_MEM_ONSTATE(x)              (((x) & 0x3) << 16)
+#define DSS_MEM_ONSTATE(x)              (((x) & 0x3) << 16)
+#define SGX_MEM_ONSTATE(x)              (((x) & 0x3) << 16)
+#define L3INIT_BANK1_ONSTATE(x)         (((x) & 0x3) << 16)
+#define RETAINED_BANK_ONSTATE(x)        (((x) & 0x3) << 16)
+#define EMU_BANK_ONSTATE(x)             (((x) & 0x3) << 16)
+#define MPU_L2_ONSTATE(x)               (((x) & 0x3) << 18)
+#define DSP_L2_ONSTATE(x)               (((x) & 0x3) << 18)
+#define CORE_OCMRAM_ONSTATE(x)          (((x) & 0x3) << 18)
+#define SL2_MEM_ONSTATE(x)              (((x) & 0x3) << 18)
+#define NONRETAINED_BANK_ONSTATE(x)     (((x) & 0x3) << 18)
+#define MPU_RAM_ONSTATE(x)              (((x) & 0x3) << 20)
+#define DSP_EDMA_ONSTATE(x)             (((x) & 0x3) << 20)
+#define PERIPHMEM_ONSTATE(x)            (((x) & 0x3) << 20)
+#define TCM1_MEM_ONSTATE(x)             (((x) & 0x3) << 20)
+#define MPU_M3_L2RAM_ONSTATE(x)         (((x) & 0x3) << 22)
+#define TCM2_MEM_ONSTATE(x)             (((x) & 0x3) << 22)
+#define INTRCONN_NRET_BANK_ONSTATE      (((x) & 0x3) << 24)
+
+// *_PWRSTST
+#define POWERSTATEST(x)                 ((x) & 0x3)
+#define LOGICRETSTATEST                 (1 << 2)
+#define MPU_L1_STATEST(x)               (((x) & 0x3) << 4)
+#define DSP_L1_STATEST(x)               (((x) & 0x3) << 4)
+#define AESSMEM_STATEST(x)              (((x) & 0x3) << 4)
+#define CORE_OTHER_BANK_STATEST(x)      (((x) & 0x3) << 4)
+#define HWA_MEM_STATEST(x)              (((x) & 0x3) << 4)
+#define CAM_MEM_STATEST(x)              (((x) & 0x3) << 4)
+#define DSS_MEM_STATEST(x)              (((x) & 0x3) << 4)
+#define SGX_MEM_STATEST(x)              (((x) & 0x3) << 4)
+#define L3INIT_BANK1_STATEST(x)         (((x) & 0x3) << 4)
+#define RETAINED_BANK_STATEST(x)        (((x) & 0x3) << 4)
+#define EMU_BANK_STATEST(x)             (((x) & 0x3) << 4)
+#define MPU_L2_STATEST(x)               (((x) & 0x3) << 6)
+#define DSP_L2_STATEST(x)               (((x) & 0x3) << 6)
+#define CORE_OCMRAM_STATEST(x)          (((x) & 0x3) << 6)
+#define SL2_MEM_STATEST(x)              (((x) & 0x3) << 6)
+#define NONRETAINED_BANK_STATEST(x)     (((x) & 0x3) << 6)
+#define MPU_RAM_STATEST(x)              (((x) & 0x3) << 8)
+#define DSP_RAM_STATEST(x)              (((x) & 0x3) << 8)
+#define PERIPHMEM_STATEST(x)            (((x) & 0x3) << 8)
+#define MPU_M3_L2RAM_STATEST(x)         (((x) & 0x3) << 8)
+#define TCM1_MEM_STATEST(x)             (((x) & 0x3) << 8)
+#define MPU_M3_UNICACHE_STATEST(x)      (((x) & 0x3) << 10)
+#define TCM2_MEM_STATEST(x)             (((x) & 0x3) << 10)
+#define INTRCONN_NRET_BANK_STATEST(x)   (((x) & 0x3) << 12)
+#define INTRANSITION                    (1 << 20)
+#define LASTPOWERSTATEENTERED(x)        (((x) & 0x3) << 24)
+
+// RM_MPU_RSTST
+#define EMULATION_RST                   (1 << 0)
+
+// RM_DSP_RSTCTRL
+// RM_MPU_M3_RSTCTRL
+// RM_IVAHD_RSTCTRL
+#define RST1                            (1 << 0)
+#define RST2                            (1 << 1)
+#define RST3                            (1 << 2)
+
+// PRM_RSTCTRL
+#define RST_GLOBAL_WARM_software        (1 << 0)
+#define RST_GLOBAL_COLD_software        (1 << 1)
+
+// RM_DSP_RSTST
+// RM_MPU_M3_RSTST
+// RM_IVAHD_RSTST
+#define RST1ST                          (1 << 0)
+#define RST2ST                          (1 << 1)
+#define RST3ST                          (1 << 2)
+#define DSPSS_EMU_RSTST                 (1 << 2)
+#define DSP_DSP_EMU_REQ_RSTST           (1 << 3)
+#define EMULATION_RST1ST                (1 << 3)
+#define EMULATION_SEQ1_RST1ST           (1 << 3)
+#define EMULATION_RST2ST                (1 << 4)
+#define EMULATION_SEQ2_RST2ST           (1 << 4)
+#define ICECRUSHER_RST1ST               (1 << 5)
+#define ICECRUSHER_SEQ1_RST1ST          (1 << 5)
+#define ICECRUSHER_RST2ST               (1 << 6)
+#define ICECRUSHER_SEQ2_RST2ST          (1 << 6)
+
+// PRM_RSTST
+#define GLOBAL_COLD_RST                 (1 << 0)
+#define GLOBAL_WARM_SW_RST              (1 << 1)
+#define MPU_WDT_RST                     (1 << 3)
+#define EXTERNAL_WARM_RST               (1 << 5)
+#define VDD_MPU_VOLT_MGR_RST            (1 << 6)
+#define VDD_IVA_VOLT_MGR_RST            (1 << 7)
+#define VDD_CORE_VOLT_MGR_RST           (1 << 8)
+#define ICEPICK_RST                     (1 << 9)
+#define C2C_RST                         (1 << 10)
+
+// *_CLKSTCTRL
+// *_CLKSTCTRL_RESTORE
+#define CLKTRCTRL(x)                    ((x) & 0x3)
+#define CLKACTIVITY_SYS_CLK             (1 << 8)
+#define CLKACTIVITY_EMU_SYS_CLK         (1 << 8)
+#define CLKACTIVITY_MPU_DPLL_CLK        (1 << 8)
+#define CLKACTIVITY_DSP_ROOT_CLK        (1 << 8)
+#define CLKACTIVITY_DPLL_ABE_X2_CLK     (1 << 8)
+#define CLKACTIVITY_L4_AO_ICLK          (1 << 8)
+#define CLKACTIVITY_L3_1_ICLK           (1 << 8)
+#define CLKACTIVITY_L3_2_ICLK           (1 << 8)
+#define CLKACTIVITY_MPU_M3_CLK          (1 << 8)
+#define CLKACTIVITY_DMA_L3_ICLK         (1 << 8)
+#define CLKACTIVITY_L3_EMIF_ICLK        (1 << 8)
+#define CLKACTIVITY_L3_C2C_ICLK         (1 << 8)
+#define CLKACTIVITY_CFG_L4_ICLK         (1 << 8)
+#define CLKACTIVITY_L3_INSTR_ICLK       (1 << 8)
+#define CLKACTIVITY_IVAHD_CLK           (1 << 8)
+#define CLKACTIVITY_ISS_CLK             (1 << 8)
+#define CLKACTIVITY_DSS_L3_ICLK         (1 << 8)
+#define CLKACTIVITY_SGX_L3_ICLK         (1 << 8)
+#define CLKACTIVITY_INIT_L3_ICLK        (1 << 8)
+#define CLKACTIVITY_L4_PER_ICLK         (1 << 8)
+#define CLKACTIVITY_L3_SECURE_GICLK     (1 << 8)
+#define CLKACTIVITY_ABE_LP_CLK          (1 << 9)
+#define CLKACTIVITY_CORE_DPLL_EMU_CLK   (1 << 9)
+#define CLKACTIVITY_ABE_ICLK2           (1 << 9)
+#define CLKACTIVITY_SR_MPU_SYSCLK       (1 << 9)
+#define CLKACTIVITY_DLL_CLK             (1 << 9)
+#define CLKACTIVITY_L4_C2C_ICLK         (1 << 9)
+#define CLKACTIVITY_CAM_PHY_CTRL_CLK    (1 << 9)
+#define CLKACTIVITY_DSS_FCLK            (1 << 9)
+#define CLKACTIVITY_SGX_FCLK            (1 << 9)
+#define CLKACTIVITY_INIT_L4_ICLK        (1 << 9)
+#define CLKACTIVITY_GPT10_FCLK          (1 << 9)
+#define CLKACTIVITY_L4_SECURE_GICLK     (1 << 9)
+#define CLKACTIVITY_24M_FCLK            (1 << 10)
+#define CLKACTIVITY_SR_IVA_SYSCLK       (1 << 10)
+#define CLKACTIVITY_PHY_ROOT_CLK        (1 << 10)
+#define CLKACTIVITY_L3X2_C2C_ICLK       (1 << 10)
+#define CLKACTIVITY_FDIF_FCLK           (1 << 10)
+#define CLKACTIVITY_DSS_ALWON_SYS_CLK   (1 << 10)
+#define CLKACTIVITY_GPT11_FCLK          (1 << 10)
+#define CLKACTIVITY_WKUP_32K_FCLK       (1 << 11)
+#define CLKACTIVITY_ABE_SYSCLK          (1 << 11)
+#define CLKACTIVITY_SR_CORE_SYSCLK      (1 << 11)
+#define CLKACTIVITY_HDMI_PHY_48M_FCLK   (1 << 11)
+#define CLKACTIVITY_GPT2_FCLK           (1 << 11)
+#define CLKACTIVITY_ASYNC_DLL_CLK       (1 << 11)
+#define CLKACTIVITY_L4_WKUP_ICLK        (1 << 12)
+#define CLKACTIVITY_ABE_ALWON_32K_CLK   (1 << 12)
+#define CLKACTIVITY_CORE_ALWON_32K_GFCLK (1 << 12)
+#define CLKACTIVITY_INIT_48M_FCLK       (1 << 12)
+#define CLKACTIVITY_GPT3_FCLK           (1 << 12)
+#define CLKACTIVITY_ASYNC_PHY1_CLK      (1 << 12)
+#define CLKACTIVITY_ABE_24M_FCLK        (1 << 13)
+#define CLKACTIVITY_INIT_48MC_FCLK      (1 << 13)
+#define CLKACTIVITY_GPT4_FCLK           (1 << 13)
+#define CLKACTIVITY_ASYNC_PHY2_CLK      (1 << 13)
+#define CLKACTIVITY_USB_DPLL_CLK        (1 << 14)
+#define CLKACTIVITY_GPT9_FCLK           (1 << 14)
+#define CLKACTIVITY_USB_DPLL_HS_CLK     (1 << 15)
+#define CLKACTIVITY_12M_FCLK            (1 << 15)
+#define CLKACTIVITY_INIT_HSI_FCLK       (1 << 16)
+#define CLKACTIVITY_PER_24MC_FCLK       (1 << 16)
+#define CLKACTIVITY_INIT_HSMMC1_FCLK    (1 << 17)
+#define CLKACTIVITY_PER_32K_FCLK        (1 << 17)
+#define CLKACTIVITY_INIT_HSMMC2_FCLK    (1 << 18)
+#define CLKACTIVITY_PER_48M_FCLK        (1 << 18)
+#define CLKACTIVITY_PER_96M_FCLK        (1 << 19)
+#define CLKACTIVITY_HSIC_P1_480M_FCLK   (1 << 20)
+#define CLKACTIVITY_HSIC_P2_480M_FCLK   (1 << 21)
+#define CLKACTIVITY_TLL_CH0_FCLK        (1 << 22)
+#define CLKACTIVITY_PER_MCBSP4_FCLK     (1 << 22)
+#define CLKACTIVITY_TLL_CH1_FCLK        (1 << 23)
+#define CLKACTIVITY_UTMI_ROOT_FCLK      (1 << 25)
+#define CLKACTIVITY_PER_ABE_24M_FCLK    (1 << 25)
+#define CLKACTIVITY_HSIC_P1_FCLK        (1 << 26)
+#define CLKACTIVITY_HSIC_P2_FCLK        (1 << 27)
+#define CLKACTIVITY_INIT_60M_P1_FCLK    (1 << 28)
+#define CLKACTIVITY_INIT_60M_P2_FCLK    (1 << 29)
+
+// PRM_CLKREQCTRL
+#define CLKREQ_COND(x)                  ((x) & 0x7)
+
+// PRM_VOLTCTRL
+#define AUTO_CTRL_VDD_CORE_L(x)         ((x) & 0x3)
+#define AUTO_CTRL_VDD_MPU_L(x)          (((x) & 0x3) << 2)
+#define AUTO_CTRL_VDD_IVA_L(x)          (((x) & 0x3) << 4)
+#define VDD_MPU_PRESENCE                (1 << 8)
+#define VDD_IVA_PRESENCE                (1 << 9)
+#define VDD_CORE_I2C_DISABLE            (1 << 12)
+#define VDD_MPU_I2C_DISABLE             (1 << 13)
+#define VDD_IVA_I2C_DISABLE             (1 << 14)
+
+// PRM_PWRREQCTRL
+#define PWRREQ_COND(x)                  ((x) & 0x3)
+
+// PRM_IO_PMCTRL
+#define ISOCLK_OVERRIDE                 (1 << 0)
+#define ISOCLK_STATUS                   (1 << 1)
+#define ISOOVR_EXTEND                   (1 << 4)
+#define IOON_STATUS                     (1 << 5)
+#define WUCLK_CTRL                      (1 << 8)
+#define WUCLK_STATUS                    (1 << 9)
+#define GLOBAL_WUEN                     (1 << 16)
+
+// *_CONTEXT
+#define LOSTCONTEXT_DFF                 (1 << 0)
+#define LOSTCONTEXT_RFF                 (1 << 1)
+#define LOSTMEM_MPU_L1                  (1 << 8)
+#define LOSTMEM_DSP_L1                  (1 << 8)
+#define LOSTMEM_AESSMEM                 (1 << 8)
+#define LOSTMEM_PERIPHMEM               (1 << 8)
+#define LOSTMEM_CORE_OCMRAM             (1 << 8)
+#define LOSTMEM_MPU_M3_UNICACHE         (1 << 8)
+#define LOSTMEM_CORE_OTHER_BANK         (1 << 8)
+#define LOSTMEM_OCP_WP1_CORE_NRET_BANK  (1 << 8)
+#define LOSTMEM_TCM1_MEM                (1 << 8)
+#define LOSTMEM_SL2_MEM                 (1 << 8)
+#define LOSTMEM_CAM_MEM                 (1 << 8)
+#define LOSTMEM_DSS_MEM                 (1 << 8)
+#define LOSTMEM_SGX_MEM                 (1 << 8)
+#define LOSTMEM_L3INIT_BANK1            (1 << 8)
+#define LOSTMEM_NONRETAINED_BANK        (1 << 8)
+#define LOSTMEM_RETAINED_BANK           (1 << 8)
+#define LOSTMEM_WKUP_BANK               (1 << 8)
+#define LOSTMEM_EMU_BANK                (1 << 8)
+#define LOSTMEM_MPU_L2                  (1 << 9)
+#define LOSTMEM_DSP_L2                  (1 << 9)
+#define LOSTMEM_MPU_M3_L2RAM            (1 << 9)
+#define LOSTMEM_DMM_CORE_NRET_BANK      (1 << 9)
+#define LOSTMEM_TCM2_MEM                (1 << 9)
+#define LOSTMEM_MPU_RAM                 (1 << 10)
+#define LOSTMEM_DSP_EDMA                (1 << 10s)
+#define LOSTMEM_HWA_MEM                 (1 << 10)
+
+// PM_ABE_PDM_WKDEP
+#define WKUPDEP_PDM_IRQ_MPU         (1 << 0)
+#define WKUPDEP_PDM_IRQ_DSP         (1 << 2)
+#define WKUPDEP_PDM_DMA_DSP         (1 << 6)
+#define WKUPDEP_PDM_DMA_SDMA        (1 << 7)
+
+// PM_ABE_DMIC_WKDEP
+#define WKUPDEP_DMIC_IRQ_MPU        (1 << 0)
+#define WKUPDEP_DMIC_IRQ_DSP        (1 << 2)
+#define WKUPDEP_DMIC_DMA_DSP        (1 << 6)
+#define WKUPDEP_DMIC_DMA_SDMA       (1 << 7)
+
+// PM_ABE_MCASP_WKDEP   
+#define WKUPDEP_MCASP1_IRQ_MPU      (1 << 0)
+#define WKUPDEP_MCASP1_IRQ_DSP      (1 << 2)
+#define WKUPDEP_MCASP1_DMA_DSP      (1 << 6)
+#define WKUPDEP_MCASP1_DMA_SDMA     (1 << 7)
+
+// PM_ABE_MCBSP1_WKDEP
+#define WKUPDEP_MCBSP1_MPU          (1 << 0)
+#define WKUPDEP_MCBSP1_DSP          (1 << 2)
+#define WKUPDEP_MCBSP1_SDMA         (1 << 3)
+
+// PM_ABE_MCBSP2_WKDEP
+#define WKUPDEP_MCBSP2_MPU          (1 << 0)
+#define WKUPDEP_MCBSP2_DSP          (1 << 2)
+#define WKUPDEP_MCBSP2_SDMA         (1 << 3)
+
+// PM_ABE_MCBSP3_WKDEP
+#define WKUPDEP_MCBSP3_MPU          (1 << 0)
+#define WKUPDEP_MCBSP3_DSP          (1 << 2)
+#define WKUPDEP_MCBSP3_SDMA         (1 << 3)
+
+// PM_ABE_SLIMBUS_WKDEP
+#define WKUPDEP_SLIMBUS1_IRQ_MPU    (1 << 0)
+#define WKUPDEP_SLIMBUS1_IRQ_DSP    (1 << 2)
+#define WKUPDEP_SLIMBUS1_DMA_DSP    (1 << 6)
+#define WKUPDEP_SLIMBUS1_DMA_SDMA   (1 << 7)
+
+// PM_ABE_GPTIMER5_WKDEP
+#define WKUPDEP_TIMER5_MPU          (1 << 0)
+#define WKUPDEP_TIMER5_DSP          (1 << 2)
+
+// PM_ABE_GPTIMER6_WKDEP
+#define WKUPDEP_TIMER6_MPU          (1 << 0)
+#define WKUPDEP_TIMER6_DSP          (1 << 2)
+
+// PM_ABE_GPTIMER7_WKDEP
+#define WKUPDEP_TIMER7_MPU          (1 << 0)
+#define WKUPDEP_TIMER7_DSP          (1 << 2)
+
+// PM_ABE_GPTIMER8_WKDEP
+#define WKUPDEP_TIMER8_MPU          (1 << 0)
+#define WKUPDEP_TIMER8_DSP          (1 << 2)
+
+// PM_WKUP_WDTIMER2_WKDEP
+#define WKUPDEP_WDT2_MPU            (1 << 0)
+#define WKUPDEP_WDT2_MPU_M3         (1 << 1)
+
+// PM_ABE_WDTIMER3_WKDEP
+#define WKUPDEP_WDT3_MPU            (1 << 0)
+
+// PM_ALWON_SR_MPU_WKDEP
+#define WKUPDEP_SR_IVA_MPU          (1 << 0)
+#define WKUPDEP_SR_IVA_MPU_M3       (1 << 1)
+
+// PM_ALWON_SR_MPU_WKDEP
+#define WKUPDEP_SR_CORE_MPU         (1 << 0)
+#define WKUPDEP_SR_CORE_MPU_M3      (1 << 1)
+
+// PM_DSS_DSS_WKDEP
+#define WKUPDEP_DISPC_MPU           (1 << 0)
+#define WKUPDEP_DISPC_MPU_M3        (1 << 1)
+#define WKUPDEP_DISPC_DSP           (1 << 2)
+#define WKUPDEP_DISPC_SDMA          (1 << 3)
+#define WKUPDEP_DSI1_MPU            (1 << 4)
+#define WKUPDEP_DSI1_MPU_M3         (1 << 5)
+#define WKUPDEP_DSI1_DSP            (1 << 6)
+#define WKUPDEP_DSI1_SDMA           (1 << 7)
+#define WKUPDEP_DSI2_MPU            (1 << 8)
+#define WKUPDEP_DSI2_MPU_M3         (1 << 9)
+#define WKUPDEP_DSI2_DSP            (1 << 10)
+#define WKUPDEP_DSI2_SDMA           (1 << 11)
+#define WKUPDEP_HDMIIRQ_MPU         (1 << 12)
+#define WKUPDEP_HDMIIRQ_MPU_M3      (1 << 13)
+#define WKUPDEP_HDMIIRQ_DSP         (1 << 14)
+#define WKUPDEP_HDMIDMA_SDMA        (1 << 19)
+
+// PM_L3INIT_MMC1_WKDEP
+#define WKUPDEP_MMC1_MPU            (1 << 0)
+#define WKUPDEP_MMC1_MPU_M3         (1 << 1)
+#define WKUPDEP_MMC1_DSP            (1 << 2)
+#define WKUPDEP_MMC1_SDMA           (1 << 3)
+
+// PM_L3INIT_MMC2_WKDEP
+#define WKUPDEP_MMC2_MPU            (1 << 0)
+#define WKUPDEP_MMC2_MPU_M3         (1 << 1)
+#define WKUPDEP_MMC2_DSP            (1 << 2)
+#define WKUPDEP_MMC2_SDMA           (1 << 3)
+
+// PM_L3INIT_HSI_WKDEP
+#define WKUPDEP_HSI_MCU_MPU         (1 << 0)
+#define WKUPDEP_HSI_MCU_MPU_M3      (1 << 1)
+#define WKUPDEP_HSI_DSP_DSP         (1 << 6)
+#define WKUPDEP_WGM_HSI_WAKE_MPU    (1 << 8)
+
+// PM_L3INIT_HSUSBHOST_WKDEP
+#define WKUPDEP_HSUSBHOST_MPU       (1 << 0)
+#define WKUPDEP_HSUSBHOST_MPU_M3    (1 << 1)
+
+// PM_L3INIT_HSUSBOTG_WKDEP
+#define WKUPDEP_HSUSBOTG_MPU        (1 << 0)
+#define WKUPDEP_HSUSBOTG_MPU_M3     (1 << 1)
+
+// PM_L3INIT_HSUSBTLL_WKDEP
+#define WKUPDEP_HSUSBTLL_MPU        (1 << 0)
+#define WKUPDEP_HSUSBTLL_MPU_M3     (1 << 1)
+
+// PM_L3INIT_FSUSB_WKDEP
+#define WKUPDEP_FSUSB_MPU           (1 << 0)
+#define WKUPDEP_FSUSB_MPU_M3        (1 << 1)
+
+// PM_L4PER_GPTIMER1_WKDEP
+#define WKUPDEP_TIMER1_MPU        (1 << 0)
+
+// PM_L4PER_GPTIMER2_WKDEP
+#define WKUPDEP_DMTIMER2_MPU        (1 << 0)
+
+// PM_L4PER_GPTIMER3_WKDEP
+#define WKUPDEP_DMTIMER3_MPU        (1 << 0)
+#define WKUPDEP_DMTIMER3_MPU_M3     (1 << 1)
+
+// PM_L4PER_GPTIMER4_WKDEP
+#define WKUPDEP_DMTIMER4_MPU        (1 << 0)
+#define WKUPDEP_DMTIMER4_MPU_M3     (1 << 1)
+
+// PM_L4PER_GPTIMER9_WKDEP
+#define WKUPDEP_DMTIMER9_MPU        (1 << 0)
+#define WKUPDEP_DMTIMER9_MPU_M3     (1 << 1)
+
+// PM_L4PER_GPTIMER10_WKDEP
+#define WKUPDEP_DMTIMER10_MPU       (1 << 0)
+
+// PM_L4PER_GPTIMER11_WKDEP
+#define WKUPDEP_DMTIMER11_MPU       (1 << 0)
+#define WKUPDEP_DMTIMER11_MPU_M3    (1 << 1)
+
+// PM_WKUP_GPIO1_WKDEP
+#define WKUPDEP_GPIO1_IRQ1_MPU      (1 << 0)
+#define WKUPDEP_GPIO1_IRQ1_MPU_M3   (1 << 1)
+#define WKUPDEP_GPIO1_IRQ2_DSP      (1 << 6)
+
+// PM_L4PER_GPIO2_WKDEP
+#define WKUPDEP_GPIO2_IRQ1_MPU      (1 << 0)
+#define WKUPDEP_GPIO2_IRQ1_MPU_M3   (1 << 1)
+#define WKUPDEP_GPIO2_IRQ2_DSP      (1 << 6)
+
+// PM_L4PER_GPIO3_WKDEP
+#define WKUPDEP_GPIO3_IRQ1_MPU      (1 << 0)
+#define WKUPDEP_GPIO3_IRQ2_DSP      (1 << 6)
+
+// PM_L4PER_GPIO4_WKDEP
+#define WKUPDEP_GPIO4_IRQ1_MPU      (1 << 0)
+#define WKUPDEP_GPIO4_IRQ2_DSP      (1 << 6)
+
+// PM_L4PER_GPIO5_WKDEP
+#define WKUPDEP_GPIO5_IRQ1_MPU      (1 << 0)
+#define WKUPDEP_GPIO5_IRQ2_DSP      (1 << 6)
+
+// PM_L4PER_GPIO6_WKDEP
+#define WKUPDEP_GPIO6_IRQ1_MPU      (1 << 0)
+#define WKUPDEP_GPIO6_IRQ2_DSP      (1 << 6)
+
+// PM_L4PER_I2C1_WKDEP
+#define WKUPDEP_I2C1_IRQ_MPU        (1 << 0)
+#define WKUPDEP_I2C1_IRQ_MPU_M3     (1 << 1)
+#define WKUPDEP_I2C1_DMA_SDMA       (1 << 7)
+
+// PM_L4PER_I2C2_WKDEP
+#define WKUPDEP_I2C2_IRQ_MPU        (1 << 0)
+#define WKUPDEP_I2C2_IRQ_MPU_M3     (1 << 1)
+#define WKUPDEP_I2C2_DMA_SDMA       (1 << 7)
+
+// PM_L4PER_I2C3_WKDEP
+#define WKUPDEP_I2C3_IRQ_MPU        (1 << 0)
+#define WKUPDEP_I2C3_IRQ_MPU_M3     (1 << 1)
+#define WKUPDEP_I2C3_DMA_SDMA       (1 << 7)
+
+// PM_L4PER_I2C4_WKDEP
+#define WKUPDEP_I2C4_IRQ_MPU        (1 << 0)
+#define WKUPDEP_I2C4_IRQ_MPU_M3     (1 << 1)
+#define WKUPDEP_I2C4_DMA_SDMA       (1 << 7)
+
+// PM_L4PER_MCBSP4_WKDEP
+#define WKUPDEP_MCBSP4_MPU          (1 << 0)
+#define WKUPDEP_MCBSP4_DSP          (1 << 2)
+#define WKUPDEP_MCBSP4_SDMA         (1 << 3)
+
+// PM_L4PER_MCSPI1_WKDEP
+#define WKUPDEP_MCSPI1_MPU          (1 << 0)
+#define WKUPDEP_MCSPI1_MPU_M3       (1 << 1)
+#define WKUPDEP_MCSPI1_DSP          (1 << 2)
+#define WKUPDEP_MCSPI1_SDMA         (1 << 3)
+
+// PM_L4PER_MCSPI2_WKDEP
+#define WKUPDEP_MCSPI2_MPU          (1 << 0)
+#define WKUPDEP_MCSPI2_MPU_M3       (1 << 1)
+#define WKUPDEP_MCSPI2_SDMA         (1 << 3)
+
+// PM_L4PER_MCSPI3_WKDEP
+#define WKUPDEP_MCSPI3_MPU          (1 << 0)
+#define WKUPDEP_MCSPI3_SDMA         (1 << 3)
+
+// PM_L4PER_MCSPI4_WKDEP
+#define WKUPDEP_MCSPI4_MPU          (1 << 0)
+#define WKUPDEP_MCSPI4_SDMA         (1 << 3)
+
+// PM_L4PER_MMCSD3_WKDEP
+#define WKUPDEP_MMCSD3_MPU          (1 << 0)
+#define WKUPDEP_MMCSD3_MPU_M3       (1 << 1)
+#define WKUPDEP_MMCSD3_SDMA         (1 << 3)
+
+// PM_L4PER_MMCSD4_WKDEP
+#define WKUPDEP_MMCSD4_MPU          (1 << 0)
+#define WKUPDEP_MMCSD4_MPU_M3       (1 << 1)
+#define WKUPDEP_MMCSD4_SDMA         (1 << 3)
+
+// PM_L4PER_MMCSD5_WKDEP
+#define WKUPDEP_MMCSD5_MPU          (1 << 0)
+#define WKUPDEP_MMCSD5_MPU_M3       (1 << 1)
+#define WKUPDEP_MMCSD5_SDMA         (1 << 3)
+
+// PM_L4PER_SLIMBUS2_WKDEP
+#define WKUPDEP_SLIMBUS2_IRQ_MPU    (1 << 0)
+#define WKUPDEP_SLIMBUS2_IRQ_DSP    (1 << 2)
+#define WKUPDEP_SLIMBUS2_DMA_DSP    (1 << 6)
+#define WKUPDEP_SLIMBUS2_DMA_SDMA   (1 << 7)
+
+// PM_L4PER_UART1_WKDEP
+#define WKUPDEP_UART1_MPU           (1 << 0)
+#define WKUPDEP_UART1_SDMA          (1 << 3)
+
+// PM_L4PER_UART2_WKDEP
+#define WKUPDEP_UART2_MPU           (1 << 0)
+#define WKUPDEP_UART2_SDMA          (1 << 3)
+
+// PM_L4PER_UART3_WKDEP
+#define WKUPDEP_UART3_MPU           (1 << 0)
+#define WKUPDEP_UART3_MPU_M3        (1 << 1)
+#define WKUPDEP_UART3_DSP           (1 << 2)
+#define WKUPDEP_UART3_SDMA          (1 << 3)
+
+// PM_L4PER_UART4_WKDEP
+#define WKUPDEP_UART4_MPU           (1 << 0)
+#define WKUPDEP_UART4_SDMA          (1 << 3)
+
+// PM_WKUP_KEYBOARD_WKDEP
+#define WKUPDEP_KEYBOARD_MPU        (1 << 0)
+
+// CM_*_STATICDEP
+#define MPU_M3_STATDEP              (1 << 0)
+#define DSP_STATDEP                 (1 << 1)
+#define IVAHD_STATDEP               (1 << 2)
+#define ABE_STATDEP                 (1 << 3)
+#define MEMIF_STATDEP               (1 << 4)
+#define L3_1_STATDEP                (1 << 5)
+#define L3_2_STATDEP                (1 << 6)
+#define L3INIT_STATDEP              (1 << 7)
+#define DSS_STATDEP                 (1 << 8)
+#define ISS_STATDEP                 (1 << 9)
+#define SGX_STATDEP                 (1 << 10)
+#define SDMA_STATDEP                (1 << 11)
+#define L4CFG_STATDEP               (1 << 12)
+#define L4PER_STATDEP               (1 << 13)
+#define L4SEC_STATDEP               (1 << 14)
+#define L4WKUP_STATDEP              (1 << 15)
+#define ALWONCORE_STATDEP           (1 << 16)
+#define C2C_STATDEP                 (1 << 18)
+
+// CM_*_DYNAMICDEP
+#define MPU_M3_DYNDEP               (1 << 0)
+#define DSP_DYNDEP                  (1 << 1)
+#define IVAHD_DYNDEP                (1 << 2)
+#define ABE_DYNDEP                  (1 << 3)
+#define MEMIF_DYNDEP                (1 << 4)
+#define L3_1_DYNDEP                 (1 << 5)
+#define L3_2_DYNDEP                 (1 << 6)
+#define L3_INIT_DYNDEP              (1 << 7)
+#define DSS_DYNDEP                  (1 << 8)
+#define CAM_DYNDEP                  (1 << 9)
+#define SGX_DYNDEP                  (1 << 10)
+#define L4CFG_DYNDEP                (1 << 12)
+#define L4PER_DYNDEP                (1 << 13)
+#define L4SEC_DYNDEP                (1 << 14)
+#define L4WKUP_DYNDEP               (1 << 15)
+#define ALWONCORE_DYNDEP            (1 << 16)
+#define C2C_DYNDEP                  (1 << 18)
+#define WINDOWSIZE(x)               (((x) & 0x3) << 24)
+
+// PRM_RSTTIME
+#define RSTTIME1(x)                 ((x) & 0x1FF)
+#define RSTTIME2(x)                 (((x) & 0x3F) << 10)
+
+// PRM_PSCON_COUNT
+#define PCHARGE_TIME(x)             ((x) & 0xFF)
+#define PONOUT_2_PGOODIN_TIME(x)    (((x) & 0xFF) << 8)
+
+// PRM_IO_COUNT
+#define ISO_2_ON_TIME(x)            ((x) & 0xFF)
+
+// PRM_VOLTSETUP_WARMRESET
+#define STABLE_COUNT(x)             ((x) & 0x3F)
+#define STABLE_PRESCAL(x)           (((x) & 0x3) << 8)
+
+// PRM_VOLTSETUP_*_OFF
+// PRM_VOLTSETUP_*_RET_SLEEP
+#define RAMP_UP_COUNT               ((x) & 0x3F)
+#define RAMP_UP_PRESCAL(x)          (((x) & 0x3) << 8)
+#define RAMP_DOWN_COUNT(x)          (((x) & 0x3F) << 16)
+#define RAMP_DOWN_PRESCAL(x)        (((x) & 0x3) << 24)
+
+// PRM_VP_*_CONFIG
+#define VPENABLE                    (1 << 0)
+#define FORCEUPDATE                 (1 << 1)
+#define INITVDD                     (1 << 2)
+#define TIMEOUTEN                   (1 << 3)
+#define INITVOLTAGE(x)              (((x) & 0xFF) << 8)
+#define ERRORGAIN(x)                (((x) & 0xFF) << 16)
+#define ERROROFFSET(x)              (((x) & 0xFF) << 24)
+
+// PRM_VP_*_STATUS
+#define VPINIDLE                    (1 << 0)
+
+// PRM_VP_*_VLIMITTO
+#define TIMEOUT(x)                  ((x) & 0xFFFF)
+#define VDDMIN(x)                   (((x) & 0xFF) << 16)
+#define VDDMAX(x)                   (((x) & 0xFF) << 24)
+
+// PRM_VP_*_VOLTAGE
+#define VPVOLTAGE(x)                ((x) & 0xFF)
+#define FORCEUPDATEWAIT(x)          (((x) & 0xFFFFFF) << 8)
+
+// PRM_VP_*_VSTEPMAX
+#define VSTEPMAX(x)                 ((x) & 0xFF)
+#define SMPsoftwareAITTIMEMAX(x)    (((x) & 0xFFFF) << 8)
+
+// PRM_VP_*_VSTEPMIN
+#define VSTEPMIN(x)                 ((x) & 0xFF)
+#define SMPsoftwareAITTIMEMIN(x)    (((x) & 0xFFFF) << 8)
+
+// PRM_VC_SMPS_SA
+#define SA_VDD_CORE_L(x)            ((x) & 0x7F)
+#define SA_VDD_IVA_L(x)             (((x) & 0x7F) << 8)
+#define SA_VDD_MPU_L(x)             (((x) & 0x7F) << 16)
+
+// PRM_VC_VAL_SMPS_RA_VOL
+#define VOLRA_VDD_CORE_L(x)         ((x) & 0x7F)
+#define VOLRA_VDD_IVA_L(x)          (((x) & 0x7F) << 8)
+#define VOLRA_VDD_MPU_L(x)          (((x) & 0x7F) << 16)
+
+// PRM_VC_VAL_SMPS_RA_CMD
+#define CMDRA_VDD_CORE_L(x)         ((x) & 0x7F)
+#define CMDRA_VDD_IVA_L(x)          (((x) & 0x7F) << 8)
+#define CMDRA_VDD_MPU_L(x)          (((x) & 0x7F) << 16)
+
+// PRM_VC_VAL_CMD_VDD_*_L
+#define OFF(x)                      ((x) & 0xFF)
+#define RET(x)                      (((x) & 0xFF) << 8)
+#define ONLP(x)                     (((x) & 0xFF) << 16)
+#define ON(x)                       (((x) & 0xFF) << 24)
+
+// PRM_VC_VAL_BYPASS
+#define SLAVEADDR(x)                ((x) & 0x7F)
+#define REGADDR(x)                  (((x) & 0xFF) << 8)
+#define DATA(x)                     (((x) & 0xFF) << 16)
+#define VALID                       (1 << 24)
+
+// PRM_VC_CFG_CHANNEL
+#define SEL_SA_VDD_CORE_L           (1 << 0)
+#define RAV_VDD_CORE_L              (1 << 1)
+#define RAC_VDD_CORE_L              (1 << 2)
+#define RACEN_VDD_CORE_L            (1 << 3)
+#define CMD_VDD_CORE_L              (1 << 4)
+#define SEL_SA_VDD_IVA_L            (1 << 8)
+#define RAV_VDD_IVA_L               (1 << 9)
+#define RAC_VDD_IVA_L               (1 << 10)
+#define RACEN_VDD_IVA_L             (1 << 11)
+#define CMD_VDD_IVA_L               (1 << 12)
+#define SEL_SA_VDD_MPU_L            (1 << 16)
+#define CMD_VDD_MPU_L               (1 << 17)
+#define RAV_VDD_MPU_L               (1 << 18)
+#define RAC_VDD_MPU_L               (1 << 19)
+#define RACEN_VDD_MPU_L             (1 << 20)
+
+// PRM_VC_CFG_I2C_MODE
+#define HSMCODE(x)                  ((x) & 0x7)
+#define HSMODEEN                    (1 << 3)
+#define SRMODEEN                    (1 << 4)
+#define DFILTEREN                   (1 << 6)
+
+// PRM_VC_CFG_I2C_CLK
+#define SCLH(x)                     ((x) & 0xFF)
+#define SCLL(x)                     (((x) & 0xFF) << 8)
+#define HSSCLH(x)                   (((x) & 0xFF) << 16)
+#define HSSCLL(x)                   (((x) & 0xFF) << 24)
+
+// PRM_SRAM_COUNT
+#define PCHARGECNT_VALUE(x)         ((x) & 0x3F)
+#define VSETUPCNT_VALUE(x)          (((x) & 0xFF) << 8)
+#define SLPCNT_VALUE(x)             (((x) & 0xFF) << 16)
+#define STARTUP_COUNT(x)            (((x) & 0xFF) << 24)
+
+// PRM_SRAM_*_SETUP
+#define DISABLE_RTA_EXPORT          (1 << 0)
+#define ABBOFF_ACT_EXPORT           (1 << 1)
+#define ABBOFF_SLEEP_EXPORT         (1 << 2)
+#define ENFUNC1_EXPORT              (1 << 3)
+#define ENFUNC2_EXPORT              (1 << 4)
+#define ENFUNC3_EXPORT              (1 << 5)
+#define ENFUNC4                     (1 << 6)
+#define ENFUNC5                     (1 << 7)
+#define AIPOFF                      (1 << 8)
+
+// PRM_LDO_SRAM_*_CTRL
+#define RETMODE_ENABLE              (1 << 0)
+#define SRAMLDO_STATUS              (1 << 8)
+#define SRAM_IN_TRANSITION          (1 << 9)
+
+// PRM_LDO_ABB_*_SETUP
+#define SR2EN                       (1 << 0)
+#define ACTIVE_FBB_SEL              (1 << 2)
+#define SR2_WTCNT_VALUE(x)          (((x) & 0xFF) << 8)
+
+// PRM_LDO_ABB_*_CTRL
+#define OPP_SEL(x)                  ((x) & 0x3)
+#define OPP_CHANGE                  (1 << 2)
+#define SR2_STATUS(x)               (((x) & 0x3) << 3)
+#define SR2_IN_TRANSITION           (1 << 6)
+
+// PRM_LDO_BANDGAP_SETUP
+#define BANDGAP_STARTUP_COUNT(x)    ((x) & 0xFF)
+
+// PRM_DEVICE_OFF_CTRL
+#define DEVICE_OFF_ENABLE           (1 << 0)
+
+// PRM_VC_ERRST
+#define SMPS_SA_ERR_CORE            (1 << 0)
+#define SMPS_RA_ERR_CORE            (1 << 1)
+#define SMPS_TIMEOUT_ERR_CORE       (1 << 2)
+#define VFSM_SA_ERR_CORE            (1 << 3)
+#define VFSM_RA_ERR_CORE            (1 << 4)
+#define VFSM_TIMEOUT_ERR_CORE       (1 << 5)
+#define SMPS_SA_ERR_IVA             (1 << 8)
+#define SMPS_RA_ERR_IVA             (1 << 9)
+#define SMPS_TIMEOUT_ERR_IVA        (1 << 10)
+#define VFSM_SA_ERR_IVA             (1 << 11)
+#define VFSM_RA_ERR_IVA             (1 << 12)
+#define VFSM_TIMEOUT_ERR_IVA        (1 << 13)
+#define SMPS_SA_ERR_MPU             (1 << 16)
+#define SMPS_RA_ERR_MPU             (1 << 17)
+#define SMPS_TIMEOUT_ERR_MPU        (1 << 18)
+#define VFSM_SA_ERR_MPU             (1 << 19)
+#define VFSM_RA_ERR_MPU             (1 << 20)
+#define VFSM_TIMEOUT_ERR_MPU        (1 << 21)
+#define BYPS_SA_ERR                 (1 << 24)
+#define BYPS_RA_ERR                 (1 << 25)
+#define BYPS_TIMEOUT_ERR            (1 << 26)
+
+// *_SYS_CONFIG
+#define SOFTRESET                   (1 << 0)
+#define IDLEMODE(x)                 (((x) & 0x3) << 2)
+
+// *_STATUS
+#define FIFOEMPTY                   (1 << 8)
+
+// *_CONFIGURATION
+#define EVT_CAPT_EN                 (1 << 7)
+#define CLAIM_1                     (1 << 28)
+#define CLAIM_2                     (1 << 29)
+#define CLAIM_3(x)                  (((x) & 0x3) << 30)
+
+// *_CLASS_FILTERING
+#define SNAP_CAPT_EN_00             (1 << 0)
+#define SNAP_CAPT_EN_01             (1 << 1)
+#define SNAP_CAPT_EN_02             (1 << 2)
+#define SNAP_CAPT_EN_03             (1 << 3)
+
+// *_TRIGGERING
+#define TRIG_START_EN               (1 << 0)
+#define TRIG_STOP_EN                (1 << 1)
+
+// *_SAMPLING
+#define SAMP_WIND_SIZE(x)           ((x) & 0xFF)
+#define FCLK_DIV_FACOR(x)           (((x) & 0xF) << 16)
+
+// CM_CLKSEL_CORE
+// CM_CLKSEL_CORE_RESTORE
+#define CLKSEL_CORE                 (1 << 0)
+#define CLKSEL_L3                   (1 << 4)
+#define CLKSEL_L4                   (1 << 8)
+
+// CM_CLKSEL_ABE
+#define CLKSEL_OPP(x)               ((x) & 0x3)
+#define PAD_CLKS_GATE               (1 << 8)
+#define SLIMBUS_CLK_GATE            (1 << 10)
+
+// CM_DLL_CTRL
+#define DLL_OVERRIDE             (1 << 0)
+
+// CM_CLKMODE_DPLL_*
+// CM_CLKMODE_DPLL_*_RESTORE
+#define DPLL_EN(x)                  ((x) & 0x7)
+#define DPLL_DRIFTGUARD_EN          (1 << 8)
+#define DPLL_LPMODE_EN              (1 << 10)
+#define DPLL_REGM4XEN               (1 << 11)
+#define DPLL_SSC_EN                 (1 << 12)
+#define DPLL_SSC_ACK                (1 << 13)
+#define DPLL_SSC_DOWNSPREAD         (1 << 14)
+
+// CM_IDLEST_DPLL_*
+#define ST_DPLL_CLK                 (1 << 0)
+#define ST_MN_BYPASS                (1 << 8)
+
+// CM_AUTOIDLE_DPLL_*
+// CM_AUTOIDLE_DPLL_*_RESTORE
+#define AUTO_DPLL_MODE(x)           ((x) & 0x7)
+#define DPLL_DCOCLKLDO_PWDN         (1 << 4)
+
+// CM_CLKSEL_DPLL_*
+// CM_CLKSEL_DPLL_*_RESTORE
+#define DPLL_DIV(x)                 ((x) & 0x7F)
+#define DPLL_MULT(x)                (((x) & 0x7FF) << 8)
+#define DPLL_CLKOUTHIF_CLKSEL       (1 << 20)
+#define DPLL_BYP_CLKSEL             (1 << 23)
+
+// CM_DIV_M*_DPLL_*
+// CM_DIV_M*_DPLL_*_RESTORE
+#define DPLL_CLKx_DIV(x)            ((x) & 0x1F)
+#define DPLL_CLKx_DIVCHACK          (1 << 5)
+#define DPLL_CLKx_GATE_CTRL         (1 << 8)
+#define ST_DPLL_CLKx                (1 << 9)
+#define HSDIVIDER_CLKx_PWDN         (1 << 12)
+
+// CM_SSC_DELTAMSTEP_DPLL_*
+// CM_SSC_DELTAMSTEP_DPLL_*_RESTORE
+#define DELTAMSTEP(x)               ((x) & 0xFFFFF)
+
+// CM_SSC_MODFREQDIV_DPLL_*
+// CM_SSC_MODFREQDIV_DPLL_*_RESTORE
+#define MODFREQDIV_MANTISSA(x)      ((x) & 0x7F)
+#define MODFREQDIV_EXPONENT(x)      (((x) & 0x7) << 8)
+
+// CM_EMU_OVERRIDE_DPLL_CORE
+#define CORE_DPLL_EMU_DIV(x)        ((x) & 0x7F)
+#define CORE_DPLL_EMU_MULT(x)       (((x) & 0x7FF) << 8)
+#define OVERRIDE_ENABLE             (1 << 19)
+
+// CM_BYPCLK_DPLL_*
+#define BYPCLK_DPLL_CLKSEL(x)       ((x) & 0x3)
+
+// CM_SHADOW_FREQ_CONFIG1
+// CM_SHADOW_FREQ_CONFIG1_RESTORE
+#define FREQ_UPDATE                 (1 << 0)
+#define DLL_OVERRIDE_SHADOW         (1 << 2)
+#define DLL_RESET                   (1 << 3)
+#define DPLL_CORE_DPLL_EN(x)        (((x) & 0x7) << 8)
+#define DPLL_CORE_M2_DIV(x)         (((x) & 0xF) << 11)
+
+// CM_SHADOW_FREQ_CONFIG2
+// CM_SHADOW_FREQ_CONFIG2_RESTORE
+#define GPMC_FREQ_UPDATE            (1 << 0)
+#define CLKSEL_CORE_SHADOW          (1 << 1)
+#define CLKSEL_L3_SHADOW            (1 << 2)
+#define DPLL_CORE_M5_DIV(x)         (((x) & 0x1F) << 3)
+
+// CM_DYN_DEP_PRESCAL
+// CM_DYN_DEP_PRESCAL_RESTORE
+#define PRESCAL(x)                  ((x) & 0x3F)
+
+// CM_RESTORE_ST
+#define PHASE1_COMPLETED            (1 << 0)
+#define PHASE2A_COMPLETED           (1 << 1)
+#define PHASE2B_COMPLETED           (1 << 2)
+
+
+///////////////////////////////////////////////////////////////
+//                OMAP 4430 SCRM Bit Fields
+///////////////////////////////////////////////////////////////
+
+// CLKSETUPTIME
+#define SETUPTIME(x)                ((x) & 0xFFF)
+#define DOWNTIME(x)                 (((x) & 0x7F) << 16)
+
+// PMICSETUPTIME
+#define SLEEPTIME(x)                ((x) & 0x7F)
+#define WAKEUPTIME(x)               (((x) & 0x7F) << 16)
+
+// ALTCLKSRC
+#define MODE(x)                     ((x) & 0x3)
+#define ENABLE_INT                  (1 << 2)
+#define ENABLE_EXT                  (1 << 3)
+
+// C2CCLKM
+#define CLK_32KHZ                   (1 << 0)
+#define SYSCLK                      (1 << 1)
+
+// EXTCLKREQ
+// PWRREQ
+// AUXCLKREQ*
+// C2CCLKREQ
+#define POLARITY                    (1 << 0)
+#define ACCURACY                    (1 << 1)
+#define MAPPING(x)                  (((x) & 0x7) << 2)
+
+// AUXCLK*
+// #define POLARITY                    (1 << 0)
+#define SRCSELECT(x)                (((x) & 0x3) << 1)
+#define ENABLE_AUXCLK               (1 << 8)
+#define DISABLECLK                  (1 << 9)
+#define CLKDIV(x)                   (((x) & 0xF) << 16)
+
+// RSTTIME_REG
+#define RSTTIME(x)                  ((x) & 0xF)
+
+// C2CRSTCTRL
+#define COLDRST                     (1 << 0)
+#define WARMRST                     (1 << 1)
+
+// EXTPWRONRSTCTRL
+#define ENABLE_EXTPWRON             (1 << 0)
+#define PWRONRST                    (1 << 1)
+
+// EXTWARMRSTST_REG
+#define EXTWARMRSTST                (1 << 0)
+
+// APEWARMRSTST_REG
+#define APEWARMRSTST                (1 << 1)
+
+// C2CWARMRSTST_REG
+#define C2CWARMRSTST                (1 << 3)
+
+
+///////////////////////////////////////////////////////////////
+//                 OMAP 4430 SR Bit Fields
+///////////////////////////////////////////////////////////////
+
+// SRCONFIG
+#define SENPENABLE                  (1 << 0)
+#define SENNENABLE                  (1 << 1)
+#define MINMAXAVGENABLE             (1 << 8)
+#define ERRORGENERATORENABLE        (1 << 9)
+#define SENENABLE                   (1 << 10)
+#define SRENABLE                    (1 << 11)
+#define SRCLKLENGTH(x)              (((x) & 0x3FF) << 12)
+#define ACCUMDATA(x)                (((x) & 0x3FF) << 22)
+
+// SRSTATUS
+#define MINMAXAVGACCUMVALID         (1 << 0)
+#define ERRORGENERATORVALID         (1 << 1)
+#define MINMAXAVGVALID              (1 << 2)
+#define AVGERRVALID                 (1 << 3)
+
+// SENVAL
+#define SENNVAL(x)                  ((x) & 0xFFFF)
+#define SENPVAL(x)                  (((x) & 0xFFFF) << 16)
+
+// SENMIN
+#define SENNMIN(x)                  ((x) & 0xFFFF)
+#define SENPMIN(x)                  (((x) & 0xFFFF) << 16)
+
+// SENMAX
+#define SENNMAX(x)                  ((x) & 0xFFFF)
+#define SENPMAX(x)                  (((x) & 0xFFFF) << 16)
+
+// SENAVG
+#define SENNAVG(x)                  ((x) & 0xFFFF)
+#define SENPAVG(x)                  (((x) & 0xFFFF) << 16)
+
+// AVGWEIGHT
+#define SENNAVGWEIGHT(x)            ((x) & 0x3)
+#define SENPAVGWEIGHT(x)            (((x) & 0x3) << 2)
+
+// NVALUERECIPROCAL
+#define SENNRN(x)                   ((x) & 0xFF)
+#define SENPRN(x)                   (((x) & 0xFF) << 8)
+#define SENNGAIN(x)                 (((x) & 0xF) << 16)
+#define SENPGAIN(x)                 (((x) & 0xF) << 20)
+
+// IRQSTATUS_RAW
+#define MCUDISABLEACKINTSTATRAW     (1 << 0)
+#define MCUBOUNDSINTSTATRAW         (1 << 1)
+#define MCUVALIDINTSTATRAW          (1 << 2)
+#define MCUACCUMINTSTATRAW          (1 << 3)
+
+// IRQSTATUS
+#define MCUDISABLEACKINTSTATENA     (1 << 0)
+#define MCUBOUNDSINTSTATENA         (1 << 1)
+#define MCUVALIDINTSTATENA          (1 << 2)
+#define MCUACCUMINTSTATENA          (1 << 3)
+
+// IRQENABLE_SET
+#define MCUDISABLEACTINTENASET      (1 << 0)
+#define MCUBOUNDSINTENASET          (1 << 1)
+#define MCUVALIDINTENASET           (1 << 2)
+#define MCUACCUMINTENASET           (1 << 3)
+
+// IRQENABLE_CLR
+#define MCUDISABLEACTINTENACLR      (1 << 0)
+#define MCUBOUNDSINTENACLR          (1 << 1)
+#define MCUVALIDINTENACLR           (1 << 2)
+#define MCUACCUMINTENACLR           (1 << 3)
+
+// SENERROR
+#define SENERROR(x)                 ((x) & 0xFF)
+#define AVGERROR(x)                 (((x) & 0xFF) << 8)
+
+// ERRCONFIG
+#define ERRMINLIMIT(x)              ((x) & 0xFF)
+#define ERRMAXLIMIT(x)              (((x) & 0xFF) << 8)
+#define ERRWEIGHT(x)                (((x) & 0x7) << 16)
+#define VPBOUNDSINTENABLE           (1 << 22)
+#define VPBOUNDSINTSTATENA          (1 << 23)
+#define IDLEMODE_ERRCONFIG(x)       (((x) & 0x3) << 24)
+#define WAKEUPENABLE                (1 << 26)
+ 
+
+
