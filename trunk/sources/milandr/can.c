@@ -148,63 +148,6 @@ static void can_setup (can_t *c, int kbitsec)
 	CAN_t *reg = (c->port == 0) ? ARM_CAN1 : ARM_CAN2;
 
 	if (c->port == 0) {
-
-/* Сигнал CAN1_RX */
-#ifndef CAN1_RX
-#define CAN1_RX PA7
-#endif
-
-#if (CAN1_RX!=PA7) && (CAN1_RX!=PB3) && (CAN1_RX!=PC9) && (CAN1_RX!=PD14) && (CAN1_RX!=PE0)
-#error "Impossible assignment of CAN1_RX pin in CFLAGS of target.cfg"
-#endif
-
-#if (PORT(CAN1_RX)==PORT_A)
-#	define CAN1_RX_GPIO ARM_GPIOA
-#	define CAN1_RX_FUNC FUNC_ALT
-#elif (PORT(CAN1_RX)==PORT_B)
-#	define CAN1_RX_GPIO ARM_GPIOB
-#	define CAN1_RX_FUNC FUNC_REDEF
-#elif (PORT(CAN1_RX)==PORT_C)
-#	define CAN1_RX_GPIO ARM_GPIOC
-#	define CAN1_RX_FUNC FUNC_MAIN
-#elif (PORT(CAN1_RX)==PORT_D)
-#	define CAN1_RX_GPIO ARM_GPIOD
-#	define CAN1_RX_FUNC FUNC_REDEF
-#elif (PORT(CAN1_RX)==PORT_E)
-#	define CAN1_RX_GPIO ARM_GPIOE
-#	define CAN1_RX_FUNC FUNC_REDEF
-#else
-#	error "CAN1_RX pin is not assigned in CFLAGS of target.cfg"
-#endif
-
-/* Сигнал CAN1_TX */
-#ifndef CAN1_TX
-#define CAN1_TX PA6
-#endif
-
-#if (CAN1_TX!=PA6) && (CAN1_TX!=PB2) && (CAN1_TX!=PC8) && (CAN1_TX!=PD13) && (CAN1_TX!=PE1)
-#error "Impossible assignment of CAN1_TX pin in CFLAGS of target.cfg"
-#endif
-
-#if (PORT(CAN1_TX)==PORT_A)
-#	define CAN1_TX_GPIO ARM_GPIOA
-#	define CAN1_TX_FUNC FUNC_ALT
-#elif (PORT(CAN1_TX)==PORT_B)
-#	define CAN1_TX_GPIO ARM_GPIOB
-#	define CAN1_TX_FUNC FUNC_REDEF
-#elif (PORT(CAN1_TX)==PORT_C)
-#	define CAN1_TX_GPIO ARM_GPIOC
-#	define CAN1_TX_FUNC FUNC_MAIN
-#elif (PORT(CAN1_TX)==PORT_D)
-#	define CAN1_TX_GPIO ARM_GPIOD
-#	define CAN1_TX_FUNC FUNC_REDEF
-#elif (PORT(CAN1_TX)==PORT_E)
-#	define CAN1_TX_GPIO ARM_GPIOE
-#	define CAN1_TX_FUNC FUNC_REDEF
-#else
-#	error "CAN1_TX pin is not assigned in CFLAGS of target.cfg"
-#endif
-
 		/* Включаем тактирование порта CAN1, PORTC. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN1;
 
@@ -215,57 +158,6 @@ static void can_setup (can_t *c, int kbitsec)
 		ARM_RSTCLK->CAN_CLOCK = (ARM_RSTCLK->CAN_CLOCK & ~ARM_CAN_CLOCK_BRG1(7)) |
 			ARM_CAN_CLOCK_EN1 | ARM_CAN_CLOCK_BRG1(0);
 	} else {
-
-/* Сигнал CAN2_RX */
-#ifndef CAN2_RX
-#define CAN2_RX PC14
-#endif
-
-#if (CAN2_RX!=PC14) && (CAN2_RX!=PD15) && (CAN2_RX!=PE6) && (CAN2_RX!=PF2)
-#error "Impossible assignment of CAN2_RX pin in CFLAGS of target.cfg"
-#endif
-
-#if (PORT(CAN2_RX)==PORT_C)
-#	define CAN2_RX_GPIO ARM_GPIOC
-#	define CAN2_RX_FUNC FUNC_REDEF
-#elif (PORT(CAN2_RX)==PORT_D)
-#	define CAN2_RX_GPIO ARM_GPIOD
-#	define CAN2_RX_FUNC FUNC_MAIN
-#elif (PORT(CAN2_RX)==PORT_E)
-#	define CAN2_RX_GPIO ARM_GPIOE
-#	define CAN2_RX_FUNC FUNC_ALT
-#elif (PORT(CAN2_RX)==PORT_F)
-#	define CAN2_RX_GPIO ARM_GPIOF
-#	define CAN2_RX_FUNC FUNC_REDEF
-#else
-#	error "CAN2_RX pin is not assigned in CFLAGS of target.cfg"
-#endif
-
-/* Сигнал CAN2_TX */
-#ifndef CAN2_TX
-#define CAN2_TX PC15
-#endif
-
-#if (CAN2_TX!=PC15) && (CAN2_TX!=PD9) && (CAN2_TX!=PE7) && (CAN2_TX!=PF3)
-#error "Impossible assignment of CAN2_TX pin in CFLAGS of target.cfg"
-#endif
-
-#if (PORT(CAN2_TX)==PORT_C)
-#	define CAN2_TX_GPIO ARM_GPIOC
-#	define CAN2_TX_FUNC FUNC_REDEF
-#elif (PORT(CAN2_TX)==PORT_D)
-#	define CAN2_TX_GPIO ARM_GPIOD
-#	define CAN2_TX_FUNC FUNC_MAIN
-#elif (PORT(CAN2_TX)==PORT_E)
-#	define CAN2_TX_GPIO ARM_GPIOE
-#	define CAN2_TX_FUNC FUNC_ALT
-#elif (PORT(CAN2_TX)==PORT_F)
-#	define CAN2_TX_GPIO ARM_GPIOF
-#	define CAN2_TX_FUNC FUNC_REDEF
-#else
-#	error "CAN2_TX pin is not assigned in CFLAGS of target.cfg"
-#endif
-
 		/* Включаем тактирование порта CAN2, PORTD. */
 		ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_CAN2;
 

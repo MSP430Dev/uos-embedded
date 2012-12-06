@@ -15,11 +15,11 @@
 #	include <runtime/arm/string.h>
 #	include <runtime/arm/stdlib.h>
 #       if defined (ARM_CORTEX_M1)
-#           include <runtime/cortex-m1/io.h>
+#		include <runtime/cortex-m1/io.h>
 #       elif defined (ARM_CORTEX_M3)
-#	    include <runtime/cortex-m3/io.h>
+#		include <runtime/cortex-m3/io.h>
 #       else
-#	    include <runtime/arm/io.h>
+#		include <runtime/arm/io.h>
 #       endif
 #	include <runtime/ctype.h>
 #	define __BYTE_ORDER __LITTLE_ENDIAN

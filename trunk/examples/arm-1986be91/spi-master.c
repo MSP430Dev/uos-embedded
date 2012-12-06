@@ -58,7 +58,7 @@ void send_receive (unsigned sent)
 	unsigned received;
 
 	spi_output (&spi, sent);
-	spi_input_wait (&spi, &received);
+	spi_input_wait (&spi, (unsigned short *)&received);
 	display_refresh (sent, received);
 }
 
@@ -118,7 +118,7 @@ void task_console (void *data)
 
 			/* Select. */
 			//send_receive ('S');
-			spi_output_block (&spi, data_block, sizeof (data_block) / sizeof (unsigned) );
+			spi_output_block (&spi, (unsigned short *)data_block, sizeof (data_block) / sizeof (unsigned) );
 		}
 	}
 }

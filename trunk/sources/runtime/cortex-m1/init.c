@@ -143,9 +143,6 @@ _init_ (void)
 	while (dest < limit)
 		*dest++ = 0;
 
-	/* Set stack to end of internal SRAM. */
-	arm_set_stack_pointer ((void*) (ARM_SRAM_BASE + ARM_SRAM_SIZE));
-
 	/* Initialize priority of exceptions.
 	 * Only faults and SVC are permitted when interrupts are disabled
 	 * (priority level = 0).  All other interrupts have level 32. */

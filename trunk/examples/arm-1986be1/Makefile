@@ -4,7 +4,7 @@ include target.cfg
 
 TEST		= test-tswitch
 TESTS		+= test-led.hex test-debug.hex test-task.hex test-timer.hex
-TESTS       += test-latency.hex test-tswitch.hex phil-uart.hex
+TESTS       += test-latency.hex test-tswitch.hex phil-uart.hex test-uart.hex
 OUTS		= $(TESTS:%.hex=%.elf)
 
 # Using MILPROG utility.

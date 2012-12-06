@@ -154,10 +154,11 @@ arm_set_control (unsigned val)
 static int inline __attribute__ ((always_inline))
 arm_count_leading_zeroes (unsigned x)
 {
-	int n;
-
-	asm volatile (
-	"clz	%0, %1"
-	: "=r" (n) : "r" (x));
-	return n;
+    int n = 0;
+    for (; n<32; ++n)
+    {
+        if ((x >> (31 - n)) != 0)
+            break;
+    }
+    return n;
 }
