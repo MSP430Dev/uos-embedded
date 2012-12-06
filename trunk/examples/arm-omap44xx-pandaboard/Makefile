@@ -2,9 +2,9 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test_timer
+TEST		= philosophers
 TESTS		= test_led.bin test_debug.bin test_task.bin test_timer.bin \
-		  test_delay.bin #test_uart_raw.bin
+		  test_delay.bin philosophers.bin #test_uart_raw.bin
 OUTS		= $(TESTS:%.bin=%.elf)
 DIS		= $(TESTS:%.bin=%.dis)
 
