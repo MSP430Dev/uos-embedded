@@ -32,34 +32,34 @@ typedef volatile unsigned int arm_reg_t;
 /*
  * Peripheral memory map
  */
-#define ARM_CAN1_BASE       ARM_PERIPH_BASE
-#define ARM_CAN2_BASE       (ARM_PERIPH_BASE + 0x08000)
-#define ARM_USB_BASE        (ARM_PERIPH_BASE + 0x10000)
-#define ARM_EEPROM_BASE     (ARM_PERIPH_BASE + 0x18000)
+#define ARM_CAN1_BASE           (ARM_PERIPH_BASE + 0x00000)
+#define ARM_CAN2_BASE           (ARM_PERIPH_BASE + 0x08000)
+#define ARM_USB_BASE            (ARM_PERIPH_BASE + 0x10000)
+#define ARM_EEPROM_BASE         (ARM_PERIPH_BASE + 0x18000)
 #define ARM_RSTCLK_BASE         (ARM_PERIPH_BASE + 0x20000)
-#define ARM_DMA_BASE        (ARM_PERIPH_BASE + 0x28000)
-#define ARM_UART1_BASE      (ARM_PERIPH_BASE + 0x30000)
-#define ARM_UART2_BASE      (ARM_PERIPH_BASE + 0x38000)
-#define ARM_SSP1_BASE       (ARM_PERIPH_BASE + 0x40000)
-#define ARM_I2C1_BASE       (ARM_PERIPH_BASE + 0x50000)
-#define ARM_POWER_BASE      (ARM_PERIPH_BASE + 0x58000)
-#define ARM_WWDT_BASE       (ARM_PERIPH_BASE + 0x60000)
-#define ARM_IWDT_BASE       (ARM_PERIPH_BASE + 0x68000)
-#define ARM_TIMER1_BASE     (ARM_PERIPH_BASE + 0x70000)
-#define ARM_TIMER2_BASE     (ARM_PERIPH_BASE + 0x78000)
-#define ARM_TIMER3_BASE     (ARM_PERIPH_BASE + 0x80000)
-#define ARM_ADC_BASE        (ARM_PERIPH_BASE + 0x88000)
-#define ARM_DAC_BASE        (ARM_PERIPH_BASE + 0x90000)
-#define ARM_COMP_BASE       (ARM_PERIPH_BASE + 0x98000)
-#define ARM_SSP2_BASE       (ARM_PERIPH_BASE + 0xA0000)
-#define ARM_GPIOA_BASE      (ARM_PERIPH_BASE + 0xA8000)
-#define ARM_GPIOB_BASE      (ARM_PERIPH_BASE + 0xB0000)
-#define ARM_GPIOC_BASE      (ARM_PERIPH_BASE + 0xB8000)
-#define ARM_GPIOD_BASE      (ARM_PERIPH_BASE + 0xC0000)
-#define ARM_GPIOE_BASE      (ARM_PERIPH_BASE + 0xC8000)
-#define ARM_BKP_BASE        (ARM_PERIPH_BASE + 0xD8000)
-#define ARM_GPIOF_BASE      (ARM_PERIPH_BASE + 0xE8000)
-#define ARM_EXT_BUS_BASE    (ARM_PERIPH_BASE + 0xF0050)
+#define ARM_DMA_BASE            (ARM_PERIPH_BASE + 0x28000)
+#define ARM_UART1_BASE          (ARM_PERIPH_BASE + 0x30000)
+#define ARM_UART2_BASE          (ARM_PERIPH_BASE + 0x38000)
+#define ARM_SSP1_BASE           (ARM_PERIPH_BASE + 0x40000)
+#define ARM_I2C1_BASE           (ARM_PERIPH_BASE + 0x50000)
+#define ARM_POWER_BASE          (ARM_PERIPH_BASE + 0x58000)
+#define ARM_WWDT_BASE           (ARM_PERIPH_BASE + 0x60000)
+#define ARM_IWDT_BASE           (ARM_PERIPH_BASE + 0x68000)
+#define ARM_TIMER1_BASE         (ARM_PERIPH_BASE + 0x70000)
+#define ARM_TIMER2_BASE         (ARM_PERIPH_BASE + 0x78000)
+#define ARM_TIMER3_BASE         (ARM_PERIPH_BASE + 0x80000)
+#define ARM_ADC_BASE            (ARM_PERIPH_BASE + 0x88000)
+#define ARM_DAC_BASE            (ARM_PERIPH_BASE + 0x90000)
+#define ARM_COMP_BASE           (ARM_PERIPH_BASE + 0x98000)
+#define ARM_SSP2_BASE           (ARM_PERIPH_BASE + 0xA0000)
+#define ARM_GPIOA_BASE          (ARM_PERIPH_BASE + 0xA8000)
+#define ARM_GPIOB_BASE          (ARM_PERIPH_BASE + 0xB0000)
+#define ARM_GPIOC_BASE          (ARM_PERIPH_BASE + 0xB8000)
+#define ARM_GPIOD_BASE          (ARM_PERIPH_BASE + 0xC0000)
+#define ARM_GPIOE_BASE          (ARM_PERIPH_BASE + 0xC8000)
+#define ARM_BKP_BASE            (ARM_PERIPH_BASE + 0xD8000)
+#define ARM_GPIOF_BASE          (ARM_PERIPH_BASE + 0xE8000)
+#define ARM_EXT_BUS_BASE        (ARM_PERIPH_BASE + 0xF0050)
 
 /*------------------------------------------------------
  * SysTick timer
@@ -85,42 +85,41 @@ typedef struct
 /*------------------------------------------------------
  * NVIC interrupt controller
  */
+/* Разрешение прерываний */
 #define ARM_NVIC_ISER0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE100))
-                    /* Разрешение прерываний */
+/* Запрет прерывания */
 #define ARM_NVIC_ICER0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE180))
-                    /* Запрет прерывания */
+/* Перевод прерывания в состояние ожидания обслуживания */
 #define ARM_NVIC_ISPR0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE200))
-                    /* Перевод прерывания в состояние
-                     * ожидания обслуживания */
+/* Сброс состояния ожидания обслуживания */
 #define ARM_NVIC_ICPR0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE280))
-                    /* Сброс состояния ожидания обслуживания */
+/* Активные прерывания */
 #define ARM_NVIC_IABR0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE300))
-                    /* Активные прерывания */
+/* Приоритет прерываний */
 #define ARM_NVIC_IPR(n) (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE400 + ((n) << 2)))
-                    /* Приоритет прерываний */
+/* Программное формирование прерывания */
 #define ARM_NVIC_STIR   (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xEF00))
-                    /* Программное формирование прерывания */
 
 /*------------------------------------------------------
  * SCB system control block
  */
 typedef struct
 {
-    arm_reg_t CPUID;    /* Идентификация процессора */
-    arm_reg_t ICSR;     /* Управление прерываниями */
-    arm_reg_t VTOR;     /* Смещение таблицы векторов прерываний */
-    arm_reg_t AIRCR;    /* Управление прерываниями и программного сброса */
-    arm_reg_t SCR;      /* Управление системой */
-    arm_reg_t CCR;      /* Конфигурация и управление */
-    arm_reg_t SHPR1;    /* Приоритет обработчиков memory/bus/usage fault */
-    arm_reg_t SHPR2;    /* Приоритет обработчика SVCall */
-    arm_reg_t SHPR3;    /* Приоритет обработчиков SysTick, PendSV */
-    arm_reg_t SHCSR;    /* Управление и состояние системных обработчиков */
-    arm_reg_t CFSR;     /* Состояние отказов с конфигурируемым приоритетом */
-    arm_reg_t HFSR;     /* Состояние тяжелого отказа */
-    arm_reg_t UNUSED;   /* DFSR */
-    arm_reg_t MMAR;     /* Адрес отказа доступа к памяти */
-    arm_reg_t BFAR;     /* Адрес отказа доступа к шине */
+    arm_reg_t CPUID;      /* Идентификация процессора */
+    arm_reg_t ICSR;       /* Управление прерываниями */
+    arm_reg_t VTOR;       /* Смещение таблицы векторов прерываний */
+    arm_reg_t AIRCR;      /* Управление прерываниями и программного сброса */
+    arm_reg_t SCR;        /* Управление системой */
+    arm_reg_t CCR;        /* Конфигурация и управление */
+    arm_reg_t SHPR1;      /* Приоритет обработчиков memory/bus/usage fault */
+    arm_reg_t SHPR2;      /* Приоритет обработчика SVCall */
+    arm_reg_t SHPR3;      /* Приоритет обработчиков SysTick, PendSV */
+    arm_reg_t SHCSR;      /* Управление и состояние системных обработчиков */
+    arm_reg_t CFSR;       /* Состояние отказов с конфигурируемым приоритетом */
+    arm_reg_t HFSR;       /* Состояние тяжелого отказа */
+    arm_reg_t UNUSED;     /* DFSR */
+    arm_reg_t MMAR;       /* Адрес отказа доступа к памяти */
+    arm_reg_t BFAR;       /* Адрес отказа доступа к шине */
 } SCB_t;
 
 #define ARM_SCB     ((SCB_t*) (ARM_SYSTEM_BASE + 0xED00))
@@ -128,62 +127,67 @@ typedef struct
 /*
  * Регистр SCB AIRCR: управление прерываниями и программный сброс.
  */
-#define ARM_AIRCR_VECTKEY   (0x05FA << 16)  /* ключ доступа к регистру */
-#define ARM_AIRCR_ENDIANESS (1 << 15)   /* старший байт идет первым */
-#define ARM_AIRCR_PRIGROUP(n)   ((n) << 8)  /* группировка приоритетов исключений */
-#define ARM_AIRCR_SYSRESETREQ   (1 << 2)    /* запрос сброса системы */
+#define ARM_AIRCR_VECTKEY       (0x05FA << 16)  /* ключ доступа к регистру */
+#define ARM_AIRCR_ENDIANESS     (1 << 15)       /* старший байт идет первым */
+#define ARM_AIRCR_PRIGROUP(n)   ((n) << 8)      /* группировка приоритетов исключений */
+#define ARM_AIRCR_SYSRESETREQ   (1 << 2)        /* запрос сброса системы */
 
 /*
  * Регистр SCB ICSR: управление прерываниями.
  */
-#define ARM_ICSR_PENDSVSET  (1 << 28)   /* (RW) установка ожидания обслуживания PendSV */
-#define ARM_ICSR_PENDSVCLR  (1 << 27)   /* (WO) сброс ожидания обслуживания PendSV */
-#define ARM_ICSR_PENDSTSET  (1 << 26)   /* (RW) установка ожидания обслуживания SysTick */
-#define ARM_ICSR_PENDSTCLR  (1 << 25)   /* (WO) сброс ожидания обслуживания SysTick */
-#define ARM_ICSR_ISRPENDING (1 << 22)   /* (RO) есть прерывания, ожидающие обслуживания */
-#define ARM_ICSR_VECTPENDING(s) ((s) >> 12 & 0x1ff) /* (RO) номер ожидающего исключения */
-#define ARM_ICSR_RETTOBASE  (1 << 11)   /* (RO) есть активные прерванные исключения */
-#define ARM_ICSR_VECTACTIVE(s)  ((s) & 0x1ff)   /* (RO) номер активного исключения (0 - режим приложения) */
+/* (RW) установка ожидания обслуживания PendSV */
+#define ARM_ICSR_PENDSVSET      (1 << 28)
+/* (WO) сброс ожидания обслуживания PendSV */
+#define ARM_ICSR_PENDSVCLR      (1 << 27)
+/* (RW) установка ожидания обслуживания SysTick */
+#define ARM_ICSR_PENDSTSET      (1 << 26)
+/* (WO) сброс ожидания обслуживания SysTick */
+#define ARM_ICSR_PENDSTCLR      (1 << 25)
+/* (RO) есть прерывания, ожидающие обслуживания */
+#define ARM_ICSR_ISRPENDING     (1 << 22)
+/* (RO) номер ожидающего исключения */
+#define ARM_ICSR_VECTPENDING(s) ((s) >> 12 & 0x1ff)
+/* (RO) есть активные прерванные исключения */
+#define ARM_ICSR_RETTOBASE      (1 << 11)
+/* (RO) номер активного исключения (0 - режим приложения) */
+#define ARM_ICSR_VECTACTIVE(s)  ((s) & 0x1ff)
 
 /*
  * Регистр SCB SHCSR: управление и состояние системных обработчиков.
  */
-#define ARM_SHCSR_USGFAULTENA   (1 << 18)  /* разрешение обработки отказов,
-                        * вызванных ошибками программирования */
-#define ARM_SHCSR_BUSFAULTENA   (1 << 17)  /* разрешение обработки отказа доступа к шине */
-#define ARM_SHCSR_MEMFAULTENA   (1 << 16)  /* разрешение обработки отказа доступа к памяти */
-#define ARM_SHCSR_SVCALLPENDED  (1 << 15)  /* признак ожидания обработки вызова SVC */
-#define ARM_SHCSR_BUSFAULTPENDED (1 << 14) /* признак ожидания обработки отказа
-                        * доступа к шине */
-#define ARM_SHCSR_MEMFAULTPENDED (1 << 13) /* признак ожидания обработки отказа
-                        * доступа к памяти */
-#define ARM_SHCSR_USGFAULTPENDED (1 << 12) /* признак ожидания обработки отказа,
-                        * вызванного ошибками программирования */
-#define ARM_SHCSR_SYSTICKACT    (1 << 11)  /* признак активности обработчика
-                        * исключения SysTick */
-#define ARM_SHCSR_PENDSVACT (1 << 10)  /* признак активности обработчика
-                        * исключения PendSV */
-#define ARM_SHCSR_MONITORACT    (1 << 8)   /* признак активности монитора отладчика */
-#define ARM_SHCSR_SVCALLACT (1 << 7)   /* признак активности обработчика
-                        * вызова SVC */
-#define ARM_SHCSR_USGFAULTACT   (1 << 3)   /* признак активности обработчика
-                        * отказа, вызванного ошибкой программирования */
-#define ARM_SHCSR_BUSFAULTACT   (1 << 1)   /* признак активности обработчика
-                        * отказа доступа к шине */
-#define ARM_SHCSR_MEMFAULTACT   (1 << 0)   /* признак активности обработчика
-                        * отказа доступа к памяти */
+#define ARM_SHCSR_USGFAULTENA    (1 << 18)  /* разрешение обработки отказов,
+                                             * вызванных ошибками программирования */
+#define ARM_SHCSR_BUSFAULTENA    (1 << 17)  /* разрешение обработки отказа доступа к шине */
+#define ARM_SHCSR_MEMFAULTENA    (1 << 16)  /* разрешение обработки отказа доступа к памяти */
+#define ARM_SHCSR_SVCALLPENDED   (1 << 15)  /* признак ожидания обработки вызова SVC */
+#define ARM_SHCSR_BUSFAULTPENDED (1 << 14)  /* признак ожидания обработки отказа
+                                             * доступа к шине */
+#define ARM_SHCSR_MEMFAULTPENDED (1 << 13)  /* признак ожидания обработки отказа
+                                             * доступа к памяти */
+#define ARM_SHCSR_USGFAULTPENDED (1 << 12)  /* признак ожидания обработки отказа,
+                                             * вызванного ошибками программирования */
+#define ARM_SHCSR_SYSTICKACT     (1 << 11)  /* признак активности обработчика
+                                             * исключения SysTick */
+#define ARM_SHCSR_PENDSVACT      (1 << 10)  /* признак активности обработчика
+                                             * исключения PendSV */
+#define ARM_SHCSR_MONITORACT     (1 << 8)   /* признак активности монитора отладчика */
+#define ARM_SHCSR_SVCALLACT      (1 << 7)   /* признак активности обработчика вызова SVC */
+#define ARM_SHCSR_USGFAULTACT    (1 << 3)   /* признак активности обработчика отказа,
+                                             * вызванного ошибкой программирования */
+#define ARM_SHCSR_BUSFAULTACT    (1 << 1)   /* признак активности обработчика отказа
+                                             * доступа к шине */
+#define ARM_SHCSR_MEMFAULTACT    (1 << 0)   /* признак активности обработчика отказа
+                                             * доступа к памяти */
 
 /*
  * Регистры SCB SHPRi: приоритет системных обработчиков.
  */
-#define ARM_SHPR1_UFAULT(n) ((n) << 16) /* usage fault */
-#define ARM_SHPR1_BFAULT(n) ((n) << 8)  /* bus fault */
+#define ARM_SHPR1_UFAULT(n)     ((n) << 16) /* usage fault */
+#define ARM_SHPR1_BFAULT(n)     ((n) << 8)  /* bus fault */
 #define ARM_SHPR1_MMFAULT(n)    ((n) << 0)  /* memory management fault */
-
-#define ARM_SHPR2_SVCALL(n) ((n) << 24) /* SVCall */
-
+#define ARM_SHPR2_SVCALL(n)     ((n) << 24) /* SVCall */
 #define ARM_SHPR3_SYSTICK(n)    ((n) << 24) /* SysTick */
-#define ARM_SHPR3_PENDSV(n) ((n) << 16) /* PendSV */
+#define ARM_SHPR3_PENDSV(n)     ((n) << 16) /* PendSV */
 
 /*------------------------------------------------------
  * General purpose I/O
@@ -194,10 +198,8 @@ typedef struct
     arm_reg_t OE;       /* Направление, 1 - выход */
     arm_reg_t FUNC;     /* Выбор функции, два бита на порт */
     arm_reg_t ANALOG;   /* Режим работы, 1 - цифровой */
-    arm_reg_t PULL;     /* Подтяжка вверх [31:16] и
-                 * отключение подтяжки вниз [15:0] */
-    arm_reg_t PD;       /* Триггер Шмидта входа [31:16] или
-                 * открытый сток выхода [15:0]  */
+    arm_reg_t PULL;     /* Подтяжка вверх [31:16] и отключение подтяжки вниз [15:0] */
+    arm_reg_t PD;       /* Триггер Шмитта входа [31:16] или открытый сток выхода [15:0] */
     arm_reg_t PWR;      /* Скорость фронта выхода, два бита на порт */
     arm_reg_t GFEN;     /* Фильтрация входа */
 } GPIO_t;
@@ -281,7 +283,7 @@ typedef struct
  */
 #define ARM_CLOCK_STATUS_PLL_USB_RDY    (1 << 0) /* USB PLL запущена и стабильна */
 #define ARM_CLOCK_STATUS_PLL_CPU_RDY    (1 << 1) /* CPU PLL запущена и стабильна */
-#define ARM_CLOCK_STATUS_HSE_RDY    (1 << 2) /* осциллятор HSE запущен и стабилен */
+#define ARM_CLOCK_STATUS_HSE_RDY        (1 << 2) /* осциллятор HSE запущен и стабилен */
 
 /*
  * Регистр PLL_CONTROL: управление блоками умножения частоты.
@@ -296,52 +298,57 @@ typedef struct
 /*
  * Регистр ADC_MCO_CLOCK: управление блоками АЦП
  */
-#define ARM_ADC_C1_SEL(x)   ((x) << 0)  /* Выбор источника для ADC_C1. Возможные значения см. ниже */
-#define ARM_ADC_C2_SEL(x)   ((x) << 4)  /* Выбор источника для ADC_C2. Возможные значения см. ниже */
-#define ARM_ADC_C3_SEL(x)   ((x) << 8)  /* Выбор источника для ADC_C3. Делитель для ADC_C3 опеределяется из выражения ADC_C3 = ADC_C2/(ADC_C3_SEL+1) */
-#define ARM_ADC_CLK_EN      (1 << 13)   /* Разрешение тактовой частоты */
+/* Выбор источника для ADC_C1. Возможные значения см. ниже */
+#define ARM_ADC_C1_SEL(x)   ((x) << 0)
+/* Выбор источника для ADC_C2. Возможные значения см. ниже */
+#define ARM_ADC_C2_SEL(x)   ((x) << 4)
+/* Выбор источника для ADC_C3.
+ * Делитель для ADC_C3 опеределяется из выражения ADC_C3 = ADC_C2/(ADC_C3_SEL+1) */
+#define ARM_ADC_C3_SEL(x)   ((x) << 8)
+/* Разрешение тактовой частоты */
+#define ARM_ADC_CLK_EN      (1 << 13)
 /* Возможные источники тактовой частоты для ADC_C1 */
 #define ARM_ADC_CPU_C1      0
 #define ARM_ADC_USB_C1      1
 #define ARM_ADC_CPU_C2      2
 #define ARM_ADC_USB_C2      3
 /* Выбор источника для ADC_C2 */
-#define ARM_ADC_LSE     0
-#define ARM_ADC_LSI     1
+#define ARM_ADC_LSE         0
+#define ARM_ADC_LSI         1
 #define ARM_ADC_ADC_C1      2
 #define ARM_ADC_HSI_C1      3
 
 /*
  * Регистр PER_CLOCK: включение тактирования периферийных блоков.
  */
-#define ARM_PER_CLOCK_CAN1  (1 << 0)
-#define ARM_PER_CLOCK_CAN2  (1 << 1)
-#define ARM_PER_CLOCK_USB   (1 << 2)
-#define ARM_PER_CLOCK_EEPROM    (1 << 3)
-#define ARM_PER_CLOCK_RSTCLK    (1 << 4)
-#define ARM_PER_CLOCK_DMA   (1 << 5)
-#define ARM_PER_CLOCK_UART1 (1 << 6)
-#define ARM_PER_CLOCK_UART2 (1 << 7)
-#define ARM_PER_CLOCK_SSP1  (1 << 8)
-#define ARM_PER_CLOCK_I2C1  (1 << 10)
-#define ARM_PER_CLOCK_POWER (1 << 11)
-#define ARM_PER_CLOCK_WWDT  (1 << 12)
-#define ARM_PER_CLOCK_IWDT  (1 << 13)
-#define ARM_PER_CLOCK_TIMER1    (1 << 14)
-#define ARM_PER_CLOCK_TIMER2    (1 << 15)
-#define ARM_PER_CLOCK_TIMER3    (1 << 16)
-#define ARM_PER_CLOCK_ADC   (1 << 17)
-#define ARM_PER_CLOCK_DAC   (1 << 18)
-#define ARM_PER_CLOCK_COMP  (1 << 19)
-#define ARM_PER_CLOCK_SSP2  (1 << 20)
-#define ARM_PER_CLOCK_GPIOA (1 << 21)
-#define ARM_PER_CLOCK_GPIOB (1 << 22)
-#define ARM_PER_CLOCK_GPIOC (1 << 23)
-#define ARM_PER_CLOCK_GPIOD (1 << 24)
-#define ARM_PER_CLOCK_GPIOE (1 << 25)
-#define ARM_PER_CLOCK_BKP   (1 << 27)
-#define ARM_PER_CLOCK_GPIOF (1 << 29)
-#define ARM_PER_CLOCK_EXT_BUS   (1 << 30)
+#define ARM_PER_CLOCK_CAN1              (1 << 0)
+#define ARM_PER_CLOCK_CAN2              (1 << 1)
+#define ARM_PER_CLOCK_USB               (1 << 2)
+#define ARM_PER_CLOCK_EEPROM            (1 << 3)
+#define ARM_PER_CLOCK_RSTCLK            (1 << 4)
+#define ARM_PER_CLOCK_DMA               (1 << 5)
+#define ARM_PER_CLOCK_UART1             (1 << 6)
+#define ARM_PER_CLOCK_UART2             (1 << 7)
+#define ARM_PER_CLOCK_SSP1              (1 << 8)
+#define ARM_PER_CLOCK_I2C1              (1 << 10)
+#define ARM_PER_CLOCK_POWER             (1 << 11)
+#define ARM_PER_CLOCK_WWDT              (1 << 12)
+#define ARM_PER_CLOCK_IWDT              (1 << 13)
+#define ARM_PER_CLOCK_TIMER1            (1 << 14)
+#define ARM_PER_CLOCK_TIMER2            (1 << 15)
+#define ARM_PER_CLOCK_TIMER3            (1 << 16)
+#define ARM_PER_CLOCK_ADC               (1 << 17)
+#define ARM_PER_CLOCK_DAC               (1 << 18)
+#define ARM_PER_CLOCK_COMP              (1 << 19)
+#define ARM_PER_CLOCK_SSP2              (1 << 20)
+#define ARM_PER_CLOCK_GPIOA             (1 << 21)
+#define ARM_PER_CLOCK_GPIOB             (1 << 22)
+#define ARM_PER_CLOCK_GPIOC             (1 << 23)
+#define ARM_PER_CLOCK_GPIOD             (1 << 24)
+#define ARM_PER_CLOCK_GPIOE             (1 << 25)
+#define ARM_PER_CLOCK_BKP               (1 << 27)
+#define ARM_PER_CLOCK_GPIOF             (1 << 29)
+#define ARM_PER_CLOCK_EXT_BUS           (1 << 30)
 
 /*
  * Регистр HS_CONTROL: управление высокочастотным генератором и осциллятором.
@@ -352,24 +359,24 @@ typedef struct
 /*
  * Регистр CPU_CLOCK: управление тактовой частотой.
  */
-#define ARM_CPU_CLOCK_C1_HSI        (0 << 0) /* Выбор источника для CPU C1: HSI */
-#define ARM_CPU_CLOCK_C1_HSI_DIV2   (1 << 0) /* HSI/2 */
-#define ARM_CPU_CLOCK_C1_HSE        (2 << 0) /* HSE */
-#define ARM_CPU_CLOCK_C1_HSE_DIV2   (3 << 0) /* HSE/2 */
-#define ARM_CPU_CLOCK_C2_PLLCPUO    (1 << 2) /* Выбор источника для CPU C2: PLLCPUo */
-#define ARM_CPU_CLOCK_C3_C2     (0 << 4) /* Выбор источника для CPU C3: CPU C2 */
-#define ARM_CPU_CLOCK_C3_C2_DIV2    (8 << 4) /* CPU C2 / 2 */
-#define ARM_CPU_CLOCK_C3_C2_DIV4    (8 << 4) /* CPU C2 / 4 */
-#define ARM_CPU_CLOCK_C3_C2_DIV8    (8 << 4) /* CPU C2 / 8 */
-#define ARM_CPU_CLOCK_C3_C2_DIV16   (8 << 4) /* CPU C2 / 16 */
-#define ARM_CPU_CLOCK_C3_C2_DIV32   (8 << 4) /* CPU C2 / 32 */
-#define ARM_CPU_CLOCK_C3_C2_DIV64   (8 << 4) /* CPU C2 / 64 */
-#define ARM_CPU_CLOCK_C3_C2_DIV128  (8 << 4) /* CPU C2 / 128 */
-#define ARM_CPU_CLOCK_C3_C2_DIV256  (8 << 4) /* CPU C2 / 256 */
-#define ARM_CPU_CLOCK_HCLK_HSI      (0 << 8) /* Выбор источника для HCLK: HSI */
-#define ARM_CPU_CLOCK_HCLK_C3       (1 << 8) /* CPU C3 */
-#define ARM_CPU_CLOCK_HCLK_LSE      (2 << 8) /* LSE */
-#define ARM_CPU_CLOCK_HCLK_LSI      (3 << 8) /* LSI */
+#define ARM_CPU_CLOCK_C1_HSI        (0 << 0)   /* Выбор источника для CPU C1: HSI */
+#define ARM_CPU_CLOCK_C1_HSI_DIV2   (1 << 0)   /* HSI/2 */
+#define ARM_CPU_CLOCK_C1_HSE        (2 << 0)   /* HSE */
+#define ARM_CPU_CLOCK_C1_HSE_DIV2   (3 << 0)   /* HSE/2 */
+#define ARM_CPU_CLOCK_C2_PLLCPUO    (1 << 2)   /* Выбор источника для CPU C2: PLLCPUo */
+#define ARM_CPU_CLOCK_C3_C2         (0 << 4)   /* Выбор делителя для CPU C3: CPU C3 = CPU C2 */
+#define ARM_CPU_CLOCK_C3_C2_DIV2    (8 << 4)   /* CPU C2 / 2 */
+#define ARM_CPU_CLOCK_C3_C2_DIV4    (9 << 4)   /* CPU C2 / 4 */
+#define ARM_CPU_CLOCK_C3_C2_DIV8    (10 << 4)  /* CPU C2 / 8 */
+#define ARM_CPU_CLOCK_C3_C2_DIV16   (11 << 4)  /* CPU C2 / 16 */
+#define ARM_CPU_CLOCK_C3_C2_DIV32   (12 << 4)  /* CPU C2 / 32 */
+#define ARM_CPU_CLOCK_C3_C2_DIV64   (13 << 4)  /* CPU C2 / 64 */
+#define ARM_CPU_CLOCK_C3_C2_DIV128  (14 << 4)  /* CPU C2 / 128 */
+#define ARM_CPU_CLOCK_C3_C2_DIV256  (15 << 4)  /* CPU C2 / 256 */
+#define ARM_CPU_CLOCK_HCLK_HSI      (0 << 8)   /* Выбор источника для HCLK: HSI */
+#define ARM_CPU_CLOCK_HCLK_C3       (1 << 8)   /* CPU C3 */
+#define ARM_CPU_CLOCK_HCLK_LSE      (2 << 8)   /* LSE */
+#define ARM_CPU_CLOCK_HCLK_LSI      (3 << 8)   /* LSI */
 
 /*
  * Регистр CAN_CLOCK: управление тактовой частотой CAN
@@ -380,10 +387,10 @@ typedef struct
  *  ...
  *  7 - HCLK/128
  */
-#define ARM_CAN_CLOCK_EN2   (1 << 25)   /* Разрешение тактовой частоты на CAN2 */
-#define ARM_CAN_CLOCK_EN1   (1 << 24)   /* Разрешение тактовой частоты на CAN1 */
+#define ARM_CAN_CLOCK_BRG1(n)   (n)         /* Делитель тактовой частоты CAN1 */
 #define ARM_CAN_CLOCK_BRG2(n)   ((n) << 8)  /* Делитель тактовой частоты CAN2 */
-#define ARM_CAN_CLOCK_BRG1(n)   (n)     /* Делитель тактовой частоты CAN1 */
+#define ARM_CAN_CLOCK_EN1       (1 << 24)   /* Разрешение тактовой частоты на CAN1 */
+#define ARM_CAN_CLOCK_EN2       (1 << 25)   /* Разрешение тактовой частоты на CAN2 */
 
 /*
  * Регистр UART_CLOCK: управление тактовой частотой UART
@@ -394,10 +401,10 @@ typedef struct
  *  ...
  *  7 - HCLK/128
  */
-#define ARM_UART_CLOCK_EN2  (1 << 25)   /* Разрешение тактовой частоты на UART2 */
-#define ARM_UART_CLOCK_EN1  (1 << 24)   /* Разрешение тактовой частоты на UART1 */
-#define ARM_UART_CLOCK_BRG2(n)  ((n) << 8)  /* Делитель тактовой частоты UART2 */
-#define ARM_UART_CLOCK_BRG1(n)  (n)     /* Делитель тактовой частоты UART1 */
+#define ARM_UART_CLOCK_BRG1(n)      (n)         /* Делитель тактовой частоты UART1 */
+#define ARM_UART_CLOCK_BRG2(n)      ((n) << 8)  /* Делитель тактовой частоты UART2 */
+#define ARM_UART_CLOCK_EN1          (1 << 24)   /* Разрешение тактовой частоты на UART1 */
+#define ARM_UART_CLOCK_EN2          (1 << 25)   /* Разрешение тактовой частоты на UART2 */
 
 /*
  * Регистр SSP_CLOCK: управление тактовой частотой SSP
@@ -408,10 +415,10 @@ typedef struct
  *  ...
  *  7 - HCLK/128
  */
-#define ARM_SSP_CLOCK_EN2   (1 << 25)   /* Разрешение тактовой частоты на SSP2 */
-#define ARM_SSP_CLOCK_EN1   (1 << 24)   /* Разрешение тактовой частоты на SSP1 */
+#define ARM_SSP_CLOCK_BRG1(n)   (n)         /* Делитель тактовой частоты SSP1 */
 #define ARM_SSP_CLOCK_BRG2(n)   ((n) << 8)  /* Делитель тактовой частоты SSP2 */
-#define ARM_SSP_CLOCK_BRG1(n)   (n)     /* Делитель тактовой частоты SSP1 */
+#define ARM_SSP_CLOCK_EN1       (1 << 24)   /* Разрешение тактовой частоты на SSP1 */
+#define ARM_SSP_CLOCK_EN2       (1 << 25)   /* Разрешение тактовой частоты на SSP2 */
 
 /*
  * Регистр TIM_CLOCK: управление тактовой частотой таймеров
@@ -458,8 +465,8 @@ typedef struct
     arm_reg_t PCELLID3;
 } UARTTEST_t;
 
-#define ARM_UART1       ((UART_t*) ARM_UART1_BASE)
-#define ARM_UART2       ((UART_t*) ARM_UART2_BASE)
+#define ARM_UART1           ((UART_t*) ARM_UART1_BASE)
+#define ARM_UART2           ((UART_t*) ARM_UART2_BASE)
 #define ARM_UART1TEST       ((UARTTEST_t*) (ARM_UART1_BASE + 0x0FE0))
 #define ARM_UART2TEST       ((UARTTEST_t*) (ARM_UART2_BASE + 0x0FE0))
 
@@ -565,8 +572,8 @@ typedef struct
  * Регистр UART DMACTL: управление DMA.
  */
 #define ARM_UART_DMACTL_ONERR   (1 << 2)    /* Блокирование при ошибке */
-#define ARM_UART_DMACTL_TXE (1 << 1)    /* Использование ПДП при передаче */
-#define ARM_UART_DMACTL_RXE (1 << 0)    /* Использование ПДП при приеме */
+#define ARM_UART_DMACTL_TXE     (1 << 1)    /* Использование ПДП при передаче */
+#define ARM_UART_DMACTL_RXE     (1 << 0)    /* Использование ПДП при приеме */
 
 /*------------------------------------------------------
  * Synchronous serial port
@@ -597,8 +604,8 @@ typedef struct
     arm_reg_t PCELLID3;
 } SSPTEST_t;
 
-#define ARM_SSP1        ((SSP_t*) ARM_SSP1_BASE)
-#define ARM_SSP2        ((SSP_t*) ARM_SSP2_BASE)
+#define ARM_SSP1            ((SSP_t*) ARM_SSP1_BASE)
+#define ARM_SSP2            ((SSP_t*) ARM_SSP2_BASE)
 #define ARM_SSP1TEST        ((SSPTEST_t*) (ARM_SSP1_BASE + 0x0FE0))
 #define ARM_SSP2TEST        ((SSPTEST_t*) (ARM_SSP2_BASE + 0x0FE0))
 
@@ -690,13 +697,15 @@ typedef struct
 /*
  * Регистр TIM_CNTRL
  */
-#define ARM_TIM_CNT_EN      (1 << 0)    /* Разрешение работы таймера */
-#define ARM_TIM_ARRB_EN     (1 << 1)    /* Разрешение мгновенного обновления ARR */
-#define ARM_TIM_WR_CMPL     (1 << 2)    /* Окончание записи, при задании нового значения регистров CNT, PSG и ARR */
-#define ARM_TIM_DIR     (1 << 3)    /* Направление счета основного счетчика. Возможные значения см. ниже */
-#define ARM_TIM_FDTS(x)     ((x) << 4)  /* Частота семплирования данных FDTS */
-#define ARM_TIM_CNT_MODE(x) ((x) << 6)  /* Режим счета основного счетчика*/
-#define ARM_TIM_EVENT_SEL(x)    ((x) << 8)  /* Биты выбора источника событий */
+#define ARM_TIM_CNT_EN       (1 << 0)    /* Разрешение работы таймера */
+#define ARM_TIM_ARRB_EN      (1 << 1)    /* Разрешение мгновенного обновления ARR */
+#define ARM_TIM_WR_CMPL      (1 << 2)    /* Окончание записи, при задании
+                                          * нового значения регистров CNT, PSG и ARR */
+#define ARM_TIM_DIR          (1 << 3)    /* Направление счета основного счетчика.
+                                          * Возможные значения см. ниже */
+#define ARM_TIM_FDTS(x)      ((x) << 4)  /* Частота семплирования данных FDTS */
+#define ARM_TIM_CNT_MODE(x)  ((x) << 6)  /* Режим счета основного счетчика */
+#define ARM_TIM_EVENT_SEL(x) ((x) << 8)  /* Биты выбора источника событий */
 
 /* Направления счета таймера */
 #define ARM_TIM_DIR_UP      0       /* вверх, от 0 до ARR */
@@ -712,16 +721,18 @@ typedef struct
 #define ARM_TIM_OCCM(x)     ((x) << 9)  /* Формат выработки сигнала REF в режиме ШИМ */
 #define ARM_TIM_BRKEN       (1 << 12)   /* Разрешение сброса по выводу BRK */
 #define ARM_TIM_ETREN       (1 << 13)   /* Разрешения сброса по выводу ETR */
-#define ARM_TIM_WR_CMPL_CCR (1 << 14)   /* Флаг окончания записи, при задании нового значения регистра CCR */
-#define ARM_TIM_CAP_nPWM    (1 << 15)   /* Режим работы канала Захват или ШИМ: 1 – канал работает в режиме Захват
-                         * 0 – канал работает в режиме ШИМ */
+#define ARM_TIM_WR_CMPL_CCR (1 << 14)   /* Флаг окончания записи, при задании
+                                         * нового значения регистра CCR */
+#define ARM_TIM_CAP_nPWM    (1 << 15)   /* Режим работы канала Захват или ШИМ:
+                                         * 1 – канал работает в режиме Захват
+                                         * 0 – канал работает в режиме ШИМ */
 
 /*
  * Регистры TIM_CHx_CNTRL1
  */
 #define ARM_TIM_SELOE(x)    ((x) << 0)  /* Режим работы канала на выход */
 #define ARM_TIM_SELO(x)     ((x) << 2)  /* Режим работы выхода канала */
-#define ARM_TIM_INV     (1 << 4)    /* Режим выходной инверсии */
+#define ARM_TIM_INV         (1 << 4)    /* Режим выходной инверсии */
 #define ARM_TIM_NSELOE(x)   ((x) << 8)  /* Режим работы канала на выход */
 #define ARM_TIM_NSELO(x)    ((x) << 10) /* Режим работы выхода канала */
 #define ARM_TIM_NINV        (1 << 12)   /* Режим выходной инверсии */
@@ -738,15 +749,17 @@ typedef struct
  */
 #define ARM_TIM_DTG(x)      ((x) << 0)  /* Предварительный делитель частоты DTG */
 #define ARM_TIM_EDTS        (1 << 4)    /* Частота работы DTG */
-#define ARM_TIM_DTGx(x)     ((x) << 8)  /* Основной делитель частоты. Задержка DTGdel = DTGx*(DTG+1) */
+#define ARM_TIM_DTGx(x)     ((x) << 8)  /* Основной делитель частоты.
+                                         * Задержка DTGdel = DTGx*(DTG+1) */
 
 /*
  * Регистр TIM_BRKETR_CNTRL
  */
-#define ARM_TIM_BRK_INV     (1 << 0)    /* Инверсия входа BRK */
-#define ARM_TIM_ETR_INV     (1 << 1)    /* Инверсия входа ETR */
-#define ARM_TIM_ETRPSC(x)   ((x) << 2)  /* Асинхронный пред. делитель внешней частоты */
-#define ARM_TIM_ETR_FILTER(x)   ((x) << 4)  /* Цифровой фильтр на входе ETR. (Где зафиксирован сигнал) */
+#define ARM_TIM_BRK_INV         (1 << 0)    /* Инверсия входа BRK */
+#define ARM_TIM_ETR_INV         (1 << 1)    /* Инверсия входа ETR */
+#define ARM_TIM_ETRPSC(x)       ((x) << 2)  /* Асинхронный пред. делитель внешней частоты */
+#define ARM_TIM_ETR_FILTER(x)   ((x) << 4)  /* Цифровой фильтр на входе ETR.
+                                             * (Где зафиксирован сигнал) */
 
 /*
  * Регистр TIM_STATUS
@@ -755,38 +768,53 @@ typedef struct
 #define ARM_TIM_CNT_ARR_EVENT       (1 << 1)    /* Событие совпадения CNT с ARR */
 #define ARM_TIM_ETR_RE_EVENT        (1 << 2)    /* Событие переднего фронта на входе ETR */
 #define ARM_TIM_ETR_FE_EVENT        (1 << 3)    /* Событие заднего фронта на входе ETR */
-#define ARM_TIM_BRK_EVENT       (1 << 4)    /* Триггерированное по PCLK состояние входа BRK, 0 – BRK == 0, 1 – BRK == 1 */
-#define ARM_TIM_CCR_CAP_EVENT(x)    ((x) << 5)` /* Событие переднего фронта на входе CAP каналов таймера */
-#define ARM_TIM_CCR_REF_EVENT(x)    ((x) << 9)` /* Событие переднего фронта на входе REF каналов таймера */
-#define ARM_TIM_CCR_CAP1_EVENT(x)   ((x) << 13)`    /* Событие переднего фронта на входе CAP1 каналов таймера */
+#define ARM_TIM_BRK_EVENT           (1 << 4)    /* Триггерированное по PCLK состояние входа BRK,
+                                                 * 0 – BRK == 0, 1 – BRK == 1 */
+#define ARM_TIM_CCR_CAP_EVENT(x)    ((x) << 5)  /* Событие переднего фронта на входе CAP каналов таймера */
+#define ARM_TIM_CCR_REF_EVENT(x)    ((x) << 9)  /* Событие переднего фронта на входе REF каналов таймера */
+#define ARM_TIM_CCR_CAP1_EVENT(x)   ((x) << 13) /* Событие переднего фронта на входе CAP1 каналов таймера */
 
 /*
  * Регистр TIM_IE
  */
-#define ARM_TIM_CNT_ZERO_EVENT_IE   (1 << 0)        /* Флаг разрешения прерывания по событию совпадения CNT и нуля */
-#define ARM_TIM_CNT_ARR_EVENT_IE    (1 << 1)        /* Флаг разрешения прерывания по событию совпадения CNT и ARR */
-#define ARM_TIM_ETR_RE_EVENT_IE     (1 << 2)        /* Флаг разрешения прерывания по переднему фронту на входе ETR */
-#define ARM_TIM_ETR_FE_EVENT_IE     (1 << 3)        /* Флаг разрешения прерывания по заднему фронту на входе ETR */
-#define ARM_TIM_CCR_CAP_EVENT_IE(n) ((1 << (n)) << 5)   /* Флаг разрешения прерывания по событию переднего фронта на
-                                 * выходе CAP каналов таймера. n - номер канала */
-#define ARM_TIM_CCR_CCR_EVENT_IE(n) ((1 << (n)) << 9)   /* Флаг разрешения прерывания по событию переднего фронта на
-                                 * выходе REF каналов таймера. n - номер канала */
-#define ARM_TIM_CCR_CAP1_EVENT_IE(n)    ((1 << (n)) << 13)  /* Флаг разрешения прерывания по событию переднего фронта на
-                                 * выходе CAP1 каналов таймера. n - номер канала */
+/* Флаг разрешения прерывания по событию совпадения CNT и нуля */
+#define ARM_TIM_CNT_ZERO_EVENT_IE   (1 << 0)
+/* Флаг разрешения прерывания по событию совпадения CNT и ARR */
+#define ARM_TIM_CNT_ARR_EVENT_IE    (1 << 1)
+/* Флаг разрешения прерывания по переднему фронту на входе ETR */
+#define ARM_TIM_ETR_RE_EVENT_IE     (1 << 2)
+/* Флаг разрешения прерывания по заднему фронту на входе ETR */
+#define ARM_TIM_ETR_FE_EVENT_IE     (1 << 3)
+/* Флаг разрешения прерывания по событию переднего фронта на
+ * выходе CAP каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CAP_EVENT_IE(n) ((1 << (n)) << 5)
+/* Флаг разрешения прерывания по событию переднего фронта на
+ * выходе REF каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CCR_EVENT_IE(n) ((1 << (n)) << 9)
+/* Флаг разрешения прерывания по событию переднего фронта на
+ * выходе CAP1 каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CAP1_EVENT_IE(n)    ((1 << (n)) << 13)
 
 /*
  * Регистр TIM_DMA_RE
  */
-#define ARM_TIM_CNT_ZERO_EVENT_RE   (1 << 0)        /* Флаг разрешения запроса DMA по событию совпадения CNT и нуля */
-#define ARM_TIM_CNT_ARR_EVENT_RE    (1 << 1)        /* Флаг разрешения запроса DMA по событию совпадения CNT и ARR */
-#define ARM_TIM_ETR_RE_EVENT_RE     (1 << 2)        /* Флаг разрешения запроса DMA по переднему фронту на входе ETR */
-#define ARM_TIM_ETR_FE_EVENT_RE     (1 << 3)        /* Флаг разрешения запроса DMA по заднему фронту на входе ETR */
-#define ARM_TIM_CCR_CAP_EVENT_RE(n) ((1 << (n)) << 5)   /* Флаг разрешения запроса DMA по событию переднего фронта на
-                                 * выходе CAP каналов таймера. n - номер канала */
-#define ARM_TIM_CCR_CCR_EVENT_RE(n) ((1 << (n)) << 9)   /* Флаг разрешения запроса DMA по событию переднего фронта на
-                                 * выходе REF каналов таймера. n - номер канала */
-#define ARM_TIM_CCR_CAP1_EVENT_RE(n)    ((1 << (n)) << 13)  /* Флаг разрешения запроса DMA по событию переднего фронта на
-                                 * выходе CAP1 каналов таймера. n - номер канала */
+/* Флаг разрешения запроса DMA по событию совпадения CNT и нуля */
+#define ARM_TIM_CNT_ZERO_EVENT_RE   (1 << 0)
+/* Флаг разрешения запроса DMA по событию совпадения CNT и ARR */
+#define ARM_TIM_CNT_ARR_EVENT_RE    (1 << 1)
+/* Флаг разрешения запроса DMA по переднему фронту на входе ETR */
+#define ARM_TIM_ETR_RE_EVENT_RE     (1 << 2)
+/* Флаг разрешения запроса DMA по заднему фронту на входе ETR */
+#define ARM_TIM_ETR_FE_EVENT_RE     (1 << 3)
+/* Флаг разрешения запроса DMA по событию переднего фронта на
+ * выходе CAP каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CAP_EVENT_RE(n) ((1 << (n)) << 5)
+/* Флаг разрешения запроса DMA по событию переднего фронта на
+ * выходе REF каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CCR_EVENT_RE(n) ((1 << (n)) << 9)
+/* Флаг разрешения запроса DMA по событию переднего фронта на
+ * выходе CAP1 каналов таймера. n - номер канала */
+#define ARM_TIM_CCR_CAP1_EVENT_RE(n)    ((1 << (n)) << 13)
 
 /*------------------------------------------------------
  * Battery backup
@@ -797,17 +825,14 @@ typedef struct
     unsigned reserved1 [13];
     arm_reg_t BKP_REG_0E;       /* Регистр аварийного сохранения 14 */
     arm_reg_t BKP_REG_0F;       /* Регистр аварийного сохранения 15 и
-                     * управления блоками RTC, LSE, LSI и HSI*/
-    arm_reg_t RTC_CNT;      /* Регистр основного счетчика часов
-                     * реального времени */
-    arm_reg_t RTC_DIV;      /* Регистр предварительного делителя
-                     * основного счетчика */
-    arm_reg_t RTC_PRL;      /* Регистр основания счета
-                     * предварительного делителя */
-    arm_reg_t RTC_ALRM;     /* Регистр значения для сравнения
-                     * основного счетчика и выработки сигнала ALRF */
-    arm_reg_t RTC_CS;       /* Регистр управления и состояния
-                     * флагов часов реального времени */
+                                 * управления блоками RTC, LSE, LSI и HSI */
+    arm_reg_t RTC_CNT;          /* Регистр основного счетчика часов реального времени */
+    arm_reg_t RTC_DIV;          /* Регистр предварительного делителя основного счетчика */
+    arm_reg_t RTC_PRL;          /* Регистр основания счета предварительного делителя */
+    arm_reg_t RTC_ALRM;         /* Регистр значения для сравнения основного счетчика и
+                                 * выработки сигнала ALRF */
+    arm_reg_t RTC_CS;           /* Регистр управления и состояния флагов
+                                 * часов реального времени */
 } BACKUP_t;
 
 #define ARM_BACKUP      ((BACKUP_t*) ARM_BKP_BASE)
@@ -815,40 +840,39 @@ typedef struct
 /*
  * Регистр BKP_REG_0E.
  */
-#define ARM_BKP_REG_0E_LOW      (7 << 0)    /* Выбор режима работы
-                             * регулятора 1.8В */
-#define ARM_BKP_REG_0E_SELECT_RI    (7 << 3)    /* Выбор дополнительной
-                             *  нагрузки для регулятора 1.8В */
+#define ARM_BKP_REG_0E_LOW          (7 << 0)    /* Выбор режима работы регулятора 1.8В */
+#define ARM_BKP_REG_0E_SELECT_RI    (7 << 3)    /* Выбор дополнительной нагрузки для
+                                                 * регулятора 1.8В */
 #define ARM_BKP_REG_0E_JTAG_A       (1 << 6)    /* Разрешение работы порта JTAG A */
 #define ARM_BKP_REG_0E_JTAG_B       (1 << 7)    /* Разрешение работы порта JTAG B */
-#define ARM_BKP_REG_0E_TRIM     (7 << 8)    /* Коэффициент настройки опорного
-                             * напряжения регулятора */
-#define ARM_BKP_REG_0E_FPOR     (1 << 11)   /* Флаг срабатывания POR */
+#define ARM_BKP_REG_0E_TRIM         (7 << 8)    /* Коэффициент настройки опорного
+                                                 * напряжения регулятора */
+#define ARM_BKP_REG_0E_FPOR         (1 << 11)   /* Флаг срабатывания POR */
 
 /*------------------------------------------------------
  * Universal Serial Bus
  */
 typedef struct
 {
-    arm_reg_t ENDPOINT_CONTROL_REG;         // [4:0] - R/W
-    arm_reg_t ENDPOINT_STATUS_REG;          // [7:0] - R/W
-    arm_reg_t ENDPOINT_TRANSTYPE_STATUS_REG;    // [1:0] - R/W
+    arm_reg_t ENDPOINT_CONTROL_REG;                 // [4:0] - R/W
+    arm_reg_t ENDPOINT_STATUS_REG;                  // [7:0] - R/W
+    arm_reg_t ENDPOINT_TRANSTYPE_STATUS_REG;        // [1:0] - R/W
     arm_reg_t ENDPOINT_NAK_TRANSTYPE_STATUS_REG;    // [1:0] - R/W
-} EndPointStatusRegs;
+} EndPointStatusRegs_t;
 
 typedef struct
 {
-    arm_reg_t EP_RX_FIFO_DATA;          // [7:0] - R/W
+    arm_reg_t EP_RX_FIFO_DATA;              // [7:0] - R/W
     unsigned reserved1;
     arm_reg_t EP_RX_FIFO_DATA_COUNTL;       // [15:0] - R/W
     arm_reg_t EP_RX_FIFO_DATA_COUNTH;       // [15:0] - R/W
     arm_reg_t EP_RX_FIFO_CONTROL_REG;       // [0:0] - R/W
     unsigned reserved2 [11];
-    arm_reg_t EP_TX_FIFO_DATA;          // [7:0] - R/W
+    arm_reg_t EP_TX_FIFO_DATA;              // [7:0] - R/W
     unsigned reserved4 [3];
     arm_reg_t EP_TX_FIFO_CONTROL_REG;       // [0:0] - R/W
     unsigned reserved5 [11];
-} EndPointFifoRegs;
+} EndPointFifoRegs_t;
 
 typedef struct
 {
@@ -857,17 +881,17 @@ typedef struct
     arm_reg_t HOST_TX_TRANS_TYPE_REG;       // [1:0] - R/W
     arm_reg_t HOST_TX_LINE_CONTROL_REG;     // [4:0] - R/W
     arm_reg_t HOST_TX_SOF_ENABLE_REG;       // [0:0] - R/W
-    arm_reg_t HOST_TX_ADDR_REG;         // [6:0] - R/W
-    arm_reg_t HOST_TX_ENDP_REG;         // [3:0] - R/W
+    arm_reg_t HOST_TX_ADDR_REG;             // [6:0] - R/W
+    arm_reg_t HOST_TX_ENDP_REG;             // [3:0] - R/W
     arm_reg_t HOST_FRAME_NUM_REGL;          // [10:0]- R/W
     arm_reg_t HOST_FRAME_NUM_REGH;          // [10:0]- R/W
-    arm_reg_t HOST_INTERRUPT_STATUS_REG;        // [3:0] - R/O
+    arm_reg_t HOST_INTERRUPT_STATUS_REG;    // [3:0] - R/O
     arm_reg_t HOST_INTERRUPT_MASK_REG;      // [3:0] - R/W
     arm_reg_t HOST_RX_STATUS_REG;           // [7:0] - R/O
-    arm_reg_t HOST_RX_PID_REG;          // [3:0] - R/O
-    arm_reg_t HOST_RX_ADDR_REG;         // [6:0] - R/O
-    arm_reg_t HOST_RX_ENDP_REG;         // [3:0] - R/O
-    arm_reg_t HOST_RX_CONNECT_STATE_REG;        // [1:0] - R/O
+    arm_reg_t HOST_RX_PID_REG;              // [3:0] - R/O
+    arm_reg_t HOST_RX_ADDR_REG;             // [6:0] - R/O
+    arm_reg_t HOST_RX_ENDP_REG;             // [3:0] - R/O
+    arm_reg_t HOST_RX_CONNECT_STATE_REG;    // [1:0] - R/O
     arm_reg_t HOST_SOF_TIMER_MSB_REG;       // [7:0] - R/O
     unsigned reserved1 [16];
     arm_reg_t HOST_RX_FIFO_DATA;            // [7:0] - R/O
@@ -878,22 +902,22 @@ typedef struct
     unsigned reserved3 [11];
     arm_reg_t HOST_TX_FIFO_DATA;            // [7:0] - R/W
     unsigned reserved4 [3];
-    arm_reg_t HOST_TX_FIFO_CONTROL_REG;         // [0:0] - R/W
+    arm_reg_t HOST_TX_FIFO_CONTROL_REG;     // [0:0] - R/W
     unsigned reserved5 [11];
 
     // Slave Regs
-    EndPointStatusRegs EndPointStatusRegs [4];
-    arm_reg_t SC_CONTROL_REG;           // [5:0] - R/W
+    EndPointStatusRegs_t EndPointStatusRegs [4];
+    arm_reg_t SC_CONTROL_REG;               // [5:0] - R/W
     arm_reg_t SC_LINE_STATUS_REG;           // [1:0] - R/W
     arm_reg_t SC_INTERRUPT_STATUS_REG;      // [5:0] - R/W
     arm_reg_t SC_INTERRUPT_MASK_REG;        // [5:0] - R/W
-    arm_reg_t SC_ADDRESS;               // [6:0] - R/W
-    arm_reg_t SC_FRAME_NUML;            // [10:0] - R/W
-    arm_reg_t SC_FRAME_NUMH;            // [10:0] - R/W
+    arm_reg_t SC_ADDRESS;                   // [6:0] - R/W
+    arm_reg_t SC_FRAME_NUML;                // [10:0] - R/W
+    arm_reg_t SC_FRAME_NUMH;                // [10:0] - R/W
     unsigned reserved6 [9];
-    EndPointFifoRegs EndPointFifoRegs [4];
+    EndPointFifoRegs_t EndPointFifoRegs [4];
 
-    arm_reg_t HOST_SLAVE_CONTROL_REG;           // [1:0] - R/W
+    arm_reg_t HOST_SLAVE_CONTROL_REG;       // [1:0] - R/W
     arm_reg_t HOST_SLAVE_VERSION_REG;       // [7:0] - R/O
 } USB_t;
 
@@ -904,24 +928,24 @@ typedef struct
  */
 typedef struct
 {
-    arm_reg_t STATUS;       // DMA status
-    arm_reg_t CONFIG;       // DMA configuration
-    arm_reg_t CTRL_BASE_PTR;    // Channel control data base pointer
+    arm_reg_t STATUS;               // DMA status
+    arm_reg_t CONFIG;               // DMA configuration
+    arm_reg_t CTRL_BASE_PTR;        // Channel control data base pointer
     arm_reg_t ALT_CTRL_BASE_PTR;    // Channel alternate control data base pointer
-    arm_reg_t WAITONREQ_STATUS; // Channel wait on request status
-    arm_reg_t CHNL_SW_REQUEST;  // Channel software request
+    arm_reg_t WAITONREQ_STATUS;     // Channel wait on request status
+    arm_reg_t CHNL_SW_REQUEST;      // Channel software request
     arm_reg_t CHNL_USEBURST_SET;    // Channel useburst set
     arm_reg_t CHNL_USEBURST_CLR;    // Channel useburst clear
     arm_reg_t CHNL_REQ_MASK_SET;    // Channel request mask set
     arm_reg_t CHNL_REQ_MASK_CLR;    // Channel request mask clear
-    arm_reg_t CHNL_ENABLE_SET;  // Channel enable set
-    arm_reg_t CHNL_ENABLE_CLR;  // Channel enable clear
-    arm_reg_t CHNL_PRI_ALT_SET; // Channel primary-alternate set
-    arm_reg_t CHNL_PRI_ALT_CLR; // Channel primary-alternate clear
+    arm_reg_t CHNL_ENABLE_SET;      // Channel enable set
+    arm_reg_t CHNL_ENABLE_CLR;      // Channel enable clear
+    arm_reg_t CHNL_PRI_ALT_SET;     // Channel primary-alternate set
+    arm_reg_t CHNL_PRI_ALT_CLR;     // Channel primary-alternate clear
     arm_reg_t CHNL_PRIORITY_SET;    // Channel priority set
     arm_reg_t CHNL_PRIORITY_CLR;    // Channel priority clear
     unsigned reserved0 [3];
-    arm_reg_t ERR_CLR;      // Bus error clear
+    arm_reg_t ERR_CLR;              // Bus error clear
 } DMA_Controller_t;
 
 typedef struct
@@ -980,7 +1004,7 @@ typedef struct
 } DMA_AltData_t;
 
 #define ARM_DMA                 ((DMA_Controller_t*) ARM_DMA_BASE)
-#define ARM_DMA_Test        ((DMA_Test_t*) (ARM_DMA_BASE + 0x0E00))
+#define ARM_DMA_Test            ((DMA_Test_t*) (ARM_DMA_BASE + 0x0E00))
 #define ARM_DMA_PeriphID        ((DMA_Periph_Identification_t*) (ARM_DMA_BASE + 0x0FD0))
 #define ARM_DMA_PrimeCellID     ((DMA_PrimeCell_Identification_t*) (ARM_DMA_BASE + 0x0FF0))
 
@@ -1072,34 +1096,32 @@ typedef struct
 /*
  * Регистр EEPROM CMD
  */
+/*
+ * Переключение контроллера памяти EEPROM на
+ * регистровое управление. Не может производиться
+ * при исполнении программы из области EERPOM.
+ * 0 – управление EERPOM от ядра, рабочий режим
+ * 1 – управление от регистров, режим программирования
+ */
 #define ARM_EEPROM_CMD_CON  0x00000001
-                /*
-                 * Переключение контроллера памяти EEPROM на
-                 * регистровое управление. Не может производиться
-                 * при исполнении программы из области EERPOM.
-                 * 0 – управление EERPOM от ядра, рабочий режим
-                 * 1 – управление от регистров, режим программирования
-                 */
-
+/*
+ * Запись в память EERPOM (в режиме программирования)
+ * 0 – нет записи
+ * 1 – есть запись
+ */
 #define ARM_EEPROM_CMD_WR   0x00000002
-                /*
-                 * Запись в память EERPOM (в режиме программирования)
-                 * 0 – нет записи
-                 * 1 – есть запись
-                 */
-
+/*
+ * Чтение из памяти EERPOM (в режиме программирования)
+ * 0 – нет чтения
+ * 1 – есть чтение
+ */
 #define ARM_EEPROM_CMD_RD   0x00000004
-                /*
-                 * Чтение из память EERPOM (в режиме программирования)
-                 * 0 – нет чтения
-                 * 1 – есть чтение
-                 */
-
+/*
+ * Задержка памяти программ при чтении
+ */
 #define ARM_EEPROM_CMD_DELAY_MASK   0x00000038
-                /*
-                 * Задержка памяти программ при чтении
-                 */
-#define ARM_EEPROM_CMD_DELAY_0  0x00000000  /* 0 тактов - до 25 МГц */
+
+#define ARM_EEPROM_CMD_DELAY_0  0x00000000      /* 0 тактов - до 25 МГц */
 #define ARM_EEPROM_CMD_DELAY_1  0x00000008      /* 1 такт - до 50 МГц */
 #define ARM_EEPROM_CMD_DELAY_2  0x00000010      /* 2 такта - до 75 МГц */
 #define ARM_EEPROM_CMD_DELAY_3  0x00000018      /* 3 такта - до 100 МГц */
@@ -1108,62 +1130,55 @@ typedef struct
 #define ARM_EEPROM_CMD_DELAY_6  0x00000030      /* 6 тактов - до 175 МГц */
 #define ARM_EEPROM_CMD_DELAY_7  0x00000038      /* 7 тактов - до 200 МГц */
 
+/*
+ * Выдача адреса ADR[16:9]
+ * 0 – не разрешено
+ * 1 - разрешено
+ */
 #define ARM_EEPROM_CMD_XE   0x00000040
-                /*
-                 * Выдача адреса ADR[16:9]
-                 * 0 – не разрешено
-                 * 1 - разрешено
-                 */
-
+/*
+ * Выдача адреса ADR[8:2]
+ * 0 – не разрешено
+ * 1 – разрешено
+ */
 #define ARM_EEPROM_CMD_YE   0x00000080
-                /*
-                 * Выдача адреса ADR[8:2]
-                 * 0 – не разрешено
-                 * 1 – разрешено
-                 */
-
+/*
+ * Усилитель считывания
+ * 0 – не включен
+ * 1 – включен
+ */
 #define ARM_EEPROM_CMD_SE   0x00000100
-                /*
-                 * Усилитель считывания
-                 * 0 – не включен
-                 * 1 – включен
-                 */
-
+/*
+ * Работа с блоком информации
+ * 0 – основная память
+ * 1 – информационный блок
+ */
 #define ARM_EEPROM_CMD_IFREN    0x00000200
-                /*
-                 * Работа с блоком информации
-                 * 0 – основная память
-                 * 1 – информационный блок
-                 */
-
+/*
+ * Стереть строку с адресом ADR[16:9].
+ * ADR[8:0] значения не имеет.
+ * 0 – нет стирания
+ * 1 – стирание
+ */
 #define ARM_EEPROM_CMD_ERASE    0x00000400
-                /*
-                 * Стереть строку с адресом ADR[16:9].
-                 * ADR[8:0] значения не имеет.
-                 * 0 – нет стирания
-                 * 1 – стирание
-                 */
-
+/*
+ * Стереть весь блок, при ERASE=1
+ * 0 – нет стирания
+ * 1 – стирание
+ */
 #define ARM_EEPROM_CMD_MAS1     0x00000800
-                /*
-                 * Стереть весь блок, при ERASE=1
-                 * 0 – нет стирания
-                 * 1 – стирание
-                 */
-
+/*
+ * Записать данные по ADR[16:2] из регистра EERPOM_DI
+ * 0 – нет записи
+ * 1 – есть запись
+ */
 #define ARM_EEPROM_CMD_PROG     0x00001000
-                /*
-                 * Записать данные по ADR[16:2] из регистра EERPOM_DI
-                 * 0 – нет записи
-                 * 1 – есть запись
-                 */
-
+/*
+ * Операции записи или стирания
+ * 0 – при чтении
+ * 1 - при записи или стирании
+ */
 #define ARM_EEPROM_CMD_NVSTR    0x00002000
-                /*
-                 * Операции записи или стирания
-                 * 0 – при чтении
-                 * 1 - при записи или стирании
-                 */
 
 /*------------------------------------------------------
  * Контроллер CAN.
@@ -1184,29 +1199,29 @@ typedef struct
 
 typedef struct
 {
-    arm_reg_t CONTROL;  /* Управление */
-    arm_reg_t STATUS;   /* Состояние */
-    arm_reg_t BITTMNG;  /* Задание скорости работы */
+    arm_reg_t CONTROL;      /* Управление */
+    arm_reg_t STATUS;       /* Состояние */
+    arm_reg_t BITTMNG;      /* Задание скорости работы */
     arm_reg_t reserved0;
-    arm_reg_t INT_EN;   /* Разрешение прерываний */
+    arm_reg_t INT_EN;       /* Разрешение прерываний */
     arm_reg_t reserved1;
     arm_reg_t reserved2;
-    arm_reg_t OVER;     /* Границы счетчика ошибок */
-    arm_reg_t RXID;     /* Идентификатор принятого сообщения */
-    arm_reg_t RXDLC;    /* Длина и формат принятого сообщения */
-    arm_reg_t RXDATAL;  /* Младшая часть принятых данных */
-    arm_reg_t RXDATAH;  /* Старшая часть принятых данных */
-    arm_reg_t TXID;     /* Идентификатор передаваемого сообщения */
-    arm_reg_t TXDLC;    /* Длина и формат передаваемого сообщения */
-    arm_reg_t DATAL;    /* Младшая часть передаваемых данных */
-    arm_reg_t DATAH;    /* Старшая часть передаваемых данных */
+    arm_reg_t OVER;         /* Границы счетчика ошибок */
+    arm_reg_t RXID;         /* Идентификатор принятого сообщения */
+    arm_reg_t RXDLC;        /* Длина и формат принятого сообщения */
+    arm_reg_t RXDATAL;      /* Младшая часть принятых данных */
+    arm_reg_t RXDATAH;      /* Старшая часть принятых данных */
+    arm_reg_t TXID;         /* Идентификатор передаваемого сообщения */
+    arm_reg_t TXDLC;        /* Длина и формат передаваемого сообщения */
+    arm_reg_t DATAL;        /* Младшая часть передаваемых данных */
+    arm_reg_t DATAH;        /* Старшая часть передаваемых данных */
     arm_reg_t BUF_CON [32]; /* Управление буферами 1..32 */
-    arm_reg_t INT_RX;   /* Разрешение прерываний от приемных буферов */
-    arm_reg_t RX;       /* Флаги RX_FULL от приемных буферов */
-    arm_reg_t INT_TX;   /* Разрешение прерываний от передающих буферов */
-    arm_reg_t TX;       /* Флаги ~TX_REQ от передающих буферов */
+    arm_reg_t INT_RX;       /* Разрешение прерываний от приемных буферов */
+    arm_reg_t RX;           /* Флаги RX_FULL от приемных буферов */
+    arm_reg_t INT_TX;       /* Разрешение прерываний от передающих буферов */
+    arm_reg_t TX;           /* Флаги ~TX_REQ от передающих буферов */
     arm_reg_t reserved3 [76];
-    CAN_BUF_t BUF [32]; /* Буферы 1..32: ID, DLC, DATA */
+    CAN_BUF_t BUF [32];     /* Буферы 1..32: ID, DLC, DATA */
     arm_reg_t reserved4 [64];
     CAN_MASK_t MASK [32];   /* Маски и фильтры для приёма в буферы 1..32 */
 } CAN_t;
@@ -1226,31 +1241,31 @@ typedef struct
 /*
  * Регистр CAN STATUS - состояние контроллера
  */
-#define CAN_STATUS_TEC(s)   ((s) >> 24) /* Счетчик ошибок передатчика */
-#define CAN_STATUS_REC(s)   ((s) >> 16 & 0xFF) /* Счетчик ошибок приемника */
-#define CAN_STATUS_TEC8     (1 << 12)   /* TEC более 255 */
-#define CAN_STATUS_REC8     (1 << 11)   /* REC более 255 */
-#define CAN_STATUS_BUS_OFF  (1 << 10)   /* Ожидается восстановление шины */
+#define CAN_STATUS_TEC(s)       ((s) >> 24) /* Счетчик ошибок передатчика */
+#define CAN_STATUS_REC(s)       ((s) >> 16 & 0xFF) /* Счетчик ошибок приемника */
+#define CAN_STATUS_TEC8         (1 << 12)   /* TEC более 255 */
+#define CAN_STATUS_REC8         (1 << 11)   /* REC более 255 */
+#define CAN_STATUS_BUS_OFF      (1 << 10)   /* Ожидается восстановление шины */
 #define CAN_STATUS_ERR_ACTIVE   (1 << 9)    /* Отсылается флаг пассивной ошибки */
-#define CAN_STATUS_ID_LOWER (1 << 8)    /* При передаче был проигран арбитраж */
-#define CAN_STATUS_ERR_ACK  (1 << 7)    /* Ошибка подтверждения приема */
+#define CAN_STATUS_ID_LOWER     (1 << 8)    /* При передаче был проигран арбитраж */
+#define CAN_STATUS_ERR_ACK      (1 << 7)    /* Ошибка подтверждения приема */
 #define CAN_STATUS_ERR_FRAME    (1 << 6)    /* Ошибка формата пакета */
-#define CAN_STATUS_ERR_CRC  (1 << 5)    /* Ошибка контрольной суммы пакета */
+#define CAN_STATUS_ERR_CRC      (1 << 5)    /* Ошибка контрольной суммы пакета */
 #define CAN_STATUS_ERR_BITSTUFF (1 << 4)    /* Ошибка вставленных битов пакета */
-#define CAN_STATUS_ERR_BIT  (1 << 3)    /* Ошибка передаваемых битов пакета */
-#define CAN_STATUS_ERR_OVER (1 << 2)    /* Превышение заданного уровня TEC и REC */
-#define CAN_STATUS_TX_READY (1 << 1)    /* Есть буфер готовый для отправки сообщений */
-#define CAN_STATUS_RX_READY (1 << 0)    /* Есть буфер с принятым сообщением */
+#define CAN_STATUS_ERR_BIT      (1 << 3)    /* Ошибка передаваемых битов пакета */
+#define CAN_STATUS_ERR_OVER     (1 << 2)    /* Превышение заданного уровня TEC и REC */
+#define CAN_STATUS_TX_READY     (1 << 1)    /* Есть буфер готовый для отправки сообщений */
+#define CAN_STATUS_RX_READY     (1 << 0)    /* Есть буфер с принятым сообщением */
 
 /*
  * Регистр CAN BITTMNG - задание скорости работы
  */
-#define CAN_BITTMNG_SB      (1 << 27)   /* Трехкратное семплирование */
+#define CAN_BITTMNG_SB      (1 << 27)       /* Трехкратное семплирование */
 #define CAN_BITTMNG_SJW(n)  ((n-1) << 25)   /* Размер фазы SJW */
 #define CAN_BITTMNG_SEG2(n) ((n-1) << 22)   /* Размер фазы SEG2 */
 #define CAN_BITTMNG_SEG1(n) ((n-1) << 19)   /* Размер фазы SEG1 */
 #define CAN_BITTMNG_PSEG(n) ((n-1) << 16)   /* Размер фазы PSEG */
-#define CAN_BITTMNG_BRP(n)  (n)     /* Предделитель системной частоты */
+#define CAN_BITTMNG_BRP(n)  (n)             /* Предделитель системной частоты */
 
 /*
  * Регистр CAN INT_EN - разрешение прерываний
@@ -1276,20 +1291,20 @@ typedef struct
 /*
  * Регистры CAN BUF[0..31].ID - идентификатор сообщения
  */
-#define CAN_ID_EID_SHIFT    0       /* Сдвиг поля EID */
-#define CAN_ID_EID_MASK     0x3FFFF     /* Маска поля EID */
-#define CAN_ID_SID_SHIFT    18      /* Сдвиг поля SID */
+#define CAN_ID_EID_SHIFT    0               /* Сдвиг поля EID */
+#define CAN_ID_EID_MASK     0x3FFFF         /* Маска поля EID */
+#define CAN_ID_SID_SHIFT    18              /* Сдвиг поля SID */
 #define CAN_ID_SID_MASK     (0x7FF << 18)   /* Маска поля SID */
 
 /*
  * Регистры CAN BUF[0..31].DLC - длина и формат сообщения
  */
-#define CAN_DLC_LEN(n)      ((n) & 15)  /* Длина данных в байтах */
-#define CAN_DLC_RTR     (1 << 8)    /* Запрос обратного ответа */
-#define CAN_DLC_R1      (1 << 9)    /* Всегда должно быть “1” */
-#define CAN_DLC_R0      (1 << 10)   /* Всегда должно быть “0” */
-#define CAN_DLC_SSR     (1 << 11)   /* Всегда должно быть “1” */
-#define CAN_DLC_IDE     (1 << 12)   /* Расширенный формат */
+#define CAN_DLC_LEN(n)      ((n) & 15)      /* Длина данных в байтах */
+#define CAN_DLC_RTR         (1 << 8)        /* Запрос обратного ответа */
+#define CAN_DLC_R1          (1 << 9)        /* Всегда должно быть “1” */
+#define CAN_DLC_R0          (1 << 10)       /* Всегда должно быть “0” */
+#define CAN_DLC_SSR         (1 << 11)       /* Всегда должно быть “1” */
+#define CAN_DLC_IDE         (1 << 12)       /* Расширенный формат */
 
 /*-----------------------------------
  * Описание регистров контроллера ЦАП
@@ -1337,61 +1352,89 @@ typedef struct
 /*
  * Регистр ADC1_CFG
  */
-#define ARM_CFG_REG_ADON    (1 << 0)    /* Включение АЦП */
-#define ARM_CFG_REG_GO      (1 << 1)    /* Начало преобразования. Запись “1” начинает
-                         * процесс преобразования, сбрасывается автоматически */
-#define ARM_CFG_REG_CLKS    (1 << 2)    /* Выбор источника синхросигнала CLK работы ADC. Возможные значения см. ниже */
-#define ARM_CFG_REG_SAMPLE  (1 << 3)    /* Выбор способа запуска АЦП. Возможные значения см. ниже */
-#define ARM_CFG_REG_CHS(x)  ((x) << 4)  /* Номер аналогового канала, по которому поступает сигнал для преобразования */
-#define ARM_CFG_REG_CHCH    (1 << 9)    /* Включение переключения каналов */
-#define ARM_CFG_REG_RNGC    (1 << 10)   /* Разрешение автоматического контролирования уровней */
-#define ARM_CFG_M_REF       (1 << 11)   /* Выбор источника опорных напряжений. Возможные значения см. ниже */
-#define ARM_CFG_REG_DIVCLK(x)   ((x) << 12) /* Выбор коэффициента деления входной частоты.
-                         * 0000 - CLK, 0001 - CLK/2, ..., 1111 - CLK/32768 */
-#define ARM_CFG_SYNC_CONVER (1 << 16)   /* Запускает работу двух АЦП одновременно, при этом биты
-                         * конфигурации второго АЦП, такие как Cfg_REG_DIVCLK,
-                         * Cfg_REG_ADON, Cfg_M_REF и Cfg_REG_CHS берутся из
-                         * регистра конфигурации первого */
-#define ARM_TS_EN       (1 << 17)   /* Включение датчика температуры и источника опорного напряжения */
-#define ARM_TS_BUF_EN       (1 << 18)   /* Включение выходного усилителя для датчика температуры и
-                         * источника опорного напряжения */
-#define ARM_SEL_TS      (1 << 19)   /* Включение оцифровки датчика температуры
-                         * Должен использоваться совместно с выбором канала Cfg_REG_CHS = 31 */
-#define ARM_SEL_VREF        (1 << 20)   /* Включение оцифровки источника опорного напряжения на 1.23В */
-#define ARM_TR(x)       ((x) << 21) /* Подстройка опорного напряжения */
-#define ARM_DELAY_GO(x)     ((x) << 25) /* Задержка в тактах перед началом следующего преобразования после завершения
-                         * предыдущего при последовательном переборе каналов */
-#define ARM_DELAY_ADC(x)    ((x) << 28) /* Задержка в тактах между началом преобразования ADC1 и ADC2 при
-                         * ADC последовательном переборе, либо работе на один канал */
+/* Включение АЦП */
+#define ARM_CFG_REG_ADON    (1 << 0)
+/* Начало преобразования. Запись “1” начинает
+ * процесс преобразования, сбрасывается автоматически */
+#define ARM_CFG_REG_GO      (1 << 1)
+/* Выбор источника синхросигнала CLK работы ADC. Возможные значения см. ниже */
+#define ARM_CFG_REG_CLKS    (1 << 2)
+/* Выбор способа запуска АЦП. Возможные значения см. ниже */
+#define ARM_CFG_REG_SAMPLE  (1 << 3)
+/* Номер аналогового канала, по которому поступает сигнал для преобразования */
+#define ARM_CFG_REG_CHS(x)  ((x) << 4)
+/* Включение переключения каналов */
+#define ARM_CFG_REG_CHCH    (1 << 9)
+/* Разрешение автоматического контролирования уровней */
+#define ARM_CFG_REG_RNGC    (1 << 10)
+/* Выбор источника опорных напряжений. Возможные значения см. ниже */
+#define ARM_CFG_M_REF       (1 << 11)
+/* Выбор коэффициента деления входной частоты.
+ * 0000 - CLK, 0001 - CLK/2, ..., 1111 - CLK/32768 */
+#define ARM_CFG_REG_DIVCLK(x)   ((x) << 12)
+/* Запускает работу двух АЦП одновременно, при этом биты
+ * конфигурации второго АЦП, такие как Cfg_REG_DIVCLK,
+ * Cfg_REG_ADON, Cfg_M_REF и Cfg_REG_CHS берутся из
+ * регистра конфигурации первого */
+#define ARM_CFG_SYNC_CONVER (1 << 16)
+/* Включение датчика температуры и источника опорного напряжения */
+#define ARM_TS_EN           (1 << 17)
+/* Включение выходного усилителя для датчика температуры и
+ * источника опорного напряжения */
+#define ARM_TS_BUF_EN       (1 << 18)
+/* Включение оцифровки датчика температуры
+ * Должен использоваться совместно с выбором канала Cfg_REG_CHS = 31 */
+#define ARM_SEL_TS          (1 << 19)
+/* Включение оцифровки источника опорного напряжения на 1.23В */
+#define ARM_SEL_VREF        (1 << 20)
+/* Подстройка опорного напряжения */
+#define ARM_TR(x)           ((x) << 21)
+/* Задержка в тактах перед началом следующего преобразования после завершения
+ * предыдущего при последовательном переборе каналов */
+#define ARM_DELAY_GO(x)     ((x) << 25)
+/* Задержка в тактах между началом преобразования ADC1 и ADC2 при
+ * ADC последовательном переборе, либо работе на один канал */
+#define ARM_DELAY_ADC(x)    ((x) << 28)
+
 /*
  * Регистр ADC2_CFG - приведены только те поля, которые отличаются от регистра ADC1_CFG
  */
-#define ARM_ADC1_OP     (1 << 17)   /* Выбор источника опорного напряжения 1.23В */
-#define ARM_ADC2_OP     (1 << 18)   /* Выбор источника опорного напряжения 1.23В */
+/* Выбор источника опорного напряжения 1.23В */
+#define ARM_ADC1_OP         (1 << 17)
+/* Выбор источника опорного напряжения 1.23В */
+#define ARM_ADC2_OP         (1 << 18)
 
 /* Источник синхросигнала CLK */
-#define ARM_ADC_CPU_CKL     0
-#define ARM_ADC_ADC_CKL     1
+#define ARM_ADC_CPU_CKL         0
+#define ARM_ADC_ADC_CKL         1
 /* Способы запуска АЦП */
 #define ARM_ADC_START_SINGLE    0   /* одиночный запуск */
-#define ARM_ADC_START_SEQ   1   /* последовательный, автоматический запуск после завершения предыдущего преобразования */
+#define ARM_ADC_START_SEQ       1   /* последовательный, автоматический запуск после
+                                     * завершения предыдущего преобразования */
+
 /* Выбор источника опорных напряжений */
-#define ARM_ADC_REF_INT     0   /* внутреннее опорное напряжение (от AUcc и AGND) */
-#define ARM_ADC_REF_EXT     1   /* внешнее опорное напряжение (от ADC0_REF+ и ADC1_REF- для ADC1_CFG и
-                     * от датчика температуры для ADC2_CFG) */
+#define ARM_ADC_REF_INT         0   /* внутреннее опорное напряжение (от AUcc и AGND) */
+#define ARM_ADC_REF_EXT         1   /* внешнее опорное напряжение
+                                     * (от ADC0_REF+ и ADC1_REF- для ADC1_CFG и
+                                     * от датчика температуры для ADC2_CFG) */
 
 /*
  * Регистры ADCx_STATUS
  */
-#define ARM_FLG_REG_OVERWRITE   (1 << 0)    /* Данные в регистре результата были перезаписаны, данный флаг
-                         * сбрасывается только при записи в регистр флагов */
-#define ARM_FLG_REG_AWOIFEN (1 << 1)    /* Флаг выставляется, когда результат преобразования выше верней
-                         * или ниже нижней границы автоматического контролирования
-                         * уровней. Очищается считыванием результата из регистра */
-#define ARM_FLG_REG_EOCIF   (1 << 2)    /* Флаг выставляется, когда закончено преобразования и данные еще
-                         * не считаны. Очищается считыванием результата из регистра*/
-#define ARM_AWOIF_IE        (1 << 3)    /* Флаг разрешения генерирования прерывания по событию Flg_REG_AWOIFEN */
-#define ARM_ECOIF_IE        (1 << 4)    /* Флаг разрешения генерирования прерывания по событию Flg_REG_ECOIF */
+/* Данные в регистре результата были перезаписаны, данный флаг
+ * сбрасывается только при записи в регистр флагов */
+#define ARM_FLG_REG_OVERWRITE   (1 << 0)
+/* Флаг выставляется, когда результат преобразования выше верней
+ * или ниже нижней границы автоматического контролирования
+ * уровней. Очищается считыванием результата из регистра */
+#define ARM_FLG_REG_AWOIFEN     (1 << 1)
+/* Флаг выставляется, когда закончено преобразования и данные еще
+ * не считаны. Очищается считыванием результата из регистра*/
+#define ARM_FLG_REG_EOCIF       (1 << 2)
+/* Флаг разрешения генерирования прерывания по событию Flg_REG_AWOIFEN */
+#define ARM_AWOIF_IE            (1 << 3)
+/* Флаг разрешения генерирования прерывания по событию Flg_REG_ECOIF */
+#define ARM_ECOIF_IE            (1 << 4)
 
 /*
  * Регистры ADCx_CHSEL: выбор канала АЦП
@@ -1410,30 +1453,38 @@ typedef struct
     arm_reg_t SR;
 } IWDG_t;
 
-#define ARM_IWDG        ((IWDG_t *) ARM_IWDT_BASE)
+#define ARM_IWDG                ((IWDG_t *) ARM_IWDT_BASE)
+/* Это значение должна записывать программа через определенные интервалы
+ * времени. Иначе сторожевой таймер сгенерирует сброс */
+#define ARM_IWDG_KEY_ALIVE      0xAAAA
+/* Это значение должно быть записано в регистр KR для разрешения доступа
+ * по записи к регистрам PR и RLR */
+#define ARM_IWDG_KEY_UNBLOCK    0x5555
+/* Это значение разрешает работу сторожевого таймера */
+#define ARM_IWDG_KEY_START      0xCCCC
 
-#define ARM_IWDG_KEY_ALIVE  0xAAAA      /* Это значение должна записывать программа через определенные интервалы времени.
-                         * Иначе сторожевой таймер сгенерирует сброс */
-#define ARM_IWDG_KEY_UNBLOCK    0x5555      /* Это значение должно быть записано в регистр KR для разрешения доступа
-                         * по записи к регистрам PR и RLR */
-#define ARM_IWDG_KEY_START  0xCCCC      /* Это значение разрешает работу сторожевого таймера */
+/* Делитель частоты сторожевого таймера */
+#define ARM_IWDG_PR(x)          ((x) & 7)
+/* Основание счета сторожевого таймера */
+#define ARM_IWDG_RLR(x)         ((x) & 0xFFF)
+/* Статус сторожевого таймера */
+#define ARM_IWDG_SR(x)          ((x) & 3)
 
-#define ARM_IWDG_PR(x)      ((x) & 7)   /* Делитель частоты сторожевого таймера */
-#define ARM_IWDG_RLR(x)     ((x) & 0xFFF)   /* Основание счета сторожевого таймера */
-#define ARM_IWDG_SR(x)      ((x) & 3)   /* Статус сторожевого таймера */
-
-
-/*--------------------------------------------------------------------------------------
- * Макроопределения для возможности указания привязки сигналов к контактам из target.cfg
+/*------------------------------------------------------------------------
+ * Макроопределения для возможности указания привязки сигналов к контактам
+ * из target.cfg
  */
 
 /*
- * Каждому контакту микроконтроллера ставится в соответствие уникальное число, имеющее также и символическое имя.
- * Например, PA0, PC12 и т.д. Пользователь драйвера должен установить значения констант, обозначающих сигналы,
- * в файле target.cfg своего проекта, в переменной CFLAGS. Например,
+ * Каждому контакту микроконтроллера ставится в соответствие уникальное
+ * число, имеющее также и символическое имя. Например, PA0, PC12 и т.д.
+ * Пользователь драйвера должен установить значения констант, обозначающих
+ * сигналы, в файле target.cfg своего проекта, в переменной CFLAGS.
+ * Например,
  *     CFLAGS += -DSSP1RXD=PD11
- * В коде драйвера можно препроцессором разобрать значение константы для сигнала и получить, к какому контакту
- * пользователь привязал сигнал, и правильно проинициализировать контакт.
+ * В коде драйвера можно препроцессором разобрать значение константы для
+ * сигнала и получить, к какому контакту пользователь привязал сигнал, и
+ * правильно проинициализировать контакт.
  * Для примера см. драйвер SPI
  */
 #define PORT_A  0
@@ -1447,16 +1498,16 @@ typedef struct
 #define PORT(x)             (((x) >> 4) & 0xF)
 #define PIN(x)              ((x) & 0xF)
 
-#define PA0 M1986VE91T_PIN(PORT_A, 0)
-#define PA1 M1986VE91T_PIN(PORT_A, 1)
-#define PA2 M1986VE91T_PIN(PORT_A, 2)
-#define PA3 M1986VE91T_PIN(PORT_A, 3)
-#define PA4 M1986VE91T_PIN(PORT_A, 4)
-#define PA5 M1986VE91T_PIN(PORT_A, 5)
-#define PA6 M1986VE91T_PIN(PORT_A, 6)
-#define PA7 M1986VE91T_PIN(PORT_A, 7)
-#define PA8 M1986VE91T_PIN(PORT_A, 8)
-#define PA9 M1986VE91T_PIN(PORT_A, 9)
+#define PA0     M1986VE91T_PIN(PORT_A, 0)
+#define PA1     M1986VE91T_PIN(PORT_A, 1)
+#define PA2     M1986VE91T_PIN(PORT_A, 2)
+#define PA3     M1986VE91T_PIN(PORT_A, 3)
+#define PA4     M1986VE91T_PIN(PORT_A, 4)
+#define PA5     M1986VE91T_PIN(PORT_A, 5)
+#define PA6     M1986VE91T_PIN(PORT_A, 6)
+#define PA7     M1986VE91T_PIN(PORT_A, 7)
+#define PA8     M1986VE91T_PIN(PORT_A, 8)
+#define PA9     M1986VE91T_PIN(PORT_A, 9)
 #define PA10    M1986VE91T_PIN(PORT_A, 10)
 #define PA11    M1986VE91T_PIN(PORT_A, 11)
 #define PA12    M1986VE91T_PIN(PORT_A, 12)
@@ -1464,16 +1515,16 @@ typedef struct
 #define PA14    M1986VE91T_PIN(PORT_A, 14)
 #define PA15    M1986VE91T_PIN(PORT_A, 15)
 
-#define PB0 M1986VE91T_PIN(PORT_B, 0)
-#define PB1 M1986VE91T_PIN(PORT_B, 1)
-#define PB2 M1986VE91T_PIN(PORT_B, 2)
-#define PB3 M1986VE91T_PIN(PORT_B, 3)
-#define PB4 M1986VE91T_PIN(PORT_B, 4)
-#define PB5 M1986VE91T_PIN(PORT_B, 5)
-#define PB6 M1986VE91T_PIN(PORT_B, 6)
-#define PB7 M1986VE91T_PIN(PORT_B, 7)
-#define PB8 M1986VE91T_PIN(PORT_B, 8)
-#define PB9 M1986VE91T_PIN(PORT_B, 9)
+#define PB0     M1986VE91T_PIN(PORT_B, 0)
+#define PB1     M1986VE91T_PIN(PORT_B, 1)
+#define PB2     M1986VE91T_PIN(PORT_B, 2)
+#define PB3     M1986VE91T_PIN(PORT_B, 3)
+#define PB4     M1986VE91T_PIN(PORT_B, 4)
+#define PB5     M1986VE91T_PIN(PORT_B, 5)
+#define PB6     M1986VE91T_PIN(PORT_B, 6)
+#define PB7     M1986VE91T_PIN(PORT_B, 7)
+#define PB8     M1986VE91T_PIN(PORT_B, 8)
+#define PB9     M1986VE91T_PIN(PORT_B, 9)
 #define PB10    M1986VE91T_PIN(PORT_B, 10)
 #define PB11    M1986VE91T_PIN(PORT_B, 11)
 #define PB12    M1986VE91T_PIN(PORT_B, 12)
@@ -1481,16 +1532,16 @@ typedef struct
 #define PB14    M1986VE91T_PIN(PORT_B, 14)
 #define PB15    M1986VE91T_PIN(PORT_B, 15)
 
-#define PC0 M1986VE91T_PIN(PORT_C, 0)
-#define PC1 M1986VE91T_PIN(PORT_C, 1)
-#define PC2 M1986VE91T_PIN(PORT_C, 2)
-#define PC3 M1986VE91T_PIN(PORT_C, 3)
-#define PC4 M1986VE91T_PIN(PORT_C, 4)
-#define PC5 M1986VE91T_PIN(PORT_C, 5)
-#define PC6 M1986VE91T_PIN(PORT_C, 6)
-#define PC7 M1986VE91T_PIN(PORT_C, 7)
-#define PC8 M1986VE91T_PIN(PORT_C, 8)
-#define PC9 M1986VE91T_PIN(PORT_C, 9)
+#define PC0     M1986VE91T_PIN(PORT_C, 0)
+#define PC1     M1986VE91T_PIN(PORT_C, 1)
+#define PC2     M1986VE91T_PIN(PORT_C, 2)
+#define PC3     M1986VE91T_PIN(PORT_C, 3)
+#define PC4     M1986VE91T_PIN(PORT_C, 4)
+#define PC5     M1986VE91T_PIN(PORT_C, 5)
+#define PC6     M1986VE91T_PIN(PORT_C, 6)
+#define PC7     M1986VE91T_PIN(PORT_C, 7)
+#define PC8     M1986VE91T_PIN(PORT_C, 8)
+#define PC9     M1986VE91T_PIN(PORT_C, 9)
 #define PC10    M1986VE91T_PIN(PORT_C, 10)
 #define PC11    M1986VE91T_PIN(PORT_C, 11)
 #define PC12    M1986VE91T_PIN(PORT_C, 12)
@@ -1498,16 +1549,16 @@ typedef struct
 #define PC14    M1986VE91T_PIN(PORT_C, 14)
 #define PC15    M1986VE91T_PIN(PORT_C, 15)
 
-#define PD0 M1986VE91T_PIN(PORT_D, 0)
-#define PD1 M1986VE91T_PIN(PORT_D, 1)
-#define PD2 M1986VE91T_PIN(PORT_D, 2)
-#define PD3 M1986VE91T_PIN(PORT_D, 3)
-#define PD4 M1986VE91T_PIN(PORT_D, 4)
-#define PD5 M1986VE91T_PIN(PORT_D, 5)
-#define PD6 M1986VE91T_PIN(PORT_D, 6)
-#define PD7 M1986VE91T_PIN(PORT_D, 7)
-#define PD8 M1986VE91T_PIN(PORT_D, 8)
-#define PD9 M1986VE91T_PIN(PORT_D, 9)
+#define PD0     M1986VE91T_PIN(PORT_D, 0)
+#define PD1     M1986VE91T_PIN(PORT_D, 1)
+#define PD2     M1986VE91T_PIN(PORT_D, 2)
+#define PD3     M1986VE91T_PIN(PORT_D, 3)
+#define PD4     M1986VE91T_PIN(PORT_D, 4)
+#define PD5     M1986VE91T_PIN(PORT_D, 5)
+#define PD6     M1986VE91T_PIN(PORT_D, 6)
+#define PD7     M1986VE91T_PIN(PORT_D, 7)
+#define PD8     M1986VE91T_PIN(PORT_D, 8)
+#define PD9     M1986VE91T_PIN(PORT_D, 9)
 #define PD10    M1986VE91T_PIN(PORT_D, 10)
 #define PD11    M1986VE91T_PIN(PORT_D, 11)
 #define PD12    M1986VE91T_PIN(PORT_D, 12)
@@ -1515,16 +1566,16 @@ typedef struct
 #define PD14    M1986VE91T_PIN(PORT_D, 14)
 #define PD15    M1986VE91T_PIN(PORT_D, 15)
 
-#define PE0 M1986VE91T_PIN(PORT_E, 0)
-#define PE1 M1986VE91T_PIN(PORT_E, 1)
-#define PE2 M1986VE91T_PIN(PORT_E, 2)
-#define PE3 M1986VE91T_PIN(PORT_E, 3)
-#define PE4 M1986VE91T_PIN(PORT_E, 4)
-#define PE5 M1986VE91T_PIN(PORT_E, 5)
-#define PE6 M1986VE91T_PIN(PORT_E, 6)
-#define PE7 M1986VE91T_PIN(PORT_E, 7)
-#define PE8 M1986VE91T_PIN(PORT_E, 8)
-#define PE9 M1986VE91T_PIN(PORT_E, 9)
+#define PE0     M1986VE91T_PIN(PORT_E, 0)
+#define PE1     M1986VE91T_PIN(PORT_E, 1)
+#define PE2     M1986VE91T_PIN(PORT_E, 2)
+#define PE3     M1986VE91T_PIN(PORT_E, 3)
+#define PE4     M1986VE91T_PIN(PORT_E, 4)
+#define PE5     M1986VE91T_PIN(PORT_E, 5)
+#define PE6     M1986VE91T_PIN(PORT_E, 6)
+#define PE7     M1986VE91T_PIN(PORT_E, 7)
+#define PE8     M1986VE91T_PIN(PORT_E, 8)
+#define PE9     M1986VE91T_PIN(PORT_E, 9)
 #define PE10    M1986VE91T_PIN(PORT_E, 10)
 #define PE11    M1986VE91T_PIN(PORT_E, 11)
 #define PE12    M1986VE91T_PIN(PORT_E, 12)
@@ -1532,16 +1583,16 @@ typedef struct
 #define PE14    M1986VE91T_PIN(PORT_E, 14)
 #define PE15    M1986VE91T_PIN(PORT_E, 15)
 
-#define PF0 M1986VE91T_PIN(PORT_F, 0)
-#define PF1 M1986VE91T_PIN(PORT_F, 1)
-#define PF2 M1986VE91T_PIN(PORT_F, 2)
-#define PF3 M1986VE91T_PIN(PORT_F, 3)
-#define PF4 M1986VE91T_PIN(PORT_F, 4)
-#define PF5 M1986VE91T_PIN(PORT_F, 5)
-#define PF6 M1986VE91T_PIN(PORT_F, 6)
-#define PF7 M1986VE91T_PIN(PORT_F, 7)
-#define PF8 M1986VE91T_PIN(PORT_F, 8)
-#define PF9 M1986VE91T_PIN(PORT_F, 9)
+#define PF0     M1986VE91T_PIN(PORT_F, 0)
+#define PF1     M1986VE91T_PIN(PORT_F, 1)
+#define PF2     M1986VE91T_PIN(PORT_F, 2)
+#define PF3     M1986VE91T_PIN(PORT_F, 3)
+#define PF4     M1986VE91T_PIN(PORT_F, 4)
+#define PF5     M1986VE91T_PIN(PORT_F, 5)
+#define PF6     M1986VE91T_PIN(PORT_F, 6)
+#define PF7     M1986VE91T_PIN(PORT_F, 7)
+#define PF8     M1986VE91T_PIN(PORT_F, 8)
+#define PF9     M1986VE91T_PIN(PORT_F, 9)
 #define PF10    M1986VE91T_PIN(PORT_F, 10)
 #define PF11    M1986VE91T_PIN(PORT_F, 11)
 #define PF12    M1986VE91T_PIN(PORT_F, 12)
@@ -1609,7 +1660,7 @@ static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, 
 #       define UART1_TX_FUNC FUNC_REDEF
 #   elif (PIN(UART1_TX)==5)
 #       define UART1_TX_FUNC FUNC_ALT
-#   endif   
+#   endif
 #elif (PORT(UART1_TX)==PORT_D)
 #   define UART1_TX_GPIO ARM_GPIOD
 #   define UART1_TX_FUNC FUNC_REDEF
@@ -1841,22 +1892,22 @@ static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, 
 #endif
 
 #if (PORT(CAN1_RX)==PORT_A)
-#	define CAN1_RX_GPIO ARM_GPIOA
-#	define CAN1_RX_FUNC FUNC_ALT
+#       define CAN1_RX_GPIO ARM_GPIOA
+#       define CAN1_RX_FUNC FUNC_ALT
 #elif (PORT(CAN1_RX)==PORT_B)
-#	define CAN1_RX_GPIO ARM_GPIOB
-#	define CAN1_RX_FUNC FUNC_REDEF
+#       define CAN1_RX_GPIO ARM_GPIOB
+#       define CAN1_RX_FUNC FUNC_REDEF
 #elif (PORT(CAN1_RX)==PORT_C)
-#	define CAN1_RX_GPIO ARM_GPIOC
-#	define CAN1_RX_FUNC FUNC_MAIN
+#       define CAN1_RX_GPIO ARM_GPIOC
+#       define CAN1_RX_FUNC FUNC_MAIN
 #elif (PORT(CAN1_RX)==PORT_D)
-#	define CAN1_RX_GPIO ARM_GPIOD
-#	define CAN1_RX_FUNC FUNC_REDEF
+#       define CAN1_RX_GPIO ARM_GPIOD
+#       define CAN1_RX_FUNC FUNC_REDEF
 #elif (PORT(CAN1_RX)==PORT_E)
-#	define CAN1_RX_GPIO ARM_GPIOE
-#	define CAN1_RX_FUNC FUNC_REDEF
+#       define CAN1_RX_GPIO ARM_GPIOE
+#       define CAN1_RX_FUNC FUNC_REDEF
 #else
-#	error "CAN1_RX pin is not assigned in CFLAGS of target.cfg"
+#       error "CAN1_RX pin is not assigned in CFLAGS of target.cfg"
 #endif
 
 /* Сигнал CAN1_TX */
@@ -1869,22 +1920,22 @@ static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, 
 #endif
 
 #if (PORT(CAN1_TX)==PORT_A)
-#	define CAN1_TX_GPIO ARM_GPIOA
-#	define CAN1_TX_FUNC FUNC_ALT
+#       define CAN1_TX_GPIO ARM_GPIOA
+#       define CAN1_TX_FUNC FUNC_ALT
 #elif (PORT(CAN1_TX)==PORT_B)
-#	define CAN1_TX_GPIO ARM_GPIOB
-#	define CAN1_TX_FUNC FUNC_REDEF
+#       define CAN1_TX_GPIO ARM_GPIOB
+#       define CAN1_TX_FUNC FUNC_REDEF
 #elif (PORT(CAN1_TX)==PORT_C)
-#	define CAN1_TX_GPIO ARM_GPIOC
-#	define CAN1_TX_FUNC FUNC_MAIN
+#       define CAN1_TX_GPIO ARM_GPIOC
+#       define CAN1_TX_FUNC FUNC_MAIN
 #elif (PORT(CAN1_TX)==PORT_D)
-#	define CAN1_TX_GPIO ARM_GPIOD
-#	define CAN1_TX_FUNC FUNC_REDEF
+#       define CAN1_TX_GPIO ARM_GPIOD
+#       define CAN1_TX_FUNC FUNC_REDEF
 #elif (PORT(CAN1_TX)==PORT_E)
-#	define CAN1_TX_GPIO ARM_GPIOE
-#	define CAN1_TX_FUNC FUNC_REDEF
+#       define CAN1_TX_GPIO ARM_GPIOE
+#       define CAN1_TX_FUNC FUNC_REDEF
 #else
-#	error "CAN1_TX pin is not assigned in CFLAGS of target.cfg"
+#       error "CAN1_TX pin is not assigned in CFLAGS of target.cfg"
 #endif
 
 /* Сигнал CAN2_RX */
@@ -1897,19 +1948,19 @@ static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, 
 #endif
 
 #if (PORT(CAN2_RX)==PORT_C)
-#	define CAN2_RX_GPIO ARM_GPIOC
-#	define CAN2_RX_FUNC FUNC_REDEF
+#       define CAN2_RX_GPIO ARM_GPIOC
+#       define CAN2_RX_FUNC FUNC_REDEF
 #elif (PORT(CAN2_RX)==PORT_D)
-#	define CAN2_RX_GPIO ARM_GPIOD
-#	define CAN2_RX_FUNC FUNC_MAIN
+#       define CAN2_RX_GPIO ARM_GPIOD
+#       define CAN2_RX_FUNC FUNC_MAIN
 #elif (PORT(CAN2_RX)==PORT_E)
-#	define CAN2_RX_GPIO ARM_GPIOE
-#	define CAN2_RX_FUNC FUNC_ALT
+#       define CAN2_RX_GPIO ARM_GPIOE
+#       define CAN2_RX_FUNC FUNC_ALT
 #elif (PORT(CAN2_RX)==PORT_F)
-#	define CAN2_RX_GPIO ARM_GPIOF
-#	define CAN2_RX_FUNC FUNC_REDEF
+#       define CAN2_RX_GPIO ARM_GPIOF
+#       define CAN2_RX_FUNC FUNC_REDEF
 #else
-#	error "CAN2_RX pin is not assigned in CFLAGS of target.cfg"
+#       error "CAN2_RX pin is not assigned in CFLAGS of target.cfg"
 #endif
 
 /* Сигнал CAN2_TX */
@@ -1922,19 +1973,19 @@ static inline void milandr_init_pin (GPIO_t *gpio, unsigned port, unsigned pin, 
 #endif
 
 #if (PORT(CAN2_TX)==PORT_C)
-#	define CAN2_TX_GPIO ARM_GPIOC
-#	define CAN2_TX_FUNC FUNC_REDEF
+#       define CAN2_TX_GPIO ARM_GPIOC
+#       define CAN2_TX_FUNC FUNC_REDEF
 #elif (PORT(CAN2_TX)==PORT_D)
-#	define CAN2_TX_GPIO ARM_GPIOD
-#	define CAN2_TX_FUNC FUNC_MAIN
+#       define CAN2_TX_GPIO ARM_GPIOD
+#       define CAN2_TX_FUNC FUNC_MAIN
 #elif (PORT(CAN2_TX)==PORT_E)
-#	define CAN2_TX_GPIO ARM_GPIOE
-#	define CAN2_TX_FUNC FUNC_ALT
+#       define CAN2_TX_GPIO ARM_GPIOE
+#       define CAN2_TX_FUNC FUNC_ALT
 #elif (PORT(CAN2_TX)==PORT_F)
-#	define CAN2_TX_GPIO ARM_GPIOF
-#	define CAN2_TX_FUNC FUNC_REDEF
+#       define CAN2_TX_GPIO ARM_GPIOF
+#       define CAN2_TX_FUNC FUNC_REDEF
 #else
-#	error "CAN2_TX pin is not assigned in CFLAGS of target.cfg"
+#       error "CAN2_TX pin is not assigned in CFLAGS of target.cfg"
 #endif
 
 
