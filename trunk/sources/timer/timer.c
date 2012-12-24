@@ -159,6 +159,24 @@ timer_handler (timer_t *t)
 				(void*) (size_t) t->milliseconds);
 		}
 	}
+	
+#ifdef USER_TIMERS
+	if (! list_is_empty (&t->user_timers)) {
+		user_timer_t *ut;
+		list_iterate (ut, &t->user_timers) {
+			ut->cur_time -= t->msec_per_tick;
+			if (ut->cur_time <= 0) {
+				if (! list_is_empty (&ut->lock.waiters) ||
+		    		    ! list_is_empty (&t->decisec.groups)) {
+					mutex_activate (&ut->lock,
+						(void*) (size_t) t->milliseconds);
+					ut->cur_time += ut->msec_per_tick;
+				}
+			}
+		}
+	}
+#endif
+	
 	arch_intr_allow (TIMER_IRQ);
 
 	/* Must signal a lock, for timer_wait().
@@ -345,4 +363,30 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	setitimer (ITIMER_REAL, &itv, 0);
 	}
 #endif
+
+#ifdef USER_TIMERS
+	list_init (&t->user_timers);
+#endif
 }
+
+#ifdef USER_TIMERS
+void user_timer_init (user_timer_t *ut, small_uint_t msec_per_tick)
+{
+	ut->msec_per_tick = msec_per_tick;
+	ut->cur_time = msec_per_tick;
+	list_init (&ut->item);
+}
+
+void user_timer_add (timer_t *t, user_timer_t *ut)
+{
+	mutex_lock (&t->lock);
+	list_append (&t->user_timers, &ut->item);
+	mutex_unlock (&t->lock);
+}
+
+void user_timer_wait (user_timer_t *ut)
+{
+	mutex_wait (&ut->lock);
+}
+#endif
+
