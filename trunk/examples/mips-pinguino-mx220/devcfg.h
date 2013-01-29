@@ -2,7 +2,7 @@
  * Chip configuration.
  */
 PIC32_DEVCFG (
-    DEVCFG0_DEBUG_ENABLED |     /* ICE debugger disabled */
+    DEVCFG0_DEBUG_DISABLED |    /* ICE debugger disabled */
     DEVCFG0_JTAGDIS |           /* Disable JTAG */
     DEVCFG0_ICESEL_PAIR3,       /* Use PGC3/PGD3 */
 
