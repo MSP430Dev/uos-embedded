@@ -2,6 +2,7 @@
 #define __MIL_STD_1553_RT_H__
 
 #include <kernel/uos.h>
+#include "mil-std-1553_setup.h"
 
 struct MIL_STD_1553B_t;
 
@@ -53,12 +54,13 @@ typedef struct
     unsigned short *tx_buf;
 } mil_std_rt_t;
 
-//! Инициализация контроллера MIL-STD-1553B в режиме ОУ.
+//! Инициализация контроллера интерфейса по ГОСТ Р52070-2003 (MIL-STD-1553)
+//! для микроконтроллера Cortex-M1 в режиме оконечного устройства (ОУ).
 //! \param rt Структура с описанием ОУ
 //! \param port Номер контроллера (0 или 1)
 //! \param addr_self Собственный адрес ОУ
 //! \param rx_buf Буфер для приёма данных из канала
 //! \param tx_buf Буфер для выдачи данных в канал
-int mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned short *rx_buf, unsigned short *tx_buf);
+void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned short *rx_buf, unsigned short *tx_buf);
 
 #endif

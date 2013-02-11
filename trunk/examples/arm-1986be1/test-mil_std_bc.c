@@ -5,9 +5,11 @@
 #include <milandr/mil-std-1553_bc.h>
 
 // Номер контроллера MIL-STD (0 или 1)
+#define MY_MIL_STD_PORT 0
+// Канал основной или резервный (0 или 1)
 #define MY_MIL_STD_CHANNEL 0
 // Минимальный период в циклограмме или продолжительность одного слота (в миллисекундах)
-#define CYCLOGRAM_SLOT_TIME 1000
+#define CYCLOGRAM_SLOT_TIME 200
 // Количество слотов в циклограмме
 #define CYCLOGRAM_SLOTS_COUNT 5
 
@@ -34,7 +36,7 @@ static const unsigned char rt_subaddr_to = 8;
 
 void uos_init (void)
 {
-    debug_printf("\n");
+    debug_printf("bc_init\n");
 
     cyclogram_data[0].addr_dest = rt_addr;
     cyclogram_data[0].subaddr_dest = rt_subaddr_to;
@@ -50,19 +52,18 @@ void uos_init (void)
     cyclogram_data[3].words_count = 0;
     cyclogram_data[4].words_count = 0;
 
-    if (mil_std_1553_bc_init(&mil_bc,
-                             MY_MIL_STD_CHANNEL,
-                             cyclogram_data,
-                             CYCLOGRAM_SLOT_TIME,
-                             CYCLOGRAM_SLOTS_COUNT,
-                             KHZ,
-                             mil_std_rx_buffer,
-                             mil_std_tx_buffer) == 0)
-    {
-        task_create(test_milstd_bc_main, 0, "test_milstd_bc_main", 1, test_milstd_bc_stack, sizeof(test_milstd_bc_stack));
-    }
-    else
-        debug_printf("mil-std (bc mode) init error\n");
+    mil_std_1553_init_pins(MY_MIL_STD_PORT);
+    mil_std_1553_bc_init(&mil_bc,
+                         MY_MIL_STD_PORT,
+                         MY_MIL_STD_CHANNEL,
+                         cyclogram_data,
+                         CYCLOGRAM_SLOT_TIME,
+                         CYCLOGRAM_SLOTS_COUNT,
+                         KHZ,
+                         mil_std_rx_buffer,
+                         mil_std_tx_buffer);
+
+    task_create(test_milstd_bc_main, 0, "test_milstd_bc_main", 1, test_milstd_bc_stack, sizeof(test_milstd_bc_stack));
 }
 
 // example
@@ -91,25 +92,33 @@ static void test_milstd_bc_main()
 
     int i = 0;
 
-    while (1)
+    for (;;)
     {
-        mdelay(5000);
+        debug_printf("bc iter\n");
+        int a;
+        for (a=0; a<2; ++a)
+        {
+            mutex_lock(&mil_bc.lock);
+            for (i=0; i<3; ++i)
+                ++mil_std_tx_buffer[txIndex + i];
+            mutex_unlock(&mil_bc.lock);
 
-        mutex_lock(&mil_bc.lock);
-        for (i=0; i<3; ++i)
-            ++mil_std_tx_buffer[txIndex + i];
-        mutex_unlock(&mil_bc.lock);
+            debug_printf("\n");
 
-        debug_printf("\n");
+            debug_printf("bc(%d%s): dataToBeSent  =", mil_bc.port, mil_bc.channel == 1 ? "B" : "A");
+            for (i=0; i<3; ++i)
+                debug_printf(" %x", mil_std_tx_buffer[txIndex + i]);
+            debug_printf("\n");
 
-        debug_printf("bc: dataToBeSent  =");
-        for (i=0; i<3; ++i)
-            debug_printf(" %x", mil_std_tx_buffer[txIndex + i]);
-        debug_printf("\n");
+            debug_printf("bc(%d%s): dataToBeRecvd =", mil_bc.port, mil_bc.channel == 1 ? "B" : "A");
+            for (i=0; i<3; ++i)
+                debug_printf(" %x", mil_std_rx_buffer[rxIndex + i]);
+            debug_printf("\n");
 
-        debug_printf("bc: dataToBeRecvd =");
-        for (i=0; i<3; ++i)
-            debug_printf(" %x", mil_std_rx_buffer[rxIndex + i]);
-        debug_printf("\n");
+            mdelay(5000);
+        }
+
+        int ch = (~mil_bc.channel) & 1;
+        mil_std_1553_set_bc_channel(&mil_bc, ch);
     }
 }

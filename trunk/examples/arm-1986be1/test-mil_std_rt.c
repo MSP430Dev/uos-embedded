@@ -5,7 +5,7 @@
 #include <milandr/mil-std-1553_rt.h>
 
 // Номер контроллера MIL-STD (0 или 1)
-#define MY_MIL_STD_CHANNEL 0
+#define MY_MIL_STD_PORT 0
 
 // Собственный адрес ОУ
 #define MIL_STD_SELF 2
@@ -24,12 +24,10 @@ static mil_std_rt_t mil_rt;
 
 void uos_init (void)
 {
-    if (mil_std_1553_rt_init(&mil_rt, MY_MIL_STD_CHANNEL, MIL_STD_SELF, mil_std_rx_buffer, mil_std_tx_buffer) == 0)
-    {
-        task_create(test_milstd_rt_main, 0, "test_milstd_rt_main", 1, test_milstd_rt_stack, sizeof(test_milstd_rt_stack));
-    }
-    else
-        debug_printf("mil-std (rt mode) init error\n");
+    mil_std_1553_init_pins(MY_MIL_STD_PORT);
+    mil_std_1553_rt_init(&mil_rt, MY_MIL_STD_PORT, MIL_STD_SELF, mil_std_rx_buffer, mil_std_tx_buffer);
+
+    task_create(test_milstd_rt_main, 0, "test_milstd_rt_main", 1, test_milstd_rt_stack, sizeof(test_milstd_rt_stack));
 }
 
 // example
@@ -51,10 +49,8 @@ static void test_milstd_rt_main()
 
     int i=0;
 
-    while (1)
+    for (;;)
     {
-        mdelay(5000);
-
         mutex_lock(&mil_rt.lock);
         for (i=0; i<3; ++i)
             ++mil_std_tx_buffer[txIndex + i];
@@ -62,14 +58,16 @@ static void test_milstd_rt_main()
 
         debug_printf("\n");
 
-        debug_printf("rt: dataToBeSent  =");
+        debug_printf("rt(%d): dataToBeSent  =", mil_rt.port);
         for (i=0; i<3; ++i)
             debug_printf(" %x", mil_std_tx_buffer[txIndex + i]);
         debug_printf("\n");
 
-        debug_printf("rt: dataToBeRecvd =");
+        debug_printf("rt(%d): dataToBeRecvd =", mil_rt.port);
         for (i=0; i<3; ++i)
             debug_printf(" %x", mil_std_rx_buffer[rxIndex + i]);
         debug_printf("\n");
+
+        mdelay(5000);
     }
 }

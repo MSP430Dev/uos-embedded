@@ -17,13 +17,36 @@ static mutex_t milstdMutex;
 
 static const int timer_irq = TIMER1_IRQn;
 
+static MIL_STD_1553B_t *bc_setup(int port, int channel)
+{
+    MIL_STD_1553B_t *const mil_std_channel = mil_std_1553_port_setup(port);
+
+    unsigned int locControl = 0;
+    locControl |= MIL_STD_CONTROL_DIV(KHZ/1000);
+    locControl |= MIL_STD_CONTROL_MODE(MIL_STD_MODE_BC);
+    if (channel == 1)
+    {
+        // резервный канал
+        locControl |= MIL_STD_CONTROL_TRB;
+    }
+    else
+    {
+        // основной канал
+        locControl |= MIL_STD_CONTROL_TRA;
+    }
+    mil_std_channel->CONTROL = MIL_STD_CONTROL_MR;
+    mil_std_channel->CONTROL = locControl;
+
+    return mil_std_channel;
+}
+
 static bool_t mil_std_1553_bc_handler(void *arg)
 {
     mil_std_bc_t *bc = (mil_std_bc_t *)arg;
 
     const unsigned int locStatus = bc->reg->STATUS;
 
-    const int locIrqNum = bc->port == 0 ? MIL_STD_1553B1_IRQn : MIL_STD_1553B2_IRQn;
+    const int locIrqNum = bc->port == 1 ? MIL_STD_1553B2_IRQn : MIL_STD_1553B1_IRQn;
 
 #if BC_DEBUG
     debug_printf("handler, STATUS=%x, StatWrd1=%x, CONTROL=%x, ERROR=%x\n",
@@ -40,7 +63,7 @@ static bool_t mil_std_1553_bc_handler(void *arg)
 #endif
 
         // (?)
-        mil_std_1553_setup(bc->port, MIL_STD_MODE_BC, 0);
+        bc_setup(bc->port, bc->channel);
 
         // Разрешить прерывания:
         // при приёме достоверного слова,
@@ -232,30 +255,31 @@ static void my_timer_init(unsigned int khz, unsigned int msec_per_tick, mil_std_
     mutex_attach_irq(&timerMutex, timer_irq, mil_std_1553_timer_handler, bc);
 }
 
-int mil_std_1553_bc_init(mil_std_bc_t *bc,
-                         int port,
-                         const cyclogram_slot_t *cyclogram,
-                         int slot_time,
-                         int slots_count,
-                         int cpu_freq,
-                         unsigned short *rx_buf,
-                         unsigned short *tx_buf)
+void mil_std_1553_bc_init(mil_std_bc_t *bc,
+                          int port,
+                          int channel,
+                          const cyclogram_slot_t *cyclogram,
+                          int slot_time,
+                          int slots_count,
+                          int cpu_freq,
+                          unsigned short *rx_buf,
+                          unsigned short *tx_buf)
 {
-    if (mil_std_1553_setup(port, MIL_STD_MODE_BC, 0) < 0)
-        return -1;
+    MIL_STD_1553B_t *const mil_std_channel = bc_setup(port, channel);
 
     bc->port = port;
+    bc->channel = channel;
     bc->slots_count = slots_count;
     bc->curr_slot = 0;
     bc->rt_bc_slot = 0xff;
-    bc->reg = port == 0 ? ARM_MIL_STD_1553B1 : ARM_MIL_STD_1553B2;
+    bc->reg = mil_std_channel;
     bc->cyclogram = cyclogram;
     bc->rx_buf = rx_buf;
     bc->tx_buf = tx_buf;
 
     mutex_init(&bc->lock);
 
-    int locIrqNum = port == 0 ? MIL_STD_1553B1_IRQn : MIL_STD_1553B2_IRQn;
+    int locIrqNum = port == 1 ? MIL_STD_1553B2_IRQn : MIL_STD_1553B1_IRQn;
 
     // Настроить работу MIL-STD по прерыванию, указать функцию обработчик прерывания.
     mutex_attach_irq(&milstdMutex,
@@ -271,9 +295,21 @@ int mil_std_1553_bc_init(mil_std_bc_t *bc,
     bc->reg->INTEN =
             MIL_STD_INTEN_RFLAGNIE |
             MIL_STD_INTEN_ERRIE;
+}
 
-    return 0;
+void mil_std_1553_set_bc_channel(mil_std_bc_t *bc, int channel)
+{
+    bc->channel = channel;
+    if (channel == 1)
+    {
+        // резервный канал
+        bc->reg->CONTROL |= MIL_STD_CONTROL_TRB;
+    }
+    else
+    {
+        // основной канал
+        bc->reg->CONTROL |= MIL_STD_CONTROL_TRA;
+    }
 }
 
 #endif
-

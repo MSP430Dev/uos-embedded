@@ -2,6 +2,7 @@
 #define __MIL_STD_1553_BC_H__
 
 #include <kernel/uos.h>
+#include "mil-std-1553_setup.h"
 
 typedef enum
 {
@@ -50,8 +51,10 @@ struct MIL_STD_1553B_t;
 //! Data structure for MIL-STD BC
 typedef struct
 {
-    //! port number (0, 1)
+    //! Номер контроллера интерфейса (0, 1)
     unsigned char port;
+    //! Канал основной или резервный (0, 1)
+    unsigned char channel;
     //! Количество слотов в циклограмме
     unsigned char slots_count;
     //! Индекс текущего слота (0..0xfe)
@@ -70,22 +73,30 @@ typedef struct
     unsigned short *tx_buf;
 } mil_std_bc_t;
 
-//! Инициализация контроллера MIL-STD-1553B в режиме КШ.
+//! Инициализация контроллера интерфейса по ГОСТ Р52070-2003 (MIL-STD-1553)
+//! для микроконтроллера Cortex-M1 в режиме контроллера шины (КШ).
 //! \param bc Структура с описанием КШ
 //! \param port Номер контроллера (0 или 1)
+//! \param channel Канал основной A или резервный B (0 или 1)
 //! \param cyclogram Циклограмма как массив структур
 //! \param slot_time Длительность минимального слота циклограммы в миллисекундах
 //! \param slots_count Количество слотов в циклограмме (количество элементов в массиве)
 //! \param cpu_freq Частота работы микроконтроллера в КГц
 //! \param rx_buf Буфер для приёма данных из канала
 //! \param tx_buf Буфер для выдачи данных в канал
-int mil_std_1553_bc_init(mil_std_bc_t *bc,
-                         int port,
-                         const cyclogram_slot_t *cyclogram,
-                         int slot_time,
-                         int slots_count,
-                         int cpu_freq,
-                         unsigned short *rx_buf,
-                         unsigned short *tx_buf);
+void mil_std_1553_bc_init(mil_std_bc_t *bc,
+                          int port,
+                          int channel,
+                          const cyclogram_slot_t *cyclogram,
+                          int slot_time,
+                          int slots_count,
+                          int cpu_freq,
+                          unsigned short *rx_buf,
+                          unsigned short *tx_buf);
+
+//! Сменить текущий канал КШ
+//! \param bc Структура с описанием КШ
+//! \param channel Канал основной A или резервный B (0 или 1)
+void mil_std_1553_set_bc_channel(mil_std_bc_t *bc, int channel);
 
 #endif

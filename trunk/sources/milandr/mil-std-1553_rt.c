@@ -13,7 +13,7 @@
 static bool_t mil_std_1553_rt_handler(void *arg)
 {
     mil_std_rt_t *rt = (mil_std_rt_t *)arg;
-    int locIrqNum = rt->port == 0 ? MIL_STD_1553B1_IRQn : MIL_STD_1553B2_IRQn;
+    int locIrqNum = rt->port == 1 ? MIL_STD_1553B2_IRQn : MIL_STD_1553B1_IRQn;
 
     const unsigned short status = rt->reg->STATUS;
     const unsigned short comWrd1 = rt->reg->CommandWord1;
@@ -275,18 +275,26 @@ static bool_t mil_std_1553_rt_handler(void *arg)
     return 0;
 }
 
-int mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned short *rx_buf, unsigned short *tx_buf)
+void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned short *rx_buf, unsigned short *tx_buf)
 {
-    if (mil_std_1553_setup(port, MIL_STD_MODE_RT, addr_self) < 0)
-        return -1;
+    MIL_STD_1553B_t *const mil_std_channel = mil_std_1553_port_setup(port);
+
+    unsigned int locControl = 0;
+    locControl |= MIL_STD_CONTROL_DIV(KHZ/1000);
+    locControl |= MIL_STD_CONTROL_MODE(MIL_STD_MODE_RT);
+    locControl |= MIL_STD_CONTROL_ADDR(addr_self) | MIL_STD_CONTROL_TRA | MIL_STD_CONTROL_TRB;
+    mil_std_channel->StatusWord1 = MIL_STD_STATUS_ADDR_OU(addr_self);
+
+    mil_std_channel->CONTROL = MIL_STD_CONTROL_MR;
+    mil_std_channel->CONTROL = locControl;
 
     rt->addr_self = addr_self;
     rt->port = port;
-    rt->reg = port == 0 ? ARM_MIL_STD_1553B1 : ARM_MIL_STD_1553B2;
+    rt->reg = mil_std_channel;
     rt->rx_buf = rx_buf;
     rt->tx_buf = tx_buf;
 
-    int locIrqNum = port == 0 ? MIL_STD_1553B1_IRQn : MIL_STD_1553B2_IRQn;
+    int locIrqNum = port == 1 ? MIL_STD_1553B2_IRQn : MIL_STD_1553B1_IRQn;
 
     // Настроить работу MIL-STD по прерыванию, указать функцию обработчик прерывания.
     mutex_attach_irq(&rt->lock,
