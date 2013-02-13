@@ -66,7 +66,7 @@ typedef struct
     //! Циклограмма для КШ
     const cyclogram_slot_t *cyclogram;
     //! Мьютекс для работы с прерываниями
-    mutex_t lock;  // (?) Два мьютекса: для буферов rx и tx?
+    mutex_t lock;
     //! Буфер для приёма данных из канала
     unsigned short *rx_buf;
     //! Буфер для выдачи данных в канал
@@ -91,8 +91,8 @@ void mil_std_1553_bc_init(mil_std_bc_t *bc,
                           int slot_time,
                           int slots_count,
                           int cpu_freq,
-                          unsigned short *rx_buf,
-                          unsigned short *tx_buf);
+                          void *rx_buf,
+                          void *tx_buf);
 
 //! Сменить текущий канал КШ
 //! \param bc Структура с описанием КШ

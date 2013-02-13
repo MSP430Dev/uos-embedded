@@ -108,9 +108,9 @@ typedef struct
 /* Программное формирование прерывания */
 #define ARM_NVIC_STIR   (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xEF00))
 
-typedef enum IRQn
+typedef enum
 {
-/* Cortex-M3 Processor Exceptions Numbers */
+/* Cortex-M1 Processor Exceptions Numbers */
   NonMaskableInt_IRQn         = -14, /* 2 Non Maskable Interrupt */
   HardFault_IRQn              = -13, /* 3 Cortex-M1 Hard Fault Interrupt */
   SVCall_IRQn                 = -5,  /* 11 Cortex-M1 SV Call Interrupt */
@@ -148,7 +148,7 @@ typedef enum IRQn
   EXT_INT2_IRQn               = 29,  /* EXT_INT2 Interrupt */
   EXT_INT3_IRQn               = 30,  /* EXT_INT3 Interrupt */
   EXT_INT4_IRQn               = 31   /* EXT_INT4 Interrupt */
-}IRQn_Type;
+} IRQn_t;
 
 /*------------------------------------------------------
  * SCB system control block
@@ -1752,6 +1752,7 @@ typedef struct
 
 #define ARM_ARINC429T ((ARINC429T_t *) ARM_ARINC429T_BASE)
 
+/* Структура слова ARINC-429 */
 typedef struct
 {
     unsigned int label :  8;

@@ -9,11 +9,9 @@
 
 #define BC_DEBUG 0
 
-//
+// (?) Необходимо синхронизировать данные дескриптора КШ
+// также и с прерыванием по таймеру.
 static mutex_t timerMutex;
-// (?) Нужен ли этот мьютекс или можно обойтись bc->lock?
-// (?) Нужно ли вызывать функцию mutex_init()?
-static mutex_t milstdMutex;
 
 static const int timer_irq = TIMER1_IRQn;
 
@@ -79,10 +77,8 @@ static bool_t mil_std_1553_bc_handler(void *arg)
             const int index = MIL_STD_SUBADDR_WORD_INDEX(expectedSlot->subaddr_source);
             int i = 0;
 
-            mutex_lock(&bc->lock);
             for (i=0; i<expectedSlot->words_count; ++i)
                 bc->rx_buf[index + i] = bc->reg->DATA[index + i];
-            mutex_unlock(&bc->lock);
 
 #if BC_DEBUG
             debug_printf("handler, data received =");
@@ -137,10 +133,8 @@ static bool_t mil_std_1553_timer_handler(void *arg)
             int index = MIL_STD_SUBADDR_WORD_INDEX(currSlot->subaddr_dest);
 
             // Копировать из tx буфера данные в буфер контроллера MIL-STD
-            mutex_lock(&bc->lock);
             for (i=0; i<currSlot->words_count; ++i)
                 bc->reg->DATA[index + i] = bc->tx_buf[index + i];
-            mutex_unlock(&bc->lock);
 
 #if BC_DEBUG
             debug_printf("bc->rt, slot = %x, %x, %x, %x, %x, dataToSend =",
@@ -262,8 +256,8 @@ void mil_std_1553_bc_init(mil_std_bc_t *bc,
                           int slot_time,
                           int slots_count,
                           int cpu_freq,
-                          unsigned short *rx_buf,
-                          unsigned short *tx_buf)
+                          void *rx_buf,
+                          void *tx_buf)
 {
     MIL_STD_1553B_t *const mil_std_channel = bc_setup(port, channel);
 
@@ -274,15 +268,15 @@ void mil_std_1553_bc_init(mil_std_bc_t *bc,
     bc->rt_bc_slot = 0xff;
     bc->reg = mil_std_channel;
     bc->cyclogram = cyclogram;
-    bc->rx_buf = rx_buf;
-    bc->tx_buf = tx_buf;
+    bc->rx_buf = (unsigned short *)rx_buf;
+    bc->tx_buf = (unsigned short *)tx_buf;
 
     mutex_init(&bc->lock);
 
     int locIrqNum = port == 1 ? MIL_STD_1553B2_IRQn : MIL_STD_1553B1_IRQn;
 
     // Настроить работу MIL-STD по прерыванию, указать функцию обработчик прерывания.
-    mutex_attach_irq(&milstdMutex,
+    mutex_attach_irq(&bc->lock,
                      locIrqNum,
                      mil_std_1553_bc_handler,
                      bc);

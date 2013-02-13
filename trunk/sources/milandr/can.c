@@ -521,7 +521,7 @@ void can_init (can_t *c, int port, unsigned kbitsec, unsigned flags)
 	c->flags = flags;
 	can_setup (c, kbitsec);
 
-	int irq = (port == 0) ? 0 : 1;
+	int irq = (port == 0) ? CAN1_IRQn : CAN2_IRQn;
 #ifndef CAN_NO_MUTEX
 	if (! (flags & POLLONLY)) {
 		can_queue_init (&c->inq);

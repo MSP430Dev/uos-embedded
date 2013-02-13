@@ -57,10 +57,8 @@ static bool_t mil_std_1553_rt_handler(void *arg)
             debug_printf("STATUS1(F1,7)=%x, dataReceived =", status);
 #endif
 
-            mutex_lock(&rt->lock);
             for (i=0; i<wordsCount; ++i)
                 rt->rx_buf[index + i] = rt->reg->DATA[index + i];
-            mutex_unlock(&rt->lock);
 
 #if RT_DEBUG
             for (i=0; i<wordsCount; ++i)
@@ -87,10 +85,8 @@ static bool_t mil_std_1553_rt_handler(void *arg)
             debug_printf("STATUS(F3,8 in)=%x, dataReceived =", status);
 #endif
 
-            mutex_lock(&rt->lock);
             for (i=0; i<wordsCount; ++i)
                 rt->rx_buf[index + i] = rt->reg->DATA[index + i];
-            mutex_unlock(&rt->lock);
 
 #if RT_DEBUG
             for (i=0; i<wordsCount; ++i)
@@ -117,10 +113,8 @@ static bool_t mil_std_1553_rt_handler(void *arg)
             debug_printf("\n");
 #endif
 
-            mutex_lock(&rt->lock);
             for (i=0; i<wordsCount; ++i)
                 rt->reg->DATA[index + i] = rt->tx_buf[index + i];
-            mutex_unlock(&rt->lock);
         }
         break;
     // передача данных в ОУ (ОУ-ОУ), формат сообщения 8
@@ -148,10 +142,8 @@ static bool_t mil_std_1553_rt_handler(void *arg)
             int i;
             int index = MIL_STD_SUBADDR_WORD_INDEX(subaddr2);
 
-            mutex_lock(&rt->lock);
             for (i=0; i<wordsCount2; ++i)
                 rt->reg->DATA[index + i] = rt->tx_buf[index + i];
-            mutex_unlock(&rt->lock);
         }
         break;
     // команда управления 0-15 от КШ без слов данных, формат сообщения 9
@@ -275,7 +267,7 @@ static bool_t mil_std_1553_rt_handler(void *arg)
     return 0;
 }
 
-void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned short *rx_buf, unsigned short *tx_buf)
+void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, void *rx_buf, void *tx_buf)
 {
     MIL_STD_1553B_t *const mil_std_channel = mil_std_1553_port_setup(port);
 
@@ -291,8 +283,8 @@ void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned sh
     rt->addr_self = addr_self;
     rt->port = port;
     rt->reg = mil_std_channel;
-    rt->rx_buf = rx_buf;
-    rt->tx_buf = tx_buf;
+    rt->rx_buf = (unsigned short *)rx_buf;
+    rt->tx_buf = (unsigned short *)tx_buf;
 
     int locIrqNum = port == 1 ? MIL_STD_1553B2_IRQn : MIL_STD_1553B1_IRQn;
 
@@ -310,8 +302,6 @@ void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned sh
             MIL_STD_INTEN_RFLAGNIE |
             MIL_STD_INTEN_VALMESSIE |
             MIL_STD_INTEN_ERRIE;
-
-    return 0;
 }
 
 #endif

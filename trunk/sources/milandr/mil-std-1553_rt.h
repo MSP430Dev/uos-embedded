@@ -61,6 +61,10 @@ typedef struct
 //! \param addr_self Собственный адрес ОУ
 //! \param rx_buf Буфер для приёма данных из канала
 //! \param tx_buf Буфер для выдачи данных в канал
-void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, unsigned short *rx_buf, unsigned short *tx_buf);
+void mil_std_1553_rt_init(mil_std_rt_t *rt,
+                          int port,
+                          int addr_self,
+                          void *rx_buf,
+                          void *tx_buf);
 
 #endif

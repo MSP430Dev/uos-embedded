@@ -100,6 +100,31 @@ typedef struct
 /* Программное формирование прерывания */
 #define ARM_NVIC_STIR   (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xEF00))
 
+typedef enum
+{
+  CAN1_IRQn                   = 0,   /* CAN1 Interrupt */
+  CAN2_IRQn                   = 1,   /* CAN2 Interrupt */
+  USB_IRQn                    = 2,   /* USB Host Interrupt */
+  DMA_IRQn                    = 5,   /* DMA Interrupt */
+  UART1_IRQn                  = 6,   /* UART1 Interrupt */
+  UART2_IRQn                  = 7,   /* UART2 Interrupt */
+  SSP1_IRQn                   = 8,   /* SSP1 Interrupt */
+  MDR_I2C_IRQn                = 10,  /* MDR_I2C Interrupt */
+  POWER_IRQn                  = 11,  /* POWER Detecor Interrupt */
+  WWDG_IRQn                   = 12,  /* Window Watchdog Interrupt */
+  TIMER1_IRQn                 = 14,  /* Timer1 Interrupt */
+  TIMER2_IRQn                 = 15,  /* Timer2 Interrupt */
+  TIMER3_IRQn                 = 16,  /* Timer3 Interrupt */
+  ADC_IRQn                    = 17,  /* ADC Interrupt */
+  SSP3_IRQn                   = 19,  /* SSP3 Interrupt */
+  SSP2_IRQn                   = 20,  /* SSP2 Interrupt */
+  BKP_IRQn                    = 27,  /* BACKUP Interrupt */
+  EXT_INT1_IRQn               = 28,  /* EXT_INT1 Interrupt */
+  EXT_INT2_IRQn               = 29,  /* EXT_INT2 Interrupt */
+  EXT_INT3_IRQn               = 30,  /* EXT_INT3 Interrupt */
+  EXT_INT4_IRQn               = 31   /* EXT_INT4 Interrupt */
+} IRQn_t;
+
 /*------------------------------------------------------
  * SCB system control block
  */
