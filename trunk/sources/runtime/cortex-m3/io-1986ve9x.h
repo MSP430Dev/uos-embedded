@@ -1042,6 +1042,12 @@ typedef struct
 //======================================================================================
 // DMA Control data configuration masks
 //======================================================================================
+#define ARM_DMA_DST_INC(x)  ((x) << 30)
+#define ARM_DMA_DST_SIZE(x) ((x) << 28)
+#define ARM_DMA_SRC_INC(x)  ((x) << 26)
+#define ARM_DMA_SRC_SIZE(x) ((x) << 24)
+#define ARM_DMA_DST_PROT(x) ((x) << 21)
+#define ARM_DMA_SRC_PROT(x) ((x) << 18)
 #define ARM_DMA_BYTE        0
 #define ARM_DMA_HALFWORD    1
 #define ARM_DMA_WORD        2
