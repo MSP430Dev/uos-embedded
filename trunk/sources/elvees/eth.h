@@ -30,8 +30,8 @@
 #   define ETH_INQ_SIZE 	16
 #endif
 
-#ifndef ETH_INQ_SIZE
-#   define ETH_INQ_SIZE 	8
+#ifndef ETH_OUTQ_SIZE
+#   define ETH_OUTQ_SIZE 	8
 #endif
 
 #ifndef ETH_MTU
