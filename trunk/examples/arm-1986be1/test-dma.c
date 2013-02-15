@@ -9,10 +9,10 @@
 
 ARRAY (stack, 1000);
 
-DMA_Data_t dma_prim[32] __attribute__((aligned(1024)));
+DMA_Data_t dma_prim[32] __attribute__((section(".dma_struct")));
 
-uint32_t src_buf[256];
-uint16_t dst_buf[256];
+uint32_t src_buf[256] __attribute__((section(".dma_struct")));
+uint16_t dst_buf[256] __attribute__((section(".dma_struct")));
 
 void task (void *arg)
 {

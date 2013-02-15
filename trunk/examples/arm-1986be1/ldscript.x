@@ -10,6 +10,7 @@ MEMORY
 {
   text   (rx)   : ORIGIN = 0x00000000,	LENGTH = 128k
   data   (rw!x) : ORIGIN = 0x20000000,	LENGTH = 32k
+  data_hi(rw!x) : ORIGIN = 0x20100000,	LENGTH = 16k
 }
 
 /* higher address of the user mode stack */
@@ -100,6 +101,12 @@ SECTIONS
    . = ALIGN (32 / 8);
   } > data
   __bss_end = . ;
+  
+  .data_hi      : 
+         AT (ADDR (.text) + SIZEOF (.text) + SIZEOF (.data))
+  {
+    *(.dma_struct)
+  } > data_hi
   _end = .;
 
   /* Stabs debugging sections.  */

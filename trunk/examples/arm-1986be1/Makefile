@@ -2,10 +2,11 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-tswitch
+TEST		= test-dma
 TESTS		+= test-led.hex test-debug.hex test-task.hex test-timer.hex
 TESTS		+= test-latency.hex test-tswitch.hex phil-uart.hex #test-uart.hex
 TESTS		+= test-mil_std_bc.hex test-mil_std_rt.hex test_arinc.hex
+TESTS		+= test-dma.hex
 OUTS		= $(TESTS:%.hex=%.elf)
 
 # Using MILPROG utility.
