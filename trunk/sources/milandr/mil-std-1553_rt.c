@@ -57,8 +57,26 @@ static bool_t mil_std_1553_rt_handler(void *arg)
             debug_printf("STATUS1(F1,7)=%x, dataReceived =", status);
 #endif
 
-            for (i=0; i<wordsCount; ++i)
-                rt->rx_buf[index + i] = rt->reg->DATA[index + i];
+            if (rt->dma_chan >= 0) {
+                ARM_DMA->CHNL_ENABLE_CLR = ARM_DMA_SELECT(rt->dma_chan);
+                rt->dma_prim->SOURCE_END_POINTER = (unsigned)&rt->reg->DATA[index + wordsCount - 1];
+                rt->dma_prim->DEST_END_POINTER = (unsigned)&rt->rx_buf[index + wordsCount - 1];
+                rt->dma_prim->CONTROL = ARM_DMA_DST_INC(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_DST_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_SRC_INC(ARM_DMA_WORD) |
+                                   ARM_DMA_SRC_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_RPOWER(1) |
+                                   ARM_DMA_TRANSFERS(wordsCount) |
+                                   ARM_DMA_AUTOREQ;
+                ARM_DMA->CHNL_ENABLE_SET = ARM_DMA_SELECT(rt->dma_chan);
+                ARM_DMA->CHNL_SW_REQUEST = ARM_DMA_SELECT(rt->dma_chan);
+                
+                while ((rt->dma_prim->CONTROL &
+                        (ARM_DMA_TRANSFERS(1024) | ARM_DMA_AUTOREQ)) != 0);
+            } else {
+                for (i=0; i<wordsCount; ++i)
+                    rt->rx_buf[index + i] = rt->reg->DATA[index + i];
+            }
 
 #if RT_DEBUG
             for (i=0; i<wordsCount; ++i)
@@ -85,8 +103,26 @@ static bool_t mil_std_1553_rt_handler(void *arg)
             debug_printf("STATUS(F3,8 in)=%x, dataReceived =", status);
 #endif
 
-            for (i=0; i<wordsCount; ++i)
-                rt->rx_buf[index + i] = rt->reg->DATA[index + i];
+            if (rt->dma_chan >= 0) {
+                ARM_DMA->CHNL_ENABLE_CLR = ARM_DMA_SELECT(rt->dma_chan);
+                rt->dma_prim->SOURCE_END_POINTER = (unsigned)&rt->reg->DATA[index + wordsCount - 1];
+                rt->dma_prim->DEST_END_POINTER = (unsigned)&rt->rx_buf[index + wordsCount - 1];
+                rt->dma_prim->CONTROL = ARM_DMA_DST_INC(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_DST_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_SRC_INC(ARM_DMA_WORD) |
+                                   ARM_DMA_SRC_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_RPOWER(1) |
+                                   ARM_DMA_TRANSFERS(wordsCount) |
+                                   ARM_DMA_AUTOREQ;
+                ARM_DMA->CHNL_ENABLE_SET = ARM_DMA_SELECT(rt->dma_chan);
+                ARM_DMA->CHNL_SW_REQUEST = ARM_DMA_SELECT(rt->dma_chan);
+                
+                while ((rt->dma_prim->CONTROL &
+                        (ARM_DMA_TRANSFERS(1024) | ARM_DMA_AUTOREQ)) != 0);
+            } else {
+                for (i=0; i<wordsCount; ++i)
+                    rt->rx_buf[index + i] = rt->reg->DATA[index + i];
+            }
 
 #if RT_DEBUG
             for (i=0; i<wordsCount; ++i)
@@ -113,8 +149,26 @@ static bool_t mil_std_1553_rt_handler(void *arg)
             debug_printf("\n");
 #endif
 
-            for (i=0; i<wordsCount; ++i)
-                rt->reg->DATA[index + i] = rt->tx_buf[index + i];
+            if (rt->dma_chan >= 0) {
+                ARM_DMA->CHNL_ENABLE_CLR = ARM_DMA_SELECT(rt->dma_chan);
+                rt->dma_prim->SOURCE_END_POINTER = (unsigned)&rt->tx_buf[index + wordsCount - 1];
+                rt->dma_prim->DEST_END_POINTER = (unsigned)&rt->reg->DATA[index + wordsCount - 1];
+                rt->dma_prim->CONTROL = ARM_DMA_DST_INC(ARM_DMA_WORD) |
+                                   ARM_DMA_DST_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_SRC_INC(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_SRC_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_RPOWER(1) |
+                                   ARM_DMA_TRANSFERS(wordsCount) |
+                                   ARM_DMA_AUTOREQ;
+                ARM_DMA->CHNL_ENABLE_SET = ARM_DMA_SELECT(rt->dma_chan);
+                ARM_DMA->CHNL_SW_REQUEST = ARM_DMA_SELECT(rt->dma_chan);
+                
+                while ((rt->dma_prim->CONTROL &
+                        (ARM_DMA_TRANSFERS(1024) | ARM_DMA_AUTOREQ)) != 0);
+            } else {
+                for (i=0; i<wordsCount; ++i)
+                    rt->reg->DATA[index + i] = rt->tx_buf[index + i];
+            }
         }
         break;
     // передача данных в ОУ (ОУ-ОУ), формат сообщения 8
@@ -141,9 +195,27 @@ static bool_t mil_std_1553_rt_handler(void *arg)
 
             int i;
             int index = MIL_STD_SUBADDR_WORD_INDEX(subaddr2);
-
-            for (i=0; i<wordsCount2; ++i)
-                rt->reg->DATA[index + i] = rt->tx_buf[index + i];
+            
+            if (rt->dma_chan >= 0) {
+                ARM_DMA->CHNL_ENABLE_CLR = ARM_DMA_SELECT(rt->dma_chan);
+                rt->dma_prim->SOURCE_END_POINTER = (unsigned)&rt->tx_buf[index + wordsCount2 - 1];
+                rt->dma_prim->DEST_END_POINTER = (unsigned)&rt->reg->DATA[index + wordsCount2 - 1];
+                rt->dma_prim->CONTROL = ARM_DMA_DST_INC(ARM_DMA_WORD) |
+                                   ARM_DMA_DST_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_SRC_INC(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_SRC_SIZE(ARM_DMA_HALFWORD) |
+                                   ARM_DMA_RPOWER(1) |
+                                   ARM_DMA_TRANSFERS(wordsCount2) |
+                                   ARM_DMA_AUTOREQ;
+                ARM_DMA->CHNL_ENABLE_SET = ARM_DMA_SELECT(rt->dma_chan);
+                ARM_DMA->CHNL_SW_REQUEST = ARM_DMA_SELECT(rt->dma_chan);
+                
+                while ((rt->dma_prim->CONTROL &
+                        (ARM_DMA_TRANSFERS(1024) | ARM_DMA_AUTOREQ)) != 0);
+            } else {
+                for (i=0; i<wordsCount2; ++i)
+                    rt->reg->DATA[index + i] = rt->tx_buf[index + i];
+            }
         }
         break;
     // команда управления 0-15 от КШ без слов данных, формат сообщения 9
@@ -267,7 +339,8 @@ static bool_t mil_std_1553_rt_handler(void *arg)
     return 0;
 }
 
-void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, void *rx_buf, void *tx_buf)
+void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, void *rx_buf, void *tx_buf,
+                          int dma_channel, DMA_Data_t *dma_struct)
 {
     MIL_STD_1553B_t *const mil_std_channel = mil_std_1553_port_setup(port);
 
@@ -285,6 +358,8 @@ void mil_std_1553_rt_init(mil_std_rt_t *rt, int port, int addr_self, void *rx_bu
     rt->reg = mil_std_channel;
     rt->rx_buf = (unsigned short *)rx_buf;
     rt->tx_buf = (unsigned short *)tx_buf;
+    rt->dma_chan = dma_channel;
+	rt->dma_prim = dma_struct;
 
     int locIrqNum = port == 1 ? MIL_STD_1553B2_IRQn : MIL_STD_1553B1_IRQn;
 

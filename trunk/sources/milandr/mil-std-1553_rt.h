@@ -52,6 +52,10 @@ typedef struct
     unsigned short *rx_buf;
     //! Буфер для выдачи данных в канал
     unsigned short *tx_buf;
+    //! Номер канала DMA
+    int dma_chan;
+    //! Указатель на структуру данных DMA
+    DMA_Data_t *dma_prim;
 } mil_std_rt_t;
 
 //! Инициализация контроллера интерфейса по ГОСТ Р52070-2003 (MIL-STD-1553)
@@ -61,10 +65,17 @@ typedef struct
 //! \param addr_self Собственный адрес ОУ
 //! \param rx_buf Буфер для приёма данных из канала
 //! \param tx_buf Буфер для выдачи данных в канал
+//! \param dma_channel Номер канала DMA, используемого для переноса данных 
+//! из контроллера в массив принятых данных и из массива передаваемых данных
+//! в контроллер MIL-STD. Если задано -1, то DMA не используется
+//! \param dma_struct Указатель на управляющую структуру канала DMA,
+//! номер которого указан в @dma_channel (используется только DMA Primary)
 void mil_std_1553_rt_init(mil_std_rt_t *rt,
                           int port,
                           int addr_self,
                           void *rx_buf,
-                          void *tx_buf);
+                          void *tx_buf,
+                          int dma_channel,
+                          DMA_Data_t *dma_struct);
 
 #endif
