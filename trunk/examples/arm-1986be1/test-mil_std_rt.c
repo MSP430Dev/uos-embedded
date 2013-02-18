@@ -25,7 +25,7 @@ static mil_std_rt_t mil_rt;
 void uos_init (void)
 {
     mil_std_1553_init_pins(MY_MIL_STD_PORT);
-    mil_std_1553_rt_init(&mil_rt, MY_MIL_STD_PORT, MIL_STD_SELF, mil_std_rx_buffer, mil_std_tx_buffer);
+    mil_std_1553_rt_init(&mil_rt, MY_MIL_STD_PORT, MIL_STD_SELF, mil_std_rx_buffer, mil_std_tx_buffer, -1, (void*)0);
 
     task_create(test_milstd_rt_main, 0, "test_milstd_rt_main", 1, test_milstd_rt_stack, sizeof(test_milstd_rt_stack));
 }
