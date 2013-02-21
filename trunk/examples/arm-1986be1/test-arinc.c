@@ -30,8 +30,8 @@
 // Для работы теста выбрать номера каналов передачи и приёма. Замкнуть соответствующие
 // выводы разъёма. Для правильной работы каналы на передачу и приём должны иметь разные номера.
 
-#define MY_IN_CHANNEL 4
-#define MY_OUT_CHANNEL 2
+#define MY_IN_CHANNEL 0
+#define MY_OUT_CHANNEL 0
 
 unsigned int func_tx = -1;
 unsigned int func_rx = -1;
@@ -40,6 +40,8 @@ unsigned int control1_rx = -1;
 unsigned int control2_rx = -1;
 
 extern timer_t timer;
+
+arinc_t atx, arx;
 
 void test_arinc_main()
 {
@@ -70,7 +72,7 @@ void test_arinc_main()
 
         for (i=0; i<fifoCnt; ++i)
         {
-            arinc_write(MY_OUT_CHANNEL, *pCounter);
+            arinc_write(&atx, *pCounter);
 
             debug_printf("sent = %x = %x %x %x %x, status = %x\n", counter, pCounter->ssm, pCounter->data, pCounter->sdi, pCounter->label, ARM_ARINC429T->STATUS);
             ++counter;
@@ -78,10 +80,10 @@ void test_arinc_main()
 
         for(;;)
         {
-            if (arinc_read(MY_IN_CHANNEL, pData) == 0)
+            if (arinc_read(&arx, pData))
             {
                 ++received;
-                debug_printf("received = %x = %x %x %x %x, status1 = %x, status2 = %x\n", data, pData->ssm, pData->data, pData->sdi, pData->label, ARM_ARINC429R->STATUS1, ARM_ARINC429R->STATUS2);
+                debug_printf("received = %08x = %x %x %x %x, status1 = %x, status2 = %x\n", data, pData->ssm, pData->data, pData->sdi, pData->label, ARM_ARINC429R->STATUS1, ARM_ARINC429R->STATUS2);
 
                 // debug
                 if (timer_passed(&timer, time0, 1000))
@@ -119,8 +121,12 @@ timer_t timer;
 
 void uos_init (void)
 {
-    arinc_init_tx(MY_OUT_CHANNEL, ARINC_FLAG_PAR_EN | ARINC_FLAG_PAR_ODD);
-    arinc_init_rx(MY_IN_CHANNEL);
+    arinc_init(&atx, MY_OUT_CHANNEL, 0, 0, ARINC_FLAG_PAR_EN | ARINC_FLAG_PAR_ODD);
+
+    arinc_init(&arx, MY_IN_CHANNEL, 0, 0, ARINC_FLAG_PAR_EN | ARINC_FLAG_PAR_ODD | ARINC_FLAG_RX);
+        
+    arinc_init_pins(&atx);
+    arinc_init_pins(&arx);
 
     timer_init(&timer, KHZ, MSEC_PER_TICK);
 

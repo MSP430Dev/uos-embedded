@@ -2,10 +2,10 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-dma
+TEST		= test-arinc-poll
 TESTS		+= test-led.hex test-debug.hex test-task.hex test-timer.hex
 TESTS		+= test-latency.hex test-tswitch.hex phil-uart.hex #test-uart.hex
-TESTS		+= test-mil_std_bc.hex test-mil_std_rt.hex test_arinc.hex
+TESTS		+= test-mil_std_bc.hex test-mil_std_rt.hex test-arinc.hex test-arinc-poll.hex
 TESTS		+= test-dma.hex
 OUTS		= $(TESTS:%.hex=%.elf)
 
