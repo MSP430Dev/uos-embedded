@@ -17,6 +17,8 @@
  * "COPY-UOS.txt" for details.
  */
 #include <runtime/lib.h>
+#include <kernel/uos.h>
+#include <kernel/internal.h>
 
 bool_t debug_onlcr = 1;
 
@@ -42,7 +44,7 @@ debug_redirect (void (*func) (void*, short), void *arg)
 void
 debug_putchar (void *arg, short c)
 {
-	int x;
+	arch_state_t x;
 
 	arm_intr_disable (&x);
 
@@ -92,7 +94,7 @@ unsigned short
 debug_getchar (void)
 {
 	unsigned c;
-	int x;
+	arch_state_t x;
 
 	if (debug_char >= 0) {
 		c = debug_char;
@@ -140,7 +142,7 @@ int
 debug_peekchar (void)
 {
 	unsigned char c;
-	int x;
+	arch_state_t x;
 
 	if (debug_char >= 0)
 		return debug_char;
@@ -179,7 +181,7 @@ debug_peekchar (void)
 void
 debug_puts (const char *p)
 {
-	int x;
+	arch_state_t x;
 
 	arm_intr_disable (&x);
 	for (; *p; ++p)

@@ -20,6 +20,8 @@
 #   error "Don't include directly, use <kernel/internal.h> instead."
 #endif
 
+extern task_t* uos_next_task;
+
 /*
  * The total number of different hardware interrupts.
  */
@@ -33,7 +35,7 @@ typedef void *arch_stack_t;
 /*
  * Type for saving task interrupt mask.
  */
-typedef int arch_state_t;
+typedef unsigned long arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -52,11 +54,8 @@ void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 static inline void
 arch_task_switch (task_t *target)
 {
-	/* Use supervisor call for task switching. */
-	asm volatile (
-	"mov	r0, %0 \n\t"
-	"svc	#0"
-	: : "r" (target) : "r0", "memory", "cc");
+	uos_next_task = target;
+	*(unsigned long*)0xE000ED04 |= 1 << 28;
 }
 
 /*

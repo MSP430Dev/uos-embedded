@@ -1,5 +1,5 @@
 @
-@ Startup code for Cortex-M3 microcontrollers.
+@ Startup code for Cortex-M1 microcontrollers.
 @
 @ Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
 @
@@ -19,7 +19,7 @@
 		.syntax unified
 
 @---------------------------------------
-@ Vector table for Cortex M3.
+@ Vector table for Cortex M1.
 @
 		.section .init
 		.align	2
@@ -48,10 +48,10 @@ _start_:	.global	_start_
 		.word	_fault_			@ 8 - reserved
 		.word	_fault_			@ 9 - reserved
 		.word	_fault_			@ 10 - reserved
-		.word	_svc_			@ 11 - supervisor call
+		.word	_fault_			@ 11 - supervisor call
 		.word	_fault_			@ 12 - reserved
 		.word	_fault_			@ 13 - reserved
-		.word	_fault_			@ 14 - software interrupt
+		.word	_svc_			@ 14 - software interrupt
 		.word	_irq_handler_		@ 15 - system timer tick
 
 		@

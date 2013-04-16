@@ -69,22 +69,22 @@ unsigned arm_get_register (int reg)
  * saving the interrupt enable flag into the supplied variable.
  */
 static void inline __attribute__ ((always_inline))
-arm_intr_disable (int *x)
+arm_intr_disable (unsigned long *x)
 {
 	int temp;
 
 	asm volatile (
-	"mrs	%1, basepri \n"		/* Cortex-M3 mode */
-"	mov	%0, #32 \n"		/* basepri := 16 */
-"	msr	basepri, %0"
+	"mrs	%1, primask \n"		/* Cortex-M1 mode */
+	"mov	%0, #1 \n"		/* primask = 1 */
+	"msr	primask, %0"
 	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
 }
 
 static void inline __attribute__ ((always_inline))
-arm_intr_restore (int x)
+arm_intr_restore (unsigned long x)
 {
 	asm volatile (
-	"msr	basepri, %0"		/* Cortex-M3 mode */
+	"msr	primask, %0"		/* Cortex-M1 mode */
 	: : "r" (x) : "memory", "cc");
 }
 
@@ -92,7 +92,7 @@ static void inline __attribute__ ((always_inline))
 arm_intr_enable ()
 {
 	asm volatile (
-	"msr	basepri, %0"		/* Cortex-M3 mode */
+	"msr	primask, %0"		/* Cortex-M1 mode */
 	: : "r" (0) : "memory", "cc");
 }
 
@@ -116,28 +116,6 @@ unsigned arm_get_ipsr ()
 	"mrs	%0, ipsr"
 	: "=r" (x));
 	return x;
-}
-
-/*
- * Read BASEPRI register.
- */
-static inline __attribute__ ((always_inline))
-unsigned arm_get_basepri ()
-{
-	unsigned x;
-
-	asm volatile (
-	"mrs	%0, basepri"
-	: "=r" (x));
-	return x;
-}
-
-static void inline __attribute__ ((always_inline))
-arm_set_basepri (unsigned val)
-{
-	asm volatile (
-	"msr	basepri, %0"
-	: : "r" (val) : "memory", "cc");
 }
 
 static void inline __attribute__ ((always_inline))

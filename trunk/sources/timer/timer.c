@@ -75,7 +75,33 @@
 #endif
 
 #if ARM_1986BE1
-#   define TIMER_IRQ		32	/* Systick */
+#	if (ARM_SYS_TIMER==1)
+#		define TIMER_IRQ	TIMER1_IRQn
+#		define SYS_TIMER	ARM_TIMER1
+#		define PER_CLOCK_EN	ARM_PER_CLOCK_TIMER1
+#		define TIM_CLK_EN	ARM_TIM_CLOCK_EN1
+#	elif (ARM_SYS_TIMER==2)
+#		define TIMER_IRQ	TIMER2_IRQn
+#		define SYS_TIMER	ARM_TIMER2
+#		define PER_CLOCK_EN	ARM_PER_CLOCK_TIMER2
+#		define TIM_CLK_EN	ARM_TIM_CLOCK_EN2
+#	elif (ARM_SYS_TIMER==3)
+#		define TIMER_IRQ	TIMER3_IRQn
+#		define SYS_TIMER	ARM_TIMER3
+#		define PER_CLOCK_EN	ARM_PER_CLOCK_TIMER3
+#		define TIM_CLK_EN	ARM_TIM_CLOCK_EN3
+#	elif (ARM_SYS_TIMER==4)
+#		define TIMER_IRQ	TIMER4_IRQn
+#		define SYS_TIMER	ARM_TIMER4
+#		define PER_CLOCK_EN	ARM_PER_CLOCK_TIMER4
+#		define TIM_CLK_EN	ARM_UART_CLOCK_TIM4_EN
+#	else
+#		warning "ARM_SYS_TIMER is not defined in CFLAGS (target.cfg). Using TIMER1 for system timer."
+#		define TIMER_IRQ	TIMER1_IRQn
+#		define SYS_TIMER	ARM_TIMER1
+#		define PER_CLOCK_EN	ARM_PER_CLOCK_TIMER1
+#		define TIM_CLK_EN	ARM_TIM_CLOCK_EN1
+#	endif
 #endif
 
 #if MSP430
@@ -132,6 +158,9 @@ timer_handler (timer_t *t)
 	/* Clear interrupt. */
 	ARM_PRT_INT_STATUS = ARM_PRT_EVENT;
 #endif
+#if ARM_1986BE1
+	SYS_TIMER->TIM_STATUS &= ~ARM_TIM_CNT_ARR_EVENT;
+#endif
 #if PIC32MX
 	/* Increment COMPARE register. */
 	unsigned compare = mips_read_c0_register (C0_COMPARE);
@@ -140,6 +169,7 @@ timer_handler (timer_t *t)
 		mips_write_c0_register (C0_COMPARE, compare);
 	} while ((int) (compare - mips_read_c0_register (C0_COUNT)) < 0);
 #endif
+
 	/* Increment current time. */
 	t->milliseconds += t->msec_per_tick;
 	if (t->milliseconds >= TIMER_MSEC_PER_DAY) {
@@ -320,7 +350,7 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	MC_ITPERIOD = t->khz * t->msec_per_tick - 1;
 	MC_ITCSR = MC_ITCSR_EN;
 #endif
-#if (ARM_1986BE9 || ARM_1986BE1)
+#if ARM_1986BE9
 	ARM_SYSTICK->CTRL = 0;
 	ARM_SYSTICK->VAL = 0;
 #ifdef SETUP_HCLK_HSI
@@ -333,6 +363,19 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	ARM_SYSTICK->CTRL = ARM_SYSTICK_CTRL_ENABLE |
 			    ARM_SYSTICK_CTRL_TICKINT |
 			    ARM_SYSTICK_CTRL_HCLK;
+#endif
+#if ARM_1986BE1
+	ARM_RSTCLK->PER_CLOCK |= PER_CLOCK_EN;
+#if (ARM_SYS_TIMER==4)
+	ARM_RSTCLK->UART_CLOCK |= TIM_CLK_EN;
+#else
+	ARM_RSTCLK->TIM_CLOCK |= TIM_CLK_EN;
+#endif
+	SYS_TIMER->TIM_CNT = 0;
+	SYS_TIMER->TIM_PSG = 0;
+	SYS_TIMER->TIM_ARR = t->khz * t->msec_per_tick - 1;
+	SYS_TIMER->TIM_IE = ARM_TIM_CNT_ARR_EVENT_IE;
+	SYS_TIMER->TIM_CNTRL = ARM_TIM_CNT_EN;
 #endif
 #if MSP430
 	{

@@ -31,11 +31,13 @@ typedef volatile unsigned int arm_reg_t;
 #define ARM_EXTBUS1_BASE    0x90000000  /* Access to external bus 1 */
 #define ARM_SYSTEM_BASE     0xE0000000  /* Core registers */
 
-#define ARM_SRAM_SIZE       (32*1024)   /* 32 kbytes */
+#define ARM_SRAM_SIZE       (48*1024)   /* 48 kbytes */
 
 /*
  * Peripheral memory map
  */
+#define ARM_ETH_REG_BASE        0x30000000
+#define ARM_ETH_BUF_BASE        0x38000000
 #define ARM_CAN1_BASE           (ARM_PERIPH_BASE + 0x00000)  /* Регистры контроллера интерфейса CAN1 */
 #define ARM_CAN2_BASE           (ARM_PERIPH_BASE + 0x08000)  /* Регистры контроллера интерфейса CAN2 */
 #define ARM_USB_BASE            (ARM_PERIPH_BASE + 0x10000)  /* Регистры контроллера интерфейса USB */
@@ -247,6 +249,9 @@ typedef struct
     arm_reg_t PD;       /* Триггер Шмитта входа [31:16] или открытый сток выхода [15:0] */
     arm_reg_t PWR;      /* Скорость фронта выхода, два бита на порт */
     arm_reg_t GFEN;     /* Фильтрация входа */
+    arm_reg_t SETTX;
+    arm_reg_t CLRTX;
+    arm_reg_t RDTX;
 } GPIO_t;
 
 #define ARM_GPIO_IN(n)      (0 << (n))
@@ -332,6 +337,7 @@ typedef struct
 #define ARM_CLOCK_STATUS_PLL_USB_RDY    (1 << 0) /* USB PLL запущена и стабильна */
 #define ARM_CLOCK_STATUS_PLL_CPU_RDY    (1 << 1) /* CPU PLL запущена и стабильна */
 #define ARM_CLOCK_STATUS_HSE_RDY        (1 << 2) /* осциллятор HSE запущен и стабилен */
+#define ARM_CLOCK_STATUS_HSE_RDY2       (1 << 3) /* осциллятор HSE2 запущен и стабилен */
 
 /*
  * Регистр PLL_CONTROL: управление блоками умножения частоты.
@@ -407,6 +413,8 @@ typedef struct
  */
 #define ARM_HS_CONTROL_HSE_ON   (1 << 0)    /* Осциллятор HSE включён */
 #define ARM_HS_CONTROL_HSE_BYP  (1 << 1)    /* Режим внешнего генератора */
+#define ARM_HS_CONTROL_HSE2_ON  (1 << 2)    /* Осциллятор HSE2 включён */
+#define ARM_HS_CONTROL_HSE2_BYP (1 << 3)    /* Режим внешнего генератора */
 
 /*
  * Регистр CPU_CLOCK: управление тактовой частотой.
@@ -527,7 +535,8 @@ typedef struct
 /* Возможные источники частоты для PHY */
 #define ARM_ETH_CLOCK_PHY_SEL_HSI    0
 #define ARM_ETH_CLOCK_PHY_SEL_HSE    1
-#define ARM_ETH_CLOCK_PHY_SEL_PLLCPU 3
+#define ARM_ETH_CLOCK_PHY_SEL_PLLCPU 2
+#define ARM_ETH_CLOCK_PHY_SEL_HSE2   3
 
 /*
  * Регистр RTC_CLOCK: управление формированием высокочастотных тактовых сигналов блока RTC
@@ -1744,13 +1753,7 @@ typedef struct
     arm_reg_t CONTROL1;  /* Регистр управления 1 передатчиков */
     arm_reg_t CONTROL2;  /* Регистр управления 2 передатчиков */
     arm_reg_t STATUS;  /* Регистр состояния передатчиков */
-	arm_reg_t DATA_T[4]; /* Регистры передаваемых данных */
-#if 0
-    arm_reg_t DATA1_T;  /* Регистр передаваемых данных канала 1 */
-    arm_reg_t DATA2_T;  /* Регистр передаваемых данных канала 2 */
-    arm_reg_t DATA3_T;  /* Регистр передаваемых данных канала 3 */
-    arm_reg_t DATA4_T;  /* Регистр передаваемых данных канала 4 */
-#endif
+    arm_reg_t DATA_T[4]; /* Регистры передаваемых данных */
 } ARINC429T_t;
 
 #define ARM_ARINC429T ((ARINC429T_t *) ARM_ARINC429T_BASE)
@@ -1878,6 +1881,212 @@ typedef struct
 /* Флаг обновления значения сторожевого таймера */
 #define ARM_IWDG_RVU            (1 << 1)
 
+
+/*----------------------------------------
+ * Описание регистров контроллера Ethernet
+ */
+typedef struct
+{
+    volatile uint16_t    DELIMITER;
+    volatile uint8_t     MAC_ADDR[6];
+    volatile uint8_t     HASH[8];
+    volatile uint16_t    IPG;
+    volatile uint16_t    PSC;
+    volatile uint16_t    BAG;
+    volatile uint16_t    JITTER_WND;
+    volatile uint16_t    R_CFG;
+    volatile uint16_t    X_CFG;
+    volatile uint16_t    G_CFG_LOW;
+	volatile uint16_t    G_CFG_HI;
+    volatile uint16_t    IMR;
+    volatile uint16_t    IFR;
+    volatile uint16_t    MDIO_CTRL;
+    volatile uint16_t    MDIO_DATA;
+    volatile uint16_t    R_HEAD;
+    volatile uint16_t    X_TAIL;
+    volatile uint16_t    X_HEAD;
+    volatile uint16_t    R_TAIL;
+    volatile uint16_t    STAT;
+    volatile uint16_t    spare0;
+    volatile uint16_t    PHY_CTRL;
+    volatile uint16_t    PHY_STAT;   
+} __attribute__ ((packed)) ETH_t;
+ 
+#define ARM_ETH             ((volatile ETH_t *) ARM_ETH_REG_BASE)
+#define ARM_ETH_RX_FIFO     *((arm_reg_t *) ARM_ETH_BUF_BASE)
+#define ARM_ETH_TX_FIFO     *((arm_reg_t *) (ARM_ETH_BUF_BASE + 0x4))
+
+
+/*
+ * G_CFG
+ */
+#define ARM_ETH_COLWND(x)       (x)
+#define ARM_ETH_PAUSE_EN        (1 << 8)
+#define ARM_ETH_DTRM_EN         (1 << 9)
+#define ARM_ETH_HD_EN           (1 << 10)
+#define ARM_ETH_EXT_EN          (1 << 11)
+#define ARM_ETH_BUFF_MODE(x)    ((x) << 12)
+#define ARM_ETH_RCLR_EN         (1 << 14)
+
+#define ARM_ETH_XRST            (1 << 0)
+#define ARM_ETH_RRST            (1 << 1)
+#define ARM_ETH_DLB             (1 << 2)
+#define ARM_ETH_DBG_RF_EN       (1 << 12)
+#define ARM_ETH_DBG_XF_EN       (1 << 13)
+#define ARM_ETH_DBG_MODE(x)     ((x) << 14)
+
+#define ARM_ETH_BUFF_LINEAL     0
+#define ARM_ETH_BUFF_AUTO       1
+#define ARM_ETH_BUFF_FIFO       2
+
+/*
+ * X_CFG
+ */
+#define ARM_ETH_RTRYCNT(x)      (x)
+#define ARM_ETH_IPG_EN          (1 << 4)
+#define ARM_ETH_CRC_EN          (1 << 5)
+#define ARM_ETH_PRE_EN          (1 << 6)
+#define ARM_ETH_PAD_EN          (1 << 7)
+#define ARM_ETH_EVNT_MODE(x)    ((x) << 8)
+#define ARM_ETH_MSB1ST          (1 << 12)
+#define ARM_ETH_BE              (1 << 13)
+#define ARM_ETH_EN              (1 << 15)
+
+#define ARM_ETH_EVNT_XFIFO_EMPTY        0
+#define ARM_ETH_EVNT_XFIFO_AEMPTY       1
+#define ARM_ETH_EVNT_XFIFO_HALF         2
+#define ARM_ETH_EVNT_XFIFO_AFULL        3
+#define ARM_ETH_EVNT_XFIFO_FULL         4
+#define ARM_ETH_EVNT_TX_DONE            5
+#define ARM_ETH_EVNT_TX_READ_WORD       6
+#define ARM_ETH_EVNT_TX_NEXT_TRY        7
+
+/*
+ * R_CFG
+ */
+#define ARM_ETH_MCA_EN          (1 << 0)
+#define ARM_ETH_BCA_EN          (1 << 1)
+#define ARM_ETH_UCA_EN          (1 << 2)
+#define ARM_ETH_CA_EN           (1 << 3)
+#define ARM_ETH_EF_EN           (1 << 4)
+#define ARM_ETH_CF_EN           (1 << 5)
+#define ARM_ETH_LF_EN           (1 << 6)
+#define ARM_ETH_SF_EN           (1 << 7)
+/* ARM_ETH_EVNT_MODE(x)     - так же, как в X_CFG */
+/* ARM_ETH_MSB1ST           - так же, как в X_CFG */
+/* ARM_ETH_BE               - так же, как в X_CFG */
+/* ARM_ETH_EN               - так же, как в X_CFG */
+
+#define ARM_ETH_EVNT_RFIFO_NOT_EMPTY    0
+#define ARM_ETH_EVNT_RFIFO_NOT_AEMPTY   1
+#define ARM_ETH_EVNT_RFIFO_HALF         2
+#define ARM_ETH_EVNT_RFIFO_NOT_AFULL    3
+#define ARM_ETH_EVNT_RFIFO_NOT_FULL     4
+#define ARM_ETH_EVNT_RX_DONE            5
+#define ARM_ETH_EVNT_RX_WRITE_WORD      6
+#define ARM_ETH_EVNT_RX_FAILED          7
+
+/*
+ * IMR/IFR
+ */
+#define ARM_ETH_RF_OK           (1 << 0)
+#define ARM_ETH_MISSED_F        (1 << 1)
+#define ARM_ETH_OVF             (1 << 2)
+#define ARM_ETH_SMB_ERR         (1 << 3)
+#define ARM_ETH_CRC_ERR         (1 << 4)
+#define ARM_ETH_CF              (1 << 5)
+#define ARM_ETH_LF              (1 << 6)
+#define ARM_ETH_SF              (1 << 7)
+#define ARM_ETH_XF_OK           (1 << 8)
+#define ARM_ETH_XF_ERR          (1 << 9)
+#define ARM_ETH_XF_UNDF         (1 << 10)
+#define ARM_ETH_LC              (1 << 11)
+#define ARM_ETH_CRS_LOST        (1 << 12)
+#define ARM_ETH_MDIO_INT        (1 << 14)
+#define ARM_ETH_MII_RDY         (1 << 15)
+
+/*
+ * STAT
+ */
+#define ARM_ETH_R_EMPTY         (1 << 0)
+#define ARM_ETH_R_AEMPTY        (1 << 1)
+#define ARM_ETH_R_HALF          (1 << 2)
+#define ARM_ETH_R_AFULL         (1 << 3)
+#define ARM_ETH_R_FULL          (1 << 4)
+#define ARM_ETH_R_COUNT(x)      ((x) << 5)
+#define ARM_ETH_X_EMPTY         (1 << 8)
+#define ARM_ETH_X_AEMPTY        (1 << 9)
+#define ARM_ETH_X_HALF          (1 << 10)
+#define ARM_ETH_X_AFULL         (1 << 11)
+#define ARM_ETH_X_FULL          (1 << 12)
+
+/*
+ * MDIO_CTRL
+ */
+#define ARM_ETH_MDIO_RG_A(x)         (x)
+#define ARM_ETH_MDIO_DIV(x)          ((x) << 5)
+#define ARM_ETH_MDIO_PHY_A(x)        ((x) << 8)
+#define ARM_ETH_MDIO_OP              (1 << 13)
+#define ARM_ETH_MDIO_PRE_EN          (1 << 14)
+#define ARM_ETH_MDIO_RDY             (1 << 15)
+
+/*
+ * PHY_CTRL
+ */
+#define ARM_ETH_PHY_NRST        (1 << 0)
+#define ARM_ETH_PHY_MODE(x)     ((x) << 1)
+#define ARM_ETH_PHY_FX_EN       (1 << 7)
+#define ARM_ETH_PHY_MDI         (1 << 8)
+#define ARM_ETH_PHY_MDIO_SEL    (1 << 9)
+#define ARM_ETH_PHY_MDC         (1 << 10)
+#define ARM_ETH_PHY_ADDR(x)     ((x) << 11)
+
+#define ARM_ETH_PHY_10BASET_HD_NOAUTO   0
+#define ARM_ETH_PHY_10BASET_FD_NOAUTO   1
+#define ARM_ETH_PHY_100BASET_HD_NOAUTO  2
+#define ARM_ETH_PHY_100BASET_FD_NOAUTO  3
+#define ARM_ETH_PHY_100BASET_HD_AUTO    4
+#define ARM_ETH_PHY_REPEATER            5
+#define ARM_ETH_PHY_LOW_POWER           6
+#define ARM_ETH_PHY_FULL_AUTO           7
+
+/*
+ * PHY_STAT
+ */
+#define ARM_ETH_PHY_LED_SPEED   (1 << 0)
+#define ARM_ETH_PHY_LED_LINK    (1 << 1)
+#define ARM_ETH_PHY_LED_CRS     (1 << 2)
+#define ARM_ETH_PHY_LED_HD      (1 << 3)
+#define ARM_ETH_PHY_READY       (1 << 4)
+#define ARM_ETH_PHY_CRS         (1 << 5)
+#define ARM_ETH_PHY_COL         (1 << 6)
+#define ARM_ETH_PHY_FX_VALID    (1 << 8)
+#define ARM_ETH_PHY_MDO         (1 << 9)
+#define ARM_ETH_PHY_MDINT       (1 << 10)
+ 
+ 
+ /* Поле управления передачи пакета - 32-разрядное целое - длина пакета в байтах */
+ 
+ /* Поле состояния передачи пакета - 32-разрядное целое */
+ #define ARM_ETH_PKT_RCOUNT(x)		((x) << 16)
+ #define ARM_ETH_PKT_RL				(1 << 20)
+ #define ARM_ETH_PKT_LC				(1 << 21)
+ #define ARM_ETH_PKT_UR				(1 << 22)
+ 
+ /* Поле состояния приёма пакета - 32-разрядное целое */
+ #define ARM_ETH_PKT_LENGTH(x)		((x) & 0xFFFF)
+ #define ARM_ETH_PKT_PF_ERR			(1 << 16)
+ #define ARM_ETH_PKT_CF_ERR			(1 << 17)
+ #define ARM_ETH_PKT_LF_ERR			(1 << 18)
+ #define ARM_ETH_PKT_SF_ERR			(1 << 19)
+ #define ARM_ETH_PKT_LEN_ERR		(1 << 20)
+ #define ARM_ETH_PKT_DN_ERR			(1 << 21)
+ #define ARM_ETH_PKT_CRC_ERR		(1 << 22)
+ #define ARM_ETH_PKT_SMB_ERR		(1 << 23)
+ #define ARM_ETH_PKT_MCA_ERR		(1 << 24)
+ #define ARM_ETH_PKT_BCA_ERR		(1 << 25)
+ #define ARM_ETH_PKT_UCA_ERR		(1 << 24)
+ 
 /*------------------------------------------------------------------------
  * Макроопределения для возможности указания привязки сигналов к контактам
  * из target.cfg

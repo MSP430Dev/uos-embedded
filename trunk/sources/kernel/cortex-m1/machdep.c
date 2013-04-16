@@ -21,29 +21,29 @@
 #include "kernel/uos.h"
 #include "kernel/internal.h"
 
+task_t* uos_next_task;
 
 /*
  * Supervisor call exception handler: do the task switch.
  */
 void __attribute__ ((naked))
-_svc_ (task_t *target)
+_svc_ ()
 {
 	/* Save registers R4-R11 and BASEPRI in stack. */
 	asm volatile (
-	/*"mrs	r12, basepri \n\t"*/
+	"mrs r12, primask\n\t"
 	"push	{r4-r7} \n\t"
 	"mov    r1, r8 \n\t"
 	"mov    r2, r9 \n\t"
 	"mov    r3, r10 \n\t"
 	"mov    r4, r11 \n\t"
-	/*"mov    r5, r12 \n\t"
-	"push	{r1-r5} \n\t"*/
-	"push	{r1-r4} \n\t");
+	"mov    r5, r12 \n\t"
+	"push	{r1-r5} \n\t");
 	
 	/* Save current task stack. */
 	task_current->stack_context = arm_get_stack_pointer ();
 	
-	task_current = target;
+	task_current = uos_next_task;
 	
 	/* Switch to the new task. */
 	arm_set_stack_pointer (task_current->stack_context);
@@ -51,15 +51,14 @@ _svc_ (task_t *target)
 	/* Load registers R4-R11 and BASEPRI.
 	 * Return from exception. */
 	asm volatile (
-	/*"pop	{r1-r5} \n\t"*/
-	"pop	{r1-r4} \n\t"
+	"pop	{r1-r5} \n\t"
 	"mov    r8, r1 \n\t"
 	"mov    r9, r2 \n\t"
 	"mov    r10, r3 \n\t"
 	"mov    r11, r4 \n\t"
-	/*"mov    r12, r5 \n\t"*/
+	"mov    r12, r5 \n\t"
 	"pop	{r4-r7} \n\t"
-	/*"msr	basepri, r12 \n\t"*/
+	"msr primask, r12\n\t"
 	"bx	    lr \n\t"
 	);
 }
@@ -75,15 +74,14 @@ _irq_handler_ (void)
 	/* Save registers R4-R11 and BASEPRI in stack.
 	 * Save return address. */
 	asm volatile (
-	/*"mrs	r12, basepri \n\t"*/
+	"mrs r12, primask\n\t"
 	"push	{r4-r7} \n\t"
 	"mov    r1, r8 \n\t"
 	"mov    r2, r9 \n\t"
 	"mov    r3, r10 \n\t"
 	"mov    r4, r11 \n\t"
-	/*"mov    r5, r12 \n\t"
-	"push	{r1-r5} \n\t"*/
-	"push	{r1-r4} \n\t"
+	"mov    r5, r12 \n\t"
+	"push	{r1-r5} \n\t"
     );
 
 	/* Get the current irq number */
@@ -154,15 +152,14 @@ done:
 	"mov    r0, #6 \n\t"
 	"mvn    r1, r0 \n\t"
 	"mov    lr, r1 \n\t"
-	/*"pop	{r1-r5} \n\t"*/
-	"pop	{r1-r4} \n\t"
+	"pop	{r1-r5} \n\t"
 	"mov    r8, r1 \n\t"
 	"mov    r9, r2 \n\t"
 	"mov    r10, r3 \n\t"
 	"mov    r11, r4 \n\t"
-	/*"mov    r12, r5 \n\t"*/
+	"mov    r12, r5 \n\t"
 	"pop	{r4-r7} \n\t"
-	/*"msr	basepri, r12 \n\t"*/
+	"msr primask, r12\n\t"
 	"bx	lr"
 	);
 }
@@ -204,7 +201,7 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* r2 */
 	*--sp = 0;			/* r1 */
 	*--sp = (unsigned) arg;		/* r0 - task argument */
-	//*--sp = 0;			/* basepri */
+	*--sp = 0;			/* primask */
 	*--sp = 0;			/* r11 */
 	*--sp = 0;			/* r10 */
 	*--sp = 0;			/* r9 */
