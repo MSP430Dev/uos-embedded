@@ -17,7 +17,7 @@
  * #include <dozor/ksk-reg.h>
  */
  
-#define KSK_MEM_SIZE    0x20000
+#define KSK_MEM_SIZE    0x8000
  
 #ifndef vu32
 #define vu32 volatile uint32_t
@@ -32,10 +32,10 @@
 /***************************
  * Управляющие слова 1 и 2 *
  ***************************/
-#define KSK_WORDS_PER_ROUND(n)      ((n) & 0x1FF)           /* Количество слов, выдаваемых в одном раунде TDMA */
-#define KSK_WORDS_PER_CYCLE(n)      (((n) & 0x1FF) << 9)    /* Количество слов, выдаваемых в одном цикле системы */
-#define KSK_ADDRESS(n)              (((n) & 0x1FF) << 18)   /* Стартовый адрес данных, от начала области передатчика */
-#define KSK_KEY(n)                  (((n) & 0x1F) << 27)    /* Поле ключа для запуска */
+#define KSK_ADDRESS(n)              ((n) & 0x1FF)         /* Стартовый адрес данных, от начала области передатчика */
+#define KSK_WORDS_PER_CYCLE(n)      (((n) & 0x1FF) << 9)  /* Количество слов, выдаваемых в одном цикле системы */
+#define KSK_WORDS_PER_ROUND(n)      (((n) & 0x1FF) << 18) /* Количество слов, выдаваемых в одном раунде TDMA */
+#define KSK_KEY(n)                  (((n) & 0x1F) << 27)  /* Поле ключа для запуска */
 
 #define KSK_START_KEY               KSK_KEY(0x15)
 
