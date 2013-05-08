@@ -997,17 +997,66 @@
 /*
  * MFBSP_CSR - регистр управления MFBSP
  */
-#define MC_MFBSP_CSR_LEN		(1 << 0)
-#define MC_MFBSP_CSR_LTRAN		(1 << 1)
-#define MC_MFBSP_CSR_LCLK_RATE(n)	((((n) & 1) << 2) | (((n) & 0x1e) << 10))
-#define MC_MFBSP_CSR_LSTAT(n)		((n) << 3)
-#define MC_MFBSP_CSR_LRERR		(1 << 5)
-#define MC_MFBSP_CSR_LDW		(1 << 6)
-#define MC_MFBSP_CSR_SRQ_TX		(1 << 7)
-#define MC_MFBSP_CSR_SRQ_RX		(1 << 8)
-#define MC_MFBSP_CSR_SPI_I2S_EN		(1 << 9)
+#define MC_MFBSP_LEN			(1 << 0)
+#define MC_MFBSP_LTRAN			(1 << 1)
+#define MC_MFBSP_LCLK_RATE(n)		((((n) & 1) << 2) | (((n) & 0x1e) << 10))
+#define MC_MFBSP_LSTAT(n)		((n) << 3)
+#define MC_MFBSP_LRERR			(1 << 5)
+#define MC_MFBSP_LDW			(1 << 6)
+#define MC_MFBSP_SRQ_TX			(1 << 7)
+#define MC_MFBSP_SRQ_RX			(1 << 8)
+#define MC_MFBSP_SPI_I2S_EN		(1 << 9)
 
-#define MC_MFBSP_CSR_GET_LCLK_RATE(x)	(((x) >> 2) & 1) | (((x) >> 10) & 0x1e)
+#define MC_MFBSP_GET_LCLK_RATE(x)	(((x) >> 2) & 1) | (((x) >> 10) & 0x1e)
+
+/*
+ * MFBSP_DIR - регистр управления направлением выводов MFBSP
+ */
+#define MC_MFBSP_RCLK_DIR		(1 << 0)
+#define MC_MFBSP_TCLK_DIR		(1 << 1)
+#define MC_MFBSP_RCS_DIR		(1 << 2)
+#define MC_MFBSP_TCS_DIR		(1 << 3)
+#define MC_MFBSP_RD_DIR			(1 << 4)
+#define MC_MFBSP_TD_DIR			(1 << 5)
+
+/*
+ * MC_MFBSP_RCTR - регистр управления приёмником MFBSP
+ */
+#define MC_MFBSP_REN			(1 << 0)
+#define MC_MFBSP_RMODE			(1 << 1)
+#define MC_MFBSP_RCLK_CP		(1 << 2)
+#define MC_MFBSP_RCS_CP			(1 << 3)
+#define MC_MFBSP_RNEG			(1 << 10)
+#define MC_MFBSP_RDEL			(1 << 11)
+#define MC_MFBSP_RWORDCNT(n)		((n) << 12)
+#define MC_MFBSP_RWORDCNT_MASK		MC_MFBSP_RWORDCNT(0x1F)
+#define MC_MFBSP_RMBF			(1 << 19)
+#define MC_MFBSP_RWORDLEN(n)		((n) << 20)
+#define MC_MFBSP_RWORDLEN_MASK		MC_MFBSP_RWORDCNT(0x3F)
+#define MC_MFBSP_RPACK			(1 << 25)
+#define MC_MFBSP_RSIGN			(1 << 26)
+
+/*
+ * MC_MFBSP_TCTR - регистр управления передатчиком MFBSP
+ */
+#define MC_MFBSP_TEN			(1 << 0)
+#define MC_MFBSP_TMODE			(1 << 1)
+#define MC_MFBSP_TD_ZER_EN		(1 << 2)
+#define MC_MFBSP_SS_DO			(1 << 3)
+#define MC_MFBSP_TDSPMODE		(1 << 9)
+#define MC_MFBSP_TNEG			(1 << 10)
+#define MC_MFBSP_TDEL			(1 << 11)
+#define MC_MFBSP_TWORDCNT(n)		((n) << 12)
+#define MC_MFBSP_TWORDCNT_MASK		MC_MFBSP_TWORDCNT(0x1F)
+#define MC_MFBSP_TCSNEG			(1 << 18)
+#define MC_MFBSP_TMBF			(1 << 19)
+#define MC_MFBSP_TWORDLEN(n)		((n) << 20)
+#define MC_MFBSP_TWORDLEN_MASK		MC_MFBSP_TWORDCNT(0x3F)
+#define MC_MFBSP_TPACK			(1 << 25)
+#define MC_MFBSP_TSWAP			(1 << 27)
+#define MC_MFBSP_TCLK_CONT		(1 << 28)
+#define MC_MFBSP_TCS_CONT		(1 << 29)
+#define MC_MFBSP_SS(n)			(1 << (30 + (n)))
 
 /* 
  * MFBSP_GPIO_DR и MFBSP_DIR
@@ -1019,30 +1068,105 @@
 /*
  * MFBSP_RSR
  */
-#define MC_MFBSP_RSR_RBE		(1 << 0)
-#define MC_MFBSP_RSR_RBF		(1 << 1)
-#define MC_MFBSP_RSR_RBHF		(1 << 2)
-#define MC_MFBSP_RSR_RBHL		(1 << 3)
-#define MC_MFBSP_RSR_RSBE		(1 << 4)
-#define MC_MFBSP_RSR_RSBF		(1 << 5)
-#define MC_MFBSP_RSR_RXBUF_R		(1 << 8)
-#define MC_MFBSP_RSR_RXBUF_D		(1 << 9)
-#define MC_MFBSP_RSR_RXBUF		(1 << 10)
-#define MC_MFBSP_RSR_RLEV(n)		((n) << 16)
-#define MC_MFBSP_RSR_RB_DIFF(x)		(((x) >> 24) & 0xF)
+#define MC_MFBSP_RBE			(1 << 0)
+#define MC_MFBSP_RBF			(1 << 1)
+#define MC_MFBSP_RBHF			(1 << 2)
+#define MC_MFBSP_RBHL			(1 << 3)
+#define MC_MFBSP_RSBE			(1 << 4)
+#define MC_MFBSP_RSBF			(1 << 5)
+#define MC_MFBSP_RXBUF_R		(1 << 8)
+#define MC_MFBSP_RXBUF_D		(1 << 9)
+#define MC_MFBSP_RXBUF			(1 << 10)
+#define MC_MFBSP_RLEV(n)		((n) << 16)
+#define MC_MFBSP_RB_DIFF(x)		(((x) >> 24) & 0xF)
 
 /*
  * MFBSP_TSR
  */
-#define MC_MFBSP_TSR_TBE		(1 << 0)
-#define MC_MFBSP_TSR_TBF		(1 << 1)
-#define MC_MFBSP_TSR_TBHF		(1 << 2)
-#define MC_MFBSP_TSR_TBLL		(1 << 3)
-#define MC_MFBSP_TSR_TXBUF_R		(1 << 8)
-#define MC_MFBSP_TSR_TXBUF_D		(1 << 9)
-#define MC_MFBSP_TSR_TXBUF		(1 << 10)
-#define MC_MFBSP_TSR_TLEV(n)		((n) << 16)
-#define MC_MFBSP_TSR_TBES(n)		((n) << 20)
-#define MC_MFBSP_TSR_TB_DIFF(x)		(((x) >> 24) & 0xF)
+#define MC_MFBSP_TBE			(1 << 0)
+#define MC_MFBSP_TBF			(1 << 1)
+#define MC_MFBSP_TBHF			(1 << 2)
+#define MC_MFBSP_TBLL			(1 << 3)
+#define MC_MFBSP_TSBE			(1 << 4)
+#define MC_MFBSP_TSBF			(1 << 5)
+#define MC_MFBSP_TXBUF_R		(1 << 8)
+#define MC_MFBSP_TXBUF_D		(1 << 9)
+#define MC_MFBSP_TXBUF			(1 << 10)
+#define MC_MFBSP_TLEV(n)		((n) << 16)
+#define MC_MFBSP_TBES(n)		((n) << 20)
+#define MC_MFBSP_TB_DIFF(x)		(((x) >> 24) & 0xF)
+
+/*
+ * MFBSP_RCTR_RATE
+ */
+#define MC_MFBSP_RCLK_RATE(n)		(n)
+#define MC_MFBSP_RSS_RATE(n)		((n) << 12)
+#define MC_MFBSP_RCS_RATE(n)		((n) << 16)
+
+/*
+ * MFBSP_TCTR_RATE
+ */
+#define MC_MFBSP_TCLK_RATE(n)		(n)
+#define MC_MFBSP_TSS_RATE(n)		((n) << 12)
+#define MC_MFBSP_TCS_RATE(n)		((n) << 16)
+
+/*
+ * MFBSP_EMERG
+ */
+#define MC_MFBSP_RST_LPTBUF		(1 << 0)
+#define MC_MFBSP_RST_TXBUF		(1 << 1)
+#define MC_MFBSP_RST_RXBUF		(1 << 2)
+#define MC_MFBSP_RST_TX_DBG		(1 << 4)
+#define MC_MFBSP_RST_RX_DBG		(1 << 5)
+
+/*
+ * MFBSP_IMASK
+ */
+#define MC_MFBSP_LPT_IRQ_EN		(1 << 0)
+#define MC_MFBSP_TX_ERR_IRQ_EN		(1 << 4)
+#define MC_MFBSP_TX_LEV_IRQ_EN		(1 << 5)
+#define MC_MFBSP_TXBUF_R_EN		(1 << 6)
+#define MC_MFBSP_RX_ERR_IRQ_EN		(1 << 12)
+#define MC_MFBSP_RX_LEV_IRQ_EN		(1 << 13)
+#define MC_MFBSP_RXBUF_R_EN		(1 << 14)
+
+/*-------------------------------------------
+ * Регистры порта I2C
+ */
+
+/*
+ * I2C_CTR - регистр управления
+ */
+#define MC_I2C_IEN           (1 << 6)
+#define MC_I2C_EN            (1 << 7)
+#define MC_I2C_PRST          (1 << 8)
+#define MC_I2C_TM_CNT        (1 << 9)
+#define MC_I2C_TICK          (1 << 10)
+
+/*
+ * I2C_CR - регистр команд
+ */
+#define MC_I2C_IACK          (1 << 0)
+#define MC_I2C_NACK          (1 << 3)
+#define MC_I2C_SND           (1 << 4)
+#define MC_I2C_RCV           (1 << 5)
+#define MC_I2C_STO           (1 << 6)
+#define MC_I2C_STA           (1 << 7)
+
+/*
+ * I2C_SR - регистр состояния
+ */
+#define MC_I2C_IF            (1 << 0)
+#define MC_I2C_TIP           (1 << 1)
+#define MC_I2C_AL            (1 << 5)
+#define MC_I2C_BUSY          (1 << 6)
+#define MC_I2C_RXACK         (1 << 7)
+
+/*
+ * I2C_SYNC - регистр синхронизации
+ */
+#define MC_I2C_WAIT_PER(x)   ((x) & 0xFFFF)
+#define MC_I2C_SYNC_EN       (1 << 16)
+
 
 #endif /* _IO_ELVEES_H */
