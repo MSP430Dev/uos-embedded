@@ -27,8 +27,10 @@
  */
 #if defined (ARM_1986BE1) || defined (ARM_1986BE9)
 #   define ARCH_INTERRUPTS		33
+#   define ARCH_TIMER_IRQ       32
 #elif defined (ARM_STM32F4)
 #   define ARCH_INTERRUPTS      83
+#   define ARCH_TIMER_IRQ       82
 #endif
 
 /*

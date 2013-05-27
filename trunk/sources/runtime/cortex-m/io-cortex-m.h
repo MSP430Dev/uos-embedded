@@ -43,19 +43,19 @@ typedef struct
  * NVIC interrupt controller
  */
 /* Разрешение прерываний */
-#define ARM_NVIC_ISER0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE100))
+#define ARM_NVIC_ISER(n)  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE100 + (n) * 4))
 /* Запрет прерывания */
-#define ARM_NVIC_ICER0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE180))
+#define ARM_NVIC_ICER(n)  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE180 + (n) * 4))
 /* Перевод прерывания в состояние ожидания обслуживания */
-#define ARM_NVIC_ISPR0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE200))
+#define ARM_NVIC_ISPR(n)  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE200 + (n) * 4))
 /* Сброс состояния ожидания обслуживания */
-#define ARM_NVIC_ICPR0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE280))
+#define ARM_NVIC_ICPR(n)  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE280 + (n) * 4))
 /* Активные прерывания */
-#define ARM_NVIC_IABR0  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE300))
+#define ARM_NVIC_IABR(n)  (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE300 + (n) * 4))
 /* Приоритет прерываний */
-#define ARM_NVIC_IPR(n) (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE400 + ((n) << 2)))
+#define ARM_NVIC_IPR(n)   (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xE400 + (n) * 4))
 /* Программное формирование прерывания */
-#define ARM_NVIC_STIR   (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xEF00))
+#define ARM_NVIC_STIR     (*(arm_reg_t*) (ARM_SYSTEM_BASE + 0xEF00))
 
 /*------------------------------------------------------
  * SCB system control block

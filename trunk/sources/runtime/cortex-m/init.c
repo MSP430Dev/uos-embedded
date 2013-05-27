@@ -193,8 +193,8 @@ generator will not work properly
 	ARM_SCB->SHPR1 = ARM_SHPR1_UFAULT(0) |	/* usage fault */
 			 ARM_SHPR1_BFAULT(0) |	/* bus fault */
 			 ARM_SHPR1_MMFAULT(0);	/* memory management fault */
-			 ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
-			 ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(32) | /* SysTick */
+	ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
+	ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(32) | /* SysTick */
 			 ARM_SHPR3_PENDSV(32);	/* PendSV */
 
 	ARM_NVIC_IPR(0) = 0x20202020;		/* CAN1, CAN2, USB */

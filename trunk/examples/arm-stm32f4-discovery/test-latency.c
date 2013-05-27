@@ -5,7 +5,7 @@
 #include "kernel/uos.h"
 #include <kernel/internal.h>
 
-#define TIMER_IRQ	32	/* Прерывание от интервального таймера */
+#define TIMER_IRQ	82	/* Прерывание от интервального таймера */
 #define MSEC_PER_TICK	100	/* Период таймера в миллисекундах */
 #define CS3_WAIT_STATES	3	/* Такты ожидания для flash-памяти на CS3 */
 

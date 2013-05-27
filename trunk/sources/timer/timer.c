@@ -71,7 +71,7 @@
 #endif
 
 #if ARM_STM32F4
-#   define TIMER_IRQ		32	/* Systick */
+#   define TIMER_IRQ		82	/* Systick */
 #endif
 
 #if ARM_1986BE9

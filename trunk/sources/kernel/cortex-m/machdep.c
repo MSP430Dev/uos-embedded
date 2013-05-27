@@ -130,17 +130,11 @@ _irq_handler_ (void)
 	unsigned ipsr = arm_get_ipsr ();
 	if (ipsr == 15) {
 		/* Systick interrupt. */
-		irq = 32;
+		irq = ARCH_TIMER_IRQ;
 		ARM_SYSTICK->CTRL &= ~ARM_SYSTICK_CTRL_TICKINT;
-
-	} else if (ipsr >= 16 && ipsr < 48) {
-		irq = ipsr - 16;
-		ARM_NVIC_ICER0 = 1 << irq;	/* clear pending irq */
-//debug_putchar (0, '@'+irq);
-	} else {
-		/* Cannot happen. */
-//debug_printf ("<interrupt with ipsr==0> ");
-		goto done;
+    } else {
+        irq = ipsr - 16;
+        ARM_NVIC_ICER(irq >> 5) = 1 << (irq & 0x1F);
 	}
 
 //debug_printf ("<%d> ", irq);
@@ -221,12 +215,11 @@ done:
  */
 void arch_intr_allow (int irq)
 {
-	if (irq == 32) {
+	if (irq == ARCH_TIMER_IRQ) {
 		/* Systick interrupt. */
 		ARM_SYSTICK->CTRL |= ARM_SYSTICK_CTRL_TICKINT;
 	} else {
-		ARM_NVIC_ISER0 = 1 << irq;
-//debug_printf ("<ISER0:=%x> ", 1 << irq);
+		ARM_NVIC_ISER(irq >> 5) = 1 << (irq & 0x1F);
 	}
 }
 
