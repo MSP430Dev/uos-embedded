@@ -2,6 +2,8 @@
  * Machine-dependent uOS declarations for Cortex-M3, GCC.
  *
  * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ *               2012-2013 Dmitry Podkhvatilin <vatilin@gmail.com>
+ *               2013 Lyubimov Maxim <rosseltzong@yandex.ru>
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,7 +25,16 @@
 /*
  * The total number of different hardware interrupts.
  */
-#define ARCH_INTERRUPTS		33
+#if defined (ARM_1986BE1) || defined (ARM_1986BE9)
+#   define ARCH_INTERRUPTS		33
+#elif defined (ARM_STM32F4)
+#   define ARCH_INTERRUPTS      83
+#endif
+
+/*
+ * The task to switch to.
+ */
+extern task_t* uos_next_task;
 
 /*
  * Type for saving task stack context.
@@ -33,7 +44,7 @@ typedef void *arch_stack_t;
 /*
  * Type for saving task interrupt mask.
  */
-typedef int arch_state_t;
+typedef unsigned long arch_state_t;
 
 /*
  * Build the initial task's stack frame.
@@ -52,11 +63,16 @@ void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 static inline void
 arch_task_switch (task_t *target)
 {
+#ifdef ARM_CORTEX_M1
+	uos_next_task = target;
+	*(unsigned long*)0xE000ED04 |= 1 << 28;
+#else
 	/* Use supervisor call for task switching. */
 	asm volatile (
 	"mov	r0, %0 \n\t"
 	"svc	#0"
 	: : "r" (target) : "r0", "memory", "cc");
+#endif
 }
 
 /*
@@ -110,7 +126,7 @@ arch_idle ()
 {
 	arm_intr_enable ();
 	for (;;) {
-#ifdef ARM_1986BE9
+#if defined (ARM_1986BE1) || defined (ARM_1986BE9)
 		asm volatile ("nop;");
 #else
 		arm_bus_yield ();

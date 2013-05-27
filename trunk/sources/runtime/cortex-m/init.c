@@ -33,12 +33,12 @@ _init_ (void)
 {
 	unsigned long *src, *dest, *limit;
 
-#ifndef SETUP_HCLK_HSI
-#ifdef ARM_1986BE9
+#if defined (ARM_1986BE9) || defined (ARM_1986BE1)
 	/* Enable JTAG A and B debug ports. */
 //	ARM_BACKUP->BKP_REG_0E |= ARM_BKP_REG_0E_JTAG_A | ARM_BKP_REG_0E_JTAG_B;
 //	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOB;
 
+#ifndef SETUP_HCLK_HSI
 	/* Enable HSE generator. */
 #ifdef ARM_EXT_GEN
 	ARM_RSTCLK->HS_CONTROL = ARM_HS_CONTROL_HSE_ON | ARM_HS_CONTROL_HSE_BYP; 	// HSE External Generator
@@ -123,8 +123,53 @@ _init_ (void)
 #endif /* ARM_UART1_DEBUG */
 #endif /* NDEBUG */
 
-#endif /* ARM_1986BE9 */
+#endif /* ARM_1986BE9 || ARM_1986BE1 */
 
+
+#ifdef ARM_STM32F4
+
+#if KHZ_CLKIN < 2000
+#error KHZ_CLKIN < 2 MHz! PLLCFGR will not be properly configured!
+#endif
+#if ((KHZ / 1000 * 2 / 48) * 48) != (KHZ / 1000 * 2)
+#warning PLL48CLK is not equal 48 MHz, USB OTG FS will not work properly!
+#endif
+#if (KHZ / 1000 * 2) / (KHZ / 1000 * 2 / 48) > 48
+#warning PLL48CLK is not less or equal 48 MHz, SDIO and random number \
+generator will not work properly
+#endif
+
+    // Initialize PLL
+    RCC->PLLCFGR = RCC_PLLM(KHZ_CLKIN / 1000) | RCC_PLLN(KHZ / 1000 * 2) |
+        RCC_PLLP_2 | RCC_PLLSRC_HSE | RCC_PLLQ(KHZ / 1000 * 2 / 48);
+        
+    RCC->CR |= RCC_PLLON | RCC_HSEON;
+    while (! (RCC->CR & (RCC_PLLRDY | RCC_HSERDY)));
+    
+    // We have to increase embedded flash wait states when 
+    // frequency is high
+    FLASH_IFACE->ACR = FLASH_LATENCY(5) | FLASH_PRFTEN |
+        FLASH_ICEN | FLASH_DCEN;
+    
+    // Switch core to PLL clocks. Frequency of AHB is set to HCLK,
+    // APB1 - to HCLK/2, APB2 - to HCLK/4
+    RCC->CFGR = RCC_SW_PLL | RCC_HPRE_NODIV | RCC_PPRE1_DIV4 |
+        RCC_PPRE2_DIV2;
+    while (RCC->CFGR & RCC_SWS_MASK != RCC_SWS_PLL);
+
+    // Init debug UART
+    RCC->AHB1ENR |= RCC_GPIOCEN;
+    GPIOC->MODER |= GPIO_ALT(10) | GPIO_ALT(11);
+    GPIOC->AFRH |= GPIO_AF_USART3(10) | GPIO_AF_USART3(11);
+    
+    unsigned mant = (unsigned)(KHZ / 4 / (115.2 * 16));
+    unsigned frac = (KHZ / 4 / (115.2 * 16) - mant) * 16;
+    RCC->APB1ENR |= RCC_USART3EN;
+    USART3->CR1 |= USART_UE;
+    USART3->CR2 |= USART_STOP_1;
+    USART3->BRR = USART_DIV_MANTISSA(mant) | USART_DIV_FRACTION(frac);
+    USART3->CR1 |= USART_TE | USART_RE;
+#endif
 
 
 #ifndef EMULATOR /* not needed on emulator */
@@ -148,8 +193,8 @@ _init_ (void)
 	ARM_SCB->SHPR1 = ARM_SHPR1_UFAULT(0) |	/* usage fault */
 			 ARM_SHPR1_BFAULT(0) |	/* bus fault */
 			 ARM_SHPR1_MMFAULT(0);	/* memory management fault */
-        ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
-        ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(32) | /* SysTick */
+			 ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
+			 ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(32) | /* SysTick */
 			 ARM_SHPR3_PENDSV(32);	/* PendSV */
 
 	ARM_NVIC_IPR(0) = 0x20202020;		/* CAN1, CAN2, USB */
@@ -190,24 +235,26 @@ watchdog_alive ()
 
 static void dump_of_death (unsigned *frame, unsigned ipsr)
 {
-	debug_printf ("r0 = %8x     r5 = %8x     r10 = %8x     pc   = %8x\n",
+	debug_printf ("r0 = %08x     r5 = %08x     r10 = %08x     pc   = %08x\n",
 		       frame[9],    frame[1],    frame[6],     frame[15]);
-	debug_printf ("r1 = %8x     r6 = %8x     r11 = %8x     xpsr = %8x\n",
+	debug_printf ("r1 = %08x     r6 = %08x     r11 = %08x     xpsr = %08x\n",
 		       frame[10],   frame[2],    frame[7],     frame[16]);
-	debug_printf ("r2 = %8x     r7 = %8x     r12 = %8x     ipsr = %8x\n",
+	debug_printf ("r2 = %08x     r7 = %08x     r12 = %08x     ipsr = %08x\n",
 		       frame[11],   frame[3],    frame[13],    ipsr);
-	debug_printf ("r3 = %8x     r8 = %8x     sp  = %8x  basepri = %8x\n",
-		       frame[12],   frame[4],    frame+17,     frame[8]);
-	debug_printf ("r4 = %8x     r9 = %8x     lr  = %8x\n",
+#ifdef ARM_CORTEX_M1
+	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  basepri = %08x\n",
+		       frame[12],   frame[4],    frame[17],     frame[8]);
+#else
+	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  primask = %08x\n",
+		       frame[12],   frame[4],    frame[17],     frame[8]);
+#endif               
+	debug_printf ("r4 = %08x     r9 = %08x     lr  = %08x\n",
 		       frame[0],    frame[5],    frame[14]);
 
 	/* Reset the system. */
 	debug_printf ("\nReset...\n\n");
 	mdelay (1000);
 
-	/* This does not work as expected. */
-	ARM_RSTCLK->CPU_CLOCK = 0;
-	ARM_SCB->AIRCR = ARM_AIRCR_VECTKEY | ARM_AIRCR_SYSRESETREQ;
 	for (;;)
 		asm volatile ("dmb");
 }
@@ -215,10 +262,20 @@ static void dump_of_death (unsigned *frame, unsigned ipsr)
 void __attribute__ ((naked))
 _fault_ ()
 {
-	/* Save registers R4-R11 in stack. */
+	/* Save registers in stack. */
+#ifdef ARM_CORTEX_M1
+	asm volatile (
+	"push	{r4-r7} \n\t"
+	"mov    r0, r8 \n\t"
+	"mov    r1, r9 \n\t"
+	"mov    r2, r10 \n\t"
+	"mov    r3, r11 \n\t"
+	"push	{r0-r3} \n\t");
+#else
 	asm volatile (
 	"mrs	r12, basepri \n\t"
 	"push	{r4-r12}");
+#endif
 
 	unsigned *frame = arm_get_stack_pointer ();
 	unsigned ipsr = arm_get_ipsr ();
@@ -239,8 +296,18 @@ _fault_ ()
 void __attribute__ ((naked))
 _unexpected_interrupt_ ()
 {
-	/* Save registers R4-R11 in stack. */
+	/* Save registers in stack. */
+#ifdef ARM_CORTEX_M1
+	asm volatile (
+	"push	{r4-r7} \n\t"
+	"mov    r0, r8 \n\t"
+	"mov    r1, r9 \n\t"
+	"mov    r2, r10 \n\t"
+	"mov    r3, r11 \n\t"
+	"push	{r0-r3} \n\t");
+#else
 	asm volatile ("push	{r4-r11}");
+#endif
 
 	unsigned *frame = arm_get_stack_pointer ();
 	unsigned ipsr = arm_get_ipsr ();

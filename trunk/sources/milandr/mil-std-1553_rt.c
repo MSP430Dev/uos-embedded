@@ -3,7 +3,6 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <kernel/internal.h>
-#include <runtime/cortex-m1/io-1986ve1.h>
 #include <milandr/mil-std-1553_setup.h>
 #include <milandr/mil-std-1553_rt.h>
 #include <milandr/mil-std-1553_bc.h>

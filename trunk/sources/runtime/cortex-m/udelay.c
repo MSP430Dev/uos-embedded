@@ -18,6 +18,7 @@
  */
 #include <runtime/lib.h>
 
+#ifdef ARM_1986BE1
 #if (ARM_SYS_TIMER==1)
 #	define TIMER_IRQ	TIMER1_IRQn
 #	define SYS_TIMER	ARM_TIMER1
@@ -45,13 +46,14 @@
 #	define PER_CLOCK_EN	ARM_PER_CLOCK_TIMER1
 #	define TIM_CLK_EN	ARM_TIM_CLOCK_EN1
 #endif
-
+#endif
 
 void udelay (unsigned usec)
 {
 	if (! usec)
 		return;
 
+#ifdef ARM_1986BE1
 	if (! (ARM_RSTCLK->PER_CLOCK & PER_CLOCK_EN)) {
 		ARM_RSTCLK->PER_CLOCK |= PER_CLOCK_EN;
 #if (ARM_SYS_TIMER==4)
@@ -81,4 +83,31 @@ void udelay (unsigned usec)
 		if ((int) (final - now) < 0)
 			break;
 	}
+#else
+	unsigned ctrl = ARM_SYSTICK->CTRL;
+	if (! (ctrl & ARM_SYSTICK_CTRL_ENABLE)) {
+		/* Start timer using HCLK clock, no interrupts. */
+		ARM_SYSTICK->LOAD = 0xFFFFFF;
+		ARM_SYSTICK->CTRL = ARM_SYSTICK_CTRL_HCLK |
+			ARM_SYSTICK_CTRL_ENABLE;
+	}
+	unsigned load = ARM_SYSTICK->LOAD & 0xFFFFFF;
+	unsigned now = ARM_SYSTICK->VAL & 0xFFFFFF;
+#ifdef SETUP_HCLK_HSI
+	unsigned final = now - usec * 8;
+#else
+	unsigned final = now - usec * (KHZ / 1000);
+#endif
+	for (;;) {
+		ctrl = ARM_SYSTICK->CTRL;
+		if (ctrl & ARM_SYSTICK_CTRL_COUNTFLAG) {
+			final += load;
+		}
+
+		/* This comparison is valid only when using a signed type. */
+		now = ARM_SYSTICK->VAL & 0xFFFFFF;
+		if ((int) ((now - final) << 8) < 0)
+			break;
+	}
+#endif
 }

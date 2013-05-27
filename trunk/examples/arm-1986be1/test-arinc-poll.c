@@ -1,5 +1,4 @@
 #include <runtime/lib.h>
-#include <runtime/cortex-m1/io-1986ve1.h>
 #include <milandr/arinc.h>
 
 #include <kernel/uos.h>  // debug

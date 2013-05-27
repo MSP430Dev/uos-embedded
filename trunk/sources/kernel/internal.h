@@ -24,10 +24,9 @@
 #	include <kernel/avr/machdep.h>
 #endif
 #if defined (__arm__) || defined (__thumb__)
-#   if defined (ARM_CORTEX_M1)
-#	    include <kernel/cortex-m1/machdep.h>
-#   elif defined (ARM_CORTEX_M3)
-#	    include <kernel/cortex-m3/machdep.h>
+#   if defined (ARM_CORTEX_M1) || defined (ARM_CORTEX_M3) || \
+        defined (ARM_CORTEX_M4)
+#	    include <kernel/cortex-m/machdep.h>
 #   else
 #	    include <kernel/arm/machdep.h>
 #   endif

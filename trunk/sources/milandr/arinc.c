@@ -1,7 +1,6 @@
 #ifdef ARM_1986BE1
 
 #include <runtime/lib.h>
-#include <runtime/cortex-m1/io-1986ve1.h>
 #include "arinc.h"
 
 

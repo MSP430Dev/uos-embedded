@@ -14,10 +14,9 @@
 #	include <runtime/arm/types.h>
 #	include <runtime/arm/string.h>
 #	include <runtime/arm/stdlib.h>
-#       if defined (ARM_CORTEX_M1)
-#		include <runtime/cortex-m1/io.h>
-#       elif defined (ARM_CORTEX_M3)
-#		include <runtime/cortex-m3/io.h>
+#       if defined (ARM_CORTEX_M1) || defined (ARM_CORTEX_M3) || \
+	   defined (ARM_CORTEX_M4)
+#		include <runtime/cortex-m/io.h>
 #       else
 #		include <runtime/arm/io.h>
 #       endif

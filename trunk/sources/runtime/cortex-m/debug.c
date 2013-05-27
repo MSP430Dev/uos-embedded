@@ -2,6 +2,7 @@
  * Debug console input/output for Cortex-M3 architecture.
  *
  * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ *               2013 Dmitry Podkhvatilin <vatilin@gmail.com>
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -37,7 +38,7 @@ debug_redirect (void (*func) (void*, short), void *arg)
 	hook_arg = arg;
 }
 
-#ifdef ARM_1986BE1
+#if defined (ARM_1986BE1) || defined (ARM_1986BE9)
 /*
  * Send a byte to the UART transmitter, with interrupts disabled.
  */
@@ -148,12 +149,18 @@ debug_peekchar (void)
 		return debug_char;
 
 	arm_intr_disable (&x);
+    
+	if (hook) {
+		hook (hook_arg, c);
+		arm_intr_restore (x);
+		return;
+	}
 
 #ifdef ARM_UART1_DEBUG
 	/* Enable receiver. */
 	ARM_UART1->CTL |= ARM_UART_CTL_RXE;
 
-	/* Wait until receive data available. */
+	/* Check if receive data available. */
 	if (ARM_UART1->FR & ARM_UART_FR_RXFE) {
 		arm_intr_restore (x);
 		return -1;
@@ -176,7 +183,88 @@ debug_peekchar (void)
 	debug_char = c;
 	return c;
 }
-#endif /* ARM_1986BE1 */
+#endif /* ARM_1986BE1 || ARM_1986BE9 */
+
+
+#ifdef ARM_STM32F4
+void
+debug_putchar (void *arg, short c)
+{
+    arch_state_t x;
+
+	arm_intr_disable (&x);
+
+    /* Wait for transmitter holding register empty. */ 
+    while (! (USART3->SR & USART_TC));
+    
+again:
+	/* Send byte. */
+	USART3->DR = c;
+
+    /* Wait for transmitter holding register empty. */
+	while (! (USART3->SR & USART_TC));
+
+	watchdog_alive ();
+	if (debug_onlcr && c == '\n') {
+		c = '\r';
+		goto again;
+	}
+	arm_intr_restore (x);
+}
+
+unsigned short
+debug_getchar (void)
+{
+	unsigned c;
+	arch_state_t x;
+
+	if (debug_char >= 0) {
+		c = debug_char;
+		debug_char = -1;
+		return c;
+	}
+    
+	arm_intr_disable (&x);
+
+	/* Wait until receive data available. */
+	while (! (USART3->SR & USART_RXNE)) {
+		watchdog_alive ();
+		arm_intr_restore (x);
+		arm_intr_disable (&x);
+	}
+
+	c = USART3->DR;
+
+	arm_intr_restore (x);
+	return c;
+
+}
+
+int
+debug_peekchar (void)
+{
+	unsigned char c;
+	arch_state_t x;
+
+	if (debug_char >= 0)
+		return debug_char;
+
+	arm_intr_disable (&x);
+
+	/* Check if receive data available. */
+	if (! (USART3->SR & USART_RXNE)) {
+		arm_intr_restore (x);
+		return -1;
+	}
+
+	c = USART3->DR;
+
+	arm_intr_restore (x);
+	debug_char = c;
+	return c;
+}
+#endif /* ARM_STM32F4 */
+
 
 void
 debug_puts (const char *p)

@@ -2,6 +2,7 @@
  * CPU-dependent inline routines for Cortex-M3 architecture.
  *
  * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
+ *               2013 Dmitry Podkhvatilin <vatilin@gmail.com>
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -16,8 +17,14 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+#ifdef ARM_1986BE9
+#   include <runtime/cortex-m/io-1986ve9x.h>
+#endif
 #ifdef ARM_1986BE1
-#   include <runtime/cortex-m1/io-1986ve1.h>
+#   include <runtime/cortex-m/io-1986ve1.h>
+#endif
+#ifdef ARM_STM32F4
+#   include <runtime/cortex-m/io-stm32f4.h>
 #endif
 
 /*
@@ -68,32 +75,53 @@ unsigned arm_get_register (int reg)
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.
  */
+
 static void inline __attribute__ ((always_inline))
 arm_intr_disable (unsigned long *x)
 {
-	int temp;
-
+	unsigned long temp;
+	
+#ifdef ARM_CORTEX_M1
 	asm volatile (
 	"mrs	%1, primask \n"		/* Cortex-M1 mode */
 	"mov	%0, #1 \n"		/* primask = 1 */
 	"msr	primask, %0"
 	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
+#else
+	asm volatile (
+	"mrs	%1, basepri \n"		/* Cortex-M3 mode */
+	"mov	%0, #32 \n"		/* basepri := 16 */
+	"msr	basepri, %0"
+	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
+#endif
 }
 
 static void inline __attribute__ ((always_inline))
 arm_intr_restore (unsigned long x)
 {
+#ifdef ARM_CORTEX_M1
 	asm volatile (
 	"msr	primask, %0"		/* Cortex-M1 mode */
 	: : "r" (x) : "memory", "cc");
+#else
+	asm volatile (
+	"msr	basepri, %0"		/* Cortex-M3 mode */
+	: : "r" (x) : "memory", "cc");
+#endif
 }
 
 static void inline __attribute__ ((always_inline))
 arm_intr_enable ()
 {
+#ifdef ARM_CORTEX_M1
 	asm volatile (
 	"msr	primask, %0"		/* Cortex-M1 mode */
 	: : "r" (0) : "memory", "cc");
+#else
+	asm volatile (
+	"msr	basepri, %0"		/* Cortex-M3 mode */
+	: : "r" (0) : "memory", "cc");
+#endif
 }
 
 static void inline __attribute__ ((always_inline))
@@ -118,6 +146,33 @@ unsigned arm_get_ipsr ()
 	return x;
 }
 
+#if defined(ARM_CORTEX_M3) || defined(ARM_CORTEX_M4)
+/*
+ * Read BASEPRI register.
+ */
+static inline __attribute__ ((always_inline))
+unsigned arm_get_basepri ()
+{
+	unsigned x;
+
+	asm volatile (
+	"mrs	%0, basepri"
+	: "=r" (x));
+	return x;
+}
+
+/*
+ * Set BASEPRI register.
+ */
+static void inline __attribute__ ((always_inline))
+arm_set_basepri (unsigned val)
+{
+	asm volatile (
+	"msr	basepri, %0"
+	: : "r" (val) : "memory", "cc");
+}
+#endif
+
 static void inline __attribute__ ((always_inline))
 arm_set_control (unsigned val)
 {
@@ -132,11 +187,16 @@ arm_set_control (unsigned val)
 static int inline __attribute__ ((always_inline))
 arm_count_leading_zeroes (unsigned x)
 {
-    int n = 0;
-    for (; n<32; ++n)
-    {
-        if ((x >> (31 - n)) != 0)
-            break;
-    }
-    return n;
+	int n;
+
+#ifdef ARM_CORTEX_M1
+	for (n = 0; n < 32; ++n)
+		if ((x >> (31 - n)) != 0) break;
+#else
+	asm volatile (
+	"clz	%0, %1"
+	: "=r" (n) : "r" (x));
+#endif
+
+	return n;
 }

@@ -3,16 +3,13 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 
 TEST		= test-arinc-poll
-TESTS		+= test-led.hex test-debug.hex test-task.hex test-timer.hex
-TESTS		+= test-latency.hex test-tswitch.hex phil-uart.hex #test-uart.hex
-TESTS		+= test-mil_std_bc.hex test-mil_std_rt.hex test-arinc.hex test-arinc-poll.hex
-TESTS		+= test-dma.hex
-OUTS		= $(TESTS:%.hex=%.elf)
+TESTS		+= test-led.bin test-debug.bin test-task.bin test-timer.bin
+TESTS		+= test-latency.bin test-tswitch.bin phil-uart.bin #test-uart.bin
+TESTS		+= test-mil_std_bc.bin test-mil_std_rt.bin test-arinc.bin test-arinc-poll.bin
+TESTS		+= test-dma.bin
+OUTS		= $(TESTS:%.bin=%.elf)
 
-# Using MILPROG utility.
-PROG            = milprog
-
-all:		$(OUTS) $(TESTS) $(TEST).dis $(TEST).bin
+all:		$(OUTS) $(TESTS) $(TEST).dis
 		$(SIZE) $(OUTS)
 
 $(OUTS) $(TESTS): startup.o libuos.a
@@ -20,22 +17,5 @@ $(OUTS) $(TESTS): startup.o libuos.a
 clean:
 		rm -rf *~ *.[oasi] *.elf *.lst *.dis *.bin .deps $(TESTS) $(MODULES) udpping
 
-probe:
-		$(PROG)
-
-load:		$(TEST).hex
-		$(PROG) $<
-
-proxy:
-		openocd -f openocd.tcl
-
-gdb:		$(TEST).elf
-		arm-elf-gdb -x gdbinit $(TEST).elf
-
-insight:	$(TEST).elf
-		arm-elf-insight -x gdbinit $(TEST).elf &
-
-udpping:	udpping.c
-		gcc -Wall -O $< -lpthread -o $@
 
 include $(OS)/sources/rules.mak

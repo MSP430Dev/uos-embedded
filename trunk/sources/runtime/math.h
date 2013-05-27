@@ -38,7 +38,7 @@ extern "C" {
 #define M_SQRT2l	1.4142135623730950488016887242096981L	/* sqrt(2) */
 #define M_SQRT1_2l	0.7071067811865475244008443621048490L	/* 1/sqrt(2) */
 
-#if defined (I386) || defined (MIPS32) || defined (ARM_CORTEX_M3)
+#if defined (I386) || defined (MIPS32) || defined (ARM_CORTEX_M1) || defined (ARM_CORTEX_M3)
 
 #define MAXFLOAT	3.40282347e+38F
 #define HUGE_VAL	(__builtin_huge_val())
