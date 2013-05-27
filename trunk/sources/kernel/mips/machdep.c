@@ -287,7 +287,7 @@ _arch_interrupt_ (void)
 	asm volatile (
 "_irq_handler_: .globl _irq_handler_"
 	);
-
+	
 #ifdef PIC32MX
 	/* Only interrupts are allowed. Any exception is fatal. */
 	unsigned cause = mips_read_c0_register (C0_CAUSE);
@@ -336,7 +336,16 @@ _arch_interrupt_ (void)
 			IFSCLR(1) = mask;
                 }
 #endif
-
+#ifdef MALTA
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		unsigned cause = mips_read_c0_register (C0_CAUSE);
+        unsigned pending = status & cause & 0xff00;
+        if (! pending)
+            break;
+        irq = 23 - mips_count_leading_zeroes (pending);
+		status &= ~(0x100 << (irq & 7));
+		mips_write_c0_register (C0_STATUS, status);
+#endif
 #ifdef ELVEES
 		unsigned status = mips_read_c0_register (C0_STATUS);
 		unsigned cause = mips_read_c0_register (C0_CAUSE);
@@ -554,7 +563,11 @@ arch_intr_allow (int irq)
 		IECSET(1) = mask_by_vector [irq];
 //debug_printf ("<%d> ", irq);
 #endif
-
+#ifdef MALTA
+	unsigned status = mips_read_c0_register (C0_STATUS);
+	status |= (0x100 << (irq & 7));
+	mips_write_c0_register (C0_STATUS, status); 
+#endif
 #ifdef ELVEES_MC24
 	if (irq < 32) {
 		/* Internal interrupt: 0..31. */

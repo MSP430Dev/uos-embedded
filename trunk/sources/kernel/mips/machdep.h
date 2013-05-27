@@ -30,6 +30,13 @@
 #define ARCH_INTERRUPTS		46
 #endif
 
+#ifdef MIPS32_4KEC
+/*
+ * Total number of interrupt vectors.
+ */
+#define ARCH_INTERRUPTS		8
+#endif
+
 #ifdef ELVEES_MC24
 /*
  * 32 interrupts linked to MASKR[31:0] register.

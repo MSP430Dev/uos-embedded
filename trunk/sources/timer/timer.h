@@ -18,7 +18,7 @@ struct _timer_t {
 	mutex_t decisec;		/* every 0.1 second is signalled here */
 	unsigned long khz;		/* reference clock */
 	small_uint_t msec_per_tick;
-#if PIC32MX
+#if PIC32MX || MIPS32_4KEC
 	unsigned compare_step;
 #endif
 	unsigned long milliseconds;	/* real time counter */

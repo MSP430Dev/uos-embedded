@@ -70,6 +70,10 @@
 #   define TIMER_IRQ	PIC32_VECT_CT	/* Core Timer Interrupt */
 #endif
 
+#if MIPS32_4KEC
+#   define TIMER_IRQ        7
+#endif
+
 #if ARM_1986BE9
 #   define TIMER_IRQ		32	/* Systick */
 #endif
@@ -161,7 +165,7 @@ timer_handler (timer_t *t)
 #if ARM_1986BE1
 	SYS_TIMER->TIM_STATUS &= ~ARM_TIM_CNT_ARR_EVENT;
 #endif
-#if PIC32MX
+#if PIC32MX || MIPS32_4KEC
 	/* Increment COMPARE register. */
 	unsigned compare = mips_read_c0_register (C0_COMPARE);
 	do {
@@ -337,7 +341,7 @@ timer_init (timer_t *t, unsigned long khz, small_uint_t msec_per_tick)
 	ARM_PRT_CONTROL = ARM_PRT_TIMER_EN | ARM_PRT_AUTO_RELOAD | 
 		ARM_PRT_IRQ_EN;
 #endif
-#if PIC32MX
+#if PIC32MX || MIPS32_4KEC
 	/* Use core timer. */
 	unsigned count = mips_read_c0_register (C0_COUNT);
 	t->compare_step = (t->khz * t->msec_per_tick + 1) / 2;

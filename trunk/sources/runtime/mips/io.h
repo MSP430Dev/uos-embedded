@@ -23,6 +23,9 @@
 #ifdef PIC32MX
 #   include <runtime/mips/io-pic32mx.h>
 #endif
+#ifdef MALTA
+#   include <runtime/mips/io-malta.h>
+#endif
 #ifdef ELVEES_MC24
 #   define ELVEES	1
 #   include <runtime/mips/io-mc24.h>
@@ -286,7 +289,7 @@ mips_intr_disable (int *x)
 static void inline __attribute__ ((always_inline))
 mips_intr_restore (int x)
 {
-#if defined (ELVEES)
+#if defined (ELVEES) || defined (MIPS32_4KEC)
 	int status;
 
 	status = mips_read_c0_register (C0_STATUS);
@@ -302,7 +305,7 @@ mips_intr_restore (int x)
 static void inline __attribute__ ((always_inline))
 mips_intr_enable ()
 {
-#if defined (ELVEES)
+#if defined (ELVEES) || defined (MIPS32_4KEC)
 	int status;
 
 	status = mips_read_c0_register (C0_STATUS);

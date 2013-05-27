@@ -216,6 +216,101 @@ debug_peekchar (void)
 }
 #endif /* PIC32MX */
 
+
+#if defined (MALTA)
+/*
+ * Send a byte to the UART transmitter, with interrupts disabled.
+ */
+void
+debug_putchar (void *arg, short c)
+{
+	int x = 0;
+	int in_exception = mips_read_c0_register (C0_STATUS) & (ST_EXL | ST_ERL);
+
+	if (! in_exception)
+		mips_intr_disable (&x);
+		
+	/* Wait for transmitter holding register empty. */
+	while (! (UART_LSR & LSR_TX_HOLD_EMPTY))
+		continue;
+		
+again:
+	/* Send byte. */
+	/* TODO: unicode to utf8 conversion. */
+	UART_THR = c;
+
+/*	watchdog_alive ();*/
+	if (debug_onlcr && c == '\n') {
+		/* Wait for transmitter holding register empty. */
+		while (! (UART_LSR & LSR_TX_HOLD_EMPTY))
+			continue;	
+		c = '\r';
+		goto again;
+	}
+	if (! in_exception)
+		mips_intr_restore (x);
+}
+
+/*
+ * Wait for the byte to be received and return it.
+ */
+unsigned short
+debug_getchar (void)
+{
+	unsigned char c;
+	int x;
+
+	if (debug_char >= 0) {
+		c = debug_char;
+		debug_char = -1;
+/*debug_printf ("getchar -> 0x%02x\n", c);*/
+		return c;
+	}
+	mips_intr_disable (&x);
+	for (;;) {
+		/* Wait until receive data available. */
+		if (! (UART_LSR & LSR_RX_DATA_READY)) {
+/*			watchdog_alive ();*/
+			mips_intr_restore (x);
+			mips_intr_disable (&x);
+			continue;
+		}
+		/* TODO: utf8 to unicode conversion. */
+		c = UART_RHR;
+		break;
+	}
+	mips_intr_restore (x);
+	return c;
+}
+
+/*
+ * Get the received byte without waiting.
+ */
+int
+debug_peekchar (void)
+{
+	unsigned char c;
+	int x;
+
+	if (debug_char >= 0)
+		return debug_char;
+
+	mips_intr_disable (&x);
+
+	/* Wait until receive data available. */
+	if (! (UART_LSR & LSR_RX_DATA_READY)) {
+		mips_intr_restore (x);
+		return -1;
+	}
+	/* TODO: utf8 to unicode conversion. */
+	c = UART_RHR;
+
+	mips_intr_restore (x);
+	debug_char = c;
+	return c;
+}
+#endif /* MALTA */
+
 void
 debug_puts (const char *p)
 {
