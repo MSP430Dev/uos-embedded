@@ -9,7 +9,7 @@
 
 #define N	5			/* Number of philosophers */
 
-#define uart debug
+#define uart debug			/* Console driver */
 timer_t timer;				/* Timer driver */
 ARRAY (task [N], 1000);			/* Task space */
 mutex_t fork [N];			/* Forks */
@@ -90,14 +90,20 @@ void philosopher (void *data)
 	}
 }
 
+task_t *tsk;
+
 void uos_init ()
 {
 	int i;
 
+	//uart_init (&uart, 1, 90, KHZ, 115200);
 	timer_init (&timer, KHZ, 50);
 
 	/* Create N philosopher tasks. */
-	for (i=0; i<N; ++i)
-		task_create (philosopher, (void*) i, "phil", 1,
+	for (i=0; i<N; ++i) {
+		tsk = task_create (philosopher, (void*) i, "phil", 1,
 			task[i], sizeof (task[i]));
+		debug_printf ("%08X ", tsk);
+    }
+    debug_printf ("\n\n");
 }

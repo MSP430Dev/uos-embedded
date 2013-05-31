@@ -32,6 +32,10 @@ void __attribute ((naked))
 _init_ (void)
 {
 	unsigned long *src, *dest, *limit;
+	
+#if defined (ARM_CORTEX_M1)
+	arm_set_primask(1);		// Disable interrupts
+#endif
 
 #if defined (ARM_1986BE9) || defined (ARM_1986BE1)
 	/* Enable JTAG A and B debug ports. */
@@ -189,22 +193,22 @@ generator will not work properly
 
 	/* Initialize priority of exceptions.
 	 * Only faults and SVC are permitted when interrupts are disabled
-	 * (priority level = 0).  All other interrupts have level 32. */
+	 * (priority level = 0).  All other interrupts have level 64. */
 	ARM_SCB->SHPR1 = ARM_SHPR1_UFAULT(0) |	/* usage fault */
 			 ARM_SHPR1_BFAULT(0) |	/* bus fault */
 			 ARM_SHPR1_MMFAULT(0);	/* memory management fault */
-	ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
-	ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(32) | /* SysTick */
-			 ARM_SHPR3_PENDSV(32);	/* PendSV */
+			 ARM_SCB->SHPR2 = ARM_SHPR2_SVCALL(0);	/* SVCall */
+			 ARM_SCB->SHPR3 = ARM_SHPR3_SYSTICK(64) | /* SysTick */
+			 ARM_SHPR3_PENDSV(0);	/* PendSV */
 
-	ARM_NVIC_IPR(0) = 0x20202020;		/* CAN1, CAN2, USB */
-	ARM_NVIC_IPR(1) = 0x20202020;		/* DMA, UART1, UART2 */
-	ARM_NVIC_IPR(2) = 0x20202020;		/* SSP1, I2C, POWER */
-	ARM_NVIC_IPR(3) = 0x20202020;		/* WWDG, Timer1, Timer2 */
-	ARM_NVIC_IPR(4) = 0x20202020;		/* Timer3, ADC, COMPARATOR */
-	ARM_NVIC_IPR(5) = 0x20202020;		/* SSP2 */
-	ARM_NVIC_IPR(6) = 0x20202020;		/* BACKUP */
-	ARM_NVIC_IPR(7) = 0x20202020;		/* external INT[1:4] */
+	ARM_NVIC_IPR(0) = 0x40404040;		/* CAN1, CAN2, USB */
+	ARM_NVIC_IPR(1) = 0x40404040;		/* DMA, UART1, UART2 */
+	ARM_NVIC_IPR(2) = 0x40404040;		/* SSP1, I2C, POWER */
+	ARM_NVIC_IPR(3) = 0x40404040;		/* WWDG, Timer1, Timer2 */
+	ARM_NVIC_IPR(4) = 0x40404040;		/* Timer3, ADC, COMPARATOR */
+	ARM_NVIC_IPR(5) = 0x40404040;		/* SSP2 */
+	ARM_NVIC_IPR(6) = 0x40404040;		/* BACKUP */
+	ARM_NVIC_IPR(7) = 0x40404040;		/* external INT[1:4] */
 
 	main ();
 }
@@ -235,21 +239,29 @@ watchdog_alive ()
 
 static void dump_of_death (unsigned *frame, unsigned ipsr)
 {
-	debug_printf ("r0 = %08x     r5 = %08x     r10 = %08x     pc   = %08x\n",
-		       frame[9],    frame[1],    frame[6],     frame[15]);
-	debug_printf ("r1 = %08x     r6 = %08x     r11 = %08x     xpsr = %08x\n",
-		       frame[10],   frame[2],    frame[7],     frame[16]);
-	debug_printf ("r2 = %08x     r7 = %08x     r12 = %08x     ipsr = %08x\n",
-		       frame[11],   frame[3],    frame[13],    ipsr);
 #ifdef ARM_CORTEX_M1
-	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  basepri = %08x\n",
-		       frame[12],   frame[4],    frame[17],     frame[8]);
-#else
+	debug_printf ("r0 = %08x     r5 = %08x     r10 = %08x     pc   = %08x\n",
+		       frame[9],     frame[6],     frame[2],      frame[15]);
+	debug_printf ("r1 = %08x     r6 = %08x     r11 = %08x     xpsr = %08x\n",
+		       frame[10],    frame[7],     frame[3],      frame[16]);
+	debug_printf ("r2 = %08x     r7 = %08x     r12 = %08x     ipsr = %08x\n",
+		       frame[11],    frame[8],     frame[13],     ipsr);
 	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  primask = %08x\n",
-		       frame[12],   frame[4],    frame[17],     frame[8]);
-#endif               
+		       frame[12],    frame[0],     frame[17],  frame[4]);
 	debug_printf ("r4 = %08x     r9 = %08x     lr  = %08x\n",
-		       frame[0],    frame[5],    frame[14]);
+		       frame[5],     frame[1],     frame[14]);
+#else
+	debug_printf ("r0 = %08x     r5 = %08x     r10 = %08x     pc   = %08x\n",
+		       frame[9],     frame[1],     frame[6],      frame[15]);
+	debug_printf ("r1 = %08x     r6 = %08x     r11 = %08x     xpsr = %08x\n",
+		       frame[10],    frame[2],     frame[7],      frame[16]);
+	debug_printf ("r2 = %08x     r7 = %08x     r12 = %08x     ipsr = %08x\n",
+		       frame[11],    frame[3],     frame[13],     ipsr);
+	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  basepri = %08x\n",
+		       frame[12],    frame[4],     frame[17],  frame[8]);
+	debug_printf ("r4 = %08x     r9 = %08x     lr  = %08x\n",
+		       frame[0],     frame[5],     frame[14]);
+#endif
 
 	/* Reset the system. */
 	debug_printf ("\nReset...\n\n");
@@ -266,11 +278,12 @@ _fault_ ()
 #ifdef ARM_CORTEX_M1
 	asm volatile (
 	"push	{r4-r7} \n\t"
-	"mov    r0, r8 \n\t"
-	"mov    r1, r9 \n\t"
-	"mov    r2, r10 \n\t"
-	"mov    r3, r11 \n\t"
-	"push	{r0-r3} \n\t");
+	"mov    r1, r8 \n\t"
+	"mov    r2, r9 \n\t"
+	"mov    r3, r10 \n\t"
+	"mov    r4, r11 \n\t"
+	"mrs    r5, primask\n\t"
+	"push	{r1-r5} \n\t");
 #else
 	asm volatile (
 	"mrs	r12, basepri \n\t"
@@ -289,7 +302,7 @@ _fault_ ()
         case 14: message = "software interrupt"; break;
 	}
 	debug_printf ("\n\n*** 0x%08x: %s\n\n",
-		frame[14], message);
+		frame[15], message);
 	dump_of_death (frame, ipsr);
 }
 

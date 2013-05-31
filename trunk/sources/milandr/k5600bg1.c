@@ -591,7 +591,7 @@ handle_interrupt (k5600bg1_t *u)
 			buf_free (p);
 		}
 	}
-	ARM_NVIC_ICPR0 = 1 << K5600BG1_IRQ;
+	ARM_NVIC_ICPR(0) = 1 << K5600BG1_IRQ;
 	chip_select (0);
 	return active;
 }

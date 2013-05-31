@@ -76,11 +76,8 @@ typedef volatile unsigned int arm_reg_t;
 typedef enum
 {
 /* Cortex-M1 Processor Exceptions Numbers */
-  NonMaskableInt_IRQn         = -14, /* 2 Non Maskable Interrupt */
-  HardFault_IRQn              = -13, /* 3 Cortex-M1 Hard Fault Interrupt */
-  SVCall_IRQn                 = -5,  /* 11 Cortex-M1 SV Call Interrupt */
-  PendSV_IRQn                 = -2,  /* 14 Cortex-M1 Pend SV Interrupt */
-  SysTick_IRQn                = -1,  /* 15 Cortex-M1 System Tick Interrupt */
+  NonMaskableInt_IRQn         = -2, /* 2 Non Maskable Interrupt */
+  HardFault_IRQn              = -1, /* 3 Cortex-M1 Hard Fault Interrupt */
 
 /* MDR32Fx specific Interrupt Numbers */
   MIL_STD_1553B2_IRQn         = 0,   /* MIL_STD_1553B2 Interrupt */

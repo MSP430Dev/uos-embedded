@@ -20,7 +20,7 @@ all:		$(OUTS) $(TESTS) $(TEST).dis $(TEST).bin
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.elf *.lst *.dis .deps $(TESTS) $(MODULES) udpping
+		rm -rf *~ *.[oasi] *.elf *.lst *.dis *.bin .deps $(TESTS) $(MODULES) udpping
 
 probe:
 		$(PROG)

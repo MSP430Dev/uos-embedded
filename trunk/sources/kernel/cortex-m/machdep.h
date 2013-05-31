@@ -34,11 +34,6 @@
 #endif
 
 /*
- * The task to switch to.
- */
-extern task_t* uos_next_task;
-
-/*
  * Type for saving task stack context.
  */
 typedef void *arch_stack_t;
@@ -66,13 +61,16 @@ static inline void
 arch_task_switch (task_t *target)
 {
 #ifdef ARM_CORTEX_M1
-	uos_next_task = target;
-	*(unsigned long*)0xE000ED04 |= 1 << 28;
+	/* Use PendSV for task switching. */
+	asm volatile (
+	"mov    r0, %0 \n\t"
+	: : "r" (target) : "r0", "memory", "cc");
+	ARM_SCB->ICSR = ARM_ICSR_PENDSVSET;
 #else
 	/* Use supervisor call for task switching. */
 	asm volatile (
-	"mov	r0, %0 \n\t"
-	"svc	#0"
+	"mov    r0, %0 \n\t"
+	"svc    #0"
 	: : "r" (target) : "r0", "memory", "cc");
 #endif
 }

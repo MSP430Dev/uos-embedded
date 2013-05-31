@@ -50,7 +50,7 @@ void test_arinc_main()
     unsigned short tcnt = 0xee;
     ARINC_msg_t * pmsg = (ARINC_msg_t *)atxbuf;
     int i;
-    unsigned char nb_labels = sizeof(atxbuf)/sizeof(atxbuf[0]);
+    unsigned nb_labels = sizeof(atxbuf)/sizeof(atxbuf[0]);
 	unsigned cycle_cnt = 0;
 
 
