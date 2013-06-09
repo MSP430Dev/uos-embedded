@@ -87,3 +87,74 @@ Signals of the following peripherals blocks can be assigned by software to any i
 ||  --  || SCL2 || RB3     || A4   ||
 ||  --  || SDA1 || RB9     || D6   ||
 ||  --  || SCL1 || RB8     || D5   ||
+
+----
+
+= Graphic shield SainSmart LCD4884 =
+[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/51PzMVi-n%2BL.jpg]
+
+Features:
+  * Graphic LCD panel 84x48, compatible with Nokia 5110 ([http://www.amazon.com/SainSmart-Graphic-LCD4884-Arduino-Duemilanove/dp/B0073Z5XAW on Amazon.com], [http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html on SainSmart.com].
+  * SPI interface [http://www.sparkfun.com/datasheets/LCD/Monochrome/Nokia5110.pdf Philips PCD8544].
+  * 5-button joystick with input via analog signal A0.
+  * Reset button.
+  * Backlight control.
+
+The shield is supplied for the +5V supply power and i/o.
+You can easily modify it for +3.3V-tolerant, by cutting out the 5V0 pin (which goes to J5 connector)
+and shorten it to the nearby 3V3 pin on the shield.
+
+
+|| *Signal*|| *Function*|| *PIC32*    ||
+||  D2     || SPI_SCK   ||  RB6       ||
+||  D3     || SPI_MOSI  ||  RB7       ||
+||  D4     || LCD_DC    ||  RA4       ||
+||  D5     || SPI_CS    ||  RB8       ||
+||  D6     || LCD_RST   ||  RB9       ||
+||  D7     || LCD_BL    ||  RA3       ||
+||  A0     || KEY_IN    ||  RA1 - AN1 ||
+
+=== uOS examples ===
+In directory [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing examples/mips-firewing]
+you can find examples of uOS for Firewing board. Use "make" to build.
+ * test-led.hex - Toggle the LED on the main board.
+ * test-lcd.hex - Demo of the the interface to the graphics panel and joystick.
+ * test-task.hex - Check the task spawn.
+ * test-timer.hex - Check the timer driver.
+ * philosophers.hex - Five dining philosophers: a classical multi-tasking problem.
+ * tetris.hex - Tetris game.
+ * lol.hex - Demo for [charlieplexing Olimex LOL shield].
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-led.c test-led.c]
+- Toggle the LED on the main board. Multitasking kernel not used.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-lcd.c test-lcd.c]
+- Demo of the interface to the graphics panel and joystick. Multitasking kernel not used.
+The program displays on the display a text, draws rectangles, and circles.
+Use LEFT and RIGHT buttons to select output modes.
+Button DOWN toggles a backlight, button UP controls a contrast.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-task.c test-task.c]
+- Check the task spawn kernel call. One user task, printing it's total and free stack size,
+then waiting for a button. Output to LCD panel.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-timer.c test-timer.c]
+- Check timer driver. One user task, displaying on a graphics panel the time since restart: minutes and seconds.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/philosophers.c philosophers.c]
+- [http://en.wikipedia.org/wiki/Dining_philosophers Five dining philosophers],
+solution to a classical multi-tasking problem.  Five tasks, communicating via mutexes.
+Output to LCD panel.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/tetris.c tetris.c]
+- Tetris game on a graphics display. Multitasking kernel not used.
+LEFT button rotates, buttons UP and DOWN move the figure to left and right, button RIGHT drops the figure.
+The game restarts when the field is full.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/tetris.c tetris.c]
+- Tetris game on a graphics display. Multitasking kernel not used.
+LEFT button rotates, buttons UP and DOWN move the figure to left and right, button RIGHT drops the figure.
+The game restarts when the field is full.
+
+[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/lol.c lol.c]
+- Running text string on [charlieplexing LOL shield]. Multitasking kernel not used.
