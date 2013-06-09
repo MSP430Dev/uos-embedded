@@ -9,38 +9,143 @@
 /*
  * Pinout for SainSmart Graphic LCD4884 Shield.
  */
+#ifdef PIC32MX2                     /* Olimex Pinguino-mx220 */
 #define MASKC_LCD_SCK   (1 << 2)    /* signal D2, pin RC2 */
 #define MASKC_LCD_MOSI  (1 << 3)    /* signal D3, pin RC3 */
 #define MASKC_LCD_DC    (1 << 4)    /* signal D4, pin RC4 */
 #define MASKC_LCD_CS    (1 << 5)    /* signal D5, pin RC5 */
 #define MASKC_LCD_RST   (1 << 6)    /* signal D6, pin RC6 */
 #define MASKC_LCD_BL    (1 << 7)    /* signal D7, pin RC7 */
+#endif
+
+#ifdef PIC32MX1                     /* Firewing board */
+#define MASKB_LCD_SCK   (1 << 6)    /* signal D2, pin RB6 */
+#define MASKB_LCD_MOSI  (1 << 7)    /* signal D3, pin RB7 */
+#define MASKA_LCD_DC    (1 << 4)    /* signal D4, pin RA4 */
+#define MASKB_LCD_CS    (1 << 8)    /* signal D5, pin RB8 */
+#define MASKB_LCD_RST   (1 << 9)    /* signal D6, pin RB9 */
+#define MASKA_LCD_BL    (1 << 3)    /* signal D7, pin RA3 */
+#endif
 
 #define MAXROW  48
 #define MAXCOL  84
 
 static unsigned char gpanel_screen [MAXROW*MAXCOL/8];
 
+static inline void lcd_cs (unsigned on)
+{
+    if (on) {
+#ifdef MASKC_LCD_CS
+        LATCSET = MASKC_LCD_CS;
+#else
+        LATBSET = MASKB_LCD_CS;
+#endif
+    } else {
+#ifdef MASKC_LCD_CS
+        LATCCLR = MASKC_LCD_CS;
+#else
+        LATBCLR = MASKB_LCD_CS;
+#endif
+    }
+}
+
+static inline void lcd_rst (unsigned on)
+{
+    if (on) {
+#ifdef MASKC_LCD_RST
+        LATCSET = MASKC_LCD_RST;
+#else
+        LATBSET = MASKB_LCD_RST;
+#endif
+    } else {
+#ifdef MASKC_LCD_RST
+        LATCCLR = MASKC_LCD_RST;
+#else
+        LATBCLR = MASKB_LCD_RST;
+#endif
+    }
+}
+
+static inline void lcd_dc (unsigned on)
+{
+    if (on) {
+#ifdef MASKC_LCD_DC
+        LATCSET = MASKC_LCD_DC;
+#else
+        LATASET = MASKA_LCD_DC;
+#endif
+    } else {
+#ifdef MASKC_LCD_DC
+        LATCCLR = MASKC_LCD_DC;
+#else
+        LATACLR = MASKA_LCD_DC;
+#endif
+    }
+}
+
+static inline void lcd_bl (unsigned on)
+{
+    if (on) {
+#ifdef MASKC_LCD_BL
+        LATCSET = MASKC_LCD_BL;
+#else
+        LATASET = MASKA_LCD_BL;
+#endif
+    } else {
+#ifdef MASKC_LCD_BL
+        LATCCLR = MASKC_LCD_BL;
+#else
+        LATACLR = MASKA_LCD_BL;
+#endif
+    }
+}
+
+static inline void lcd_mosi (unsigned on)
+{
+    if (on) {
+#ifdef MASKC_LCD_MOSI
+        LATCSET = MASKC_LCD_MOSI;
+#else
+        LATBSET = MASKB_LCD_MOSI;
+#endif
+    } else {
+#ifdef MASKC_LCD_MOSI
+        LATCCLR = MASKC_LCD_MOSI;
+#else
+        LATBCLR = MASKB_LCD_MOSI;
+#endif
+    }
+}
+
+static inline void lcd_sck (unsigned on)
+{
+    if (on) {
+#ifdef MASKC_LCD_SCK
+        LATCSET = MASKC_LCD_SCK;
+#else
+        LATBSET = MASKB_LCD_SCK;
+#endif
+    } else {
+#ifdef MASKC_LCD_SCK
+        LATCCLR = MASKC_LCD_SCK;
+#else
+        LATBCLR = MASKB_LCD_SCK;
+#endif
+    }
+}
+
 static void lcd_write (unsigned byte, unsigned data_flag)
 {
     unsigned i;
 
-    LATCCLR = MASKC_LCD_CS;
-    if (data_flag)
-        LATCSET = MASKC_LCD_DC;
-    else
-        LATCCLR = MASKC_LCD_DC;
-
+    lcd_cs (0);
+    lcd_dc (data_flag);
     for (i=0; i<8; i++, byte<<=1) {
-        if (byte & 0x80) {
-            LATCSET = MASKC_LCD_MOSI;  /* SDIN = 1 */
-        } else {
-            LATCCLR = MASKC_LCD_MOSI;  /* SDIN = 0 */
-        }
-        LATCCLR = MASKC_LCD_SCK;       /* SCLK = 0 */
-        LATCSET = MASKC_LCD_SCK;       /* SCLK = 1 */
+        lcd_mosi (byte & 0x80);         /* SDIN = bit[i] */
+        lcd_sck (0);                    /* SCLK = 0 */
+        lcd_sck (1);                    /* SCLK = 1 */
     }
-    LATCSET = MASKC_LCD_CS;
+    lcd_cs (1);
 }
 
 /*
@@ -87,18 +192,29 @@ void gpanel_init (gpanel_t *gp, const gpanel_font_t *font)
     gp->c1 = 0;
     gp->c2 = 0;
 
-    /* Set pins as outputs. */
+    /*
+     * Set pins as outputs.
+     */
+#ifdef PIC32MX2                     /* Olimex Pinguino-mx220 */
     LATCSET = MASKC_LCD_RST | MASKC_LCD_CS;
     TRISCCLR = MASKC_LCD_SCK | MASKC_LCD_MOSI | MASKC_LCD_DC |
                MASKC_LCD_CS  | MASKC_LCD_RST  | MASKC_LCD_BL;
+#endif
+
+#ifdef PIC32MX1                     /* Firewing board */
+    LATBSET = MASKB_LCD_RST | MASKB_LCD_CS;
+    TRISACLR = MASKA_LCD_DC | MASKA_LCD_BL;
+    TRISBCLR = MASKB_LCD_SCK | MASKB_LCD_MOSI |
+               MASKB_LCD_CS  | MASKB_LCD_RST;
+#endif
 
     /* Turn off backlight. */
-    LATCCLR = MASKC_LCD_BL;
+    lcd_bl (0);
 
     /* Reset the display. */
-    LATCCLR = MASKC_LCD_RST;
+    lcd_rst (0);
     udelay (1);
-    LATCSET = MASKC_LCD_RST;
+    lcd_rst (1);
     udelay (1);
 
     lcd_write (0x21, 0);    // Enable extended instruction set
@@ -246,10 +362,7 @@ void gpanel_contrast (gpanel_t *gp, int contrast)
  */
 void gpanel_backlight (gpanel_t *gp, int on)
 {
-    if (on)
-        LATCSET = MASKC_LCD_BL;
-    else
-        LATCCLR = MASKC_LCD_BL;
+    lcd_bl (on);
 }
 
 /*
