@@ -46,8 +46,8 @@ A rich set of peripherals is available: UART, SPI, I2C, I2S, ADC, timers, RTCC.
 ||   D4    || RA4               ||
 ||   D3    || RB7 - TDI         ||
 ||   D2    || RB6               ||
-||   D1    || RB5 - PRX, TMS    ||
-||   D0    || RB4 - PTX         ||
+||   D1    || RB5 - TX, TMS    ||
+||   D0    || RB4 - RX         ||
 
 === Connector J7 ===
 || *Signal*|| *PIC32*      || *Analog Input*||
