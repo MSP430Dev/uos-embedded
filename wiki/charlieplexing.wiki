@@ -1,5 +1,6 @@
 #summary Charlieplexing and LOL shield.
 
+= Charlieplexing =
 [http://en.wikipedia.org/wiki/Charlieplexing Charlieplexing] is a technique
 of driving a LED matrix by a minimal set of signals with tri-state capability.
 
