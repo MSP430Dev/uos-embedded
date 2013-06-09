@@ -421,7 +421,7 @@
 #define CNPUEINV	PIC32_R (0x861EC)
 #endif
 
-#ifdef PIC32MX2
+#if defined(PIC32MX1) || defined(PIC32MX2)
 #define ANSELA		PIC32_R (0x86000) /* Port A: analog select */
 #define ANSELACLR	PIC32_R (0x86004)
 #define ANSELASET	PIC32_R (0x86008)
@@ -464,6 +464,7 @@
 #define ODCBSET		PIC32_R (0x86148)
 #define ODCBINV		PIC32_R (0x8614C)
 
+#ifndef PIC32_28PIN
 #define ANSELC		PIC32_R (0x86200) /* Port C: analog select */
 #define ANSELCCLR	PIC32_R (0x86204)
 #define ANSELCSET	PIC32_R (0x86208)
@@ -484,6 +485,7 @@
 #define ODCCCLR		PIC32_R (0x86244)
 #define ODCCSET		PIC32_R (0x86248)
 #define ODCCINV		PIC32_R (0x8624C)
+#endif
 #endif
 
 /*--------------------------------------

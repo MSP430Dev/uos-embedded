@@ -1,0 +1,95 @@
+#summary Target board: Firewing PIC32.
+
+[http://www.firewing.info/ http://uos-embedded.googlecode.com/svn/wiki/images/firewing.jpg]
+
+Firewing board ([http://www.firewing.info/downloads/schematics/firewing.pdf schematics],
+[http://www.firewing.info/pmwiki.php?n=Firewing.MainBoard description])
+is an Arduino-compatible development platform, based around a Microchip family of
+pin-compatible 8-bit, 16-bit and 32-bit microcontrollers.  Here, I use
+[http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en557403 Microchip PIC32MX1]
+- a 32-bit microcontroller with MIPS architecture.
+
+Features:
+ * Microcontroller PIC32MX150F128B clocked at 40 MHz (MIPS architecture)
+ * 28-pin DIP package
+ * 21 general purpose i/o signals
+ * Arduino compatible
+ * Serial port via miniUSB
+ * Oscillator 8 MHz
+ * Connector for external power supply
+ * Powered from USB, or +3.3V, or +5V, or from external DC supply 6V-12V
+ * Software-controlled LED
+ * Reset button
+
+Memory:
+ * 128 kbytes of Flash
+ * 3 kbytes of additional Boot Flash
+ * 32 kbytes of SRAM
+
+Digital outputs provide a current up to 18mA.
+A rich set of peripherals is available: UART, SPI, I2C, I2S, ADC, timers, RTCC.
+
+= Signals =
+
+=== Connectors J6, J8 ===
+|| *Signal*|| *PIC32*           ||
+||   AREF  || RA0               ||
+||   GND   || --                ||
+||   D13   || RB14 - SCK1, LED  ||
+||   D12   || RB13 - MISO       ||
+||   D11   || RB12 - MOSI       ||
+||   D10   || RB11 - SS         ||
+||   D9    || RB10              ||
+||   D8    || RA2               ||
+||   D7    || RA3               ||
+||   D6    || RB9 - SDA1, TDO   ||
+||   D5    || RB8 - SCL1, TCK   ||
+||   D4    || RA4               ||
+||   D3    || RB7 - TDI         ||
+||   D2    || RB6               ||
+||   D1    || RB5 - PRX, TMS    ||
+||   D0    || RB4 - PTX         ||
+
+=== Connector J7 ===
+|| *Signal*|| *PIC32*      || *Analog Input*||
+||  A0     ||  RA1         ||  AN1  ||
+||  A1     ||  RB0         ||  AN2  ||
+||  A2     ||  RB1         ||  AN3  ||
+||  A3     ||  RB2 - SDA2  ||  AN4  ||
+||  A4     ||  RB3 - SCL2  ||  AN5  ||
+||  A5     ||  RB15 - SCK2 ||  AN9  ||
+
+=== Connector J5 ===
+|| *Signal*|| *Function*              ||
+||  RST    || MCLR                    ||
+||  3V3    || VCC +3.3                ||
+||  5V0    || VCC +5.0                ||
+||  GND    || GND                     ||
+||  GND    || GND                     ||
+||  VIN    || External supply voltage ||
+
+= Signals UART, SPI и I2C =
+Signals of the following peripherals blocks can be assigned by software to any i/o pins:
+  * UART1: signals U1RX, U1TX
+  * UART2: signals U2RX, U2TX
+  * SPI1: signals SDI1, SDO1
+  * SPI2: signals SDI2, SDO2
+
+|| *SPI*|| *I2C*|| *PIC32* || *Connectors J6, J7, J8* ||
+|| SCK1 || --   || RB14    || D13  ||
+|| SCK2 || --   || RB15    || A5   ||
+||  --  || SDA2 || RB2     || A3   ||
+||  --  || SCL2 || RB3     || A4   ||
+||  --  || SDA1 || RB9     || D6   ||
+||  --  || SCL1 || RB8     || D5   ||
+
+= LED =
+|| *LED*   || *PIC32* || *Signal* ||
+||  Yellow || RB14    || D13      ||
+
+= Debug port =
+|| *JTAG* || *PIC32* || *Signal* ||
+||  TMS   || RB5     || D1       ||
+||  TDI   || RB7     || D3       ||
+||  TCK   || RB8     || D5       ||
+||  TDO   || RB9     || D6       ||
