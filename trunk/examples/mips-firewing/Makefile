@@ -3,10 +3,11 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
-TEST		= test-lcd
-TESTS		= $(TEST).srec
-TESTS		+= test-led.srec lol.srec
-OUTS		= $(TESTS:%.srec=%.elf)
+TEST		= tetris
+TESTS		= $(TEST).hex
+TESTS		+= test-led.hex lol.hex test-lcd.hex test-task.hex
+TESTS		+= test-timer.hex philosophers.hex
+OUTS		= $(TESTS:%.hex=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis
 		$(SIZE) *.elf
@@ -21,10 +22,10 @@ hex:		$(TESTS)
 			$(OBJCOPY) -O ihex -I srec $$srec `basename $$srec .srec`.hex; \
 		done
 
-load:		$(TEST).srec
-		pic32prog -p $(TEST).srec
+load:		$(TEST).hex
+		pic32prog -p $(TEST).hex
 
-debug:          $(TEST).srec
+debug:          $(TEST).hex
 		$(GDB) $(TEST).elf
 
 include $(OS)/sources/rules.mak
