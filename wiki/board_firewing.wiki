@@ -69,10 +69,14 @@ A rich set of peripherals is available: UART, SPI, I2C, I2S, ADC, timers, RTCC.
 
 = UART, SPI and I2C =
 Signals of the following peripherals blocks can be assigned by software to any i/o pins:
-  * UART1: signals U1RX, U1TX
-  * UART2: signals U2RX, U2TX
-  * SPI1: signals SDI1, SDO1
-  * SPI2: signals SDI2, SDO2
+  * UART1 signal U1RX - to RA2, RA4, RB2, RB6, RB13
+  * UART1 signal U1TX - to RA0, RB3, RB4, RB7, RB15
+  * UART2 signal U2RX - to RA1, RA8, RA9, RB1, RB5, RB8, RB11
+  * UART2: signal U2TX - to RA3, RB0, RB9, RB10, RB14
+  * SPI1: signal SDI1 - to RA1, RA8, RA9, RB1, RB5, RB8, RB11
+  * SPI1: signal SDO1 - to RA1, RA2, RA4, RA8, RA9, RB1, RB2, RB5, RB6, RB8, RB11, RB13
+  * SPI2: signal SDI2 - to RA2, RA4, RB2, RB6, RB13
+  * SPI2: signal SDO2 - to RA1, RA2, RA4, RA8, RA9, RB1, RB2, RB5, RB6, RB8, RB11, RB13
 
 [http://umassamherstm5.org/tech-tutorials/pic32-tutorials/pic32mx220-tutorials/peripheral-pin-select-pps Here] ou can find a brief tutorial on peripheral pin select.
 
