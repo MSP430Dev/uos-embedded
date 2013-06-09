@@ -74,6 +74,8 @@ Signals of the following peripherals blocks can be assigned by software to any i
   * SPI1: signals SDI1, SDO1
   * SPI2: signals SDI2, SDO2
 
+[http://umassamherstm5.org/tech-tutorials/pic32-tutorials/pic32mx220-tutorials/peripheral-pin-select-pps Here] ou can find a brief tutorial on peripheral pin select.
+
 || *SPI*|| *I2C*|| *PIC32* || *Connectors J6, J7, J8* ||
 || SCK1 || --   || RB14    || D13  ||
 || SCK2 || --   || RB15    || A5   ||
