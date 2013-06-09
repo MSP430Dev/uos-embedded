@@ -85,8 +85,8 @@ Signals of the following peripherals blocks can be assigned by software to any i
 = Charlieplexing =
 [https://www.olimex.com/Products/Duino/Shields/SHIELD-LOL/SHIELD-LOL-SMT/images/thumbs/310x230/SHIELD-LOL-SMT-2.jpg]
 
-||     ^^ col 1   || col 2   || col 3   || col 4   || col 5   || col 6   || col 7   || col 8   || col 9   || col 10  || col 11  || col 12  || col 13  || col 14  ||
-^^row 1||+D13 -D5 ||+D13 -D6 ||+D13 -D7 ||+D13 -D8 ||+D13 -D9 ||+D13 -D10||+D13 -D11||+D13 -D12||+D13 -D4 ||+D4  -D13||+D13 -D3 ||+D3  -D13||+D13 -D2 ||+D2  -D13||
+||     || col 1   || col 2   || col 3   || col 4   || col 5   || col 6   || col 7   || col 8   || col 9   || col 10  || col 11  || col 12  || col 13  || col 14  ||
+||row 1||+D13 -D5 ||+D13 -D6 ||+D13 -D7 ||+D13 -D8 ||+D13 -D9 ||+D13 -D10||+D13 -D11||+D13 -D12||+D13 -D4 ||+D4  -D13||+D13 -D3 ||+D3  -D13||+D13 -D2 ||+D2  -D13||
 ||row 2||+D12 -D5 ||+D12 -D6 ||+D12 -D7 ||+D12 -D8 ||+D12 -D9 ||+D12 -D10||+D12 -D11||+D12 -D13||+D12 -D4 ||+D4  -D12||+D12 -D3 ||+D3  -D12||+D12 -D2 ||+D2  -D12||
 ||row 3||+D11 -D5 ||+D11 -D6 ||+D11 -D7 ||+D11 -D8 ||+D11 -D9 ||+D11 -D10||+D11 -D12||+D11 -D13||+D11 -D4 ||+D4  -D11||+D11 -D3 ||+D3  -D11||+D11 -D2 ||+D2  -D11||
 ||row 4||+D10 -D5 ||+D10 -D6 ||+D10 -D7 ||+D10 -D8 ||+D10 -D9 ||+D10 -D11||+D10 -D12||+D10 -D13||+D10 -D4 ||+D4  -D10||+D10 -D3 ||+D3  -D10||+D10 -D2 ||+D2  -D10||
