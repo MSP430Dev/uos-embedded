@@ -82,14 +82,3 @@ Signals of the following peripherals blocks can be assigned by software to any i
 ||  --  || SCL2 || RB3     || A4   ||
 ||  --  || SDA1 || RB9     || D6   ||
 ||  --  || SCL1 || RB8     || D5   ||
-
-= LED =
-|| *LED*   || *PIC32* || *Signal* ||
-||  Yellow || RB14    || D13      ||
-
-= Debug port =
-|| *JTAG* || *PIC32* || *Signal* ||
-||  TMS   || RB5     || D1       ||
-||  TDI   || RB7     || D3       ||
-||  TCK   || RB8     || D5       ||
-||  TDO   || RB9     || D6       ||
