@@ -3,9 +3,9 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
-TEST		= lol
+TEST		= test-debug
 TESTS		= $(TEST).srec
-TESTS		+= test-led.srec
+TESTS		+= test-led.srec lol.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis

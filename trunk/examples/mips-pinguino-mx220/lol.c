@@ -135,6 +135,11 @@ void lol (msec, data)
 
             /* Pause to make it visible. */
             udelay (1000 / LOL_NPINS);
+
+            /* Set all low. */
+            LATACLR = amask;
+            LATBCLR = bmask;
+            LATCCLR = cmask;
         }
     }
 

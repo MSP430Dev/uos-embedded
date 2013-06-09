@@ -222,7 +222,7 @@ void demo2()
             ROW (O,O,_,_,_,_,_), \
             ROW (_,O,O,_,_,_,_), \
             __,__
-#define _exclam \
+#define _exclam __,\
             ROW (O,_,O,O,O,O,O), \
             __,__
 #define _dot \

@@ -8,16 +8,16 @@
 
 int main (void)
 {
-        /* Use all ports as digital. */
-        ANSELA = 0;
-        ANSELB = 0;
+    /* Use all ports as digital. */
+    ANSELA = 0;
+    ANSELB = 0;
 
-	LATBCLR = MASKB_LED;
-	TRISBCLR = MASKB_LED;
+    LATBCLR = MASKB_LED;
+    TRISBCLR = MASKB_LED;
 
-	for (;;) {
-		LATBINV = MASKB_LED; mdelay (100);
+    for (;;) {
+        LATBINV = MASKB_LED; mdelay (100);
 
-		LATBINV = MASKB_LED; mdelay (100);
-	}
+        LATBINV = MASKB_LED; mdelay (100);
+    }
 }
