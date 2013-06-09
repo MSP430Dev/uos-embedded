@@ -46,18 +46,18 @@ void lol (msec, data)
 
     /* Sequence of pins to set high during refresh cycle. */
     static const unsigned high [LOL_NPINS] = {
-        1 << 15,        /* RB15 - labeled D13 on board */
+        1 << 14,        /* RB14 - labeled D13 on board */
         1 << 13,        /* RB13 - D12 */
-        1 << 5,         /* RB5  - D11 */
-        1 << 1,         /* RA1  - D10 */
-        1 << 10,        /* RA10 - D9 */
-        1 << 7,         /* RB7  - D8 */
-        0x10000 << 7,   /* RC7  - D7 */
-        0x10000 << 6,   /* RC6  - D6 */
-        0x10000 << 5,   /* RC5  - D5 */
-        0x10000 << 4,   /* RC4  - D4 */
-        0x10000 << 3,   /* RC3  - D3 */
-        0x10000 << 2,   /* RC2  - D2 */
+        1 << 12,        /* RB12 - D11 */
+        1 << 11,        /* RB11 - D10 */
+        1 << 10,        /* RB10 - D9 */
+        0x10000 << 2,   /* RA2  - D8 */
+        0x10000 << 3,   /* RA3  - D7 */
+        1 << 9,         /* RB9  - D6 */
+        1 << 8,         /* RB8  - D5 */
+        0x10000 << 4,   /* RA4  - D4 */
+        1 << 7,         /* RB7  - D3 */
+        1 << 6,         /* RB6  - D2 */
     };
 
     /* Remap pixels to pin indexes. */
@@ -74,13 +74,18 @@ void lol (msec, data)
         8,7,8,6,8,5,8,4,8,3,8,2,8,1,8,0,8,9,9,8,8,10,10,8,8,11,11,8,
     };
 
-    unsigned row, mask, amask, bmask, cmask;
+    unsigned row, mask, amask, bmask;
     const unsigned char *map;
     unsigned low [LOL_NPINS];
 
     /* Clear pin masks. */
-    for (row = 0; row < LOL_NPINS; row++)
+    mask = 0;
+    for (row = 0; row < LOL_NPINS; row++) {
         low [row] = 0;
+        mask |= high [row];
+    }
+    amask = mask >> 16;
+    bmask = mask & 0xffff;
 
     /* Convert image to array of pin masks. */
     for (row = 0; row < LOL_NROW; row++) {
@@ -94,10 +99,6 @@ void lol (msec, data)
             mask >>= 1;
         }
     }
-    amask = high[3] | high[4];
-    bmask = high[0] | high[1] | high[2] | high[5];
-    cmask = (high[6] | high[7] | high[8] | high[9] | high[10] |
-             high[11]) >> 16;
 
     /* Display the image. */
     if (msec < 1)
@@ -107,31 +108,25 @@ void lol (msec, data)
             /* Set all pins to tristate. */
             TRISASET = amask;
             TRISBSET = bmask;
-            TRISCSET = cmask;
 
             /* Set one pin to high. */
             mask = high [row];
-            if (row >= 6) {
-                mask >>= 16;
-                TRISCCLR = mask;
-                LATCSET = mask;
-            } else if (mask & amask) {
-                TRISACLR = mask;
-                LATASET = mask;
-            } else {
+            if (mask & 0xffff) {
                 TRISBCLR = mask;
                 LATBSET = mask;
+            } else {
+                mask >>= 16;
+                TRISACLR = mask;
+                LATASET = mask;
             }
 
             /* Set other pins to low. */
             mask = low [row];
-            TRISACLR = mask & amask;
-            LATACLR = mask & amask;
-            TRISBCLR = mask & bmask;
-            LATBCLR = mask & bmask;
+            TRISBCLR = mask & 0xffff;
+            LATBCLR = mask & 0xffff;
             mask >>= 16;
-            TRISCCLR = mask;
-            LATCCLR = mask;
+            TRISACLR = mask;
+            LATACLR = mask;
 
             /* Pause to make it visible. */
             udelay (1000 / LOL_NPINS);
@@ -141,7 +136,6 @@ void lol (msec, data)
     /* Turn display off. */
     TRISASET = amask;
     TRISBSET = bmask;
-    TRISCSET = cmask;
 }
 
 /*
@@ -228,7 +222,6 @@ int main()
     /* Use all ports as digital. */
     ANSELA = 0;
     ANSELB = 0;
-    ANSELC = 0;
 
     for (;;) {
         //demo1();

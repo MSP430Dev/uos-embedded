@@ -965,10 +965,15 @@
  */
 #define OSCCON          PIC32_R (0xF000)
 #define OSCTUN          PIC32_R (0xF010)
+#if defined(PIC32MX1) || defined(PIC32MX2)
+#define CFGCON          PIC32_R (0xF200)        /* Configuration Control */
+#else
+#define DDPCON          PIC32_R (0xF200)        /* Debug Data Port Control */
 #define DDPCON          PIC32_R (0xF200)        /* Debug Data Port Control */
 #define DDPCONCLR	PIC32_R (0xF204)
 #define DDPCONSET	PIC32_R (0xF208)
 #define DDPCONINV	PIC32_R (0xF20C)
+#endif
 #define DEVID           PIC32_R (0xF220)
 #define SYSKEY          PIC32_R (0xF230)
 #define RCON            PIC32_R (0xF600)
@@ -1109,6 +1114,43 @@
 #define PIC32_NVMCON_WRERR      0x00002000
 #define PIC32_NVMCON_WREN       0x00004000
 #define PIC32_NVMCON_WR         0x00008000
+
+/*--------------------------------------
+ * Peripheral port select registers.
+ */
+#define RPA0R           PIC32_R (0xFB00)
+#define RPA1R           PIC32_R (0xFB04)
+#define RPA2R           PIC32_R (0xFB08)
+#define RPA3R           PIC32_R (0xFB0C)
+#define RPA4R           PIC32_R (0xFB10)
+#define RPA8R           PIC32_R (0xFB20)
+#define RPA9R           PIC32_R (0xFB24)
+#define RPB0R           PIC32_R (0xFB2C)
+#define RPB1R           PIC32_R (0xFB30)
+#define RPB2R           PIC32_R (0xFB34)
+#define RPB3R           PIC32_R (0xFB38)
+#define RPB4R           PIC32_R (0xFB3C)
+#define RPB5R           PIC32_R (0xFB40)
+#define RPB6R           PIC32_R (0xFB44)
+#define RPB7R           PIC32_R (0xFB48)
+#define RPB8R           PIC32_R (0xFB4C)
+#define RPB9R           PIC32_R (0xFB50)
+#define RPB10R          PIC32_R (0xFB54)
+#define RPB11R          PIC32_R (0xFB58)
+#define RPB12R          PIC32_R (0xFB5C)
+#define RPB13R          PIC32_R (0xFB60)
+#define RPB14R          PIC32_R (0xFB64)
+#define RPB15R          PIC32_R (0xFB68)
+#define RPC0R           PIC32_R (0xFB6C)
+#define RPC1R           PIC32_R (0xFB70)
+#define RPC2R           PIC32_R (0xFB74)
+#define RPC3R           PIC32_R (0xFB78)
+#define RPC4R           PIC32_R (0xFB7C)
+#define RPC5R           PIC32_R (0xFB80)
+#define RPC6R           PIC32_R (0xFB84)
+#define RPC7R           PIC32_R (0xFB88)
+#define RPC8R           PIC32_R (0xFB8C)
+#define RPC9R           PIC32_R (0xFB90)
 
 /*--------------------------------------
  * Configuration registers.
