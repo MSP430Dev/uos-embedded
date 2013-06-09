@@ -3,8 +3,6 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
-CFLAGS          += -g
-
 TEST		= test-led
 TESTS		= $(TEST).srec
 OUTS		= $(TESTS:%.srec=%.elf)

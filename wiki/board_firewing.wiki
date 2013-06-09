@@ -15,7 +15,6 @@ Features:
  * 21 general purpose i/o signals
  * Arduino compatible
  * Serial port via miniUSB
- * Oscillator 8 MHz
  * Connector for external power supply
  * Powered from USB, or +3.3V, or +5V, or from external DC supply 6V-12V
  * Software-controlled LED
