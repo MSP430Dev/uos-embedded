@@ -68,7 +68,7 @@ A rich set of peripherals is available: UART, SPI, I2C, I2S, ADC, timers, RTCC.
 ||  GND    || GND                     ||
 ||  VIN    || External supply voltage ||
 
-= Signals UART, SPI и I2C =
+= UART, SPI and I2C =
 Signals of the following peripherals blocks can be assigned by software to any i/o pins:
   * UART1: signals U1RX, U1TX
   * UART2: signals U2RX, U2TX
