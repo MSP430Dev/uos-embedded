@@ -7,7 +7,7 @@ of driving a LED matrix by a minimal set of signals with tri-state capability.
 
 [https://www.olimex.com/Products/Duino/Shields/SHIELD-LOL/ Olimex LOL shield]
 is an example of affordable Arduino shield, which uses charliplexing.
-With only twelve pins D2-D13 you can control a matrix of 9x14 LEDs.
+With only twelve pins D2-D13 you can control a matrix of 9x14 LEDs. It is essential for control signals to have a real tri-state capability. Any extelnal pull-up or pull-down resistors will cause blur on the screen.
 
 [https://www.olimex.com/Products/Duino/Shields/SHIELD-LOL/SHIELD-LOL-SMT/images/thumbs/310x230/SHIELD-LOL-SMT-2.jpg]
 
