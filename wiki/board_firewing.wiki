@@ -151,10 +151,5 @@ Output to LCD panel.
 LEFT button rotates, buttons UP and DOWN move the figure to left and right, button RIGHT drops the figure.
 The game restarts when the field is full.
 
-[http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/tetris.c tetris.c]
-- Tetris game on a graphics display. Multitasking kernel not used.
-LEFT button rotates, buttons UP and DOWN move the figure to left and right, button RIGHT drops the figure.
-The game restarts when the field is full.
-
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/lol.c lol.c]
 - Running text string on [charlieplexing LOL shield]. Multitasking kernel not used.
