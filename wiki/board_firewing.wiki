@@ -117,13 +117,13 @@ and shorten it to the nearby 3V3 pin on the shield.
 === uOS examples ===
 In directory [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing examples/mips-firewing]
 you can find examples of uOS for Firewing board. Use "make" to build.
- * test-led.hex - Toggle the LED on the main board.
- * test-lcd.hex - Demo of the the interface to the graphics panel and joystick.
- * test-task.hex - Check the task spawn.
- * test-timer.hex - Check the timer driver.
- * philosophers.hex - Five dining philosophers: a classical multi-tasking problem.
- * tetris.hex - Tetris game.
- * lol.hex - Demo for [charlieplexing Olimex LOL shield].
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-led.hex test-led.hex] - Toggle the LED on the main board.
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-lcd.hex test-lcd.hex] - Demo of the the interface to the graphics panel and joystick.
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-task.hex test-task.hex] - Check the task spawn.
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-timer.hex test-timer.hex] - Check the timer driver.
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/philosophers.hex philosophers.hex] - Five dining philosophers: a classical multi-tasking problem.
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/tetris.hex tetris.hex] - Tetris game.
+ * [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/lol.hex lol.hex] - Demo for [charlieplexing Olimex LOL shield].
 
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-led.c test-led.c]
 - Toggle the LED on the main board. Multitasking kernel not used.
