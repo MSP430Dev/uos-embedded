@@ -16,8 +16,10 @@ int main (void)
     TRISBCLR = MASKB_LED;
 
     for (;;) {
-        LATBINV = MASKB_LED; mdelay (100);
+        LATBINV = MASKB_LED;
+        mdelay (100);
 
-        LATBINV = MASKB_LED; mdelay (100);
+        LATBINV = MASKB_LED;
+        mdelay (100);
     }
 }

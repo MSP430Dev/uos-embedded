@@ -1,6 +1,6 @@
 /*
- * Проверка драйвера таймера.
- * Вывод на LCD-индикатор отладочной платы Миландр 1986BE91.
+ * Testing a timer driver.
+ * Output to a graphics panel.
  */
 #include <runtime/lib.h>
 #include <kernel/uos.h>

@@ -1,5 +1,5 @@
 /*
- * Chip configuration.
+ * Chip configuration for pic32mx150 on a Firewing shield.
  */
 PIC32_DEVCFG (
     DEVCFG0_DEBUG_DISABLED,     /* ICE debugger disabled */

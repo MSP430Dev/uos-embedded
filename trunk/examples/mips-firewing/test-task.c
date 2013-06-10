@@ -1,5 +1,5 @@
 /*
- * Testing task switch.
+ * Testing a task scheduler.
  * Output to graphics panel LCD4884.
  */
 #include <runtime/lib.h>

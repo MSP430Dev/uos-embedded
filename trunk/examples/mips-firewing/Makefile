@@ -3,10 +3,10 @@ OS		= $(shell cd ../..; pwd)
 include target.cfg
 GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
-TEST		= tetris
+TEST		= test-lcd2
 TESTS		= $(TEST).hex
 TESTS		+= test-led.hex lol.hex test-lcd.hex test-task.hex
-TESTS		+= test-timer.hex philosophers.hex
+TESTS		+= test-timer.hex philosophers.hex tetris.hex
 OUTS		= $(TESTS:%.hex=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis

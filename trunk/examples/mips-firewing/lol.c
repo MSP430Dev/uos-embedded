@@ -1,5 +1,5 @@
 /*
- * Basic LoL Shield Test.
+ * Testing LoL shield.
  *
  * Writen for the LoL Shield, designed by Jimmie Rodgers:
  * http://jimmieprodgers.com/kits/lolshield/

@@ -1,5 +1,5 @@
 /*
- * Проверка LCD-индикатора LCD4884 на плате SainSmart Graphic Shield.
+ * Testing a SainSmart LCD4884 Graphic shield.
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>

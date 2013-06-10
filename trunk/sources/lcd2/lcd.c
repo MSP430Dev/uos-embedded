@@ -58,6 +58,7 @@ clear_bits (small_uint_t bits)
 /*
  * SainSmart 1602 LCD Keypad Shield.
  */
+#ifdef PIC32MX2                     /* Olimex Pinguino-mx220 board */
 #define MASKC_LCD_DB4   (1 << 4)    /* signal D4, pin RC4 */
 #define MASKC_LCD_DB5   (1 << 5)    /* signal D5, pin RC5 */
 #define MASKC_LCD_DB6   (1 << 6)    /* signal D6, pin RC6 */
@@ -65,27 +66,69 @@ clear_bits (small_uint_t bits)
 #define MASKB_LCD_RS    (1 << 7)    /* signal D8, pin RB7 */
 #define MASKA_LCD_E     (1 << 10)   /* signal D9, pin RA10 */
 #define MASKA_LCD_BL    (1 << 1)    /* signal D10, pin RA1 */
+#endif
+#ifdef PIC32MX1                     /* Firewing board */
+#define MASKA_LCD_DB4   (1 << 4)    /* signal D4, pin RA4 */
+#define MASKB_LCD_DB5   (1 << 8)    /* signal D5, pin RB8 */
+#define MASKB_LCD_DB6   (1 << 9)    /* signal D6, pin RB9 */
+#define MASKA_LCD_DB7   (1 << 3)    /* signal D7, pin RA3 */
+#define MASKA_LCD_RS    (1 << 2)    /* signal D8, pin RA2 */
+#define MASKB_LCD_E     (1 << 10)   /* signal D9, pin RB10 */
+#define MASKB_LCD_BL    (1 << 11)   /* signal D10, pin RB11 */
+#endif
 
 static void inline __attribute__((always_inline))
 set_bits (small_uint_t bits)
 {
+#ifdef PIC32MX2                     /* Olimex Pinguino-mx220 board */
         if (bits & (D4 | D5 | D6 | D7))
                 LATCSET = bits & (D4 | D5 | D6 | D7);
         if (bits & RS)
                 LATBSET = MASKB_LCD_RS;
         if (bits & E)
                 LATASET = MASKA_LCD_E;
+#endif
+#ifdef PIC32MX1                     /* Firewing board */
+        if (bits & D4)
+                LATASET = MASKA_LCD_DB4;
+        if (bits & D5)
+                LATBSET = MASKB_LCD_DB5;
+        if (bits & D6)
+                LATBSET = MASKB_LCD_DB6;
+        if (bits & D7)
+                LATASET = MASKA_LCD_DB7;
+        if (bits & RS)
+                LATASET = MASKA_LCD_RS;
+        if (bits & E)
+                LATBSET = MASKB_LCD_E;
+#endif
 }
 
 static void inline __attribute__((always_inline))
 clear_bits (small_uint_t bits)
 {
+#ifdef PIC32MX2                     /* Olimex Pinguino-mx220 board */
         if (bits & (D4 | D5 | D6 | D7))
                 LATCCLR = bits & (D4 | D5 | D6 | D7);
         if (bits & RS)
                 LATBCLR = MASKB_LCD_RS;
         if (bits & E)
                 LATACLR = MASKA_LCD_E;
+#endif
+#ifdef PIC32MX1                     /* Firewing board */
+        if (bits & D4)
+                LATACLR = MASKA_LCD_DB4;
+        if (bits & D5)
+                LATBCLR = MASKB_LCD_DB5;
+        if (bits & D6)
+                LATBCLR = MASKB_LCD_DB6;
+        if (bits & D7)
+                LATACLR = MASKA_LCD_DB7;
+        if (bits & RS)
+                LATACLR = MASKA_LCD_RS;
+        if (bits & E)
+                LATBCLR = MASKB_LCD_E;
+#endif
 }
 #endif
 
@@ -278,6 +321,7 @@ void lcd_init (lcd_t *line1, lcd_t *line2, timer_t *timer)
 	P2DIR |= RS | E | D4 | D5 | D6 | D7;
 #endif
 #ifdef PIC32MX
+#ifdef PIC32MX2
         LATCCLR = MASKC_LCD_DB4 | MASKC_LCD_DB5 |
                   MASKC_LCD_DB6 | MASKC_LCD_DB7;
         TRISCCLR = MASKC_LCD_DB4 | MASKC_LCD_DB5 |
@@ -286,6 +330,13 @@ void lcd_init (lcd_t *line1, lcd_t *line2, timer_t *timer)
         TRISBCLR = MASKB_LCD_RS;
         LATACLR = MASKA_LCD_E | MASKA_LCD_BL;
         TRISACLR = MASKA_LCD_E | MASKA_LCD_BL;
+#endif
+#ifdef PIC32MX1
+        LATBCLR = MASKB_LCD_DB5 | MASKB_LCD_DB6 | MASKB_LCD_E | MASKB_LCD_BL;
+        TRISBCLR = MASKB_LCD_DB5 | MASKB_LCD_DB6 | MASKB_LCD_E | MASKB_LCD_BL;
+        LATACLR = MASKA_LCD_DB4 | MASKA_LCD_DB7 | MASKA_LCD_RS;
+        TRISACLR = MASKA_LCD_DB4 | MASKA_LCD_DB7 | MASKA_LCD_RS;
+#endif
 #endif
 	mdelay (110);
 
