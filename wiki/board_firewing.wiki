@@ -135,7 +135,7 @@ Use LEFT and RIGHT buttons to select output modes.
 Button DOWN toggles a backlight, button UP controls a contrast.
 
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-task.c test-task.c]
-- Check the task spawn kernel call. One user task, printing it's total and free stack size,
+- Check the task_create system call. One user task, printing it's total and free stack size,
 then waiting for a button. Output to LCD panel.
 
 [http://code.google.com/p/uos-embedded/source/browse/trunk/examples/mips-firewing/test-timer.c test-timer.c]
