@@ -15,7 +15,7 @@ all:		$(OUTS) $(TESTS) $(TEST).dis
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.elf *.hex *.srec *.bin *.lst *.dis .deps $(MODULES)
+		rm -rf *~ *.[oasi] *.elf *.srec *.bin *.lst *.dis .deps $(MODULES)
 
 hex:		$(TESTS)
 		for srec in $(TESTS); do \
