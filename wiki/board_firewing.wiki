@@ -91,7 +91,7 @@ Signals of the following peripherals blocks can be assigned by software to any i
 ----
 
 = Graphic shield SainSmart LCD4884 =
-[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/51PzMVi-n%2BL.jpg]
+[http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html http://ecx.images-amazon.com/images/I/51qfLPebDyL._SX342_.jpg]
 
 Features:
   * Graphic LCD panel 84x48, compatible with Nokia 5110 ([http://www.amazon.com/SainSmart-Graphic-LCD4884-Arduino-Duemilanove/dp/B0073Z5XAW on Amazon.com], [http://www.sainsmart.com/module/lcd-module/sainsmart-graphic-lcd4884-shield-for-arduino-duemilanove-uno-mega2560-mega1280.html on SainSmart.com].
