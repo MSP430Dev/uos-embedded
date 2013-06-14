@@ -26,16 +26,24 @@
 #define MASKB_LED1	(1 << 15)   /* RB15: green */
 #define MASKA_LED2	(1 << 10)   /* RA10: red */
 
-volatile unsigned char hid_report_feature [HID_FEATURE_REPORT_BYTES];
+/*
+ * Process the received data (hid_report_out) and
+ * prepare the data for transmit (hid_report_in).
+ */
+void process_data (void)
+{
+        unsigned int count;
+
+        for (count=0; count<HID_OUTPUT_REPORT_BYTES; count++) {
+                hid_report_in[count] = hid_report_out[count];
+        }
+}
 
 /*
- * BlinkUSBStatus turns on and off LEDs
- * corresponding to the USB device state.
- *
- * mLED macros can be found in HardwareProfile.h
+ * Turn on and off LEDs corresponding to the USB device state.
  * USBDeviceState is declared and updated in usb_device.c.
  */
-void BlinkUSBStatus (void)
+void blink_status (void)
 {
 	static unsigned led_count = 0;
 
@@ -53,37 +61,35 @@ void BlinkUSBStatus (void)
 }
 
 /*
- * This routine will send a received Input report back
- * to the host in an Output report.
+ * This routine will poll for a received Input report, process it
+ * and send an Output report to the host.
  * Both directions use interrupt transfers.
- *
  * The ownership of the USB buffers will change according
- * to the required operation
+ * to the required operation.
  */
-void ReportLoopBack (void)
+void send_receive (void)
 {
-	unsigned int count = 0;
 	static int usb_state = 'r';
-	static USB_HANDLE lastTransmission = 0;
-	static USB_HANDLE lastOutTransmission = 0;
+	static USB_HANDLE last_transmit = 0;
+	static USB_HANDLE last_receive = 0;
 
 	switch (usb_state) {
 	case 'r':
-	   	if (HIDRxHandleBusy (lastOutTransmission) == 0) {
-			// The CPU owns the endpoint. Check for received data.
-			lastOutTransmission = HIDRxPacket (HID_EP,
-				(unsigned char*) &hid_report_out, 64);
+	   	if (! HIDRxHandleBusy (last_receive)) {
+			// The CPU owns the endpoint. Start receiving data.
+			last_receive = HIDRxPacket (HID_EP,
+				(unsigned char*) &hid_report_out,
+                                HID_INT_OUT_EP_SIZE);
 			usb_state = 'p';
 		}
 		break;
 	case 'p':
-		if (HIDRxHandleBusy (lastOutTransmission) == 0) {
+		if (! HIDRxHandleBusy (last_receive)) {
 			// The CPU owns the endpoint.
-			if (lastOutTransmission->CNT > 0) {
+			if (last_receive->CNT > 0) {
 				// Data was received. Copy it to the output buffer for sending.
-				for (count=0; count<=HID_OUTPUT_REPORT_BYTES-1; count++) {
-					hid_report_in[count] = hid_report_out[count];
-				}
+				process_data();
+
 				// Ready to transmit the received data back to the host.
 				usb_state = 't';
 			} else {
@@ -93,10 +99,9 @@ void ReportLoopBack (void)
 		}
 		break;
 	case 't':
-		if (HIDTxHandleBusy (lastTransmission) == 0) {
-			// The CPU owns the endpoint.
-			// Prepare to send data.
-			lastTransmission = HIDTxPacket (HID_EP,
+		if (! HIDTxHandleBusy (last_transmit)) {
+			// The CPU owns the endpoint. Start sending data.
+			last_transmit = HIDTxPacket (HID_EP,
 				(unsigned char*) &hid_report_in,
 				HID_INPUT_REPORT_BYTES);
 
@@ -105,6 +110,7 @@ void ReportLoopBack (void)
 		}
 		break;
 	default:
+	        // Cannot happen.
 		break;
 	}
 }
@@ -133,14 +139,7 @@ int main (void)
 	TRISBCLR = MASKB_LED1;
 	LATASET = MASKA_LED2;
 	TRISACLR = MASKA_LED2;
-#if 0
-for (;;) {
-LATAINV = MASKA_LED2; mdelay (500);
-LATBINV = MASKB_LED1; mdelay (500);
-LATAINV = MASKA_LED2; mdelay (500);
-LATBINV = MASKB_LED1; mdelay (500);
-}
-#endif
+
 	USBDeviceInit();	//usb_device.c.  Initializes USB module SFRs and firmware
     				//variables to known states.
 	PMCON = 0;
@@ -162,11 +161,11 @@ LATBINV = MASKB_LED1; mdelay (500);
 
 		// Application-specific tasks.
 		// Blink the LEDs according to the USB device status
-		BlinkUSBStatus();
+		blink_status();
 
 		// User Application USB tasks
 		if (USBDeviceState >= CONFIGURED_STATE && ! (U1PWRC & PIC32_U1PWRC_USUSPEND)) {
-			ReportLoopBack();
+			send_receive();
 		}
 	}
 }
