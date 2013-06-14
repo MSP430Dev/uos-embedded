@@ -97,6 +97,7 @@ SECTIONS
        we can shorten the on-disk segment size.  */
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.eh_frame)
+    . = ALIGN (32 / 8);
     _edata = .;
   } > ram
 

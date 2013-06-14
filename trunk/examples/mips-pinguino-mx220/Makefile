@@ -5,10 +5,11 @@ GDB             = /usr/local/mips-gcc-4.7.2/bin/mips-elf-gdb
 
 CFLAGS          += -g
 
-TEST		= lol
+TEST		= usb-hid
+#TEST		= test-leds
 TESTS		= $(TEST).srec
-TESTS		+= test-leds.srec test-lcd.srec test-timer.srec test-task.srec
-TESTS		+= test-lcd2.srec philosophers.srec tetris.srec lol.srec
+#TESTS		+= test-leds.srec test-lcd.srec test-timer.srec test-task.srec
+#TESTS		+= test-lcd2.srec philosophers.srec tetris.srec lol.srec
 OUTS		= $(TESTS:%.srec=%.elf)
 
 all:		$(OUTS) $(TESTS) $(TEST).dis
@@ -25,7 +26,7 @@ hex:		$(TESTS)
 		done
 
 load:		$(TEST).srec
-		pic32prog -S $(TEST).srec
+		pic32prog -p $(TEST).srec
 
 debug:          $(TEST).srec
 		$(GDB) $(TEST).elf

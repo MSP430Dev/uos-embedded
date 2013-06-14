@@ -11,6 +11,15 @@
 
 int main (void)
 {
+        /* Unlock CFGCON register. */
+        SYSKEY = 0;
+        SYSKEY = 0xAA996655;
+        SYSKEY = 0x556699AA;
+        CFGCON &= (1 << 13);            // clear IOLOCK
+
+        /* Disable JTAG ports, to make more pins available. */
+        CFGCON &= (1 << 3);             // clear JTAGEN
+
         /* Use all ports as digital. */
         ANSELA = 0;
         ANSELB = 0;
