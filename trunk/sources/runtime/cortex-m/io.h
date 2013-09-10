@@ -80,8 +80,8 @@ static void inline __attribute__ ((always_inline))
 arm_intr_disable (unsigned long *x)
 {
 #ifdef ARM_CORTEX_M1
-
 	asm volatile (
+	"push   {r1} \n"
 	"mov	r1, #1 \n"
 	"msr	primask, r1");
 
@@ -90,7 +90,8 @@ arm_intr_disable (unsigned long *x)
     
 	asm volatile (
 	"mov	r1, #0 \n"
-	"msr	primask, r1");
+	"msr	primask, r1 \n"
+	"pop    {r1}");
 #else
 	unsigned long temp;
 	

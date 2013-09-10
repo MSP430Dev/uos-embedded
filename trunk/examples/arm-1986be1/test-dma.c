@@ -11,8 +11,8 @@ ARRAY (stack, 1000);
 
 DMA_Data_t dma_prim[32] __attribute__((section(".dma_struct")));
 
-uint32_t src_buf[256] __attribute__((section(".dma_struct")));
-uint16_t dst_buf[256] __attribute__((section(".dma_struct")));
+uint32_t src_buf[255] __attribute__((section(".dma_struct")));
+uint16_t dst_buf[255] __attribute__((section(".dma_struct")));
 
 void task (void *arg)
 {
@@ -32,10 +32,10 @@ void task (void *arg)
     debug_puts ("Checking transfer 32->16...");
     
     for (i = 0; i < sizeof(src_buf)/sizeof(src_buf[0]); ++i)
-        src_buf[i] = (i << 24) | (i << 16) | (i << 8) | i;
+        src_buf[i] = ((i+1) << 24) | ((i+1) << 16) | ((i+1) << 8) | (i+1);
     
-    dma_prim[DMA_CHAN].SOURCE_END_POINTER = (unsigned)src_buf + sizeof(src_buf);
-    dma_prim[DMA_CHAN].DEST_END_POINTER = (unsigned)dst_buf + sizeof(dst_buf);
+    dma_prim[DMA_CHAN].SOURCE_END_POINTER = (unsigned)src_buf + sizeof(src_buf) - 4;
+    dma_prim[DMA_CHAN].DEST_END_POINTER = (unsigned)dst_buf + sizeof(dst_buf) - 2;
     dma_prim[DMA_CHAN].CONTROL = ARM_DMA_DST_INC(ARM_DMA_HALFWORD) | 
                        ARM_DMA_DST_SIZE(ARM_DMA_HALFWORD) |
                        ARM_DMA_SRC_INC(ARM_DMA_WORD) | 
@@ -51,12 +51,12 @@ void task (void *arg)
     
     ecnt = 0;
     for (i = 0; i < sizeof(dst_buf)/sizeof(dst_buf[0]); ++i)
-        if (dst_buf[i] != ((i << 8) | i))
+        if (dst_buf[i] != (((i+1) << 8) | (i+1)))
             ecnt++;
-    
+        
     if (ecnt == 0)
         debug_puts ("OK!\n");
-    else debug_puts ("FAILED\n");
+    else debug_printf ("FAILED, number of errors: %d\n", ecnt);
     
     // А теперь будем передавать "с распаковкой" 16->32, т.е. каждые
     // 16-разрядные целые из источника будут положены с шагом 32-бита
@@ -67,8 +67,8 @@ void task (void *arg)
     
     memset (src_buf, 0, sizeof(src_buf));
     
-    dma_prim[DMA_CHAN].SOURCE_END_POINTER = (unsigned)dst_buf + sizeof(dst_buf);
-    dma_prim[DMA_CHAN].DEST_END_POINTER = (unsigned)src_buf + sizeof(src_buf);
+    dma_prim[DMA_CHAN].SOURCE_END_POINTER = (unsigned)dst_buf + sizeof(dst_buf) - 2;
+    dma_prim[DMA_CHAN].DEST_END_POINTER = (unsigned)src_buf + sizeof(src_buf) - 4;
     dma_prim[DMA_CHAN].CONTROL = ARM_DMA_DST_INC(ARM_DMA_WORD) | 
                        ARM_DMA_DST_SIZE(ARM_DMA_HALFWORD) |
                        ARM_DMA_SRC_INC(ARM_DMA_HALFWORD) | 
@@ -84,12 +84,12 @@ void task (void *arg)
     
     ecnt = 0;
     for (i = 0; i < sizeof(src_buf)/sizeof(src_buf[0]); ++i)
-        if (src_buf[i] != ((i << 8) | i))
+        if (src_buf[i] != (((i+1) << 8) | (i+1)))
             ecnt++;
     
     if (ecnt == 0)
         debug_puts ("OK!\n");
-    else debug_puts ("FAILED\n");
+    else debug_printf ("FAILED, number of errors: %d\n", ecnt);
     
     
     for (;;);
