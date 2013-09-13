@@ -77,10 +77,22 @@ mutex_activate (mutex_t *m, void *message)
 }
 
 /*
+ * Additional machine-dependent initialization after
+ * user initialization. Needed for some processor 
+ * architectures.
+ */
+void __attribute__ ((weak))
+uos_post_init ()
+{
+}
+
+/*
  * Call user initialization routine uos_init(),
  * then create the idle task, and run the OS.
  * The idle task uses the default system stack.
  */
+extern unsigned latency_min;
+
 int
 main (void)
 {
@@ -102,11 +114,14 @@ main (void)
 
 	/* Create user tasks. */
 	uos_init ();
-
+	
+	/* Additional machine-dependent initialization */
+	uos_post_init ();
+	
 	/* Switch to the most priority task. */
 	assert (task_current == task_idle);
 	task_schedule ();
-
+	
 	/* Idle task activity. */
 	for (;;) {
 		arch_idle ();

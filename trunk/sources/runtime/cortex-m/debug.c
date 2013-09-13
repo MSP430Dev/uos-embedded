@@ -142,7 +142,7 @@ debug_getchar (void)
 int
 debug_peekchar (void)
 {
-	unsigned char c;
+	unsigned char c = 0;
 	arch_state_t x;
 
 	if (debug_char >= 0)
@@ -153,7 +153,7 @@ debug_peekchar (void)
 	if (hook) {
 		hook (hook_arg, c);
 		arm_intr_restore (x);
-		return;
+		return 0;
 	}
 
 #ifdef ARM_UART1_DEBUG

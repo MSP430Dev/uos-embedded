@@ -19,7 +19,7 @@
 #include <runtime/lib.h>
 
 
-extern unsigned long _etext, __data_start, _edata, _end;
+extern unsigned long _etext, __data_start, _edata, __bss_start, __bss_end;
 extern void main (void);
 
 /*
@@ -186,8 +186,8 @@ generator will not work properly
 		*dest++ = *src++;
 #endif
 	/* Initialize .bss segment by zeroes. */
-	dest = &_edata;
-	limit = &_end;
+	dest = &__bss_start;
+	limit = &__bss_end;
 	while (dest < limit)
 		*dest++ = 0;
 
@@ -246,7 +246,7 @@ static void dump_of_death (unsigned *frame, unsigned ipsr)
 		       frame[10],    frame[7],     frame[3],      frame[16]);
 	debug_printf ("r2 = %08x     r7 = %08x     r12 = %08x     ipsr = %08x\n",
 		       frame[11],    frame[8],     frame[13],     ipsr);
-	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  primask = %08x\n",
+	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  iser0 = %08x\n",
 		       frame[12],    frame[0],     frame[17],  frame[4]);
 	debug_printf ("r4 = %08x     r9 = %08x     lr  = %08x\n",
 		       frame[5],     frame[1],     frame[14]);

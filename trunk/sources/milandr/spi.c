@@ -248,7 +248,6 @@ int spi_input (spi_t *c, unsigned short *word)
  */
 void spi_input_wait (spi_t *c, unsigned short *word)
 {
-	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
 	mutex_lock (&c->lock);
 	while (spi_queue_is_empty (&c->inq)) {
 		/* Ждём приёма пакета. */

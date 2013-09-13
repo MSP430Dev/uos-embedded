@@ -75,16 +75,16 @@ void uos_init (void)
 	mutex_attach_irq (&timer_lock, TIMER_IRQ, timer_handler, 0);
 
 	/* Используем интервальный таймер. */
-        ARM_SYSTICK->CTRL = 0;
-        ARM_SYSTICK->VAL = 0;
+    ARM_SYSTICK->CTRL = 0;
+    ARM_SYSTICK->VAL = 0;
 #ifdef SETUP_HCLK_HSI
-        ARM_SYSTICK->LOAD = 8000 * MSEC_PER_TICK - 1;
+    ARM_SYSTICK->LOAD = 8000 * MSEC_PER_TICK - 1;
 #else
-        ARM_SYSTICK->LOAD = KHZ * MSEC_PER_TICK - 1;
+    ARM_SYSTICK->LOAD = KHZ * MSEC_PER_TICK - 1;
 #endif
-        ARM_SYSTICK->CTRL = ARM_SYSTICK_CTRL_ENABLE |
-                            ARM_SYSTICK_CTRL_TICKINT |
-                            ARM_SYSTICK_CTRL_HCLK;
+    ARM_SYSTICK->CTRL = ARM_SYSTICK_CTRL_ENABLE |
+                        ARM_SYSTICK_CTRL_TICKINT |
+                        ARM_SYSTICK_CTRL_HCLK;
 
 	/* Запускаем задачу выдачи статистики на консоль. */
 	task_create (console, "task", "console", 1, task, sizeof (task));

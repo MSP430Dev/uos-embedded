@@ -247,4 +247,50 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 	*--sp = 0;			/* r4      (cortex-m1: r8) */
 
 	t->stack_context = (void*) sp;
+	
+#ifdef ARM_CORTEX_M1
+/* This is a hack due to ARM Cortex-M1 architecture.
+ * It is impossible to use SVC to switch tasks, because
+ * it induces Hard Fault when interrupts are masked with
+ * PRIMASK register. PendSV exception could be used instead.
+ * But it's masked by PRIMASK - no Hard Fault, but it is
+ * still impossible to switch tasks with PendSV.
+ * 
+ * The solution is to mask interrupts with NVIC ICER0 register.
+ * But then we have to manage masks between task carefully
+ * (ISER0 content) in order not to lose current mask. It must 
+ * be saved in task context.
+ * Initial mask for each task (right after initialization)
+ * shall be the same and corresponds to enabled interrupts.
+ * We have to save task stack size somewhere to know where
+ * to put this mask. In order not to increase size of task_t 
+ * structure we temporarely use another field "ticks" for
+ * that purpose (bad practice - I know!) and after initialization
+ * we zero again this field.
+ */
+	t->ticks = stacksz;
+#endif
 }
+
+/*
+ * Additional machine-dependent initialization after
+ * user initialization. Needed only for ARM Cortex-M1.
+ * Save interrupt mask created by user initialization (uos_init)
+ * into initial context of each task.
+ */
+#ifdef ARM_CORTEX_M1
+void
+uos_post_init ()
+{
+	task_t *t;
+	unsigned *stack_iser0;
+	list_iterate (t, &task_active) {
+		unsigned stack_size = t->ticks;
+		if (stack_size != 0) {
+			stack_iser0 = (unsigned*) ((char*) t + stack_size - 13*4);
+			*stack_iser0 = ARM_NVIC_ISER(0);
+			t->ticks = 0;
+		}
+	}
+}
+#endif

@@ -8,7 +8,7 @@ TESTS		+= test-timer.hex test-timer-lcd.hex test-latency.hex test-tswitch.hex
 TESTS		+= phil-lcd.hex test-user-timer.hex phil-uart.hex
 TESTS		+= spi-master.hex spi-slave.hex test-can.hex
 TESTS		+= test-mac.hex test-eth.hex test-tcp.hex test-udp.hex test-telnetd.hex
-TESTS		+= test-led.hex test-iwdt.hex test-dma.hex
+TESTS		+= test-led.hex test-iwdt.hex test-dma.hex test-irq.hex
 OUTS		= $(TESTS:%.hex=%.elf) #udpping
 
 # Using MILPROG utility.
