@@ -91,8 +91,6 @@ uos_post_init ()
  * then create the idle task, and run the OS.
  * The idle task uses the default system stack.
  */
-extern unsigned latency_min;
-
 int
 main (void)
 {
