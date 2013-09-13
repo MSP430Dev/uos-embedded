@@ -48,18 +48,10 @@ _start_:	.global	_start_
 		.word	_fault_			@ 8 - reserved
 		.word	_fault_			@ 9 - reserved
 		.word	_fault_			@ 10 - reserved
-#ifdef ARM_CORTEX_M1
-		.word	_fault_			@ 11 - supervisor call
-#else
 		.word	_svc_			@ 11 - supervisor call
-#endif
 		.word	_fault_			@ 12 - reserved
 		.word	_fault_			@ 13 - reserved
-#ifdef ARM_CORTEX_M1
-        .word	_svc_			@ 14 - software interrupt
-#else
 		.word	_fault_			@ 14 - software interrupt
-#endif
 		.word	_irq_handler_	@ 15 - system timer tick
 
 		@

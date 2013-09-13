@@ -60,19 +60,11 @@ void arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
 static inline void
 arch_task_switch (task_t *target)
 {
-#ifdef ARM_CORTEX_M1
-	/* Use PendSV for task switching. */
-	asm volatile (
-	"mov    r0, %0 \n\t"
-	: : "r" (target) : "r0", "memory", "cc");
-	ARM_SCB->ICSR = ARM_ICSR_PENDSVSET;
-#else
 	/* Use supervisor call for task switching. */
 	asm volatile (
 	"mov    r0, %0 \n\t"
 	"svc    #0"
 	: : "r" (target) : "r0", "memory", "cc");
-#endif
 }
 
 /*
