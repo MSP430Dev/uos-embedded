@@ -5,7 +5,30 @@
 #include "kernel/uos.h"
 #include <kernel/internal.h>
 
-#define TIMER_IRQ	22	/* Прерывание от интервального таймера */
+#if ELVEES_MC24
+#   define TIMER_IRQ		29	/* Interval Timer interrupt */
+#endif
+
+#if ELVEES_MC0226
+#   define TIMER_IRQ		29	/* Interval Timer interrupt */
+#endif
+
+#if ELVEES_MC24R2
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
+#if ELVEES_NVCOM01
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
+#if ELVEES_NVCOM02
+#   define TIMER_IRQ		22	/* TODO: Interval Timer interrupt */
+#endif
+
+#if ELVEES_MCT02
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
 #define MSEC_PER_TICK	100	/* Период таймера в миллисекундах */
 #define CS3_WAIT_STATES	3	/* Такты ожидания для flash-памяти на CS3 */
 
@@ -88,7 +111,7 @@ void uos_init (void)
 {
 	debug_printf ("\n\nTesting latency\n");
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (5);		/* Wait states  */
+	//MC_CSCON3 = MC_CSCON_WS (5);		/* Wait states  */
 
 	/* Стираем экран. */
 	debug_puts ("\33[H\33[2J");

@@ -58,7 +58,9 @@ void __attribute ((noreturn))_init_ (void)
 	PORTB = (1 << 13);
 	TRISB &= ~(1 << 13);
 	PORTBCLR = (1 << 13);
-	mdelay (5);
+	//mdelay (5);
+
+//for(;;);
 
 	/* Setup debug UART */
 	U5BRG = PIC32_BRG_BAUD (KHZ * 500, 115200);

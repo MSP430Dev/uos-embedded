@@ -210,7 +210,7 @@ void uos_init (void)
 	debug_printf ("Data cache disabled\n");
 #endif
 
-#ifdef ELVEES_MC24
+#if defined(ELVEES_MC24) || defined(ELVEES_MC0226)
 	/* Configure 128 Mbytes of external 64-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
 		MC_CSCON_WS (0) |		/* Wait states  */

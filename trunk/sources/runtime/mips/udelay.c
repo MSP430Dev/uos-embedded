@@ -20,8 +20,13 @@
 
 void udelay (unsigned usec)
 {
+//PORTBCLR = (1 << 12);
+asm volatile ("nop");
+
 	unsigned now = mips_read_c0_register (C0_COUNT);
 	unsigned final = now + usec * (KHZ / 1000);
+
+//debug_printf ("now = %X, final = %X\n", now, final);
 
 	for (;;) {
 		now = mips_read_c0_register (C0_COUNT);
@@ -30,4 +35,6 @@ void udelay (unsigned usec)
 		if ((int) (now - final) >= 0)
 			break;
 	}
+
+//PORTBCLR = (1 << 12);
 }

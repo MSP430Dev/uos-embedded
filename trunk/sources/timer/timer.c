@@ -50,6 +50,10 @@
 #   define TIMER_IRQ		29	/* Interval Timer interrupt */
 #endif
 
+#if ELVEES_MC0226
+#   define TIMER_IRQ		29	/* Interval Timer interrupt */
+#endif
+
 #if ELVEES_MC24R2
 #   define TIMER_IRQ		22	/* Interval Timer interrupt */
 #endif

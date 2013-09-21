@@ -66,6 +66,16 @@
 #define ST_IM_MCU	0x00008000	/* от внутренних устройств микроконтроллера */
 #endif
 
+#ifdef ELVEES_MC0226
+#define ST_IM_IRQ0	0x00000400	/* внешнее прерывание 0 */
+#define ST_IM_IRQ1	0x00000800	/* внешнее прерывание 1 */
+#define ST_IM_IRQ2	0x00001000	/* внешнее прерывание 2 */
+#define ST_IM_IRQ3	0x00002000	/* внешнее прерывание 3 */
+#define ST_IM_MCU	0x00008000	/* от внутренних устройств микроконтроллера и DMA*/
+#define ST_CU2		0x40000000	/* разрешение сопроцессора 2 */
+#define ST_CU3		0x80000000	/* разрешение сопроцессора 3 */
+#endif
+
 #ifdef ELVEES_MC24R2
 #define ST_IM_QSTR0	0x00000400
 #define ST_IM_QSTR1	0x00000800
@@ -270,9 +280,14 @@
 #define MC_CSR_FLUSH_I		0x00001000	/* instruction cache invalidate */
 #define MC_CSR_FLUSH_D		0x00004000	/* data cache invalidate */
 
-#ifdef ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_MC0226)
 #define MC_CSR_CLK(n)		((n) << 4)	/* PLL clock multiply, 1..31, 0=1/16 */
 #define MC_CSR_CLKEN		0x00010000	/* PLL clock enable */
+#endif
+
+#if defined (ELVEES_MC0226)
+#define MC_CSR_SNS_DSP		0x01000000	/* DSP0 and DSP1 synchronous start */
+#define MC_CSR_SNW_DSP		0x02000000	/* DSP0 and DSP1 synchronous run status */
 #endif
 
 /*
@@ -294,9 +309,9 @@
 #define MC_MASKR_LSRQ3		0x00004000	/* LPORT3 service */
 #define MC_MASKR_COMPARE	0x00080000	/* CPU timer */
 #define MC_MASKR_MEMCH0		0x00200000	/* DMA MemCh0 */
-#define MC_MASKR_MEMCH1		0x00400000	/* DMA MemCh0 */
-#define MC_MASKR_MEMCH2		0x00800000	/* DMA MemCh0 */
-#define MC_MASKR_MEMCH3		0x01000000	/* DMA MemCh0 */
+#define MC_MASKR_MEMCH1		0x00400000	/* DMA MemCh1 */
+#define MC_MASKR_MEMCH2		0x00800000	/* DMA MemCh2 */
+#define MC_MASKR_MEMCH3		0x01000000	/* DMA MemCh3 */
 #define MC_MASKR_TIMER		0x20000000	/* timers IT, WDT, RTT */
 #define MC_MASKR_PI		0x40000000	/* DSP software interrupt */
 #define MC_MASKR_SBS		0x80000000	/* DSP status */
@@ -312,6 +327,36 @@
 #define MC_MASKR_TxDatCh1	0x00010000	/* TX DATA DMA for SWIC1 */
 #define MC_MASKR_RxDesCh1	0x00020000	/* RX DESC DMA for SWIC1 */
 #define MC_MASKR_RxDatCh1	0x00040000	/* RX DATA DMA for SWIC1 */
+#endif
+
+#ifdef ELVEES_MC0226
+#define MC_MASKR_PMCH		0x00000001	/* DMA PMCh */
+#define MC_MASKR_MBR		0x00000002	/* write into PCI MBR */
+#define MC_MASKR_UART		0x00000010	/* UART */
+#define MC_MASKR_LTRX0		0x00000080	/* LPORT0 data */
+#define MC_MASKR_LSRQ0		0x00000100	/* LPORT0 service */
+#define MC_MASKR_LTRX1		0x00000200	/* LPORT1 data */
+#define MC_MASKR_LSRQ1		0x00000400	/* LPORT1 service */
+#define MC_MASKR_LTRX2		0x00000800	/* LPORT2 data */
+#define MC_MASKR_LSRQ2		0x00001000	/* LPORT2 service */
+#define MC_MASKR_LTRX3		0x00002000	/* LPORT3 data */
+#define MC_MASKR_LSRQ3		0x00004000	/* LPORT3 service */
+#define MC_MASKR_WSE		0x00008000	/* DSP event */
+#define MC_MASKR_STP0		0x00010000	/* DSP0 stop */
+#define MC_MASKR_PI1		0x00020000	/* DSP1 software interrupt */
+#define MC_MASKR_STP1		0x00040000	/* DSP1 stop */
+#define MC_MASKR_COMPARE	0x00080000	/* CPU timer */
+#define MC_MASKR_MEMCH0		0x00200000	/* DMA MemCh0 */
+#define MC_MASKR_MEMCH1		0x00400000	/* DMA MemCh1 */
+#define MC_MASKR_MEMCH2		0x00800000	/* DMA MemCh2 */
+#define MC_MASKR_MEMCH3		0x01000000	/* DMA MemCh3 */
+#define MC_MASKR_MEMCH4		0x02000000	/* DMA MemCh4 */
+#define MC_MASKR_MEMCH5		0x04000000	/* DMA MemCh5 */
+#define MC_MASKR_MEMCH6		0x08000000	/* DMA MemCh6 */
+#define MC_MASKR_MEMCH7		0x10000000	/* DMA MemCh7 */
+#define MC_MASKR_TIMER		0x20000000	/* timers IT, WDT, RTT */
+#define MC_MASKR_PI0		0x40000000	/* DSP0 software interrupt */
+#define MC_MASKR_SBS		0x80000000	/* DSPs status */
 #endif
 
 #ifdef ELVEES_NVCOM01
@@ -576,7 +621,7 @@
 #define MC_SDRCON_PS_2048	(2 << 0)	/* Page size 2048 */
 #define MC_SDRCON_PS_4096	(3 << 0)	/* Page size 4096 */
 
-#ifdef ELVEES_MC24
+#if defined(ELVEES_MC24) || defined(ELVEES_MC0226)
 #define MC_SDRCON_RFR(nsec,khz)	((((nsec)*(khz)+999999)/1000000) << 4)
 						/* Refresh period */
 #define MC_SDRCON_BL_1		(0 << 16)	/* Bursh length 1 */
@@ -1167,6 +1212,51 @@
  */
 #define MC_I2C_WAIT_PER(x)   ((x) & 0xFFFF)
 #define MC_I2C_SYNC_EN       (1 << 16)
+
+/*-------------------------------------------
+ * Регистры PCI
+ */
+
+/*
+ * Состояние и управление 
+ */
+#define  MC_PCI_COMMAND_MEMORY		0x00000002	/* Разрешение выполнения команд обмена данными с памятью */
+#define  MC_PCI_COMMAND_MASTER		0x00000004	/* Разрешение работы на шине PCI в режиме задатчика */
+#define  MC_PCI_COMMAND_PARITY		0x00000040	/* Разрешение формирование сигнала PERR */
+#define  MC_PCI_STATUS_PARITY		0x01000000	/* Признак выдачи или приема сигнала PERR в режиме Master */
+#define  MC_PCI_STATUS_DEVSEL_MASK	0x06000000	/* DEVSEL timing = 01 (medium) */
+#define  MC_PCI_STATUS_TARGET_ABORT	0x10000000	/* Признак завершения обмена по условию Target-abort */
+#define  MC_PCI_STATUS_MASTER_ABORT	0x20000000	/* Признак завершения обмена по условию Master-abort */
+#define  MC_PCI_STATUS_DETECTED_PARITY	0x80000000	/* Ошибка четности при приме данных из PCI */
+
+/* 
+ * Управление шиной PCI 
+ */
+#define  MC_PCI_CSR_PCI_INTA		0x00000001	/* Формирование прерывания INTA */
+#define  MC_PCI_CSR_PCI_WN(n)		((n) << 1)	/* Уровень FIFO записи в память, исходно 8 */
+#define  MC_PCI_CSR_PCI_TESTPERR	0x00000040	/* Принудительное формирование сигнала nPERR */
+#define  MC_PCI_CSR_PCI_TESTPAR		0x00000080	/* Инвертирование сигнала PAR */
+#define  MC_PCI_CSR_PCI_MLTOVER		0x00010000	/* Признак срабатывания Latency Timer */
+#define  MC_PCI_CSR_PCI_NOTRDY		0x00020000	/* Признак отсутствия сигнала TRDY */
+#define  MC_PCI_CSR_PCI_DISCONNECT	0x00040000	/* Признак требования разъединения */
+#define  MC_PCI_CSR_PCI_RETRY		0x00080000	/* Признак требования повтора */
+#define  MC_PCI_CSR_PCI_NOGNT		0x00100000	/* Признак отсутствия сигнала nGNT */
+#define  MC_PCI_CSR_PCI_TARGET_ABORT	0x10000000	/* Признак окончания обмена с Target-Abort */
+#define  MC_PCI_CSR_PCI_MASTER_ABORT	0x20000000	/* Признак окончания обмена с Master-Abort */
+
+/*
+ * Состояние и управление обменом в режиме Master 
+ */
+#define  MC_PCI_CSR_MASTER_RUN		0x00000001	/* Состояние работы канала DMA */
+#define  MC_PCI_CSR_MASTER_CMD		0x0000001e	/* Тип команды обмена в режиме Master */
+#define  MC_PCI_CSR_MASTER_IOREAD	0x00000004	/* I/O Read */
+#define  MC_PCI_CSR_MASTER_IOWRITE	0x00000006	/* I/O Write */
+#define  MC_PCI_CSR_MASTER_MEMREAD	0x0000000c	/* Memory Read */
+#define  MC_PCI_CSR_MASTER_MEMWRITE	0x0000000e	/* Memory Write */
+#define  MC_PCI_CSR_MASTER_CFGREAD	0x00000014	/* Configuration Read */
+#define  MC_PCI_CSR_MASTER_CFGWRITE	0x00000016	/* Configuration Write */
+#define  MC_PCI_CSR_MASTER_DONE		0x00008000	/* Признак завершения передачи */
+#define  MC_PCI_CSR_MASTER_WC(n)	((n) << 16)	/* Счетчик слов DMA обмена */
 
 
 #endif /* _IO_ELVEES_H */

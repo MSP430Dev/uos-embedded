@@ -45,6 +45,14 @@
 #define ARCH_INTERRUPTS		(32+8)
 #endif
 
+#ifdef ELVEES_MC0226
+/*
+ * 32 interrupts linked to MASKR[31:0] register.
+ * 8 interrupts linked to IP[7:0] bits of CP0_CAUSE register.
+ */
+#define ARCH_INTERRUPTS		(32+8)
+#endif
+
 #ifdef ELVEES_MC24R2
 /*
  * 23 interrupts linked to MASKR0[22:0] register.

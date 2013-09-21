@@ -353,7 +353,7 @@ _arch_interrupt_ (void)
 		if (! pending)
 			break;
 #endif /* ELVEES */
-#ifdef ELVEES_MC24
+#if defined(ELVEES_MC24) || defined(ELVEES_MC0226)
 		/* Read readme-mc24.txt for interrupt numbers. */
 		if (pending & ST_IM_MCU) {
 			/* Internal interrupt: 0..31. */
@@ -568,7 +568,7 @@ arch_intr_allow (int irq)
 	status |= (0x100 << (irq & 7));
 	mips_write_c0_register (C0_STATUS, status); 
 #endif
-#ifdef ELVEES_MC24
+#if defined (ELVEES_MC24) || defined (ELVEES_MC0226)
 	if (irq < 32) {
 		/* Internal interrupt: 0..31. */
 		MC_MASKR |= 1 << irq;

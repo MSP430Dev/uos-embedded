@@ -5,7 +5,11 @@
  * Для разъяснений см. Руководство пользователя на микросхему 1892ХД1Я, п. 5.3.
  */
 #include <runtime/lib.h>
-#include <elvees/mcb-01.h>
+#ifdef ELVEES_MCB01
+#   include <elvees/mcb-01.h>
+#elif defined ELVEES_MCB03
+#   include <elvees/mcb-03.h>
+#endif
 
 #define TIMEOUT	100000
 
@@ -36,7 +40,7 @@ mcb_read_reg (unsigned addr)
 void
 mcb_write_reg (unsigned addr, unsigned value)
 {
-	volatile unsigned *modif_addr = (unsigned*) (addr | 0xae000000);
+	volatile unsigned *modif_addr = (unsigned*) (addr | MCB_BASE);
 	unsigned count;
 	for (count=TIMEOUT; count>0; count--)
 		if (! MCB_MBA_BUSY)

@@ -34,7 +34,7 @@ void __attribute ((noreturn))_init_ (void)
 	unsigned int divisor;
 
 #ifdef ELVEES_INIT_SDRAM
-#ifdef ELVEES_MC24
+#if defined(ELVEES_MC24) || defined(ELVEES_MC0226)
 	/* Configure 128 Mbytes of external 64-bit SDRAM memory at nCS0. */
 	MC_CSCON0 = MC_CSCON_E |		/* Enable nCS0 */
 		MC_CSCON_WS (0) |		/* Wait states  */
@@ -82,6 +82,9 @@ void __attribute ((noreturn))_init_ (void)
 		| ST_CU1
 #endif
 #ifdef ELVEES_MC24
+		| ST_IM_MCU
+#endif
+#ifdef ELVEES_MC0226
 		| ST_IM_MCU
 #endif
 #ifdef ELVEES_MC24R2
@@ -196,7 +199,7 @@ void __attribute ((noreturn))_init_ (void)
 	MC_MASKR2 = 0;
 #endif
 
-#ifdef ELVEES_MC24
+#if defined(ELVEES_MC24) || defined(ELVEES_MC0226)
 	/* Fixed mapping, clock multiply from CLKIN to KHZ. */
 	MC_CSR = MC_CSR_FM | MC_CSR_CLK(KHZ/ELVEES_CLKIN) | MC_CSR_CLKEN;
 	MC_MASKR = 0;
@@ -334,8 +337,8 @@ void __attribute ((noreturn))_init_ (void)
 	while (dest < limit)
 		*dest++ = *src++;
 #endif
+
 	/* Initialize .bss segment by zeroes. */
-	
 	dest = &_edata;
 	limit = &_end;
 	while (dest < limit)

@@ -51,6 +51,11 @@
 #   include <runtime/mips/io-mct02.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
+#ifdef ELVEES_MC0226
+#   define ELVEES	1
+#   include <runtime/mips/io-mc0226.h>
+#   include <runtime/mips/io-elvees.h>
+#endif
 
 /*
  * Offsets of register values in saved context.
@@ -115,6 +120,9 @@
 #endif
 #ifdef ELVEES_MCT02
 #   define MIPS_FSPACE		24	/* for Elvees MCT02-01 */
+#endif
+#ifdef ELVEES_MC0226
+#   define MIPS_FSPACE		24	/* for Elvees MC0226 */
 #endif
 #ifndef MIPS_FSPACE
 #   define MIPS_FSPACE		16	/* default minimum */

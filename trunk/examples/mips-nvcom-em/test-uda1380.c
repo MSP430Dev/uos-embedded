@@ -99,7 +99,7 @@ void uda1380_init()
     else pll = 3;
 
     uda1380_write_reg(UDA1380_CLK, R00_PLL(pll) | R00_DAC_CLK | 
-        R00_ADC_CLK |R00_EN_INT | R00_EN_DAC | R00_EN_DEC | R00_EN_DAC);
+        R00_ADC_CLK | R00_EN_INT | R00_EN_DAC | R00_EN_DEC | R00_EN_DAC);
 
     uda1380_write_reg(UDA1380_PM, R02_PON_PLL | R02_PON_HP |
         R02_PON_DAC | R02_PON_BIAS);
@@ -142,7 +142,7 @@ void init_i2s(int port)
 	MC_MFBSP_TCTR(port) = MC_MFBSP_TNEG | MC_MFBSP_TDEL |
         MC_MFBSP_TWORDCNT(0) | MC_MFBSP_TCSNEG | MC_MFBSP_TMBF |
         MC_MFBSP_TWORDLEN(15) | MC_MFBSP_TPACK | MC_MFBSP_TSWAP |
-        MC_MFBSP_TCS_CONT;
+        MC_MFBSP_TCS_CONT | MC_MFBSP_TCLK_CONT;
 
     MC_MFBSP_TSTART(port) = 1;
 }
@@ -184,8 +184,8 @@ void do_play(void *snd_data, unsigned size)
         return;
     }
 
-    uda1380_init();
     init_i2s(MFBSP_CHANNEL);
+    uda1380_init();
 
     debug_printf("Playing wave, size = %d... ", size);
     tx_dma(MFBSP_CHANNEL, snd_data, size);
