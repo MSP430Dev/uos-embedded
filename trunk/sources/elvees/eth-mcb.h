@@ -55,8 +55,6 @@ typedef struct _eth_t {
 
     unsigned phy;                   /* address of external PHY */
     unsigned long intr;             /* interrupt counter */
-    unsigned char rxbuf_data [ETH_MTU + 8];
-    unsigned char txbuf_data [ETH_MTU + 8];
     unsigned char *rxbuf;           /* aligned rxbuf[] */
     unsigned char *txbuf;           /* aligned txbuf[] */
     unsigned rxbuf_physaddr;        /* phys address of rxbuf[] */
@@ -115,12 +113,20 @@ int eth_mcb_get_carrier (eth_mcb_t *u);
 long eth_mcb_get_speed (eth_mcb_t *u, int *duplex);
 
 //
-// Установить внутреннюю петлю для самотестирования устройства
+// Установить внутреннюю петлю в PHY для самотестирования устройства
 //
 //  u       указатель на структуру, описывающую интерфейс
 //  on      1 - установить петлю, 0 - отключить петлю
 //
-void eth_mcb_set_loop (eth_mcb_t *u, int on);
+void eth_mcb_set_phy_loop (eth_mcb_t *u, int on);
+
+//
+// Установить внутреннюю петлю в MAC для самотестирования устройства
+//
+//  u       указатель на структуру, описывающую интерфейс
+//  on      1 - установить петлю, 0 - отключить петлю
+//
+void eth_mcb_set_mac_loop (eth_mcb_t *u, int on);
 
 //
 // Установить параметры режима прослушивания сети

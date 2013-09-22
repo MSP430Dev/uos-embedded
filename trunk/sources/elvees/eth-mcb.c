@@ -33,21 +33,6 @@
 #define MCB_ETH_IRQ_DMA_TX      3  /* transmit DMA interrupt */
 
 /*
- * Map virtual address to physical address in FM mode.
- */
-static unsigned
-virt_to_phys (unsigned virtaddr)
-{
-    switch (virtaddr >> 28 & 0xE) {
-    default:  return virtaddr + 0x40000000;     /* kuseg */
-    case 0x8: return virtaddr - 0x80000000;     /* kseg0 */
-    case 0xA: return virtaddr - 0xA0000000;     /* kseg1 */
-    case 0xC: return virtaddr;                  /* kseg2 */
-    case 0xE: return virtaddr;                  /* kseg3 */
-    }
-}
-
-/*
  * PHY register write
  */
 static void
@@ -93,10 +78,10 @@ phy_read (eth_mcb_t *u, unsigned address)
         if (! (status & MD_STATUS_BUSY))
             break;
     }
-    debug_printf ((status & MD_STATUS_BUSY) ?
+    /*debug_printf ((status & MD_STATUS_BUSY) ?
         "phy_read(%d, 0x%02x) TIMEOUT\n" :
         "phy_read(%d, 0x%02x) returned 0x%04x\n",
-        u->phy, address, status & MD_STATUS_DATA);
+        u->phy, address, status & MD_STATUS_DATA);*/
     return status & MD_STATUS_DATA;
 }
 
@@ -127,6 +112,7 @@ chip_init (eth_mcb_t *u)
         }
     }
 debug_printf ("phy id = %08X\n", id & PHY_ID_MASK);
+debug_printf ("phy status = %08X\n", phy_read(u, PHY_STS));
 #ifndef NDEBUG
     debug_printf ("eth_init: transceiver `%s' detected at address %d\n",
         ((id & PHY_ID_MASK) == PHY_ID_KS8721BL) ? "KS8721" : "Unknown",
@@ -278,7 +264,7 @@ long eth_mcb_get_speed (eth_mcb_t *u, int *duplex)
     return u->netif.bps;
 }
 
-void eth_mcb_set_loop (eth_mcb_t *u, int on)
+void eth_mcb_set_phy_loop (eth_mcb_t *u, int on)
 {
     unsigned control;
 
@@ -292,6 +278,21 @@ void eth_mcb_set_loop (eth_mcb_t *u, int on)
         control &= ~PHY_CTL_LPBK;
     }
     phy_write (u, PHY_CTL, control);
+    mutex_unlock (&u->netif.lock);
+}
+
+void eth_mcb_set_mac_loop (eth_mcb_t *u, int on)
+{
+    unsigned control;
+
+    mutex_lock (&u->netif.lock);
+
+    control = mcb_read_reg (MCB_MAC_CONTROL);
+    if (on)
+        mcb_write_reg (MCB_MAC_CONTROL, control | MAC_CONTROL_LOOPBACK);
+    else
+        mcb_write_reg (MCB_MAC_CONTROL, control & ~MAC_CONTROL_LOOPBACK);
+
     mutex_unlock (&u->netif.lock);
 }
 
@@ -680,10 +681,10 @@ eth_mcb_init (eth_mcb_t *u, const char *name, int prio, mem_pool_t *pool,
     memcpy (&u->netif.ethaddr, macaddr, 6);
 
     u->pool = pool;
-    u->rxbuf = (unsigned char*) (((unsigned) u->rxbuf_data + 7) & ~7);
-    u->txbuf = (unsigned char*) (((unsigned) u->txbuf_data + 7) & ~7);
-    u->rxbuf_physaddr = virt_to_phys ((unsigned) u->rxbuf);                 // !!!
-    u->txbuf_physaddr = virt_to_phys ((unsigned) u->txbuf);
+    u->rxbuf = (unsigned char*) (MCB_BASE | MCB_DPRAM_BASE(0));
+    u->txbuf = (unsigned char*) (MCB_BASE | (MCB_DPRAM_BASE(0) + 0x1000));
+    u->rxbuf_physaddr = MCB_DPRAM_BASE(0);
+    u->txbuf_physaddr = MCB_DPRAM_BASE(0) + 0x1000;
     buf_queue_init (&u->inq, u->inqdata, sizeof (u->inqdata));
     buf_queue_init (&u->outq, u->outqdata, sizeof (u->outqdata));
 
