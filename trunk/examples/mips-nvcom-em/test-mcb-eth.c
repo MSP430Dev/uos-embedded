@@ -20,7 +20,7 @@ mem_pool_t pool;
 eth_mcb_t eth;
 timer_t timer;
 int packet_size = 1500;
-int local_loop;
+int phy_local_loop, mac_local_loop;
 unsigned char *data_pattern;
 volatile int run_test_flag;
 
@@ -263,8 +263,10 @@ void menu ()
 	printf (&debug, "\n  3. Transmit 100 packets");
 	printf (&debug, "\n  4. Run send/receive test");
 	printf (&debug, "\n  5. Packet size: %d bytes", packet_size);
-	printf (&debug, "\n  6. Local loopback: %s",
-			local_loop ? "Enabled" : "Disabled");
+	printf (&debug, "\n  6. Local PHY loopback: %s",
+			phy_local_loop ? "Enabled" : "Disabled");
+	printf (&debug, "\n  7. Local MAC loopback: %s",
+			mac_local_loop ? "Enabled" : "Disabled");
 	printf (&debug, "\n  0. Start auto-negotiation");
 	puts (&debug, "\n\n");
 	for (;;) {
@@ -315,8 +317,13 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 			break;
 		}
 		if (cmd == '6') {
-			local_loop = ! local_loop;
-			eth_mcb_set_loop (&eth, local_loop);
+			phy_local_loop = ! phy_local_loop;
+			eth_mcb_set_phy_loop (&eth, phy_local_loop);
+			break;
+		}
+		if (cmd == '6') {
+			mac_local_loop = ! mac_local_loop;
+			eth_mcb_set_mac_loop (&eth, mac_local_loop);
 			break;
 		}
 		if (cmd == '0') {
@@ -366,10 +373,21 @@ void uos_init (void)
 	timer_init (&timer, KHZ, 50);
 
     // nCS0 и nCS1 для MCB-03
-    MC_CSCON0 = 0x001F00FC;
-    MC_CSCON1 = 0x001F00FC;
+    MC_CSCON0 = MC_CSCON_AE | MC_CSCON_E | MC_CSCON_WS(1) |
+        MC_CSCON_CSBA(0x00000000) | MC_CSCON_CSMASK(0xFC000000);
+    MC_CSCON1 = MC_CSCON_AE | MC_CSCON_E | MC_CSCON_WS(3) |
+        MC_CSCON_CSBA(0x00000000) | MC_CSCON_CSMASK(0xFC000000);
 
-    debug_printf ("SWIC HW_VER = %d\n", mcb_read_reg(MCB_SWIC_HW_VER(0)));
+    int i;
+    unsigned *p = (unsigned *) (MCB_BASE + MCB_DPRAM_BASE(0));
+    for (i = 0; i < 131072; ++i)
+        *p++ = i;
+
+    p = (unsigned *) (MCB_BASE + MCB_DPRAM_BASE(0));
+    for (i = 0; i< 131072; ++i, ++p)
+        if (*p != i)
+            debug_printf ("expected: %d, got: %d\n", i, *p);
+    debug_printf ("\n\nTest DPRAM finished\n");
 
 	extern unsigned _estack[], __bss_end[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
