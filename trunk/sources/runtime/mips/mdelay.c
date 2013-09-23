@@ -20,13 +20,7 @@
 
 void mdelay (unsigned msec)
 {
-//	PORTB = (1 << 15) | (1 << 12);
-//	TRISB &= ~((1 << 15) | (1 << 12));
-
-debug_printf ("msec = %d\n", msec);
 	while (msec-- > 0) {
-        //PORTBCLR = (1 << 15);
 		udelay (1000);
-        //PORTBSET = (1 << 15);
 	}
 }
