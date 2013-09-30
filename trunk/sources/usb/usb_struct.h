@@ -23,6 +23,21 @@ typedef struct __attribute__ ((packed)) _usb_dev_desc_t
 } usb_dev_desc_t;
 
 //
+// Device_Qualifier descriptor
+//
+typedef struct __attribute__ ((packed)) _usb_qualif_desc_t
+{
+    uint8_t  bLength;               // Length of this descriptor.
+    uint8_t  bDescriptorType;       // Device descriptor type (must be USB_DESC_TYPE_DEVICE).
+    uint16_t bcdUSB;                // USB Spec Release Number (BCD, 0x0200 for USB 2.0).
+    uint8_t  bDeviceClass;          // Class code. 0xFF - Vendor specific.
+    uint8_t  bDeviceSubClass;       // Subclass code.
+    uint8_t  bDeviceProtocol;       // Protocol code. 0xFF - Vendor specific.
+    uint8_t  bMaxPacketSize0;       // Maximum packet size for endpoint 0.
+    uint8_t  bNumConfigurations;    // Number of configurations of this device.
+} usb_qualif_desc_t;
+
+//
 // Configuration descriptor
 //
 typedef struct __attribute__ ((packed)) _usb_conf_desc_t

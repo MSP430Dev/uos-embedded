@@ -195,6 +195,29 @@ typedef struct
 #define ARM_PLL_CONTROL_CPU_MUL(n)  (((n)-1) << 8)  /* Коэффициент умножения для CPU PLL */
 
 /*
+ * Регистр USB_CLOCK
+ */
+/* Биты выбора источника для USB_C1 */
+#define ARM_USB_C1_SEL(x)   ((x) << 0)
+/* Биты выбора источника для USB_C2 */
+#define ARM_USB_C2_SEL(x)   ((x) << 2)
+/* Биты выбора делителя для USB_C3 */
+#define ARM_USB_C3_SEL(x)   ((x) << 4)
+/* Бит разрешения тактирования USB */
+#define ARM_USB_CLK_EN      (1 << 8)
+/* Возможные значения для USB_C1 */
+#define ARM_USB_HSI         0
+#define ARM_USB_HSI_DIV2    1
+#define ARM_USB_HSE         2
+#define ARM_USB_HSE_DIV2    3
+/* Возможные значения для USB_C2 */
+#define ARM_USB_C1          0
+#define ARM_USB_PLLUSBo     1
+/* Возможные значения для USB_C3 */
+#define ARM_USB_C2          0
+#define ARM_USB_C2_DIV2     1
+
+/*
  * Регистр ADC_MCO_CLOCK: управление блоками АЦП
  */
 /* Выбор источника для ADC_C1. Возможные значения см. ниже */
@@ -753,74 +776,188 @@ typedef struct
  */
 typedef struct
 {
-    arm_reg_t ENDPOINT_CONTROL_REG;                 // [4:0] - R/W
-    arm_reg_t ENDPOINT_STATUS_REG;                  // [7:0] - R/W
-    arm_reg_t ENDPOINT_TRANSTYPE_STATUS_REG;        // [1:0] - R/W
-    arm_reg_t ENDPOINT_NAK_TRANSTYPE_STATUS_REG;    // [1:0] - R/W
+    arm_reg_t CTRL;     // Управление очередью нулевой оконечной точки
+    arm_reg_t STS;      // Состояние оконечной точки
+    arm_reg_t TS;       // Состояние типа передачи оконечной точки
+    arm_reg_t NTS;      // Состояние передачи NAK оконечной точки
 } EndPointStatusRegs_t;
 
 typedef struct
 {
-    arm_reg_t EP_RX_FIFO_DATA;              // [7:0] - R/W
-    unsigned reserved1;
-    arm_reg_t EP_RX_FIFO_DATA_COUNTL;       // [15:0] - R/W
-    arm_reg_t EP_RX_FIFO_DATA_COUNTH;       // [15:0] - R/W
-    arm_reg_t EP_RX_FIFO_CONTROL_REG;       // [0:0] - R/W
-    unsigned reserved2 [11];
-    arm_reg_t EP_TX_FIFO_DATA;              // [7:0] - R/W
-    unsigned reserved4 [3];
-    arm_reg_t EP_TX_FIFO_CONTROL_REG;       // [0:0] - R/W
-    unsigned reserved5 [11];
+    arm_reg_t RXFD;     // Принятые данные оконечной точки
+    unsigned gap1;
+    arm_reg_t RXFDC_L;  // Число данных в оконечной точке (мл. часть)
+    arm_reg_t RXFDC_H;  // Число данных в оконечной точке (ст. часть)
+    arm_reg_t RXFC;     // Управление очередью приема оконечной точки
+    unsigned gap2 [11];
+    arm_reg_t TXFD;     // Данные для передачи через оконечную точку
+    unsigned gap3 [3];
+    arm_reg_t TXFC;     // Управление очередью передачи оконечной точки
+    unsigned gap4 [11];
 } EndPointFifoRegs_t;
 
 typedef struct
 {
     // Host Regs
-    arm_reg_t HOST_TX_CONTROL_REG;          // [3:0] - R/W
-    arm_reg_t HOST_TX_TRANS_TYPE_REG;       // [1:0] - R/W
-    arm_reg_t HOST_TX_LINE_CONTROL_REG;     // [4:0] - R/W
-    arm_reg_t HOST_TX_SOF_ENABLE_REG;       // [0:0] - R/W
-    arm_reg_t HOST_TX_ADDR_REG;             // [6:0] - R/W
-    arm_reg_t HOST_TX_ENDP_REG;             // [3:0] - R/W
-    arm_reg_t HOST_FRAME_NUM_REGL;          // [10:0]- R/W
-    arm_reg_t HOST_FRAME_NUM_REGH;          // [10:0]- R/W
-    arm_reg_t HOST_INTERRUPT_STATUS_REG;    // [3:0] - R/O
-    arm_reg_t HOST_INTERRUPT_MASK_REG;      // [3:0] - R/W
-    arm_reg_t HOST_RX_STATUS_REG;           // [7:0] - R/O
-    arm_reg_t HOST_RX_PID_REG;              // [3:0] - R/O
-    arm_reg_t HOST_RX_ADDR_REG;             // [6:0] - R/O
-    arm_reg_t HOST_RX_ENDP_REG;             // [3:0] - R/O
-    arm_reg_t HOST_RX_CONNECT_STATE_REG;    // [1:0] - R/O
-    arm_reg_t HOST_SOF_TIMER_MSB_REG;       // [7:0] - R/O
-    unsigned reserved1 [16];
-    arm_reg_t HOST_RX_FIFO_DATA;            // [7:0] - R/O
-    unsigned reserved2;
-    arm_reg_t HOST_RX_FIFO_DATA_COUNTL;     // [15:0] - R/O
-    arm_reg_t HOST_RX_FIFO_DATA_COUNTH;     // [15:0] - R/O
-    arm_reg_t HOST_RX_FIFO_CONTROL_REG;     // [0:0] - R/W
-    unsigned reserved3 [11];
-    arm_reg_t HOST_TX_FIFO_DATA;            // [7:0] - R/W
-    unsigned reserved4 [3];
-    arm_reg_t HOST_TX_FIFO_CONTROL_REG;     // [0:0] - R/W
-    unsigned reserved5 [11];
+    arm_reg_t HTXC;         // Регистр управления передачей пакетов со стороны хоста
+    arm_reg_t HTXT;         // Регистр задания типа передаваемых пакетов со стороны хоста
+    arm_reg_t HTXLC;        // Регистр управления линиями шины USB
+    arm_reg_t HTXSE;        // Регистр управление автоматической отправки SOF
+    arm_reg_t HTXA;         // Регистр задания адреса устройства для отправки пакета
+    arm_reg_t HTXE;         // Регистр задания номера оконечной точки для отправки пакета
+    arm_reg_t HFN_L;        // Регистр задания номера фрейма для отправки SOF (мл. часть)
+    arm_reg_t HFN_H;        // Регистр задания номера фрейма для отправки SOF (ст. часть)
+    arm_reg_t HIS;          // Регистр флагов событий контроллера хостa
+    arm_reg_t HIM;          // Регистр флагов разрешения прерываний по событиям контроллера хоста
+    arm_reg_t HRXS;         // Регистр состояния очереди приема данных хоста
+    arm_reg_t HRXP;         // Регистр отображения PID принятого пакета
+    arm_reg_t HRXA;         // Регистр отображения адреса устройства, от которого принят пакет
+    arm_reg_t HRXE;         // Регистр отображения номер оконечной точки, от которой принят пакет
+    arm_reg_t HRXCS;        // Регистр отображения состояния подсоединения устройства
+    arm_reg_t HSTM;         // Регистр расчета времени фрейма
+    unsigned gap1 [16];
+    arm_reg_t HRXFD;        // Данные очереди приема
+    unsigned gap2;
+    arm_reg_t HRXDC_L;      // Число принятых данных в очереди (мл. часть)
+    arm_reg_t HRXDC_H;      // Число принятых данных в очереди (ст. часть)
+    arm_reg_t HRXFC;        // Управление очередью приема
+    unsigned gap3 [11];
+    arm_reg_t HTXFD;        // Данные для передачи
+    unsigned gap4 [3];
+    arm_reg_t HTXFC;        // Управление очередью передачи
+    unsigned gap5 [11];
 
     // Slave Regs
-    EndPointStatusRegs_t EndPointStatusRegs [4];
-    arm_reg_t SC_CONTROL_REG;               // [5:0] - R/W
-    arm_reg_t SC_LINE_STATUS_REG;           // [1:0] - R/W
-    arm_reg_t SC_INTERRUPT_STATUS_REG;      // [5:0] - R/W
-    arm_reg_t SC_INTERRUPT_MASK_REG;        // [5:0] - R/W
-    arm_reg_t SC_ADDRESS;                   // [6:0] - R/W
-    arm_reg_t SC_FRAME_NUML;                // [10:0] - R/W
-    arm_reg_t SC_FRAME_NUMH;                // [10:0] - R/W
-    unsigned reserved6 [9];
-    EndPointFifoRegs_t EndPointFifoRegs [4];
+    EndPointStatusRegs_t SEPS [4];
+    
+    arm_reg_t SC;           // Управление контроллеров SLAVE
+    arm_reg_t SLS;          // Отображение состояния линий USB шины
+    arm_reg_t SIS;          // Флаги событий контроллера SLAVE
+    arm_reg_t SIM;          // Флаги разрешения прерываний от контроллера SLAVE
+    arm_reg_t SA;           // Функциональный адрес контроллера
+    arm_reg_t SFN_L;        // Номер фрейма (мл. часть)
+    arm_reg_t SFN_H;        // Номер фрейма (ст. часть)
+    unsigned gap6 [9];
+    
+    EndPointFifoRegs_t SEPF [4];
 
-    arm_reg_t HOST_SLAVE_CONTROL_REG;       // [1:0] - R/W
-    arm_reg_t HOST_SLAVE_VERSION_REG;       // [7:0] - R/O
+    arm_reg_t HSCR;         // Общее управление для контроллера USB интерфейса
+    arm_reg_t HSVR;         // Версия аппаратного контроллера USB интерфейса
 } USB_t;
 
 #define ARM_USB         ((USB_t*) ARM_USB_BASE)
+
+/*
+ * HSCR
+ */
+#define ARM_USB_HOST_MODE           (1 << 0)
+#define ARM_USB_RESET_CORE          (1 << 1)
+#define ARM_USB_EN_TX               (1 << 2)
+#define ARM_USB_EN_RX               (1 << 3)
+#define ARM_USB_D_PLUS_PULLUP       (1 << 4)
+#define ARM_USB_D_PLUS_PULLDOWN     (1 << 5)
+#define ARM_USB_D_MINUS_PULLUP      (1 << 6)
+#define ARM_USB_D_MINUS_PULLDOWN    (1 << 7)
+
+/*
+ * HXTC
+ */
+#define ARM_USB_TREQ                (1 << 0)
+#define ARM_USB_SOFSYNC             (1 << 1)
+#define ARM_USB_PREEN               (1 << 2)
+#define ARM_USB_ISOEN               (1 << 3)
+
+/*
+ * HTXT, Slave TS
+ */
+#define ARM_USB_SETUP_TRANS         0
+#define ARM_USB_IN_TRANS            1
+#define ARM_USB_OUTDATA_TRANS       2 // for TS
+#define ARM_USB_OUTDATA0_TRANS      2
+#define ARM_USB_OUTDATA1_TRANS      3
+
+/*
+ * HTXLC
+ */
+#define ARM_USB_TXLC(x)             ((x) & 0x3)
+#define ARM_USB_DC                  (1 << 2)
+#define ARM_USB_FSPL                (1 << 3)
+#define ARM_USB_FSLR                (1 << 4)
+
+/*
+ * HIS, HIM
+ */
+#define ARM_USB_TDONE               (1 << 0)
+#define ARM_USB_RESUME              (1 << 1)
+#define ARM_USB_CONEV               (1 << 2)
+#define ARM_USB_SOFS                (1 << 3)
+
+/*
+ * HRXS
+ */
+#define ARM_USB_CRCERR              (1 << 0)
+#define ARM_USB_BSERR               (1 << 1)
+#define ARM_USB_RXOF                (1 << 2)
+#define ARM_USB_RXTO                (1 << 3)
+#define ARM_USB_NAK_RXED            (1 << 4)
+#define ARM_USB_STALL_RXED          (1 << 5)
+#define ARM_USB_ACK_RXED            (1 << 6)
+#define ARM_USB_DATASEQ             (1 << 7)
+
+/*
+ * Slave CTRL
+ */
+#define ARM_USB_EPEN                (1 << 0)
+#define ARM_USB_EPRDY               (1 << 1)
+#define ARM_USB_EPDATASEQ           (1 << 2)
+#define ARM_USB_EPSSTALL            (1 << 3)
+#define ARM_USB_EPISOEN             (1 << 4)
+
+/*
+ * Slave STS
+ */
+#define ARM_USB_SC_CRC_ERR          (1 << 0)
+#define ARM_USB_SC_BS_ERR           (1 << 1)
+#define ARM_USB_SC_RXOF             (1 << 2)
+#define ARM_USB_SC_RXTO             (1 << 3)
+#define ARM_USB_NAK_SENT            (1 << 4)
+#define ARM_USB_SC_STALL_SENT       (1 << 5)
+#define ARM_USB_SC_ACK_RXED         (1 << 6)
+#define ARM_USB_SC_DATA_SEQ         (1 << 7)
+
+/*
+ * Slave TS, NTS
+ */
+#define ARM_USB_SC_SETUP_TRANS      0
+#define ARM_USB_SC_IN_TRANS         1
+#define ARM_USB_SC_OUTDATA_TRANS    2
+
+/*
+ * SC
+ */
+#define ARM_USB_SCGEN               (1 << 0)
+#define ARM_USB_SCTXL_D_MINUS       (1 << 1)
+#define ARM_USB_SCTXL_D_PLUS        (1 << 2)
+#define ARM_USB_SCDC                (1 << 3)
+#define ARM_USB_SCFSP               (1 << 4)
+#define ARM_USB_SCFSR               (1 << 5)
+
+/*
+ * SLS
+ */
+#define ARM_USB_SCRXLS_RESET        (1 << 0)
+#define ARM_USB_SCRXLS_LS           (1 << 1)
+#define ARM_USB_SCRXLS_FS           (1 << 2)
+
+/*
+ * SIS, SIM
+ */
+#define ARM_USB_SC_TDONE             (1 << 0)
+#define ARM_USB_SC_RESUME           (1 << 1)
+#define ARM_USB_SC_RESET_EV         (1 << 2)
+#define ARM_USB_SC_SOF_REC          (1 << 3)
+#define ARM_USB_SC_NAK_SENT         (1 << 4)
+
 
 /*------------------------------------------------------
  * DMA Controller

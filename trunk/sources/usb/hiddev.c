@@ -7,9 +7,9 @@ static void hiddev_request_handler (void *tag, usb_setup_pkt_t *setup, uint8_t *
     hiddev_t *h = (hiddev_t *) tag;
     unsigned index;
     static uint8_t uc;
-    
-debug_printf ("hiddev_request_handler, bmRequestType = %02X, bRequest = %u, wValue = %04X\n", 
-    setup->bmRequestType, setup->bRequest, setup->wValue);
+
+//debug_printf ("hiddev_request_handler, RequestType = %u, bRequest = %u, wValue = %04X\n", 
+//    USB_REQ_GET_TYPE(setup->bmRequestType), setup->bRequest, setup->wValue);
     
     if (USB_REQ_GET_TYPE(setup->bmRequestType) == USB_REQ_TYPE_STANDARD) {
         // Standard request
@@ -20,13 +20,13 @@ debug_printf ("hiddev_request_handler, bmRequestType = %02X, bRequest = %u, wVal
     	        case USB_DESC_TYPE_REPORT:
     	            if (index < HIDDEV_NB_REPORTS) {
     	                *data = h->rpt_desc[index];
-    	                *size = MIN(h->rpt_desc_sz[index], setup->wLength);
+    	                *size = h->rpt_desc_sz[index];
     	            }
     	        break;
     	        case USB_DESC_TYPE_PHYSICAL:
     	            if (index < HIDDEV_NB_PHYSICALS) {
     	                *data = h->phys_desc[index];
-    	                *size = MIN(h->phys_desc_sz[index], setup->wLength);
+    	                *size = h->phys_desc_sz[index];
     	            }
     	        break;
     	        default:
