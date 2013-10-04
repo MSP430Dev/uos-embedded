@@ -71,7 +71,7 @@
 #define USB_REQ_TYPE_SPECIFIC   2
 #define USB_REQ_TYPE_RESERVED   3
 // Standard request receivers
-#define USB_REQ_GET_RCV(r)	((r) & 5)
+#define USB_REQ_GET_RCV(r)	((r) & 0x1F)
 #define USB_REQ_RCV_DEVICE      0
 #define USB_REQ_RCV_IFACE       1
 #define USB_REQ_RCV_ENDPOINT    2

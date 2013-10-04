@@ -2,14 +2,14 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-hid
+TEST		= usb-loader
 TESTS		= test-debug.hex test-lcd.hex test-task-lcd.hex tetris.hex
 TESTS		+= test-timer.hex test-timer-lcd.hex test-latency.hex test-tswitch.hex
 TESTS		+= phil-lcd.hex test-user-timer.hex phil-uart.hex
 TESTS		+= spi-master.hex spi-slave.hex test-can.hex
 TESTS		+= test-mac.hex test-eth.hex test-tcp.hex test-udp.hex test-telnetd.hex
 TESTS		+= test-led.hex test-iwdt.hex test-dma.hex test-irq.hex 
-TESTS		+= test-usbdev.hex test-hid.hex test-adc.hex
+TESTS		+= test-usbdev.hex test-hid.hex test-adc.hex usb-loader.hex
 OUTS		= $(TESTS:%.hex=%.elf) #udpping
 
 # Using MILPROG utility.
@@ -21,7 +21,7 @@ all:		$(OUTS) $(TESTS) $(TEST).dis $(TEST).bin
 $(OUTS) $(TESTS): startup.o libuos.a
 
 clean:
-		rm -rf *~ *.[oasi] *.elf *.lst *.dis *.bin .deps $(TESTS) $(MODULES) udpping
+		rm -rf *~ *.[oasi] *.elf *.lst *.dis *.bin *.map .deps $(TESTS) $(MODULES) udpping
 
 probe:
 		$(PROG)

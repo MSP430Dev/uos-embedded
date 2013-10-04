@@ -2,7 +2,7 @@
 
 #define MIN(x,y)    (((x) < (y)) ? (x) : (y))
 
-static void hiddev_request_handler (void *tag, usb_setup_pkt_t *setup, uint8_t **data, int *size)
+static void hiddev_request_handler (usbdev_t *u, void *tag, usb_setup_pkt_t *setup, uint8_t **data, int *size)
 {
     hiddev_t *h = (hiddev_t *) tag;
     unsigned index;

@@ -13,7 +13,7 @@ static mem_pool_t *mem;
 static uint8_t ep_data[USBDEV_EP0_MAX_SIZE];
 static ep_state_t ep_state [USBDEV_MAX_EP_NB];
 
-ARRAY (io_stack, 1000);
+ARRAY (io_stack, 1500);
 
 #if 0
 static void dump (const void *addr, int size)
@@ -68,7 +68,7 @@ static void mldr_ep_wait_out (unsigned ep)
 static void mldr_ep_wait_in (unsigned ep, int pid, const void *data, int size)
 {
 //debug_printf ("ep_wait_in, ep = %d, pid = %d, data @ %p, size = %d\n", ep, pid, data, size);
-    unsigned char *p = data;
+    const unsigned char *p = data;
     ep_state[ep].busy = 1;
     ep_state[ep].last_in_bytes = size;
     ARM_USB->SEPF[ep].TXFC = 1;
@@ -76,6 +76,7 @@ static void mldr_ep_wait_in (unsigned ep, int pid, const void *data, int size)
         ARM_USB->SEPF[ep].TXFD = *p++;
     ARM_USB->SEPS[ep].CTRL = ARM_USB_EPEN | ARM_USB_EPRDY | 
         ((pid == PID_DATA1) ? ARM_USB_EPDATASEQ : 0);
+//debug_printf ("EP%d CTRL = %X\n", ep, ARM_USB->SEPS[ep].CTRL);
 }
 
 static void mldr_ep_stall (unsigned ep, int dir)
@@ -125,11 +126,33 @@ static void mldr_usb_reset ()
     ARM_USB->HSCR |= ARM_USB_EN_TX | ARM_USB_EN_RX;
 }
 
+static void do_usbdev (int ep)
+{
+    static uint8_t *p;
+    static int size;
+    
+    ep_state[ep].busy = 0;
+    if (ARM_USB->SEPS[ep].TS == ARM_USB_IN_TRANS) {
+        ARM_USB->SEPS[ep].STS = 0;
+        ARM_USB->SEPF[ep].TXFC = 1;
+        usbdevhal_in_done (usbdev, ep, ep_state[ep].last_in_bytes);
+    } else {
+        size = ARM_USB->SEPF[ep].RXFDC_H;
+        p = ep_data;
+        while (ARM_USB->SEPF[ep].RXFDC_H)
+            *p++ = ARM_USB->SEPF[ep].RXFD;
+        ARM_USB->SEPF[ep].RXFC = 1;
+        if (ARM_USB->SEPS[ep].TS == ARM_USB_SETUP_TRANS) {
+            usbdevhal_out_done (usbdev, ep, USBDEV_TRANSACTION_SETUP, ep_data, size);
+        } else {
+            usbdevhal_out_done (usbdev, ep, USBDEV_TRANSACTION_OUT, ep_data, size);
+        }
+    }
+}
+
 static void usb_interrupt (void *arg)
 {
-    uint8_t *p;
-    int size;
-    int ep;
+    static int ep;
     
     mutex_lock_irq (io_lock, USB_IRQn, 0, 0);
 
@@ -144,7 +167,7 @@ static void usb_interrupt (void *arg)
             mldr_usb_reset ();
         }
         if (ARM_USB->SIS & ARM_USB->SIM & ARM_USB_SC_SOF_REC) {
-debug_printf ("usb_interrupt: start of frame, SIS = %02X, SIM = %02X, SFN = %d\n", ARM_USB->SIS, ARM_USB->SIM, ARM_USB->SFN_L);
+//debug_printf ("usb_interrupt: start of frame, SIS = %02X, SIM = %02X, SFN = %d\n", ARM_USB->SIS, ARM_USB->SIM, ARM_USB->SFN_L);
             ARM_USB->SIS = ARM_USB_SC_SOF_REC;
         }
         if (ARM_USB->SIS & ARM_USB->SIM & ARM_USB_SC_TDONE) {
@@ -155,35 +178,23 @@ debug_printf ("usb_interrupt: start of frame, SIS = %02X, SIM = %02X, SFN = %d\n
 //debug_printf ("STALL sent\n");
                     ARM_USB->SEPS[ep].CTRL = (ARM_USB->SEPS[ep].CTRL & ~ARM_USB_EPSSTALL) | ARM_USB_EPRDY;
                 } else if ((ARM_USB->SEPS[ep].CTRL & (ARM_USB_EPEN | ARM_USB_EPRDY)) == ARM_USB_EPEN) {
-                    if (ARM_USB->SEPS[ep].TS == ARM_USB_IN_TRANS) {
-                        ARM_USB->SEPS[ep].STS = 0;
-                        ARM_USB->SEPF[ep].TXFC = 1;
-                        ep_state[ep].busy = 0;
-                        usbdevhal_in_done (usbdev, ep, ep_state[ep].last_in_bytes);
-                    } else {
-                        size = ARM_USB->SEPF[ep].RXFDC_H;
-                        p = ep_data;
-                        while (ARM_USB->SEPF[ep].RXFDC_H)
-                            *p++ = ARM_USB->SEPF[ep].RXFD;
-                        ARM_USB->SEPF[ep].RXFC = 1;
-                        if (ARM_USB->SEPS[ep].TS == ARM_USB_SETUP_TRANS) {
-                            usbdevhal_out_done (usbdev, ep, PID_SETUP, ep_data, size);
-                        } else {
-                            usbdevhal_out_done (usbdev, ep, PID_OUT, ep_data, size);
-                        }
-                    }
+                    do_usbdev (ep);
                 }
             }
             ARM_USB->SIS = ARM_USB_SC_TDONE;
         }
         if (ARM_USB->SIS & ARM_USB->SIM & ARM_USB_SC_RESUME) {
-debug_printf ("usb_interrupt: resume\n");
+//debug_printf ("usb_interrupt: resume\n");
             ARM_USB->SIS = ARM_USB_SC_RESUME;
         }
         if (ARM_USB->SIS & ARM_USB->SIM & ARM_USB_SC_NAK_SENT) {
             for (ep = 0; ep < USBDEV_MAX_EP_NB; ++ep) {
                 if ((ARM_USB->SEPS[ep].CTRL & (ARM_USB_EPEN | ARM_USB_EPRDY)) == ARM_USB_EPEN) {
-//debug_printf ("NAK sent, EP%d CTRL = %x\n", ep, ARM_USB->SEPS[ep].CTRL);
+//debug_printf ("NAK sent, EP%d CTRL = %x, STS = %x\n", ep, ARM_USB->SEPS[ep].CTRL, ARM_USB->SEPS[ep].STS);
+
+                    if (ARM_USB->SEPS[ep].STS & ARM_USB_SC_ACK_RXED)
+                        do_usbdev (ep);
+                        
                     if (ARM_USB->SEPS[ep].CTRL & ARM_USB_EPSSTALL)
                         //ARM_USB->SEPS[ep].CTRL |= ARM_USB_EPRDY;
                         ARM_USB->SEPS[ep].CTRL = (ARM_USB->SEPS[ep].CTRL & ~ARM_USB_EPSSTALL) | ARM_USB_EPRDY;

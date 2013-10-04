@@ -16,7 +16,7 @@
 #include <usb/usbdev.h>
 #include <usb/usb_struct.h>
 #include <usb/usb_const.h>
-#include <pic32/usbdevhal.h>
+#include <milandr/usbdevhal.h>
 
 ARRAY (task_space, 0x400);
 
@@ -42,7 +42,7 @@ static const usb_dev_desc_t device_descriptor = {
     1
 };
 
-typedef struct _this_conf_desc_t
+typedef struct __attribute__ ((packed)) _this_conf_desc_t
 {
     usb_conf_desc_t     conf;
     usb_iface_desc_t    iface;
@@ -51,27 +51,27 @@ typedef struct _this_conf_desc_t
 static const this_conf_desc_t config_descriptor = {
     // Configuration descriptor
     {
-        sizeof (usb_conf_desc_t),
-        USB_DESC_TYPE_CONFIG,
-        sizeof (this_conf_desc_t),
-        1,
-        1,
-        0,
-        USB_CONF_ATTR_REQUIRED | USB_CONF_ATTR_SELF_PWR,
-        50,
+        .bLength            = sizeof (usb_conf_desc_t),
+        .bDescriptorType    = USB_DESC_TYPE_CONFIG,
+        .wTotalLength       = sizeof (this_conf_desc_t),
+        .bNumInterfaces     = 1,
+        .bConfigurationValue= 1,
+        .iConfiguration     = 0,
+        .bmAttributes       = USB_CONF_ATTR_REQUIRED | USB_CONF_ATTR_SELF_PWR,
+        .bMaxPower          = 50,
     },
     
     // Interface descriptor
     {
-        sizeof (usb_iface_desc_t),
-        USB_DESC_TYPE_IFACE,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
+        .bLength            = sizeof (usb_iface_desc_t),
+        .bDescriptorType    = USB_DESC_TYPE_IFACE,
+        .bInterfaceNumber   = 0,
+        .bAlternateSettings = 0,
+        .bNumEndpoints      = 0,
+        .bInterfaceClass    = 0,
+        .bInterfaceSubClass = 0,
+        .bInterfaceProtocol = 0,
+        .iInterface         = 0
     }
 };
 
@@ -119,6 +119,7 @@ static void task (void *arg)
     debug_printf ("Free memory: %d bytes\n", mem_available (&pool));
     for (;;) {
         timer_delay (&timer, 1000);
+        debug_printf ("task\n");
     }
 }
 

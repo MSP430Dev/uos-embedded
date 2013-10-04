@@ -6,6 +6,7 @@
 #include <mem/mem-queue.h>
 #include "usb_const.h"
 #include "usb_struct.h"
+#include "usbdev_dfl_settings.h"
 
 //
 // Настроечные параметры стека USB-устройства.
@@ -46,6 +47,14 @@
 #define USBDEV_DIR_IN               1
 
 //
+// Типы транзакций
+// Transaction types
+//
+#define USBDEV_TRANSACTION_OUT      0
+#define USBDEV_TRANSACTION_SETUP    1
+#define USBDEV_TRANSACTION_IN       2
+
+//
 // Состояния устройства
 // Device states
 //
@@ -65,6 +74,7 @@
 #define EP_STATE_WAIT_SETUP         0x001
 #define EP_STATE_WAIT_OUT           0x002
 #define EP_STATE_WAIT_OUT_ACK       0x004
+#define EP_STATE_SETUP_DATA_OUT     0x008
 #define EP_STATE_WAIT_IN            0x010
 #define EP_STATE_WAIT_IN_LAST       0x020
 #define EP_STATE_WAIT_IN_ACK        0x040
@@ -116,7 +126,9 @@ typedef void (*usbdev_ep_stall_func_t) (unsigned ep, int dir);
 
 // Прототип функции-обработчика запросов, специфичных для класса.
 // Обработчик регистрируется в стеке вызовом usbdev_set_class_handler.
-typedef void (*usbdev_specific_t) (void *tag, usb_setup_pkt_t *setup_pkt, unsigned char **data, int *size);
+typedef void (*usbdev_specific_t) (usbdev_t *u, void *tag, usb_setup_pkt_t *setup_pkt, unsigned char **data, int *size);
+
+typedef void (*usbdev_ack_t) (usbdev_t *u, unsigned ep, int dir, void *tag);
 
 // Структура с функциями, вызываемыми стеком USBDEV.
 struct _usbdev_hal_t
@@ -186,7 +198,6 @@ struct __attribute__ ((packed)) _usbdev_t
     void **                 strings;
     unsigned                cur_conf;
     unsigned                usb_addr;
-    int                     state;
     
     mem_pool_t *            pool;
     usbdev_hal_t *          hal;
@@ -198,11 +209,14 @@ struct __attribute__ ((packed)) _usbdev_t
     usbdev_specific_t       dev_specific_handler;
     void *                  dev_specific_tag;
     
+    usbdev_ack_t            ack_handlers [USBDEV_NB_ENDPOINTS] [2];
+    void *                  ack_handler_tags [USBDEV_NB_ENDPOINTS] [2];
+    
     // Statistics
     unsigned                rx_discards;
     unsigned                rx_req;
     unsigned                rx_bad_req;
-    unsigned                rx_bad_pid;
+    unsigned                rx_bad_trans;
     unsigned                rx_bad_len;
     unsigned                ctrl_failed;
     unsigned                out_of_memory;    
@@ -234,7 +248,7 @@ void usbdevhal_in_done (usbdev_t *u, unsigned ep, int size);
 // Эту функцию должен вызвать аппаратный драйвер по окончанию приёма пакета от хосту.
 // ep - номер конечной точки, pid - PID принятого пакета, data - указатель на
 // буфер с принятым пакетом, size - размер пакета.
-void usbdevhal_out_done (usbdev_t *u, unsigned ep, int pid, void *data, int size);
+void usbdevhal_out_done (usbdev_t *u, unsigned ep, int trans_type, void *data, int size);
 
 //
 // USB device API
@@ -245,8 +259,10 @@ void usbdev_set_string_table (usbdev_t *u, const void *st[]);
 void usbdev_set_dev_specific_handler (usbdev_t *u, usbdev_specific_t handler, void *tag);
 void usbdev_set_iface_specific_handler (usbdev_t *u, unsigned if_n, usbdev_specific_t handler, void *tag);
 void usbdev_set_ep_specific_handler (usbdev_t *u, unsigned ep_n, int dir, usbdev_specific_t handler, void *tag);
-void usbdev_set_rx_queue_depth (usbdev_t *u, unsigned ep, int depth);
-void usbdev_send (usbdev_t *u, unsigned ep, const void *data, int size);
-int  usbdev_recv (usbdev_t *u, unsigned ep, void *data, int size);
+void usbdev_set_ack_handler (usbdev_t *u, unsigned ep_n, int dir, usbdev_ack_t handler, void *tag);
+void usbdev_remove_ack_handler (usbdev_t *u, unsigned ep_n, int dir);
+void usbdev_set_rx_queue_depth (usbdev_t *u, unsigned ep_n, int depth);
+void usbdev_send (usbdev_t *u, unsigned ep_n, const void *data, int size);
+int  usbdev_recv (usbdev_t *u, unsigned ep_n, void *data, int size);
 
 #endif
