@@ -237,7 +237,7 @@ watchdog_alive ()
 	/*TODO*/
 }
 
-static void dump_of_death (unsigned *frame, unsigned ipsr)
+static void dump_of_death (unsigned *frame, unsigned sp, unsigned ipsr)
 {
 #ifdef ARM_CORTEX_M1
 	debug_printf ("r0 = %08x     r5 = %08x     r10 = %08x     pc   = %08x\n",
@@ -247,7 +247,7 @@ static void dump_of_death (unsigned *frame, unsigned ipsr)
 	debug_printf ("r2 = %08x     r7 = %08x     r12 = %08x     ipsr = %08x\n",
 		       frame[11],    frame[8],     frame[13],     ipsr);
 	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  iser0 = %08x\n",
-		       frame[12],    frame[0],     frame[17],  frame[4]);
+		       frame[12],    frame[0],     sp,  frame[4]);
 	debug_printf ("r4 = %08x     r9 = %08x     lr  = %08x\n",
 		       frame[5],     frame[1],     frame[14]);
 #else
@@ -258,7 +258,7 @@ static void dump_of_death (unsigned *frame, unsigned ipsr)
 	debug_printf ("r2 = %08x     r7 = %08x     r12 = %08x     ipsr = %08x\n",
 		       frame[11],    frame[3],     frame[13],     ipsr);
 	debug_printf ("r3 = %08x     r8 = %08x     sp  = %08x  basepri = %08x\n",
-		       frame[12],    frame[4],     frame[17],  frame[8]);
+		       frame[12],    frame[4],     sp,  frame[8]);
 	debug_printf ("r4 = %08x     r9 = %08x     lr  = %08x\n",
 		       frame[0],     frame[5],     frame[14]);
 #endif
@@ -303,7 +303,7 @@ _fault_ ()
 	}
 	debug_printf ("\n\n*** 0x%08x: %s\n\n",
 		frame[15], message);
-	dump_of_death (frame, ipsr);
+	dump_of_death (frame, (unsigned)arm_get_stack_pointer(), ipsr);
 }
 
 void __attribute__ ((naked))
@@ -327,7 +327,7 @@ _unexpected_interrupt_ ()
 
 	debug_printf ("\n\n*** 0x%08x: unexpected interrupt #%d\n\n",
 		frame[14], ipsr);
-	dump_of_death (frame, ipsr);
+	dump_of_death (frame, (unsigned)arm_get_stack_pointer(), ipsr);
 }
 
 void __attribute__ ((naked, weak))

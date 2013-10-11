@@ -1,8 +1,8 @@
 /*
  * Карта памяти микросхемы MCB-01.
  */
-#define MCB_RAM_BASE			0xaf000000
-#define MCB_MBA_BASE			0xafc00000
+#define MCB_RAM_BASE			(MCB_BASE | 0x01000000)
+#define MCB_MBA_BASE			(MCB_BASE | 0x01c00000)
 #define MCB_MBA_REG(r)			(*(volatile unsigned*) (MCB_MBA_BASE | (r)))
 
 #define MCB_PERIF(base, reg)		((base) | (reg))
