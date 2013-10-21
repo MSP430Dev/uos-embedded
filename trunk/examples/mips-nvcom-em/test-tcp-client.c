@@ -9,15 +9,26 @@
 #include <net/tcp.h>
 #include <net/arp.h>
 #include <timer/timer.h>
-#include <elvees/eth.h>
+#ifdef ELVEES_MCB03
+#   include <elvees/eth-mcb.h>
+#   define MCB_COMMON_IRQ          34  /* Прерывание от MCB */
+#else
+#   include <elvees/eth.h>
+#endif
+
 
 ARRAY (stack_tcp, 1500);
 ARRAY (stack_con, 1500);
+ARRAY (stack_mcb, 1000);
 ARRAY (group, sizeof(mutex_group_t) + 4 * sizeof(mutex_slot_t));
 ARRAY (arp_data, sizeof(arp_t) + 10 * sizeof(arp_entry_t));
 mem_pool_t pool;
 arp_t *arp;
+#ifdef ELVEES_MCB03
+eth_mcb_t eth_data, *eth = &eth_data;
+#else
 eth_t eth_data, *eth = &eth_data;
+#endif
 route_t route;
 timer_t timer;
 ip_t ip;
@@ -126,14 +137,28 @@ void uos_init (void)
 	 * Create interface eth0
 	 */
 	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
-	eth_init (eth, "eth0", 80, &pool, arp, my_macaddr);
+#ifdef ELVEES_MCB03
+    // nCS0 и nCS1 для MCB-03
+    MC_CSCON0 = MC_CSCON_AE | MC_CSCON_E | MC_CSCON_WS(1) |
+        MC_CSCON_CSBA(0x00000000) | MC_CSCON_CSMASK(0xFC000000);
+    MC_CSCON1 = MC_CSCON_AE | MC_CSCON_E | MC_CSCON_WS(3) |
+        MC_CSCON_CSBA(0x00000000) | MC_CSCON_CSMASK(0xFC000000);
 
-	unsigned char my_ip[] = { 192, 168, 1, 20 };
+    // Включаем обработчик прерываний от MCB
+    mcb_create_interrupt_task (MCB_COMMON_IRQ, 100, 
+        stack_mcb, sizeof (stack_mcb));
+
+    eth_mcb_init (eth, "eth0", 80, &pool, arp, my_macaddr);
+#else
+	eth_init (eth, "eth0", 80, &pool, arp, my_macaddr);
+#endif
+
+	unsigned char my_ip[] = { 11, 11, 11, 10 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
 	
 	task_create (tcp_task, 0, "tcp", 75,
 		stack_tcp, sizeof (stack_tcp));
 		
-    	console_task = task_create (console, 0, "con", 1,
+    console_task = task_create (console, 0, "con", 1,
 		stack_con, sizeof (stack_con));
 }

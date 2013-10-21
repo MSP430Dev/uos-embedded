@@ -1,6 +1,7 @@
 /*
  * Ethernet driver for Elvees NVCom.
  * Copyright (c) 2010 Serge Vakulenko.
+ *               2013 Dmitry Podkhvatilin
  * Based on sources from Ildar F Kaibyshev skif@elvees.com.
  *
  * This file is distributed in the hope that it will be useful, but WITHOUT
@@ -23,14 +24,16 @@
 #include <mem/mem.h>
 #include <buf/buf.h>
 #include <elvees/eth-mcb.h>
-#include <elvees/ks8721bl.h>
-#include <elvees/mcb-03.h>
+#ifdef PHY_LXT971A
+#   include <elvees/lxt971a.h>
+#else
+#   include <elvees/ks8721bl.h>
+#endif
 
-#define MCB_COMMON_IRQ          0  // !!!
-#define MCB_ETH_IRQ_RECEIVE     0  /* receive interrupt */
-#define MCB_ETH_IRQ_TRANSMIT    1  /* transmit interrupt */
-#define MCB_ETH_IRQ_DMA_RX      2  /* receive DMA interrupt */
-#define MCB_ETH_IRQ_DMA_TX      3  /* transmit DMA interrupt */
+#define MCB_ETH_IRQ_RECEIVE     (1 << 0)  /* receive interrupt */
+#define MCB_ETH_IRQ_TRANSMIT    (1 << 1)  /* transmit interrupt */
+#define MCB_ETH_IRQ_DMA_RX      (1 << 2)  /* receive DMA interrupt */
+#define MCB_ETH_IRQ_DMA_TX      (1 << 3)  /* transmit DMA interrupt */
 
 /*
  * PHY register write
@@ -72,7 +75,7 @@ phy_read (eth_mcb_t *u, unsigned address)
         MD_CONTROL_PHY (u->phy) |       /* адрес PHY */
         MD_CONTROL_REG (address));      /* адрес регистра PHY */
 
-    /* Wait until the PHY read completes. */
+    /* Wait until the PHY write completes. */
     for (i=0; i<100000; ++i) {
         status = mcb_read_reg(MCB_MAC_MD_STATUS);
         if (! (status & MD_STATUS_BUSY))
@@ -91,6 +94,9 @@ phy_read (eth_mcb_t *u, unsigned address)
 static void
 chip_init (eth_mcb_t *u)
 {
+#ifdef PHY_LXT971A
+    mdelay(700);
+#endif
     /* Find a device address of PHY transceiver.
      * Count down from 31 to 0, several times. */
     unsigned id, retry = 0;
@@ -111,12 +117,17 @@ chip_init (eth_mcb_t *u)
             }
         }
     }
-debug_printf ("phy id = %08X\n", id & PHY_ID_MASK);
-debug_printf ("phy status = %08X\n", phy_read(u, PHY_STS));
+
 #ifndef NDEBUG
-    debug_printf ("eth_init: transceiver `%s' detected at address %d\n",
+#ifdef PHY_LXT971A
+    debug_printf ("eth_init: transceiver '%s' detected at address %d\n",
+        ((id & PHY_ID_MASK) == PHY_ID_LXT971A) ? "LXT971A" : "Unknown",
+        u->phy);
+#else
+    debug_printf ("eth_init: transceiver '%s' detected at address %d\n",
         ((id & PHY_ID_MASK) == PHY_ID_KS8721BL) ? "KS8721" : "Unknown",
         u->phy);
+#endif
 #endif
     /* Reset transceiver. */
     phy_write (u, PHY_CTL, PHY_CTL_RST);
@@ -126,7 +137,11 @@ debug_printf ("phy status = %08X\n", phy_read(u, PHY_STS));
             break;
     if (count == 0)
         debug_printf ("eth_init: PHY reset failed\n");
+#ifdef PHY_LXT971A
+    phy_write (u, PHY_PCR, PHY_PCR_JABBER_DIS);
+#else
     phy_write (u, PHY_EXTCTL, PHY_EXTCTL_JABBER);
+#endif
 
     /* Perform auto-negotiation. */
     phy_write (u, PHY_ADVRT, PHY_ADVRT_CSMA | PHY_ADVRT_10_HDX |
@@ -137,7 +152,8 @@ debug_printf ("phy status = %08X\n", phy_read(u, PHY_STS));
     mcb_write_reg(MCB_MAC_CONTROL, MAC_CONTROL_CP_TX | 
         MAC_CONTROL_RST_TX | MAC_CONTROL_CP_RX | MAC_CONTROL_RST_RX);
     udelay (10);
-    /*debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);*/
+    while (mcb_read_reg(MCB_MAC_CONTROL) != 0)
+        debug_printf ("MAC_CONTROL: 0x%08x\n", mcb_read_reg(MCB_MAC_CONTROL));
 
     /* Общие режимы. */
     mcb_write_reg(MCB_MAC_CONTROL,
@@ -148,7 +164,7 @@ debug_printf ("phy status = %08X\n", phy_read(u, PHY_STS));
         MAC_CONTROL_IRQ_TX_DONE |   /* прерывание от передачи */
         MAC_CONTROL_IRQ_RX_DONE |   /* прерывание по приёму */
         MAC_CONTROL_IRQ_RX_OVF);     /* прерывание по переполнению */
-    /*debug_printf ("MAC_CONTROL: 0x%08x\n", MC_MAC_CONTROL);*/
+    debug_printf ("MAC_CONTROL: 0x%08x\n", mcb_read_reg(MCB_MAC_CONTROL));
 
     /* Режимы приёма. */
     mcb_write_reg(MCB_MAC_RX_FRAME_CONTROL,
@@ -187,27 +203,47 @@ debug_printf ("phy status = %08X\n", phy_read(u, PHY_STS));
     mcb_write_reg(MCB_MAC_RX_FR_MAXSIZE, ETH_MTU);
 }
 
-void
-eth_mcb_debug (eth_mcb_t *u, struct _stream_t *stream)
+#ifdef PHY_LXT971A
+void eth_mcb_debug (eth_mcb_t *u, struct _stream_t *stream)
 {
-    unsigned short ctl, advrt, sts, extctl;
+	unsigned short ctl, advrt, sts, pcr, sts2;
 
-    mutex_lock (&u->netif.lock);
-    ctl = phy_read (u, PHY_CTL);
-    sts = phy_read (u, PHY_STS);
-    advrt = phy_read (u, PHY_ADVRT);
-    extctl = phy_read (u, PHY_EXTCTL);
-    /*unsigned status_rx = MC_MAC_STATUS_RX;*/
-    /*unsigned status_tx = MC_MAC_STATUS_TX;*/
-    mutex_unlock (&u->netif.lock);
+	mutex_lock (&u->netif.lock);
+	ctl = phy_read (u, PHY_CTL);
+	sts = phy_read (u, PHY_STS);
+	advrt = phy_read (u, PHY_ADVRT);
+	pcr = phy_read (u, PHY_PCR);
+    sts2 = phy_read (u, PHY_STS2);
+	mutex_unlock (&u->netif.lock);
 
-    printf (stream, "CTL=%b\n", ctl, PHY_CTL_BITS);
-    printf (stream, "STS=%b\n", sts, PHY_STS_BITS);
-    printf (stream, "ADVRT=%b\n", advrt, PHY_ADVRT_BITS);
-    printf (stream, "EXTCTL=%b\n", extctl, PHY_EXTCTL_BITS);
-    /*printf (stream, "STATUS_TX=%b\n", status_tx, STATUS_TX_BITS);*/
-    /*printf (stream, "STATUS_RX=%b\n", status_rx, STATUS_RX_BITS);*/
+	printf (stream, "CTL   = %08X\n", ctl);
+    printf (stream, "PCR   = %08X\n", pcr);
+    printf (stream, "ADVRT = %08X\n", advrt);
+	printf (stream, "STS   = %08X\n", sts);
+	printf (stream, "STS2  = %08X\n", sts2);
 }
+#else
+void eth_mcb_debug (eth_mcb_t *u, struct _stream_t *stream)
+{
+	unsigned short ctl, advrt, sts, extctl;
+
+	mutex_lock (&u->netif.lock);
+	ctl = phy_read (u, PHY_CTL);
+	sts = phy_read (u, PHY_STS);
+	advrt = phy_read (u, PHY_ADVRT);
+	extctl = phy_read (u, PHY_EXTCTL);
+	/*unsigned status_rx = MC_MAC_STATUS_RX;*/
+	/*unsigned status_tx = MC_MAC_STATUS_TX;*/
+	mutex_unlock (&u->netif.lock);
+
+	printf (stream, "CTL=%b\n", ctl, PHY_CTL_BITS);
+	printf (stream, "STS=%b\n", sts, PHY_STS_BITS);
+	printf (stream, "ADVRT=%b\n", advrt, PHY_ADVRT_BITS);
+	printf (stream, "EXTCTL=%b\n", extctl, PHY_EXTCTL_BITS);
+	/*printf (stream, "STATUS_TX=%b\n", status_tx, STATUS_TX_BITS);*/
+	/*printf (stream, "STATUS_RX=%b\n", status_rx, STATUS_RX_BITS);*/
+}
+#endif
 
 void eth_mcb_start_negotiation (eth_mcb_t *u)
 {
@@ -229,6 +265,37 @@ int eth_mcb_get_carrier (eth_mcb_t *u)
     return (status & PHY_STS_LINK) != 0;
 }
 
+#ifdef PHY_LXT971A
+long eth_mcb_get_speed (eth_mcb_t *u, int *duplex)
+{
+    unsigned ctl;
+
+    mutex_lock (&u->netif.lock);
+    ctl = phy_read (u, PHY_CTL);
+    mutex_unlock (&u->netif.lock);
+
+    if (duplex) {
+        if (ctl & PHY_CTL_DPLX)
+            *duplex = 1;
+        else *duplex = 0;
+    }
+
+    switch (ctl & PHY_CTL_SPEED_MASK) {
+    case PHY_CTL_SPEED_10:
+        u->netif.bps = 10 * 1000000;
+        break;
+    case PHY_CTL_SPEED_100:
+        u->netif.bps = 100 * 1000000;
+        break;
+    case PHY_CTL_SPEED_1000:
+        u->netif.bps = 1000 * 1000000;
+        break;
+    default:
+        return 0;
+    }
+    return u->netif.bps;
+}
+#else
 long eth_mcb_get_speed (eth_mcb_t *u, int *duplex)
 {
     unsigned extctl;
@@ -263,6 +330,7 @@ long eth_mcb_get_speed (eth_mcb_t *u, int *duplex)
     }
     return u->netif.bps;
 }
+#endif
 
 void eth_mcb_set_phy_loop (eth_mcb_t *u, int on)
 {
@@ -320,6 +388,8 @@ chip_write_txfifo (unsigned physaddr, unsigned nbytes)
 {
 /*debug_printf ("write_txfifo %08x, %d bytes\n", physaddr, nbytes);*/
     /* Set the address and length for DMA. */
+    //volatile unsigned nb = (nbytes + 7) >> 3;
+    //nb <<= 3;
     unsigned csr = MC_DMA_CSR_WN(15) | MC_DMA_CSR_WCX (nbytes - 1);
     
     mcb_write_reg(MCB_IR_EMAC(1), physaddr);
@@ -350,7 +420,9 @@ static void
 chip_read_rxfifo (unsigned physaddr, unsigned nbytes)
 {
     /* Set the address and length for DMA. */
-    unsigned csr = MC_DMA_CSR_WN(15) | MC_DMA_CSR_WCX (nbytes - 1);
+    volatile unsigned nb = (nbytes + 7) >> 3;
+    nb <<= 3;
+    unsigned csr = MC_DMA_CSR_WN(15) | MC_DMA_CSR_WCX (nb - 1);
     mcb_write_reg(MCB_CSR_EMAC(0), csr);
     mcb_write_reg(MCB_IR_EMAC(0), physaddr);
     mcb_write_reg(MCB_CP_EMAC(0), 0);
@@ -405,10 +477,8 @@ chip_transmit_packet (eth_mcb_t *u, buf_t *p)
         TX_FRAME_CONTROL_DISPAD |
         TX_FRAME_CONTROL_LENGTH (len));
     chip_write_txfifo (u->txbuf_physaddr, len);
-/*debug_printf ("!");*/
     mcb_write_reg(MCB_MAC_TX_FRAME_CONTROL,
         mcb_read_reg(MCB_MAC_TX_FRAME_CONTROL) | TX_FRAME_CONTROL_TX_REQ);
-/*debug_printf ("@");*/
 
     ++u->netif.out_packets;
     u->netif.out_bytes += len;
@@ -499,10 +569,11 @@ eth_mcb_set_address (eth_mcb_t *u, unsigned char *addr)
 static void
 eth_mcb_receive_frame (eth_mcb_t *u)
 {
+/*debug_printf ("eth_mcb_receive_frame\n");*/
     unsigned frame_status = mcb_read_reg(MCB_MAC_RX_FRAME_STATUS_FIFO);
     if (! (frame_status & RX_FRAME_STATUS_OK)) {
         /* Invalid frame */
-debug_printf ("eth_receive_data: failed, frame_status=%#08x\n", frame_status);
+/*debug_printf ("eth_receive_data: failed, frame_status=%#08x\n", frame_status);*/
         ++u->netif.in_errors;
         return;
     }
@@ -512,7 +583,7 @@ debug_printf ("eth_receive_data: failed, frame_status=%#08x\n", frame_status);
 
     if (len < 4 || len > ETH_MTU) {
         /* Skip this frame */
-debug_printf ("eth_receive_data: bad length %d bytes, frame_status=%#08x\n", len, frame_status);
+/*debug_printf ("eth_receive_data: bad length %d bytes, frame_status=%#08x\n", len, frame_status);*/
         ++u->netif.in_errors;
         return;
     }
@@ -557,6 +628,7 @@ debug_printf ("eth_receive_data: ignore packet - out of memory\n");
 static unsigned
 handle_receive_interrupt (eth_mcb_t *u)
 {
+/*debug_printf ("handle_receive_interrupt\n");*/
     unsigned active = 0;
     for (;;) {
         unsigned status_rx = mcb_read_reg(MCB_MAC_STATUS_RX);
@@ -591,6 +663,7 @@ handle_receive_interrupt (eth_mcb_t *u)
 static void
 handle_transmit_interrupt (eth_mcb_t *u)
 {
+/*debug_printf ("handle_transmit_interrupt\n");*/
     unsigned status_tx = mcb_read_reg(MCB_MAC_STATUS_TX);
     if (status_tx & STATUS_TX_ONTX_REQ) {
         /* Передачик пока не закончил. */
@@ -631,32 +704,33 @@ eth_mcb_poll (eth_mcb_t *u)
         mutex_signal (&u->netif.lock, 0);
     mutex_unlock (&u->netif.lock);
 
-    mutex_lock (&u->tx_lock);
+    mutex_lock (&u->netif.lock);
 //if (MC_MAC_STATUS_TX & STATUS_TX_DONE)
     handle_transmit_interrupt (u);
-    mutex_unlock (&u->tx_lock);
+    mutex_unlock (&u->netif.lock);
 }
 
 /*
  * Receive interrupt task.
  */
 static void
-eth_mcb_irq_handler (void *arg)
+eth_mcb_irq_rx_handler (void *arg)
 {
     eth_mcb_t *u = arg;
 
-    /* Register receive interrupt. */
-    mutex_lock_irq (&u->netif.lock, MCB_COMMON_IRQ, 0, 0);
+    ++u->intr;
+    while (MCB_MBA_QSTR1 & MCB_ETH_IRQ_RECEIVE)
+        handle_receive_interrupt (u);
+}
 
-    for (;;) {
-        /* Wait for the interrupt. */
-        mutex_wait (&u->netif.lock);
-        ++u->intr;
-        while (MCB_MBA_QSTR & MCB_ETH_IRQ_RECEIVE)
-            handle_receive_interrupt (u);
-        while (MCB_MBA_QSTR & MCB_ETH_IRQ_TRANSMIT)
-            handle_transmit_interrupt (u);            
-    }
+static void
+eth_mcb_irq_tx_handler (void *arg)
+{
+    eth_mcb_t *u = arg;
+
+    ++u->intr;
+    while (MCB_MBA_QSTR1 & MCB_ETH_IRQ_TRANSMIT)
+        handle_transmit_interrupt (u); 
 }
 
 static netif_interface_t eth_interface = {
@@ -692,8 +766,17 @@ eth_mcb_init (eth_mcb_t *u, const char *name, int prio, mem_pool_t *pool,
     chip_init (u);
     
     /* Enable interrupts */
-    MCB_MBA_MASK |= (1 << MCB_ETH_IRQ_RECEIVE) | (1 << MCB_ETH_IRQ_TRANSMIT);
-
-    /* Create receive task. */
-    task_create (eth_mcb_irq_handler, u, "eth-mcb", prio, u->stack, sizeof (u->stack));
+    memset (&u->mcb_irq_rx, 0, sizeof(u->mcb_irq_rx));
+    u->mcb_irq_rx.mask1 = MCB_ETH_IRQ_RECEIVE;
+    u->mcb_irq_rx.handler = eth_mcb_irq_rx_handler;
+    u->mcb_irq_rx.handler_arg = u;
+    u->mcb_irq_rx.handler_lock = &u->netif.lock;
+    mcb_register_interrupt_handler (&u->mcb_irq_rx);
+    
+    memset (&u->mcb_irq_tx, 0, sizeof(u->mcb_irq_tx));
+    u->mcb_irq_tx.mask1 = MCB_ETH_IRQ_TRANSMIT;
+    u->mcb_irq_tx.handler = eth_mcb_irq_tx_handler;
+    u->mcb_irq_tx.handler_arg = u;
+    u->mcb_irq_tx.handler_lock = &u->tx_lock;
+    mcb_register_interrupt_handler (&u->mcb_irq_tx);
 }

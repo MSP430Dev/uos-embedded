@@ -18,14 +18,15 @@ TESTS       += test-i2c.bin test-i2c-ad7416.bin test-uda1380.bin
 endif
 
 ifneq (,$(findstring MCB03,$(CFLAGS)))
-TESTS		+= test-mcb-eth.bin
+TESTS		+= test-mcb-eth.bin test-tcp-serv.bin test-tcp-client.bin
+TESTS		+= test-spw.bin eth-to-swic.bin
 endif
 
 OUTS		= $(TESTS:%.bin=%.elf)
 SREC		= $(TESTS:%.bin=%.srec)
 DIS		    = $(TESTS:%.bin=%.dis)
 
-all:		$(OUTS) $(TESTS) $(SREC) #$(DIS)
+all:		$(OUTS) $(TESTS) $(SREC) $(DIS)
 		$(SIZE) *.elf
 
 $(OUTS) $(TESTS): startup.o libuos.a

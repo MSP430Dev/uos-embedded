@@ -22,6 +22,7 @@
 
 #include <net/netif.h>
 #include <buf/buf-queue.h>
+#include <elvees/mcb-03.h>
 
 #ifndef ETH_STACKSZ
 #   define ETH_STACKSZ      1000
@@ -59,8 +60,9 @@ typedef struct _eth_t {
     unsigned char *txbuf;           /* aligned txbuf[] */
     unsigned rxbuf_physaddr;        /* phys address of rxbuf[] */
     unsigned txbuf_physaddr;        /* phys address of txbuf[] */
-
-    ARRAY (stack, ETH_STACKSZ);     /* stack for receive task */
+    
+    mcb_intr_handler_t mcb_irq_rx;
+    mcb_intr_handler_t mcb_irq_tx;
 } eth_mcb_t;
 
 //

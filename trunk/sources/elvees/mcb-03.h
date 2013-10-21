@@ -10,6 +10,11 @@
  * #define MCB_BASE     0xae000000
  * #include <elvees/mcb.h>
  */
+#ifndef _MCB_03_H_
+#define _MCB_03_H_
+
+#include <runtime/lib.h>
+#include <kernel/uos.h>
 
 #define MCB_PERIF(base, reg)    ((base) | (reg))
 #define MCB_DPRAM_BASE(n)       (0x01000000 + ((n) << 17))
@@ -41,6 +46,20 @@
  */
 unsigned mcb_read_reg (unsigned addr);
 void mcb_write_reg (unsigned addr, unsigned value);
+
+typedef void (* mcb_interrupt_handler_t) (void *);
+
+typedef struct _mcb_intr_handler_t {
+    list_t                  item;
+    unsigned long           mask0;
+    unsigned long           mask1;
+    mcb_interrupt_handler_t handler;
+    void *                  handler_arg;
+    mutex_t *               handler_lock;
+} mcb_intr_handler_t;
+
+void mcb_create_interrupt_task (int irq, int prio, void *stack, int stacksz);
+void mcb_register_interrupt_handler (mcb_intr_handler_t *ih);
 
 /*
  * Регистры контроля по коду Хэмминга памяти DPRAM
@@ -185,3 +204,4 @@ void mcb_write_reg (unsigned addr, unsigned value);
 #define MCB_SWIC_TX_DATA_IR(n)  MCB_SWIC_DMA_REG(n,0xc8) /* Индексный регистр канала TX_DATA */
 #define MCB_SWIC_TX_DATA_RUN(n) MCB_SWIC_DMA_REG(n,0xcc) /* Псевдорегистр управления битом RUN TX_DATA */
 
+#endif /*_MCB_03_H_*/

@@ -14,6 +14,9 @@
 #define SDRAM_START	0xA1000000
 #define SDRAM_SIZE	(16*1024*1024)
 
+#define MCB_COMMON_IRQ          34  /* Прерывание от MCB */
+
+ARRAY (stack_mcb, 1000);
 ARRAY (stack_console, 1500);		/* Task: menu on console */
 ARRAY (stack_test, 1000);		/* Task: transmit/receive packets */
 mem_pool_t pool;
@@ -269,6 +272,7 @@ void menu ()
 			mac_local_loop ? "Enabled" : "Disabled");
 	printf (&debug, "\n  0. Start auto-negotiation");
 	puts (&debug, "\n\n");
+    
 	for (;;) {
 		/* Ввод команды. */
 		puts (&debug, "Command: ");
@@ -321,7 +325,7 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 			eth_mcb_set_phy_loop (&eth, phy_local_loop);
 			break;
 		}
-		if (cmd == '6') {
+		if (cmd == '7') {
 			mac_local_loop = ! mac_local_loop;
 			eth_mcb_set_mac_loop (&eth, mac_local_loop);
 			break;
@@ -344,7 +348,7 @@ try_again:		printf (&debug, "Enter packet size (1-1518): ");
 			task_print (&debug, 0);
 			task_print (&debug, (task_t*) stack_console);
 			task_print (&debug, (task_t*) stack_test);
-			task_print (&debug, (task_t*) eth.stack);
+			task_print (&debug, (task_t*) stack_mcb);
 			putchar (&debug, '\n');
 			continue;
 		}
@@ -365,7 +369,7 @@ void main_console (void *data)
 	if (packet_size >= 12)
 		memcpy (data_pattern+6, eth.netif.ethaddr, 6);
 	for (;;)
-		menu ();
+            menu ();
 }
 
 void uos_init (void)
@@ -391,6 +395,10 @@ void uos_init (void)
 
 	extern unsigned _estack[], __bss_end[];
 	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
+
+    // Включаем обработчик прерываний от MCB
+    mcb_create_interrupt_task (MCB_COMMON_IRQ, 100, 
+        stack_mcb, sizeof (stack_mcb));
 
 	const unsigned char my_macaddr[] = { 0, 9, 0x94, 0xf1, 0xf2, 0xf3 };
 	eth_mcb_init (&eth, "eth0", 80, &pool, 0, my_macaddr);

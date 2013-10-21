@@ -9,7 +9,7 @@ OUTPUT_ARCH(mips)
 MEMORY
 {
   flash  (rx)   : ORIGIN = 0x9fc00000,	LENGTH = 16M
-  cram   (rw!x) : ORIGIN = 0x98000000,	LENGTH = 128K
+  cram   (rw!x) : ORIGIN = 0x98000000,	LENGTH = 32K
   xyram0 (rw!x) : ORIGIN = 0xb8400000,	LENGTH = 128K
   pram0  (rw!x) : ORIGIN = 0xb8440000,	LENGTH = 32K
   xyram1 (rw!x) : ORIGIN = 0xb8800000,	LENGTH = 128K

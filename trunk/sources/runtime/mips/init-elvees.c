@@ -248,16 +248,6 @@ void __attribute ((noreturn))_init_ (void)
 	MC_RTCSR = 0;
 #endif
 	MC_WTCSR = 0;
-#ifdef MC_HAVE_SWIC
-	MC_SWIC_RX_DESC_CSR(0) = 0;
-	MC_SWIC_RX_DESC_CSR(1) = 0;
-	MC_SWIC_RX_DATA_CSR(0) = 0;
-	MC_SWIC_RX_DATA_CSR(1) = 0;
-	MC_SWIC_TX_DESC_CSR(0) = 0;
-	MC_SWIC_TX_DESC_CSR(1) = 0;
-	MC_SWIC_TX_DATA_CSR(0) = 0;
-	MC_SWIC_TX_DATA_CSR(1) = 0;
-#endif
 #ifdef MC_CSR_LPCH
 	MC_CSR_LPCH(0) = 0;
 	MC_CSR_LPCH(1) = 0;
