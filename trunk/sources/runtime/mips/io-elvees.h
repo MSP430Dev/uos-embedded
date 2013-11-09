@@ -863,6 +863,8 @@
 #define MC_MFBSP_TSR_TBF		(1 << 1)
 #define MC_MFBSP_TSR_TBHF		(1 << 2)
 #define MC_MFBSP_TSR_TBLL		(1 << 3)
+#define MC_MFBSP_TSR_TSBE		(1 << 4)
+#define MC_MFBSP_TSR_TSBF		(1 << 5)
 #define MC_MFBSP_TSR_TXBUF_R		(1 << 8)
 #define MC_MFBSP_TSR_TXBUF_D		(1 << 9)
 #define MC_MFBSP_TSR_TXBUF		(1 << 10)

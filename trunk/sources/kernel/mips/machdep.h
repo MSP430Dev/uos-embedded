@@ -70,14 +70,14 @@
  * 4 interrupts linked to MASKR1[3:0] register.
  * 16 interrupts linked to MASKR2[15:0] register.
  */
-#define ARCH_INTERRUPTS		(32+4+16)
+#define ARCH_INTERRUPTS		(32+4+30)
 #endif
 
 #ifdef ELVEES_NVCOM02
 /*
  * TODO
  */
-#define ARCH_INTERRUPTS		(32+4+16)
+#define ARCH_INTERRUPTS		(32+4+30)
 #endif
 
 #ifdef ELVEES_MCT02

@@ -2,13 +2,14 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-eth
+TEST		= test-m25pxx
 TESTS		+= test-debug.bin test-task.bin test-timer.bin test-uart.bin
 TESTS		+= philosophers.bin test-ram.bin
 TESTS           += test-latency.bin test-tswitch.bin #test-fpu.bin
 TESTS		+= test-dcache.bin #test-tcl.bin
 #TESTS		+= dhrystone.bin linpack.bin whetstone.bin #livermore.bin
 #TESTS		+= coremark.bin
+TESTS       += test-m25pxx.bin
 
 ifneq (,$(findstring NVCOM,$(CFLAGS)))
 TESTS           += test-mac.bin test-eth.bin
