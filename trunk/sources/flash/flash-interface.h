@@ -24,11 +24,10 @@ struct _flashif_t
     int (* erase_all)(flashif_t *flash);
     int (* erase_sector)(flashif_t *flash, unsigned address);
     int (* program_page)(flashif_t *flash, unsigned address, void *data, unsigned size);
+    unsigned (* page_address)(flashif_t *flash, unsigned page_num);
+    unsigned (* sector_address)(flashif_t *flash, unsigned sector_num);
     // required if direct_read is false, otherwise optional
     int (* read)(flashif_t *flash, unsigned address, void *data, unsigned size);
-    // optional
-    int (* power_down)(flashif_t *flash);
-    int (* wake_up)(flashif_t *flash);
 };
 
 static inline __attribute__((always_inline)) 
@@ -130,19 +129,16 @@ int flash_read(flashif_t *flash, unsigned address, void *data, unsigned size)
 }
 
 static inline __attribute__((always_inline))
-int flash_power_down(flashif_t *flash)
+unsigned flash_page_address(flashif_t *flash, unsigned page_num)
 {
-    if (flash->power_down)
-        return flash->power_down(flash);
-    else return FLASH_ERR_NOT_SUPP;
+    return flash->page_address(flash, page_num);
 }
 
 static inline __attribute__((always_inline))
-int flash_wake_up(flashif_t *flash)
+unsigned flash_sector_address(flashif_t *flash, unsigned sector_num)
 {
-    if (flash->wake_up)
-        return flash->wake_up(flash);
-    else return FLASH_ERR_NOT_SUPP;
+    return flash->sector_address(flash, sector_num);
 }
+
 
 #endif

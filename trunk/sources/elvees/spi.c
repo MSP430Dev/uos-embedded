@@ -80,6 +80,14 @@ init_hw(elvees_spim_t *spi, unsigned freq, unsigned bits_per_word,
             MC_MFBSP_TCTR(spi->port) &= ~MC_MFBSP_TDEL;
         }
 
+        if (mode & SPI_MODE_LSB_FIRST) {
+            MC_MFBSP_RCTR(spi->port) &= ~MC_MFBSP_RMBF;
+            MC_MFBSP_TCTR(spi->port) &= ~MC_MFBSP_TMBF;
+        } else {
+            MC_MFBSP_RCTR(spi->port) |= MC_MFBSP_RMBF;
+            MC_MFBSP_TCTR(spi->port) |= MC_MFBSP_TMBF;
+        }            
+
         spi->last_mode = mode;
     }
     if (bits_per_word != spi->last_bits) {
