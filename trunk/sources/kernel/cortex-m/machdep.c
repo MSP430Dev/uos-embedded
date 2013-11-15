@@ -279,12 +279,16 @@ arch_build_stack_frame (task_t *t, void (*func) (void*), void *arg,
  * into initial context of each task.
  */
 #ifdef ARM_CORTEX_M1
+unsigned __cortex_m1_iser0;
+
 void
 uos_post_init ()
 {
 	task_t *t;
 	unsigned *stack_iser0;
+
 	list_iterate (t, &task_active) {
+
 		unsigned stack_size = t->ticks;
 		if (stack_size != 0) {
 			stack_iser0 = (unsigned*) ((char*) t + stack_size - 13*4);
@@ -292,5 +296,9 @@ uos_post_init ()
 			t->ticks = 0;
 		}
 	}
+
+	__cortex_m1_iser0 = ARM_NVIC_ISER(0);
+	ARM_NVIC_ICER(0) = 0xFFFFFFFF;
+	arm_set_primask(0);
 }
 #endif

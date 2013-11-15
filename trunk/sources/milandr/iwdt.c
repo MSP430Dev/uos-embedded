@@ -20,21 +20,21 @@
 #include <runtime/lib.h>
 #include <stream/stream.h>
 
-void init_iwdt(unsigned timeout)
+void iwdt_init(unsigned timeout)
 {
 	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_IWDT;
 	ARM_IWDG->KR = ARM_IWDG_KEY_UNBLOCK;
 	while (ARM_IWDG->SR & ARM_IWDG_PVU);
-	ARM_IWDG->PR = ARM_IWDG_PR(3);                  // 1 тик таймера - 800 мкс
+	// Используется входная частота 32 кГц от генератора LSE.
+	// Делим её на 32, получаем 1 тик IWDT = 1 мс
+	ARM_IWDG->PR = ARM_IWDG_PR(3);
 	while (ARM_IWDG->SR & ARM_IWDG_RVU);
-debug_printf("RLR = %X\n", ARM_IWDG_RLR((timeout*1000)/800 + 1));	
-	ARM_IWDG->RLR = ARM_IWDG_RLR((timeout*1000)/800 + 1);
-debug_printf("before start\n");
+	ARM_IWDG->RLR = ARM_IWDG_RLR(timeout + 1);
 	ARM_IWDG->KR = ARM_IWDG_KEY_START;
 	ARM_IWDG->KR = ARM_IWDG_KEY_ALIVE;
 }
 
-void ack_iwdt()
+void iwdt_ack()
 {
 	ARM_IWDG->KR = ARM_IWDG_KEY_ALIVE;
 }

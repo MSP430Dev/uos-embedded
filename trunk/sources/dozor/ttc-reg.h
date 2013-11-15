@@ -18,7 +18,10 @@
  * Адреса внутренней памяти.
  */
 #define TTC_DATA_BASE       0x0000  /* Принимаемые и передаваемые пакеты */
-#define TTC_MEDL_BASE       0xe000  /* Таблица расписания MEDL */
+#define TTC_MODE_BASE       0xe000  /* Таблица дескрипторов режимов */
+#define TTC_DELAY_BASE      0xe100  /* Таблица задержек */
+#define TTC_MEDL_BASE       0xe120  /* Таблица расписания MEDL */
+
 #define TTC_REG_BASE        0xfe00  /* Управляющие регистры */
 
 #ifdef TTC_MILANDR
@@ -182,7 +185,7 @@
 /*
  * SPDR - start packet delay register, 32 R/W
  */
-#define TTC_SPDR    TTC_REG_ARDR (0x9c)
+#define TTC_SPDR    TTC_REG_ADDR (0x9c)
 
 /*
  * DAR - data access register, 32 R/W
@@ -307,6 +310,12 @@ struct _cluster_mode_t {
     uint32_t    nbdr;       /* Делитель частоты передачи */
 };
 typedef struct _cluster_mode_t cluster_mode_t;
+
+struct _delay_table_item_t {
+    unsigned node_low   :   4;
+    unsigned node_hi    :   4;
+} __attribute__((__packed__));
+typedef struct _delay_table_item_t delay_table_item_t;
 
 /* Конец описания регистров контроллера TTP.
  *----------------------------------------------*/

@@ -37,7 +37,7 @@ void ttc_init (ttc_t *ttc, int ttc_num, int over_spi, int spi_port, unsigned nse
 void ttc_set_int_handler (ttc_t *ttc, int irq, ttc_int_handler_t ih, int positive)
 {
 	if (positive)
-		ttc_write16 (ttc, TTC_GCR, TTC_GCR_IRQ_POSITIVE);
+		ttc_write16 (ttc, TTC_GCR, TTC_IRQP);
 	else
 		ttc_write16 (ttc, TTC_GCR, 0);
 	ttc->irq = irq;
@@ -58,11 +58,11 @@ void ttc_reset (ttc_t *ttc)
 {
 	mutex_lock (&ttc->lock);
 	ttc->need_lock = 0;
-	ttc_write16 (ttc, TTC_GCR, TTC_GCR_GRST);
+	ttc_write16 (ttc, TTC_GCR, TTC_GRST);
 	udelay (1);
 	ttc_write16 (ttc, TTC_GCR, 0);
 	if (ttc->irq_positive) {
-		ttc_write16 (ttc, TTC_GCR, TTC_GCR_IRQ_POSITIVE);
+		ttc_write16 (ttc, TTC_GCR, TTC_IRQP);
 	}
 	ttc->need_lock = 1;
 	mutex_unlock (&ttc->lock);
@@ -205,12 +205,12 @@ int ttc_get_data32 (ttc_t *ttc, uint32_t *result,
 
 	/* Анализируем статусы обеих копий и выбираем правильное значение. */
 	s = ttc_read32 (ttc, addr_status0);
-	if (s & TTC_RSR_RDN) {
+	if (s & TTC_RDN) {
 		*result = ttc_read32 (ttc, addr0);
 		return 1;
 	}
 	s = ttc_read32 (ttc, addr_status1);
-	if (s & TTC_RSR_RDN) {
+	if (s & TTC_RDN) {
 		*result = ttc_read32 (ttc, addr1);
 		return 1;
 	}
@@ -227,14 +227,14 @@ int ttc_wait_start_packet (ttc_t *ttc, unsigned addr_status0, unsigned addr_stat
 {
 	uint32_t params;
 
-	ttc_write16 (ttc, TTC_GSR, TTC_GSR_CCL);
+	ttc_write16 (ttc, TTC_GSR, TTC_CCL);
 	for (;;) {
 		int s;
 
 		s = ttc_read32 (ttc, addr_status0);
 debug_printf ("<status0=%04x ", s);
 		if (s) {
-			if (s & TTC_RSR_STRT) {
+			if (s & TTC_RSN) {
 				/* Принят стартовый пакет с шины 0. */
 				params = ttc_read32 (ttc, addr_status0 + 4);
 				*start_node = params >> 24;
@@ -248,7 +248,7 @@ debug_printf ("<status0=%04x ", s);
 		s = ttc_read32 (ttc, addr_status1);
 debug_printf ("status1=%04x ", s);
 		if (s) {
-			if (s & TTC_RSR_STRT) {
+			if (s & TTC_RSN) {
 				/* Принят стартовый пакет с шины 1. */
 				params = ttc_read32 (ttc, addr_status1 + 4);
 				*start_node = params >> 24;
@@ -265,7 +265,7 @@ debug_printf ("rspc0=%04x ", s);
 debug_printf ("rspc1=%04x ", s);
 		s = ttc_read16 (ttc, TTC_GSR);
 debug_printf ("GSR=%04x>\n", s);
-		if (s & TTC_GSR_CCL) {
+		if (s & TTC_CCL) {
 			/* Закончился цикл кластера. */
 			return 0;
 		}

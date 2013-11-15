@@ -20,15 +20,15 @@
 #ifndef MILANDR_IWDG_H_
 #define MILANDR_IWDG_H_
 
-/*
- * Initialize IWDT.
- * timeout - watchdog timeout in milliseconds
- */
-void init_iwdt(unsigned timeout);
+//
+// Инициализация сторожевого таймера процессора (IWDT).
+//     timeout - время до сброса процессора в миллисекундах.
+//
+void iwdt_init(unsigned timeout);
 
-/*
- * Acknowledge the watchdog so that it won't reset the processor.
- */
-void ack_iwdt();
+//
+// Сброс сторожевого таймера в исходное значение.
+//
+void iwdt_ack();
 
-#endif /* MILANDR_IWDG_H_ */
+#endif // MILANDR_IWDG_H_

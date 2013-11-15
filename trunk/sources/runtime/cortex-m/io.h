@@ -71,86 +71,6 @@ unsigned arm_get_register (int reg)
 	return val;
 }
 
-/*
- * Disable and restore the hardware interrupts,
- * saving the interrupt enable flag into the supplied variable.
- */
-
-static void inline __attribute__ ((always_inline))
-arm_intr_disable (unsigned long *x)
-{
-#ifdef ARM_CORTEX_M1
-	asm volatile (
-	"push   {r1} \n"
-	"mov	r1, #1 \n"
-	"msr	primask, r1");
-
-    *x = ARM_NVIC_ISER(0);
-    ARM_NVIC_ICER(0) = 0xFFFFFFFF;
-    
-	asm volatile (
-	"mov	r1, #0 \n"
-	"msr	primask, r1 \n"
-	"pop    {r1}");
-#else
-	unsigned long temp;
-	
-	asm volatile (
-	"mrs	%1, basepri \n"		/* Cortex-M3 mode */
-	"mov	%0, #64 \n"		/* basepri := 64 */
-	"msr	basepri, %0"
-	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
-#endif
-}
-
-static void inline __attribute__ ((always_inline))
-arm_intr_restore (unsigned long x)
-{
-#ifdef ARM_CORTEX_M1
-    ARM_NVIC_ISER(0) = x;
-#else
-	asm volatile (
-	"msr	basepri, %0"		/* Cortex-M3 mode */
-	: : "r" (x) : "memory", "cc");
-#endif
-}
-
-static void inline __attribute__ ((always_inline))
-arm_intr_enable ()
-{
-#ifdef ARM_CORTEX_M1
-	asm volatile (
-	"msr	primask, %0"		/* Cortex-M1 mode */
-	: : "r" (0) : "memory", "cc");
-#else
-	asm volatile (
-	"msr	basepri, %0"		/* Cortex-M3 mode */
-	: : "r" (0) : "memory", "cc");
-#endif
-}
-
-static void inline __attribute__ ((always_inline))
-arm_bus_yield ()
-{
-	asm volatile (
-	"wfi"
-	: : : "memory", "cc");
-}
-
-/*
- * Read IPSR register.
- */
-static inline __attribute__ ((always_inline))
-unsigned arm_get_ipsr ()
-{
-	unsigned x;
-
-	asm volatile (
-	"mrs	%0, ipsr"
-	: "=r" (x));
-	return x;
-}
-
 #ifdef ARM_CORTEX_M1
 /*
  * Read PRIMASK register.
@@ -202,6 +122,82 @@ arm_set_basepri (unsigned val)
 	: : "r" (val) : "memory", "cc");
 }
 #endif
+
+/*
+ * Disable and restore the hardware interrupts,
+ * saving the interrupt enable flag into the supplied variable.
+ */
+static void inline __attribute__ ((always_inline))
+arm_intr_disable (unsigned long *x)
+{
+#ifdef ARM_CORTEX_M1
+	register int primask = arm_get_primask();
+	arm_set_primask(1);
+    *x = ARM_NVIC_ISER(0);
+    ARM_NVIC_ICER(0) = 0xFFFFFFFF;
+	arm_set_primask(primask);
+#else
+	unsigned long temp;
+	
+	asm volatile (
+	"mrs	%1, basepri \n"		/* Cortex-M3 mode */
+	"mov	%0, #64 \n"		/* basepri := 64 */
+	"msr	basepri, %0"
+	: "=r" (temp), "=r" (*(x)) : : "memory", "cc");
+#endif
+}
+
+static void inline __attribute__ ((always_inline))
+arm_intr_restore (unsigned long x)
+{
+#ifdef ARM_CORTEX_M1
+    ARM_NVIC_ISER(0) = x;
+#else
+	asm volatile (
+	"msr	basepri, %0"		/* Cortex-M3 mode */
+	: : "r" (x) : "memory", "cc");
+#endif
+}
+
+static void inline __attribute__ ((always_inline))
+arm_intr_enable ()
+{
+#ifdef ARM_CORTEX_M1
+	extern unsigned __cortex_m1_iser0;
+	ARM_NVIC_ISER(0) = __cortex_m1_iser0;
+	/*
+	asm volatile (
+	"msr	primask, %0"
+	: : "r" (0) : "memory", "cc");
+	*/
+#else
+	asm volatile (
+	"msr	basepri, %0"
+	: : "r" (0) : "memory", "cc");
+#endif
+}
+
+static void inline __attribute__ ((always_inline))
+arm_bus_yield ()
+{
+	asm volatile (
+	"wfi"
+	: : : "memory", "cc");
+}
+
+/*
+ * Read IPSR register.
+ */
+static inline __attribute__ ((always_inline))
+unsigned arm_get_ipsr ()
+{
+	unsigned x;
+
+	asm volatile (
+	"mrs	%0, ipsr"
+	: "=r" (x));
+	return x;
+}
 
 static void inline __attribute__ ((always_inline))
 arm_set_control (unsigned val)

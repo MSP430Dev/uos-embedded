@@ -10,14 +10,11 @@ ARRAY (task, 1000);
 
 void hello (void *arg)
 {
-    unsigned counter = 0;
+    init_iwdt (20);
     
 	for (;;) {
-	    debug_printf ("hello\n");
-	    mdelay(200);
-	    if (++counter > 9) {
-	        //ack_iwdt ();
-	    }
+	    debug_printf ("*");
+	    ack_iwdt ();
 	}
 }
 
@@ -26,6 +23,4 @@ void uos_init (void)
 	debug_puts ("\nTesting IWDT\r\n\n");
 	
 	task_create (hello, "Hello!", "hello", 1, task, sizeof (task));
-	
-	init_iwdt (2000);
 }
