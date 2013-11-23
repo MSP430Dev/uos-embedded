@@ -29,305 +29,211 @@
 #define IRQ_SSP2	20
 #define IRQ_SSP3	19
 
-/*
- * Initialize queue.
- */
-static inline __attribute__((always_inline))
-void spi_queue_init (spi_queue_t *q)
+
+static inline int
+init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mode)
 {
-	q->tail = q->queue;
-	q->count = 0;
-}
+    SSP_t *reg = spi->reg;
+    
+    if (freq != spi->last_freq) {
+        reg->CR1 &= ~ARM_SSP_CR1_SSE;
 
-/*
- * Add a packet to queue.
- * Before call, a user should check that the queue is not full.
- */
-static inline __attribute__((always_inline))
-void spi_queue_put (spi_queue_t *q, unsigned short word)
-{
-	unsigned short *head;
+        unsigned div = (KHZ * (1000000000 / freq) + 1999999) / 2000000 - 1;
+        if (div > 0xFF) {
+            debug_printf ("SPI Master %d: too low frequency!\n", spi->port);
+            spi->last_freq = 0;
+            return SPI_ERR_BAD_FREQ;
+        }
 
-	/*debug_printf ("spi_queue_put: p = 0x%04x, count = %d, head = 0x%04x\n", p, q->count, q->head);*/
-
-	/* Must be called ONLY when queue is not full. */
-	assert (q->count < SPI_QUEUE_SIZE);
-
-	/* Compute the last place in the queue. */
-	head = q->tail - q->count;
-	if (head < q->queue)
-		head += SPI_QUEUE_SIZE;
-
-	/* Put the packet in. */
-	*head = word;
-	++q->count;
-	/*debug_printf ("    on return count = %d, head = 0x%04x\n", q->count, q->head);*/
-}
-
-/*
- * Get a packet from queue.
- * When empty, returns 0.
- */
-static inline __attribute__((always_inline))
-unsigned short spi_queue_get (spi_queue_t *q)
-{
-	unsigned word = 0;
-	assert (q->tail >= q->queue);
-	assert (q->tail < q->queue + SPI_QUEUE_SIZE);
-	if (q->count > 0) {
-		/* Get the first packet from queue. */
-		word = *q->tail;
-
-		/* Advance head pointer. */
-		if (--q->tail < q->queue)
-			q->tail += SPI_QUEUE_SIZE;
-		--q->count;
-	}
-	return word;
-}
-
-/*
- * Check that queue is full.
- */
-static inline __attribute__((always_inline))
-bool_t spi_queue_is_full (spi_queue_t *q)
-{
-	return (q->count == SPI_QUEUE_SIZE);
-}
-
-/*
- * Check that queue is empty.
- */
-static inline __attribute__((always_inline))
-bool_t spi_queue_is_empty (spi_queue_t *q)
-{
-	return (q->count == 0);
-}
-
-/*
- * Инициализация внешних сигналов SSP1.
- */
-static void spi_setup_ssp1 ()
-{
-	/* Включаем тактирование порта SSP1. */
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1;
-
-	milandr_init_pin (SSP1_RXD_GPIO, PORT(SSP1_RXD), PIN(SSP1_RXD), SSP1_RXD_FUNC);
-	milandr_init_pin (SSP1_TXD_GPIO, PORT(SSP1_TXD), PIN(SSP1_TXD), SSP1_TXD_FUNC);
-	milandr_init_pin (SSP1_FSS_GPIO, PORT(SSP1_FSS), PIN(SSP1_FSS), SSP1_FSS_FUNC);
-	milandr_init_pin (SSP1_CLK_GPIO, PORT(SSP1_CLK), PIN(SSP1_CLK), SSP1_CLK_FUNC);
-
-	/* Разрешение тактовой частоты на SSP1, источник HCLK. */
-	ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG1(7)) |
-		ARM_SSP_CLOCK_EN1 | ARM_SSP_CLOCK_BRG1(0);
-}
-
-/*
- * Инициализация внешних сигналов SSP2.
- */
-static void spi_setup_ssp2 ()
-{
-	/* Включаем тактирование порта SSP2. */
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP2;
-
-	milandr_init_pin (SSP2_RXD_GPIO, PORT(SSP2_RXD), PIN(SSP2_RXD), SSP2_RXD_FUNC);
-	milandr_init_pin (SSP2_TXD_GPIO, PORT(SSP2_TXD), PIN(SSP2_TXD), SSP2_TXD_FUNC);
-	milandr_init_pin (SSP2_FSS_GPIO, PORT(SSP2_FSS), PIN(SSP2_FSS), SSP2_FSS_FUNC);
-	milandr_init_pin (SSP2_CLK_GPIO, PORT(SSP2_CLK), PIN(SSP2_CLK), SSP2_CLK_FUNC);
-
-
-	/* Разрешение тактовой частоты на SSP2, источник HCLK. */
-	ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG2(7)) |
-		ARM_SSP_CLOCK_EN2 | ARM_SSP_CLOCK_BRG2(0);
-}
-
-#ifdef ARM_1986BE1
-/*
- * Инициализация внешних сигналов SSP3.
- */
-static void spi_setup_ssp3 ()
-{
-	/* Включаем тактирование порта SSP3. */
-	ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP3;
-
-	milandr_init_pin (SSP3_RXD_GPIO, PORT(SSP3_RXD), PIN(SSP3_RXD), SSP3_RXD_FUNC);
-	milandr_init_pin (SSP3_TXD_GPIO, PORT(SSP3_TXD), PIN(SSP3_TXD), SSP3_TXD_FUNC);
-	milandr_init_pin (SSP3_FSS_GPIO, PORT(SSP3_FSS), PIN(SSP3_FSS), SSP3_FSS_FUNC);
-	milandr_init_pin (SSP3_CLK_GPIO, PORT(SSP3_CLK), PIN(SSP3_CLK), SSP3_CLK_FUNC);
-
-
-	/* Разрешение тактовой частоты на SSP2, источник HCLK. */
-	ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG3(7)) |
-		ARM_SSP_CLOCK_EN3 | ARM_SSP_CLOCK_BRG3(0);
-}
-#endif
-
-/*
- * Transmit the word.
- */
-void spi_output (spi_t *c, unsigned short word)
-{
-	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
-
-	mutex_lock (&c->lock);
-	while (! (reg->SR & ARM_SSP_SR_TNF)) {
-		/* Ждём появления места в FIFO передатчика. */
-		mutex_wait (&c->lock);
-	}
-	reg->DR = word;
-	arch_intr_allow (c->irq);
-	c->out_packets++;
-	mutex_unlock (&c->lock);
-}
-
-void spi_output_block (spi_t *c, unsigned short *data, int count)
-{
-	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
-	int i;
-
-	mutex_lock (&c->lock);
-	reg->CR1 &= ~ARM_SSP_CR1_SSE;
-	for (i = 0; i < count; ++i) {
-		while (! (reg->SR & ARM_SSP_SR_TNF)) {
-			/* Ждём появления места в FIFO передатчика. */
-			mutex_wait (&c->lock);
-		}
-		reg->DR = *(data + i);	
-		c->out_packets++;
-	}
-	reg->CR1 |= ARM_SSP_CR1_SSE;
-	arch_intr_allow (c->irq);
-	mutex_unlock (&c->lock);
-}
-
-/*
- * Извлекаем данные из приёмного FIFO.
- */
-static int receive_data (spi_t *c)
-{
-	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
-	unsigned sr = reg->SR;
-	int nwords = 0;
-
-	while (sr & ARM_SSP_SR_RNE) {
-		unsigned short word = reg->DR;
-		nwords++;
-//debug_printf ("<%04x> ", word);
-		sr = reg->SR;
-
-		if (spi_queue_is_full (&c->inq)) {
-			c->in_discards++;
-			continue;
-		}
-		/* Пакет успешно принят. */
-		c->in_packets++;
-		spi_queue_put (&c->inq, word);
-	}
-	return nwords;
-}
-
-/*
- * Fetch received word.
- * Returns 0 when no data is avaiable.
- */
-int spi_input (spi_t *c, unsigned short *word)
-{
-	int reply = 0;
-
-	mutex_lock (&c->lock);
-	if (! spi_queue_is_empty (&c->inq)) {
-		*word = spi_queue_get (&c->inq);
-		reply = 1;
-	}
-	mutex_unlock (&c->lock);
-	return reply;
-}
-
-/*
- * Wait for word received.
- */
-void spi_input_wait (spi_t *c, unsigned short *word)
-{
-	mutex_lock (&c->lock);
-	while (spi_queue_is_empty (&c->inq)) {
-		/* Ждём приёма пакета. */
-		mutex_wait (&c->lock);
-	}
-	*word = spi_queue_get (&c->inq);
-
-	mutex_unlock (&c->lock);
-}
-
-/*
- * Fast interrupt handler.
- */
-static bool_t spi_handle_interrupt (void *arg)
-{
-	spi_t *c = (spi_t*) arg;
-	SSP_t *reg = (c->port == 0) ? ARM_SSP1 : ARM_SSP2;
-
-	c->interrupts++;
-	receive_data (c);
-	arch_intr_allow (c->irq);
-	if (!c->master) {
-		reg->CR1 = ARM_SSP_CR1_MS;
-		reg->CR1 |= ARM_SSP_CR1_SSE;
-	}
-	return 0;
-}
-
-/*
- * Set up the SPI driver.
- */
-void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit, unsigned mode)
-{
-	/* Инициализация структуры данных драйвера. */
-	c->port = port;
-	c->master = (nsec_per_bit > 0);
-	spi_queue_init (&c->inq);
-
-	/* Выбор соответствующего интерфейса SSP и
-	 * установка внешних сигналов. */
-	SSP_t *reg;
-	if (c->port == 0) {
-		spi_setup_ssp1 ();
-		reg = ARM_SSP1;
-		c->irq = IRQ_SSP1;
-	} else if (c->port == 1) {
-		spi_setup_ssp2 ();
-		reg = ARM_SSP2;
-		c->irq = IRQ_SSP2;
-	} 
-#ifdef ARM_1986BE1
-	else {
-		spi_setup_ssp3 ();
-		reg = ARM_SSP3;
-		c->irq = IRQ_SSP3;
+        reg->CR0 = (reg->CR0 & ~ARM_SSP_CR0_SCR(0xFF)) | ARM_SSP_CR0_SCR(div);
+        spi->last_freq = freq;
     }
-#endif
+    if (mode != spi->last_mode) {
+        reg->CR1 &= ~ARM_SSP_CR1_SSE;
+        
+        if (mode & SPI_MODE_LSB_FIRST)
+            return SPI_ERR_MODE_NOT_SUPP;
+        
+        if (mode & SPI_MODE_CPOL) 
+            reg->CR0 |= ARM_SSP_CR0_SPO;
+        else reg->CR0 &= ~ARM_SSP_CR0_SPO;
 
-	/* Инициализация всех регистров данного интерфейса SSP.
-	 * Ловим прерывания от приёмника. */
-	reg->CR0 = ARM_SSP_CR0_FRF_SPI | ARM_SSP_CR0_DSS (bits_per_word) | mode;
-	if (c->master) {
-		/* Режим master. */
-		unsigned divisor = (KHZ * nsec_per_bit + 1999999) / 2000000;
-		reg->CR0 |= ARM_SSP_CR0_SCR (divisor - 1);
-		reg->CR1 = 0;
-		reg->CPSR = 2;
-		c->kbps = (KHZ / divisor + 1) / 2;
-	} else {
-		/* Режим slave.
-		 * Максимальная частота равна KHZ/12. */
-		reg->CR1 = ARM_SSP_CR1_MS;
-		reg->CPSR = 12;
-		c->kbps = (KHZ + 6) / 12;
-	}
-	reg->DMACR = 0;
-	reg->IM = ARM_SSP_IM_RX | ARM_SSP_IM_RT;
-	reg->CR1 |= ARM_SSP_CR1_SSE;
+        if (mode & SPI_MODE_CPHA) 
+            reg->CR0 |= ARM_SSP_CR0_SPH;
+        else reg->CR0 &= ~ARM_SSP_CR0_SPH;
 
-	/* Подключение к нужному номеру прерывания. */
-	mutex_lock_irq (&c->lock, c->irq, spi_handle_interrupt, c);
-	mutex_unlock (&c->lock);
+        spi->last_mode = mode;
+    }
+    if (bits_per_word != spi->last_bits) {
+        reg->CR1 &= ~ARM_SSP_CR1_SSE;
+
+        if (bits_per_word > 16 || bits_per_word < 4) {
+            debug_printf ("SPI Master %d: unsupported number of bits per word: %d\n",
+                spi->port, bits_per_word);
+            return SPI_ERR_BAD_BITS;
+        }
+        reg->CR0 = (reg->CR0 & ~ARM_SSP_CR0_DSS(0xF)) | ARM_SSP_CR0_DSS(bits_per_word);
+
+        spi->last_bits = bits_per_word;
+    }
+
+    reg->CR1 |= ARM_SSP_CR1_SSE;
+
+    return SPI_ERR_OK;
 }
+
+static int trx(spimif_t *spimif, spi_message_t *msg)
+{
+    milandr_spim_t      *spi = (milandr_spim_t *) spimif;
+    SSP_t               *reg = spi->reg;
+    uint8_t             *rxp_8bit;
+    uint8_t             *txp_8bit;
+    uint16_t            *rxp_16bit;
+    uint16_t            *txp_16bit;
+    unsigned            i, j;
+    unsigned            bits_per_word = SPI_MODE_GET_NB_BITS(msg->mode);
+    unsigned            cs_num = SPI_MODE_GET_CS_NUM(msg->mode);
+    unsigned            mode = SPI_MODE_GET_MODE(msg->mode);
+    int                 res;
+
+    mutex_lock(&spimif->lock);
+
+    res = init_hw(spi, msg->freq, bits_per_word, mode);
+    if (res != SPI_ERR_OK) {
+        mutex_unlock(&spimif->lock);
+        return res;
+    }
+
+    // Прочищаем входную FIFO
+    for (j = 0; j < 8; ++j) reg->DR;
+
+    // Активируем CS
+    // Если функция cs_control не установлена, то считаем, что для выборки 
+    // устройства используется вывод FSS, и он работает автоматически
+    if (spi->cs_control)
+        spi->cs_control(spi->port, cs_num, mode & SPI_MODE_CS_HIGH);
+
+    if (bits_per_word <= 8) {
+        rxp_8bit = (uint8_t *) msg->rx_data;
+        txp_8bit = (uint8_t *) msg->tx_data;
+
+        i = 0;
+        while (i < msg->word_count) {
+            while (!(reg->SR & ARM_SSP_SR_TFE));
+            for (j = 0; j < 8; ++j) {
+                if (txp_8bit)
+                    reg->DR = *txp_8bit++;
+                else
+                    reg->DR = 0;
+
+                ++i;
+                if (i >= msg->word_count)
+                    break;
+
+                if (rxp_8bit) {
+                    while (reg->SR & ARM_SSP_SR_RNE) {
+                        *rxp_8bit = reg->DR;
+                        rxp_8bit++;
+                    }
+                }
+            }
+        }
+
+        while (reg->SR & ARM_SSP_SR_BSY);
+
+        if (rxp_8bit) {
+            while (rxp_8bit - (uint8_t *) msg->rx_data < msg->word_count) {
+                while (reg->SR & ARM_SSP_SR_RNE) {
+                    *rxp_8bit = reg->DR;
+                    rxp_8bit++;
+                }
+            }
+        }
+    } else if (bits_per_word > 8 && bits_per_word <= 16) {
+        rxp_16bit = (uint16_t *) msg->rx_data;
+        txp_16bit = (uint16_t *) msg->tx_data;
+
+        i = 0;
+        while (i < msg->word_count) {
+            while (!(reg->SR & ARM_SSP_SR_TFE));
+            for (j = 0; j < 8; ++j) {
+                if (txp_16bit) {
+                    reg->DR = *txp_16bit++;
+                } else {
+                    reg->DR = 0;
+                }
+                ++i;
+                if (i >= msg->word_count)
+                    break;
+
+                if (rxp_16bit) {
+                    while (reg->SR & ARM_SSP_SR_RNE) {
+                        *rxp_16bit = reg->DR;
+                        rxp_16bit++;
+                    }
+                }
+            }
+        }
+
+        while (reg->SR & ARM_SSP_SR_BSY);
+
+        if (rxp_16bit) {
+            while (rxp_16bit - (uint16_t *) msg->rx_data < msg->word_count) {
+                while (reg->SR & ARM_SSP_SR_RNE) {
+                    *rxp_16bit = reg->DR;
+                    rxp_16bit++;
+                }
+            }
+        }
+    } else {
+        mutex_unlock(&spimif->lock);
+        return SPI_ERR_BAD_BITS;
+    }
+
+    // Деактивируем CS
+    // Если функция cs_control не установлена, то считаем, что для выборки 
+    // устройства используется вывод FSS, и он работает автоматически
+    if (!(mode & SPI_MODE_CS_HOLD) && spi->cs_control)
+        spi->cs_control(spi->port, cs_num, !(mode & SPI_MODE_CS_HIGH));
+        
+    mutex_unlock(&spimif->lock);
+
+    return SPI_ERR_OK;
+}
+
+
+int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func csc)
+{
+    memset(spi, 0, sizeof(milandr_spim_t));
+    
+    spi->port = port;
+    spi->spimif.trx = trx;
+    spi->cs_control = csc;
+    
+    if (port == 0) {
+        ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1;
+        ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG1(7)) |
+            ARM_SSP_CLOCK_EN1 | ARM_SSP_CLOCK_BRG1(0);
+        spi->reg = ARM_SSP1;
+    } else if (port == 1) {
+        ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP2;
+        ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG2(7)) |
+            ARM_SSP_CLOCK_EN2 | ARM_SSP_CLOCK_BRG2(0);
+        spi->reg = ARM_SSP2;
+#ifdef ARM_1986BE1
+    } else if (port == 2) {
+        ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP3;
+        ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG3(7)) |
+            ARM_SSP_CLOCK_EN3 | ARM_SSP_CLOCK_BRG3(0);
+        spi->reg = ARM_SSP3;
+#endif
+    } else {
+        return SPI_ERR_BAD_PORT;
+    }
+    
+    spi->reg->CR0 = ARM_SSP_CR0_FRF_SPI;
+    spi->reg->CPSR = 2;
+    
+    return 0;
+}
+

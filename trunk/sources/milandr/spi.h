@@ -1,68 +1,30 @@
-/*
- * SPI driver for Milandr 1986ВЕ91 microcontroller.
- *
- * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
- *
- * This file is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.
- *
- * You can redistribute this file and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software Foundation;
- * either version 2 of the License, or (at your discretion) any later version.
- * See the accompanying file "COPYING.txt" for more details.
- *
- * As a special exception to the GPL, permission is granted for additional
- * uses of the text contained in this file.  See the accompanying file
- * "COPY-UOS.txt" for details.
- */
-#ifndef __SPI_H_
-#define __SPI_H_
+#ifndef __SPI_MASTER_MILANDR_H__
+#define __SPI_MASTER_MILANDR_H__
 
-/*
- * Queue of SPI packets.
- */
-#define SPI_QUEUE_SIZE		16	/* max number of packets in queue */
+#include <spi/spi-master-interface.h>
 
-typedef struct _spi_queue_t {
-	unsigned count;
-	unsigned short *tail;
-	unsigned short queue [SPI_QUEUE_SIZE];
-} spi_queue_t;
+#ifndef SPI_DMA_BUFSZ
+#define SPI_DMA_BUFSZ   4096
+#endif
 
-/*
- * Data structure for SPI channel.
- */
-typedef struct _spi_t {
-	mutex_t lock;			/* interrupt goes here */
+typedef void (* spi_cs_control_func)(unsigned port, unsigned cs_num, int level);
 
-	unsigned port;			/* port number */
-	unsigned irq;			/* interrupt number */
-	unsigned master;		/* master or slave */
-	unsigned kbps;			/* kbits per second */
-	spi_queue_t inq;		/* queue of received packets */
+struct _milandr_spim_t {
+    spimif_t            spimif;
+    unsigned            port;
+    unsigned            last_freq;
+    unsigned            last_bits;
+    unsigned            last_mode;
+    
+    SSP_t               *reg;
+    spi_cs_control_func cs_control;    
+#ifndef SPI_NO_DMA
+    uint8_t             dma_txbuf[SPI_DMA_BUFSZ] __attribute__((aligned(8)));
+    uint8_t             dma_rxbuf[SPI_DMA_BUFSZ] __attribute__((aligned(8)));
+#endif
+};
+typedef struct _milandr_spim_t milandr_spim_t;
 
-	/* Statistics. */
-	unsigned long interrupts;	/* interrupt counter */
-	unsigned long out_packets;	/* transmitted packets */
-	unsigned long in_packets;	/* received packets */
-	unsigned long in_discards;	/* ignored packets, due to lack of memory */
-} spi_t;
+int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func csc);
 
-/*
- * User level API.
- */
-/* Init SPI interface
- * port			- port number (0 or 1)
- * bits_per_word	- number of bit in one transfer (4 - 16)
- * nsec_per_bit		- tx rate in nanoseconds per bit
- * mode			- mode of SPI transmission (SPO, SPH); 
-			  can be 0, ARM_SSP_CR0_SPO, ARM_SSP_CR0_SPH, or (ARM_SSP_CR0_SPO | ARM_SSP_CR0_SPH)
- */
-void spi_init (spi_t *c, int port, int bits_per_word, unsigned nsec_per_bit, unsigned mode);
-void spi_output (spi_t *c, unsigned short word);
-void spi_output_block (spi_t *c, unsigned short *data, int count);
-int spi_input (spi_t *c, unsigned short *word);
-void spi_input_wait (spi_t *c, unsigned short *word);
-
-#endif /* !__SPI_H_ */
+#endif

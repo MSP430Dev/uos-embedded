@@ -10,11 +10,11 @@ ARRAY (task, 1000);
 
 void hello (void *arg)
 {
-    init_iwdt (20);
+    iwdt_init (20);
     
 	for (;;) {
 	    debug_printf ("*");
-	    ack_iwdt ();
+	    iwdt_ack ();
 	}
 }
 

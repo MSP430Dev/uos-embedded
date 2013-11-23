@@ -21,7 +21,6 @@ struct _elvees_spim_t {
     unsigned        last_bits;
     unsigned        last_mode;
 #ifndef SPI_NO_DMA
-    mutex_t         completion; // Из-за кривизны DMA
     uint8_t         dma_txbuf[SPI_DMA_BUFSZ] __attribute__((aligned(8)));
     uint8_t         dma_rxbuf[SPI_DMA_BUFSZ] __attribute__((aligned(8)));
 #endif

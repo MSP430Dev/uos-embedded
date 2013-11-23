@@ -1,11 +1,13 @@
 #ifndef __SPI_MASTER_INTERFACE_H__
 #define __SPI_MASTER_INTERFACE_H__
 
-#define SPI_ERR_OK          0
-#define SPI_ERR_BAD_BITS    -1
-#define SPI_ERR_BAD_FREQ    -2
-#define SPI_ERR_BAD_CS      -3
-#define SPI_ERR_SMALL_BUF   -4
+#define SPI_ERR_OK              0
+#define SPI_ERR_BAD_BITS        -1
+#define SPI_ERR_BAD_FREQ        -2
+#define SPI_ERR_BAD_CS          -3
+#define SPI_ERR_SMALL_BUF       -4
+#define SPI_ERR_BAD_PORT        -5
+#define SPI_ERR_MODE_NOT_SUPP   -6
 
 #define SPI_MODE_CPOL           (1 << 0)
 #define SPI_MODE_CPHA           (1 << 1)

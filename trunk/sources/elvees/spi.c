@@ -94,7 +94,7 @@ init_hw(elvees_spim_t *spi, unsigned freq, unsigned bits_per_word,
         MC_MFBSP_RSTART(spi->port) = 0;
         MC_MFBSP_TSTART(spi->port) = 0;
 
-        if (bits_per_word > 31) {
+        if (bits_per_word > 32) {
             debug_printf ("SPI Master %d: too many bits per word: %d\n",
                 spi->port, bits_per_word);
             return SPI_ERR_BAD_BITS;

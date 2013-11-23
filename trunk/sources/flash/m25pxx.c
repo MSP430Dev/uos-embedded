@@ -43,7 +43,7 @@ static int enable_write(m25pxx_t *m)
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) == SPI_ERR_OK)
         return FLASH_ERR_OK;
-    else return FLASH_ERR_OP_FAILED;
+    else return FLASH_ERR_IO;
 }
 
 static int read_status(m25pxx_t *m, uint8_t *status)
@@ -54,14 +54,14 @@ static int read_status(m25pxx_t *m, uint8_t *status)
     m->msg.word_count = 1;
     m->msg.mode |= SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
 
     m->msg.tx_data = 0;
     m->msg.rx_data = m->databuf;
     m->msg.word_count = 1;
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
 
     *status = m->databuf[0];
 
@@ -88,7 +88,7 @@ static int m25pxx_erase_all(flashif_t *flash)
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
         mutex_unlock(&flash->lock);
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
     }
 
     while (1) {
@@ -129,7 +129,7 @@ static int m25pxx_erase_sector(flashif_t *flash, unsigned address)
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
         mutex_unlock(&flash->lock);
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
     }
 
     while (1) {
@@ -173,7 +173,7 @@ static int m25pxx_program_page(flashif_t *flash, unsigned address, void *data, u
     m->msg.mode |= SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
         mutex_unlock(&flash->lock);
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
     }
 
     m->msg.tx_data = data;
@@ -182,7 +182,7 @@ static int m25pxx_program_page(flashif_t *flash, unsigned address, void *data, u
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
         mutex_unlock(&flash->lock);
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
     }
 
     while (1) {
@@ -215,7 +215,7 @@ static int m25pxx_read(flashif_t *flash, unsigned address, void *data, unsigned 
     m->msg.mode |= SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
         mutex_unlock(&flash->lock);
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
     }
 
     m->msg.tx_data = 0;
@@ -224,7 +224,7 @@ static int m25pxx_read(flashif_t *flash, unsigned address, void *data, unsigned 
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
     if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
         mutex_unlock(&flash->lock);
-        return FLASH_ERR_OP_FAILED;
+        return FLASH_ERR_IO;
     }
 
     mutex_unlock(&flash->lock);

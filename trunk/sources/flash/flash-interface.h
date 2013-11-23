@@ -4,7 +4,7 @@
 #define FLASH_ERR_OK            0
 #define FLASH_ERR_NOT_CONN      -1
 #define FLASH_ERR_NOT_SUPP      -2
-#define FLASH_ERR_OP_FAILED     -3
+#define FLASH_ERR_IO            -3
 #define FLASH_ERR_INVAL_SIZE    -4
 
 typedef struct _flashif_t flashif_t;
