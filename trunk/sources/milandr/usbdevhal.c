@@ -191,8 +191,8 @@ static void usb_interrupt (void *arg)
             for (ep = 0; ep < USBDEV_MAX_EP_NB; ++ep) {
                 if ((ARM_USB->SEPS[ep].CTRL & (ARM_USB_EPEN | ARM_USB_EPRDY)) == ARM_USB_EPEN) {
 //debug_printf ("NAK sent, EP%d CTRL = %x, STS = %x\n", ep, ARM_USB->SEPS[ep].CTRL, ARM_USB->SEPS[ep].STS);
-
-                    if (ARM_USB->SEPS[ep].STS & ARM_USB_SC_ACK_RXED)
+                    if (ARM_USB->SEPS[ep].STS & ARM_USB_SC_ACK_RXED ||
+                        ARM_USB->SEPS[ep].STS == 0x90)
                         do_usbdev (ep);
                         
                     if (ARM_USB->SEPS[ep].CTRL & ARM_USB_EPSSTALL)
