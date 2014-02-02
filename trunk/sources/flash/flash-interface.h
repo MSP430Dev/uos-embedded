@@ -6,6 +6,7 @@
 #define FLASH_ERR_NOT_SUPP      -2
 #define FLASH_ERR_IO            -3
 #define FLASH_ERR_INVAL_SIZE    -4
+#define FLASH_ERR_BAD_ANSWER    -5
 
 typedef struct _flashif_t flashif_t;
 
@@ -13,9 +14,9 @@ struct _flashif_t
 {
     mutex_t     lock;
 
-    unsigned    size;
     unsigned    nb_sectors;
     unsigned    nb_pages_in_sector;
+    unsigned    page_size;
     int         direct_read;
     unsigned    min_address;
     
@@ -29,12 +30,6 @@ struct _flashif_t
     // required if direct_read is false, otherwise optional
     int (* read)(flashif_t *flash, unsigned address, void *data, unsigned size);
 };
-
-static inline __attribute__((always_inline)) 
-unsigned flash_size(flashif_t *flash)
-{
-    return flash->size;
-}
 
 static inline __attribute__((always_inline)) 
 unsigned flash_nb_sectors(flashif_t *flash)
@@ -63,19 +58,25 @@ unsigned flash_min_address(flashif_t *flash)
 static inline __attribute__((always_inline)) 
 unsigned flash_sector_size(flashif_t *flash)
 {
-    return flash->size / flash->nb_sectors;
+    return flash->page_size * flash->nb_pages_in_sector;
 }
 
 static inline __attribute__((always_inline))
 unsigned flash_page_size(flashif_t *flash)
 {
-    return flash_sector_size(flash) / flash->nb_pages_in_sector;
+    return flash->page_size;
 }
 
 static inline __attribute__((always_inline))
 unsigned flash_nb_pages(flashif_t *flash)
 {
     return flash->nb_sectors * flash->nb_pages_in_sector;
+}
+
+static inline __attribute__((always_inline)) 
+unsigned long long flash_size(flashif_t *flash)
+{
+    return flash->page_size * flash_nb_pages(flash);
 }
 
 static inline __attribute__((always_inline))
@@ -93,7 +94,7 @@ unsigned flash_address_of_page(flashif_t *flash, int page_number)
 static inline __attribute__((always_inline))
 unsigned flash_max_address(flashif_t *flash)
 {
-    return flash->min_address + flash->size - 1;
+    return flash->min_address + flash_size(flash) - 1;
 }
 
 static inline __attribute__((always_inline))

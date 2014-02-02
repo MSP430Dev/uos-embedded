@@ -2,6 +2,26 @@
 #include <kernel/uos.h>
 #include <flash/m25pxx.h>
 
+#define M25PXX_CMD_WREN         0x06
+#define M25PXX_CMD_WRDI         0x04
+#define M25PXX_CMD_RDID         0x9F
+#define M25PXX_CMD_RDSR         0x05
+#define M25PXX_CMD_WRSR         0x01
+#define M25PXX_CMD_READ         0x03
+#define M25PXX_CMD_FAST_READ    0x0B
+#define M25PXX_CMD_PP           0x02
+#define M25PXX_CMD_SE           0xD8
+#define M25PXX_CMD_BE           0xC7
+#define M25PXX_CMD_DP           0xB9
+#define M25PXX_CMD_RES          0xAB
+
+#define M25PXX_STATUS_WIP       (1 << 0)
+#define M25PXX_STATUS_WEL       (1 << 1)
+#define M25PXX_STATUS_BP0       (1 << 2)
+#define M25PXX_STATUS_BP1       (1 << 3)
+#define M25PXX_STATUS_BP2       (1 << 4)
+#define M25PXX_STATUS_SRWD      (1 << 7)
+
 static int m25pxx_connect(flashif_t *flash)
 {
     m25pxx_t *m = (m25pxx_t *) flash;
@@ -25,9 +45,11 @@ static int m25pxx_connect(flashif_t *flash)
         return FLASH_ERR_NOT_CONN;
     }
 
-    flash->size = 1 << m->databuf[2];
-    flash->nb_sectors = flash->size >> 16;
+    unsigned size = 1 << m->databuf[2];
+    flash->nb_sectors = size >> 16;
     flash->nb_pages_in_sector = 256;
+    flash->page_size = size / flash->nb_sectors / 
+        flash->nb_pages_in_sector;
     flash->min_address = 0;
 
     mutex_unlock(&flash->lock);
