@@ -126,11 +126,16 @@ static void can_setup_timing (can_t *c, int kbitsec)
 	 */
 	unsigned pseg = 1 + (nq - 10);
 	c->kbitsec = kbitsec;
+	
+    reg->BITTMNG = /*CAN_BITTMNG_SB |*/ CAN_BITTMNG_SJW (4) |
+            CAN_BITTMNG_SEG2 (1) | CAN_BITTMNG_SEG1 (7) |
+            CAN_BITTMNG_PSEG (pseg) | CAN_BITTMNG_BRP (brp);
 
+/*
 	reg->BITTMNG = CAN_BITTMNG_SB | CAN_BITTMNG_SJW (4) |
 		CAN_BITTMNG_SEG2 (4) | CAN_BITTMNG_SEG1 (4) |
 		CAN_BITTMNG_PSEG (pseg) | CAN_BITTMNG_BRP (brp);
-
+*/
 /*
 	reg->BITTMNG = CAN_BITTMNG_SB | CAN_BITTMNG_SJW (3) |
 		CAN_BITTMNG_SEG2 (7) | CAN_BITTMNG_SEG1 (7) |
