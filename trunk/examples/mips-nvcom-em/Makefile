@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-m25pxx
+TEST		= test-flash
 TESTS		+= test-debug.bin test-task.bin test-timer.bin test-uart.bin
 TESTS		+= philosophers.bin test-ram.bin
 TESTS           += test-latency.bin test-tswitch.bin #test-fpu.bin

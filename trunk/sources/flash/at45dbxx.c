@@ -102,6 +102,20 @@ static int at45dbxx_connect(flashif_t *flash)
     return FLASH_ERR_OK;
 }
 
+static unsigned at45dbxx_page_address(flashif_t *flash, unsigned page_num)
+{
+    if (flash_page_size(flash) == 264)
+        return page_num << 9;
+    else return page_num << 8;
+}
+
+static unsigned at45dbxx_sector_address(flashif_t *flash, unsigned sector_num)
+{
+    if (flash_page_size(flash) == 264)
+        return sector_num << 12;
+    else return sector_num << 11;
+}
+
 static int at45dbxx_erase_all(flashif_t *flash)
 {
     int res;
@@ -135,13 +149,14 @@ static int at45dbxx_erase_all(flashif_t *flash)
     return FLASH_ERR_OK;
 }
 
-static int at45dbxx_erase_block(flashif_t *flash, unsigned address)
+static int erase_sector(flashif_t *flash, unsigned sector_num)
 {
     int res;
     uint8_t status;
     at45dbxx_t *m = (at45dbxx_t *) flash;
     mutex_lock(&flash->lock);
 
+    unsigned address = at45dbxx_sector_address(flash, sector_num);
     uint8_t *p = (uint8_t *) &address;
     m->databuf[0] = AT45_CMD_BLOCK_ERASE;
     m->databuf[1] = p[2];
@@ -170,15 +185,26 @@ static int at45dbxx_erase_block(flashif_t *flash, unsigned address)
     return FLASH_ERR_OK;
 }
 
-static int at45dbxx_program_page(flashif_t *flash, unsigned address, void *data, unsigned size)
+static int at45dbxx_erase_sectors(flashif_t *flash, unsigned sector_num,
+    unsigned nb_sectors)
 {
-    if (size > 264)
-        return FLASH_ERR_INVAL_SIZE;
+    int res;
+    int i;
+    mutex_lock(&flash->lock);
+    for (i = 0; i < nb_sectors; ++i) {
+        res = erase_sector(flash, sector_num + i);
+        if (res != FLASH_ERR_OK) return res;
+    }
+    mutex_unlock(&flash->lock);
+    return FLASH_ERR_OK;
+}
 
+static int write_one_page(flashif_t *flash, unsigned address, 
+                            void *data, unsigned size)
+{
     int res;
     uint8_t status;
     at45dbxx_t *m = (at45dbxx_t *) flash;
-    mutex_lock(&flash->lock);
 
     uint8_t *p = (uint8_t *) &address;
     m->databuf[0] = AT45_CMD_BUFFER_1_WRITE;
@@ -189,62 +215,38 @@ static int at45dbxx_program_page(flashif_t *flash, unsigned address, void *data,
     m->msg.rx_data = 0;
     m->msg.word_count = 4;
     m->msg.mode |= SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
     m->msg.tx_data = data;
     m->msg.rx_data = 0;
     m->msg.word_count = size;
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
     m->databuf[0] = AT45_CMD_BUFFER_1_PROGRAM_WITHOUT_ERASE;
     m->msg.tx_data = m->databuf;
     m->msg.rx_data = 0;
     m->msg.word_count = 4;
     //m->msg.mode &= ~SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
     while (1) {
         res = read_status(m, &status);
-        if (res != FLASH_ERR_OK) {
-            mutex_unlock(&flash->lock);
+        if (res != FLASH_ERR_OK)
             return res;
-        }
-
         if (status & AT45_STATUS_RDY) break;
     }
 
-    mutex_unlock(&flash->lock);
     return FLASH_ERR_OK;
 }
 
-static unsigned at45dbxx_page_address(flashif_t *flash, unsigned page_num)
-{
-    if (flash_page_size(flash) == 264)
-        return page_num << 9;
-    else return page_num << 8;
-}
-
-static unsigned at45dbxx_sector_address(flashif_t *flash, unsigned sector_num)
-{
-    if (flash_page_size(flash) == 264)
-        return sector_num << 12;
-    else return sector_num << 11;
-}
-
-static int at45dbxx_read(flashif_t *flash, unsigned address, void *data, unsigned size)
+static int read_one_page(flashif_t *flash, unsigned address, 
+                            void *data, unsigned size)
 {
     at45dbxx_t *m = (at45dbxx_t *) flash;
-    mutex_lock(&flash->lock);
 
     uint8_t *p = (uint8_t *) &address;
     m->databuf[0] = AT45_CMD_CONT_ARRAY_READ_HIGH_FREQ;
@@ -256,22 +258,60 @@ static int at45dbxx_read(flashif_t *flash, unsigned address, void *data, unsigne
     m->msg.rx_data = 0;
     m->msg.word_count = 5;
     m->msg.mode |= SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
     m->msg.tx_data = 0;
     m->msg.rx_data = data;
     m->msg.word_count = size;
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
+    return FLASH_ERR_OK;
+}
+
+typedef int (* io_func)(flashif_t *flash, unsigned address, 
+                        void *data, unsigned size);
+                
+static int cyclic_func(flashif_t *flash, unsigned address, 
+                        void *data, unsigned size, io_func func)
+{
+    int res;
+    unsigned cur_size = size;
+    uint8_t *cur_data = data;
+    
+    mutex_lock(&flash->lock);
+    
+    while (size > 0) {
+        cur_size = (size < flash_page_size(flash)) ?
+            size : flash_page_size(flash);
+        res = func(flash, address, cur_data, cur_size);
+        if (res != FLASH_ERR_OK) {
+            mutex_unlock(&flash->lock);
+            return res;
+        }
+        size -= cur_size;
+        address += cur_size;
+        cur_data += cur_size;
+    }
+    
     mutex_unlock(&flash->lock);
     return FLASH_ERR_OK;
+}
+
+static int at45dbxx_write(flashif_t *flash, unsigned page_num, 
+                        void *data, unsigned size)
+{
+    return cyclic_func(flash, at45dbxx_page_address(flash, page_num),
+        data, size, write_one_page);
+}
+
+static int at45dbxx_read(flashif_t *flash, unsigned page_num, 
+                        void *data, unsigned size)
+{
+    return cyclic_func(flash, at45dbxx_page_address(flash, page_num),
+        data, size, read_one_page);
 }
 
 void at45dbxx_init(at45dbxx_t *m, spimif_t *s, unsigned freq, unsigned mode)
@@ -281,11 +321,9 @@ void at45dbxx_init(at45dbxx_t *m, spimif_t *s, unsigned freq, unsigned mode)
 
     f->connect = at45dbxx_connect;
     f->erase_all = at45dbxx_erase_all;
-    f->erase_sector = at45dbxx_erase_block;
-    f->program_page = at45dbxx_program_page;
+    f->erase_sectors = at45dbxx_erase_sectors;
+    f->write = at45dbxx_write;
     f->read = at45dbxx_read;
-    f->page_address = at45dbxx_page_address;
-    f->sector_address = at45dbxx_sector_address;
 
     m->msg.freq = freq;
     m->msg.mode = (mode & 0xFF07) | SPI_MODE_NB_BITS(8);

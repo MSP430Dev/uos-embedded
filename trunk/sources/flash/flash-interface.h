@@ -18,17 +18,18 @@ struct _flashif_t
     unsigned    nb_pages_in_sector;
     unsigned    page_size;
     int         direct_read;
-    unsigned    min_address;
     
     // required
     int (* connect)(flashif_t *flash);
     int (* erase_all)(flashif_t *flash);
-    int (* erase_sector)(flashif_t *flash, unsigned address);
-    int (* program_page)(flashif_t *flash, unsigned address, void *data, unsigned size);
-    unsigned (* page_address)(flashif_t *flash, unsigned page_num);
-    unsigned (* sector_address)(flashif_t *flash, unsigned sector_num);
+    int (* erase_sectors)(flashif_t *flash, unsigned sector_num,
+        unsigned nb_sectors);
+    int (* write)(flashif_t *flash, unsigned page_num,
+        void *data, unsigned size);
     // required if direct_read is false, otherwise optional
-    int (* read)(flashif_t *flash, unsigned address, void *data, unsigned size);
+    int (* read)(flashif_t *flash, unsigned page_num,
+        void *data, unsigned size);
+    unsigned (*min_address)(flashif_t *flash);
 };
 
 static inline __attribute__((always_inline)) 
@@ -50,12 +51,6 @@ int flash_direct_read(flashif_t *flash)
 }
 
 static inline __attribute__((always_inline)) 
-unsigned flash_min_address(flashif_t *flash)
-{
-    return flash->min_address;
-}
-
-static inline __attribute__((always_inline)) 
 unsigned flash_sector_size(flashif_t *flash)
 {
     return flash->page_size * flash->nb_pages_in_sector;
@@ -74,27 +69,9 @@ unsigned flash_nb_pages(flashif_t *flash)
 }
 
 static inline __attribute__((always_inline)) 
-unsigned long long flash_size(flashif_t *flash)
+uint64_t flash_size(flashif_t *flash)
 {
-    return flash->page_size * flash_nb_pages(flash);
-}
-
-static inline __attribute__((always_inline))
-unsigned flash_address_of_sector(flashif_t *flash, int sector_number)
-{
-    return flash->min_address + sector_number * flash_sector_size(flash);
-}
-
-static inline __attribute__((always_inline))
-unsigned flash_address_of_page(flashif_t *flash, int page_number)
-{
-    return flash->min_address + page_number * flash_page_size(flash);
-}
-
-static inline __attribute__((always_inline))
-unsigned flash_max_address(flashif_t *flash)
-{
-    return flash->min_address + flash_size(flash) - 1;
+    return (uint64_t)flash->page_size * flash_nb_pages(flash);
 }
 
 static inline __attribute__((always_inline))
@@ -110,35 +87,34 @@ int flash_erase_all(flashif_t *flash)
 }
 
 static inline __attribute__((always_inline))
-int flash_erase_sector(flashif_t *flash, unsigned address)
+int flash_erase_sectors(flashif_t *flash, unsigned sector_num,
+    unsigned nb_sectors)
 {
-    return flash->erase_sector(flash, address);
+    return flash->erase_sectors(flash, sector_num, nb_sectors);
 }
 
 static inline __attribute__((always_inline))
-int flash_program_page(flashif_t *flash, unsigned address, void *data, unsigned size)
+int flash_write(flashif_t *flash, unsigned page_num, 
+                void *data, unsigned size)
 {
-    return flash->program_page(flash, address, data, size);
+    return flash->write(flash, page_num, data, size);
 }
 
 static inline __attribute__((always_inline))
-int flash_read(flashif_t *flash, unsigned address, void *data, unsigned size)
+int flash_read(flashif_t *flash, unsigned page_num, 
+                void *data, unsigned size)
 {
     if (flash->read)
-        return flash->read(flash, address, data, size);
+        return flash->read(flash, page_num, data, size);
     else return FLASH_ERR_NOT_SUPP;
 }
 
-static inline __attribute__((always_inline))
-unsigned flash_page_address(flashif_t *flash, unsigned page_num)
+static inline __attribute__((always_inline)) 
+unsigned flash_min_address(flashif_t *flash)
 {
-    return flash->page_address(flash, page_num);
-}
-
-static inline __attribute__((always_inline))
-unsigned flash_sector_address(flashif_t *flash, unsigned sector_num)
-{
-    return flash->sector_address(flash, sector_num);
+    if (flash->min_address)
+        return flash->min_address(flash);
+    else return FLASH_ERR_NOT_SUPP;
 }
 
 

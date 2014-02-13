@@ -127,12 +127,11 @@ static int m25pxx_erase_all(flashif_t *flash)
     return FLASH_ERR_OK;
 }
 
-static int m25pxx_erase_sector(flashif_t *flash, unsigned address)
+static int erase_sector(flashif_t *flash, unsigned sector_num)
 {
     int res;
     uint8_t status;
     m25pxx_t *m = (m25pxx_t *) flash;
-    mutex_lock(&flash->lock);
 
     res = enable_write(m);
     if (res != FLASH_ERR_OK) {
@@ -140,6 +139,7 @@ static int m25pxx_erase_sector(flashif_t *flash, unsigned address)
         return res;
     }
 
+    uint32_t address = sector_num * flash_sector_size(flash);
     uint8_t *p = (uint8_t *) &address;
     m->databuf[0] = M25PXX_CMD_SE;
     m->databuf[1] = p[2];
@@ -164,25 +164,32 @@ static int m25pxx_erase_sector(flashif_t *flash, unsigned address)
         if (! (status & M25PXX_STATUS_WIP)) break;
     }
 
+    return FLASH_ERR_OK;
+}
+
+static int m25pxx_erase_sectors(flashif_t *flash, unsigned sector_num,
+    unsigned nb_sectors)
+{
+    int res;
+    int i;
+    mutex_lock(&flash->lock);
+    for (i = 0; i < nb_sectors; ++i) {
+        res = erase_sector(flash, sector_num + i);
+        if (res != FLASH_ERR_OK) return res;
+    }
     mutex_unlock(&flash->lock);
     return FLASH_ERR_OK;
 }
 
-static int m25pxx_program_page(flashif_t *flash, unsigned address, void *data, unsigned size)
+static int write_one_page(flashif_t *flash, unsigned address, 
+                            void *data, unsigned size)
 {
-    if (size > 256)
-        return FLASH_ERR_INVAL_SIZE;
-
     int res;
     uint8_t status;
     m25pxx_t *m = (m25pxx_t *) flash;
-    mutex_lock(&flash->lock);
 
     res = enable_write(m);
-    if (res != FLASH_ERR_OK) {
-        mutex_unlock(&flash->lock);
-        return res;
-    }
+    if (res != FLASH_ERR_OK) return res;
 
     uint8_t *p = (uint8_t *) &address;
     m->databuf[0] = M25PXX_CMD_PP;
@@ -193,38 +200,29 @@ static int m25pxx_program_page(flashif_t *flash, unsigned address, void *data, u
     m->msg.rx_data = 0;
     m->msg.word_count = 4;
     m->msg.mode |= SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
     m->msg.tx_data = data;
     m->msg.rx_data = 0;
     m->msg.word_count = size;
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
     while (1) {
         res = read_status(m, &status);
-        if (res != FLASH_ERR_OK) {
-            mutex_unlock(&flash->lock);
-            return res;
-        }
-
+        if (res != FLASH_ERR_OK) return res;
         if (! (status & M25PXX_STATUS_WIP)) break;
     }
-
-    mutex_unlock(&flash->lock);
+    
     return FLASH_ERR_OK;
 }
 
-static int m25pxx_read(flashif_t *flash, unsigned address, void *data, unsigned size)
+static int read_one_page(flashif_t *flash, unsigned address, 
+                            void *data, unsigned size)
 {
     m25pxx_t *m = (m25pxx_t *) flash;
-    mutex_lock(&flash->lock);
 
     uint8_t *p = (uint8_t *) &address;
     m->databuf[0] = M25PXX_CMD_READ;
@@ -235,32 +233,60 @@ static int m25pxx_read(flashif_t *flash, unsigned address, void *data, unsigned 
     m->msg.rx_data = 0;
     m->msg.word_count = 4;
     m->msg.mode |= SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
     m->msg.tx_data = 0;
     m->msg.rx_data = data;
     m->msg.word_count = size;
     m->msg.mode &= ~SPI_MODE_CS_HOLD;
-    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK) {
-        mutex_unlock(&flash->lock);
+    if (spim_trx(m->spi, &m->msg) != SPI_ERR_OK)
         return FLASH_ERR_IO;
-    }
 
+    return FLASH_ERR_OK;
+}
+
+typedef int (* io_func)(flashif_t *flash, unsigned address, 
+                        void *data, unsigned size);
+                
+static int cyclic_func(flashif_t *flash, unsigned address, 
+                        void *data, unsigned size, io_func func)
+{
+    int res;
+    unsigned cur_size = size;
+    uint8_t *cur_data = data;
+    
+    mutex_lock(&flash->lock);
+    
+    while (size > 0) {
+        cur_size = (size < flash_page_size(flash)) ?
+            size : flash_page_size(flash);
+        res = func(flash, address, cur_data, cur_size);
+        if (res != FLASH_ERR_OK) {
+            mutex_unlock(&flash->lock);
+            return res;
+        }
+        size -= cur_size;
+        address += cur_size;
+        cur_data += cur_size;
+    }
+    
     mutex_unlock(&flash->lock);
     return FLASH_ERR_OK;
 }
 
-static unsigned m25pxx_page_address(flashif_t *flash, unsigned page_num)
+static int m25pxx_write(flashif_t *flash, unsigned page_num, 
+                        void *data, unsigned size)
 {
-    return page_num << 8;
+    return cyclic_func(flash, page_num * flash_page_size(flash),
+        data, size, write_one_page);
 }
 
-static unsigned m25pxx_sector_address(flashif_t *flash, unsigned sector_num)
+static int m25pxx_read(flashif_t *flash, unsigned page_num, 
+                        void *data, unsigned size)
 {
-    return sector_num << 16;
+    return cyclic_func(flash, page_num * flash_page_size(flash),
+        data, size, read_one_page);
 }
 
 void m25pxx_init(m25pxx_t *m, spimif_t *s, unsigned freq, unsigned mode)
@@ -270,11 +296,9 @@ void m25pxx_init(m25pxx_t *m, spimif_t *s, unsigned freq, unsigned mode)
 
     f->connect = m25pxx_connect;
     f->erase_all = m25pxx_erase_all;
-    f->erase_sector = m25pxx_erase_sector;
-    f->program_page = m25pxx_program_page;
+    f->erase_sectors = m25pxx_erase_sectors;
+    f->write = m25pxx_write;
     f->read = m25pxx_read;
-    f->page_address = m25pxx_page_address;
-    f->sector_address = m25pxx_sector_address;
 
     m->msg.freq = freq;
     m->msg.mode = (mode & 0xFF0F) | SPI_MODE_NB_BITS(8);

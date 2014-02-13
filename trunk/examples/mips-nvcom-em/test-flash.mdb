@@ -1,0 +1,14 @@
+
+source mem_nvcom02t.cfg 
+
+loadelf test-flash.elf 
+run
+
+
+
+
+
+
+
+
+

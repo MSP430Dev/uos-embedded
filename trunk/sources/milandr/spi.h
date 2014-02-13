@@ -19,8 +19,8 @@ struct _milandr_spim_t {
     SSP_t               *reg;
     spi_cs_control_func cs_control;    
 #ifndef SPI_NO_DMA
-    uint8_t             dma_txbuf[SPI_DMA_BUFSZ] __attribute__((aligned(8)));
-    uint8_t             dma_rxbuf[SPI_DMA_BUFSZ] __attribute__((aligned(8)));
+    uint8_t             tx_dma_nb;
+    uint8_t             rx_dma_nb;
 #endif
 };
 typedef struct _milandr_spim_t milandr_spim_t;

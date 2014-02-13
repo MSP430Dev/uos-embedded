@@ -1,34 +1,19 @@
-/*
- * SPI driver for Milandr 1986ВЕ91 microcontroller.
- *
- * Copyright (C) 2010 Serge Vakulenko, <serge@vak.ru>
- *               2011 Dmitry Podkhvatilin, <vatilin@gmail.com>
- *
- * This file is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.
- *
- * You can redistribute this file and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software Foundation;
- * either version 2 of the License, or (at your discretion) any later version.
- * See the accompanying file "COPYING.txt" for more details.
- *
- * As a special exception to the GPL, permission is granted for additional
- * uses of the text contained in this file.  See the accompanying file
- * "COPY-UOS.txt" for details.
- */
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <milandr/spi.h>
 #include <kernel/internal.h>
 
-/*
- * Номера прерываний от интерфейсов SSP.
- */
-#define IRQ_SSP1	8
-#define IRQ_SSP2	20
-#define IRQ_SSP3	19
+#define SSP1_TX_DMA     4
+#define SSP1_RX_DMA     5
+#define SSP2_TX_DMA     6
+#define SSP2_RX_DMA     7
 
+#ifdef ARM_1986BE1
+#   define SSP3_TX_DMA     8
+#   define SSP3_RX_DMA     9
+#endif
+
+DMA_Data_t dma_prim[8] __attribute__((aligned(1024)));
 
 static inline int
 init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mode)
@@ -82,6 +67,7 @@ init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mod
     return SPI_ERR_OK;
 }
 
+#ifdef SPI_NO_DMA
 static int trx(spimif_t *spimif, spi_message_t *msg)
 {
     milandr_spim_t      *spi = (milandr_spim_t *) spimif;
@@ -200,6 +186,23 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
 
     return SPI_ERR_OK;
 }
+#else
+static int trx(spimif_t *spimif, spi_message_t *msg)
+{
+    milandr_spim_t      *spi = (milandr_spim_t *) spimif;
+    SSP_t               *reg = spi->reg;
+    unsigned            bits_per_word = SPI_MODE_GET_NB_BITS(msg->mode);
+    unsigned            cs_num = SPI_MODE_GET_CS_NUM(msg->mode);
+    unsigned            mode = SPI_MODE_GET_MODE(msg->mode);
+    int                 res;
+
+    mutex_lock(&spimif->lock);
+
+    mutex_unlock(&spimif->lock);
+
+    return SPI_ERR_OK;
+}
+#endif
 
 
 int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func csc)
@@ -215,21 +218,35 @@ int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func cs
         ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG1(7)) |
             ARM_SSP_CLOCK_EN1 | ARM_SSP_CLOCK_BRG1(0);
         spi->reg = ARM_SSP1;
+#ifndef SPI_NO_DMA
+        spi->tx_dma_nb = SSP1_TX_DMA;
+        spi->rx_dma_nb = SSP1_RX_DMA;
+#endif // !SPI_NO_DMA
     } else if (port == 1) {
         ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP2;
         ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG2(7)) |
             ARM_SSP_CLOCK_EN2 | ARM_SSP_CLOCK_BRG2(0);
         spi->reg = ARM_SSP2;
+#ifndef SPI_NO_DMA
+        spi->tx_dma_nb = SSP2_TX_DMA;
+        spi->rx_dma_nb = SSP2_RX_DMA;
+#endif // !SPI_NO_DMA
+
 #ifdef ARM_1986BE1
     } else if (port == 2) {
         ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP3;
         ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG3(7)) |
             ARM_SSP_CLOCK_EN3 | ARM_SSP_CLOCK_BRG3(0);
         spi->reg = ARM_SSP3;
-#endif
+#ifndef SPI_NO_DMA
+        spi->tx_dma_nb = SSP3_TX_DMA;
+        spi->rx_dma_nb = SSP3_RX_DMA;
+#endif // !SPI_NO_DMA
+#endif // ARM_1986BE1
     } else {
         return SPI_ERR_BAD_PORT;
     }
+
     
     spi->reg->CR0 = ARM_SSP_CR0_FRF_SPI;
     spi->reg->CPSR = 2;

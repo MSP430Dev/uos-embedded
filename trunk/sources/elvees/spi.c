@@ -174,11 +174,16 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     unsigned        bytes = msg->word_count * ((bits_per_word + 7) / 8);
     int             res;
 
+    if (msg->word_count == 0)
+        return SPI_ERR_OK;
+    
     if (bytes > SPI_DMA_BUFSZ) {
+        /*
         debug_printf("DMA buffers are too short: \
                 %d bytes, shall be at least: %d bytes \
-                (change SPI_DMA_BUFSZ parameter!)\n",
+                (change SPI_DMA_BUFSZ parameter!)\n", \
                 SPI_DMA_BUFSZ, bytes);
+        */
         return SPI_ERR_SMALL_BUF;
     }
 
@@ -281,6 +286,9 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     unsigned            mode = SPI_MODE_GET_MODE(msg->mode);
     int                 res;
 
+    if (msg->word_count == 0)
+        return SPI_ERR_OK;
+        
     mutex_lock(&spimif->lock);
 
     res = init_hw(spi, msg->freq, bits_per_word, cs_num, mode);
