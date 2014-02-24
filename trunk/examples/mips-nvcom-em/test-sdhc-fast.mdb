@@ -1,0 +1,5 @@
+source mem_nvcom02t.cfg 
+loadelf test-sdhc-fast.elf
+run
+show sdhc_found
+show nerr

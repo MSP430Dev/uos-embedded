@@ -9,7 +9,7 @@ TESTS           += test-latency.bin test-tswitch.bin #test-fpu.bin
 TESTS		+= test-dcache.bin #test-tcl.bin
 #TESTS		+= dhrystone.bin linpack.bin whetstone.bin #livermore.bin
 #TESTS		+= coremark.bin
-TESTS       += test-flash.bin
+TESTS       += test-flash.bin test-sdhc-fast.bin
 
 ifneq (,$(findstring NVCOM,$(CFLAGS)))
 TESTS           += test-mac.bin test-eth.bin
