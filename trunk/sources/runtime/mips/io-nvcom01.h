@@ -126,6 +126,29 @@
 #define MC_DLM1		MC_R (0x3804)	/* Регистр делителя старший */
 #define MC_SCLR1	MC_R (0x3814)	/* Регистр предделителя (scaler) */
 
+#ifdef ELVEES_MC0428
+/*
+ * Регистры интервального таймера IT0, IT1
+ */
+#define MC_ITCSR	MC_R (0x5000)	/* Управление */
+#define MC_ITPERIOD	MC_R (0x5004)	/* Период работы таймера */
+#define MC_ITCOUNT	MC_R (0x5008)	/* Счетчик */
+#define MC_ITSCALE	MC_R (0x500C)	/* Предделитель */
+
+#define MC_ITCSR1	MC_R (0x5020)	/* Управление */
+#define MC_ITPERIOD1	MC_R (0x5024)	/* Период работы таймера */
+#define MC_ITCOUNT1	MC_R (0x5028)	/* Счетчик */
+#define MC_ITSCALE1	MC_R (0x502C)	/* Предделитель */
+
+/*
+ * Регистры WDT
+ */
+#define MC_WTCSR	MC_R (0x5010)	/* Управление */
+#define MC_WTPERIOD	MC_R (0x5014)	/* Период работы таймера */
+#define MC_WTCOUNT	MC_R (0x5018)	/* Счетчик */
+#define MC_WTSCALE	MC_R (0x501C)	/* Предделитель */
+
+#else
 /*
  * Регистры интервального таймера IT0, IT1
  */
@@ -146,6 +169,8 @@
 #define MC_WTPERIOD	MC_R (0xD014)	/* Период работы таймера */
 #define MC_WTCOUNT	MC_R (0xD018)	/* Счетчик */
 #define MC_WTSCALE	MC_R (0xD01C)	/* Предделитель */
+
+#endif
 
 /*
  * Регистры MFBSP(0-3)
