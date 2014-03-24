@@ -17,6 +17,7 @@
  * "COPY-UOS.txt" for details.
  */
 #include <runtime/lib.h>
+#include <kernel/uos.h>
 #include <elvees/pci.h>
 #include <elvees/mcb-01.h>
 

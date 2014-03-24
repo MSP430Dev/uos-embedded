@@ -60,7 +60,7 @@ mcb_write_reg (unsigned addr, unsigned value)
 			value, modif_addr);
 }
 
-
+#ifdef ELVEES_MCB03
 static mutex_t interrupt_mutex;
 static list_t  interrupt_handlers;
 static int     interrupt_task_created = 0;
@@ -114,3 +114,5 @@ void mcb_register_interrupt_handler (mcb_intr_handler_t *ih)
     MCB_MBA_MASK1 |= ih->mask1;
     mutex_unlock (&interrupt_mutex);
 }
+
+#endif
