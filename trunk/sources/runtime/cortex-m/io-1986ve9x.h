@@ -89,7 +89,7 @@ typedef enum
 } IRQn_t;
 
 /*------------------------------------------------------
- * General purpose I/O
+ * Регистры портов ввода-вывода
  */
 typedef struct
 {
@@ -103,12 +103,6 @@ typedef struct
     arm_reg_t GFEN;     /* Фильтрация входа */
 } GPIO_t;
 
-#define ARM_GPIO_IN(n)      (0 << (n))
-#define ARM_GPIO_OUT(n)     (1 << (n))
-
-#define ARM_ANALOG(n)       (0 << (n))
-#define ARM_DIGITAL(n)      (1 << (n))
-
 #define ARM_GPIOA       ((GPIO_t*) ARM_GPIOA_BASE)
 #define ARM_GPIOB       ((GPIO_t*) ARM_GPIOB_BASE)
 #define ARM_GPIOC       ((GPIO_t*) ARM_GPIOC_BASE)
@@ -117,7 +111,19 @@ typedef struct
 #define ARM_GPIOF       ((GPIO_t*) ARM_GPIOF_BASE)
 
 /*
- * Регистр GPIO FUNC: выбор функции порта
+ * Регистр OE: направление передачи данных на выводах порта
+ */
+#define ARM_GPIO_IN(n)      (0 << (n))
+#define ARM_GPIO_OUT(n)     (1 << (n))
+
+/*
+ * Регистр ANALOG: режим работы контроллера (аналоговый или цифровой)
+ */
+#define ARM_ANALOG(n)       (0 << (n))
+#define ARM_DIGITAL(n)      (1 << (n))
+
+/*
+ * Регистр FUNC: выбор функции порта
  */
 #define ARM_FUNC_MASK(n)    (3 << ((n)*2))
 #define ARM_FUNC_PORT(n)    (0 << ((n)*2))  /* порт */
@@ -128,12 +134,18 @@ typedef struct
 #define ARM_FUNC(n,f)       (f << ((n)*2))  /* установка выбранной функции */
 
 /*
- * Регистр GPIO PWR: скорость фронта порта вывода
+ * Регистр PWR: скорость фронта порта вывода
  */
 #define ARM_PWR_MASK(n)     (3 << ((n)*2))
 #define ARM_PWR_SLOW(n)     (1 << ((n)*2))  /* медленный фронт */
 #define ARM_PWR_FAST(n)     (2 << ((n)*2))  /* быстрый фронт */
 #define ARM_PWR_FASTEST(n)  (3 << ((n)*2))  /* максимально быстрый фронт */
+
+/*
+ * Регистр PULL: разрешение подтяжки вверх или вниз
+ */
+#define ARM_PULL_UP(n)      (1 << ((n) + 16))  /* подтяжка в питание включена (n = 0..15) */
+#define ARM_PULL_DOWN(n)    (1 << (n))         /* подтяжка в ноль включена (n = 0..15) */
 
 /*------------------------------------------------------
  * External bus
@@ -829,7 +841,7 @@ typedef struct
 
     // Slave Regs
     EndPointStatusRegs_t SEPS [4];
-    
+
     arm_reg_t SC;           // Управление контроллеров SLAVE
     arm_reg_t SLS;          // Отображение состояния линий USB шины
     arm_reg_t SIS;          // Флаги событий контроллера SLAVE
@@ -838,7 +850,7 @@ typedef struct
     arm_reg_t SFN_L;        // Номер фрейма (мл. часть)
     arm_reg_t SFN_H;        // Номер фрейма (ст. часть)
     unsigned gap6 [9];
-    
+
     EndPointFifoRegs_t SEPF [4];
 
     arm_reg_t HSCR;         // Общее управление для контроллера USB интерфейса

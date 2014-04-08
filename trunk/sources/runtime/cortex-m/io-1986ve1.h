@@ -113,7 +113,7 @@ typedef enum
 } IRQn_t;
 
 /*------------------------------------------------------
- * General purpose I/O
+ * Регистры портов ввода-вывода
  */
 typedef struct
 {
@@ -130,12 +130,6 @@ typedef struct
     arm_reg_t RDTX;
 } GPIO_t;
 
-#define ARM_GPIO_IN(n)      (0 << (n))
-#define ARM_GPIO_OUT(n)     (1 << (n))
-
-#define ARM_ANALOG(n)       (0 << (n))
-#define ARM_DIGITAL(n)      (1 << (n))
-
 #define ARM_GPIOA       ((GPIO_t*) ARM_GPIOA_BASE)
 #define ARM_GPIOB       ((GPIO_t*) ARM_GPIOB_BASE)
 #define ARM_GPIOC       ((GPIO_t*) ARM_GPIOC_BASE)
@@ -144,7 +138,19 @@ typedef struct
 #define ARM_GPIOF       ((GPIO_t*) ARM_GPIOF_BASE)
 
 /*
- * Регистр GPIO FUNC: выбор функции порта
+ * Регистр OE: направление передачи данных на выводах порта
+ */
+#define ARM_GPIO_IN(n)      (0 << (n))
+#define ARM_GPIO_OUT(n)     (1 << (n))
+
+/*
+ * Регистр ANALOG: режим работы контроллера (аналоговый или цифровой)
+ */
+#define ARM_ANALOG(n)       (0 << (n))
+#define ARM_DIGITAL(n)      (1 << (n))
+
+/*
+ * Регистр FUNC: выбор функции порта
  */
 #define ARM_FUNC_MASK(n)    (3 << ((n)*2))
 #define ARM_FUNC_PORT(n)    (0 << ((n)*2))  /* порт */
@@ -155,12 +161,18 @@ typedef struct
 #define ARM_FUNC(n,f)       (f << ((n)*2))  /* установка выбранной функции */
 
 /*
- * Регистр GPIO PWR: скорость фронта порта вывода
+ * Регистр PWR: скорость фронта порта вывода
  */
 #define ARM_PWR_MASK(n)     (3 << ((n)*2))
 #define ARM_PWR_SLOW(n)     (1 << ((n)*2))  /* медленный фронт */
 #define ARM_PWR_FAST(n)     (2 << ((n)*2))  /* быстрый фронт */
 #define ARM_PWR_FASTEST(n)  (3 << ((n)*2))  /* максимально быстрый фронт */
+
+/*
+ * Регистр PULL: разрешение подтяжки вверх или вниз
+ */
+#define ARM_PULL_UP(n)      (1 << ((n) + 16))  /* подтяжка в питание включена (n = 0..15) */
+#define ARM_PULL_DOWN(n)    (1 << (n))         /* подтяжка в ноль включена (n = 0..15) */
 
 /*------------------------------------------------------
  * External bus
@@ -956,7 +968,7 @@ typedef struct
 
     // Slave Regs
     EndPointStatusRegs_t SEPS [4];
-    
+
     arm_reg_t SC;           // Управление контроллеров SLAVE
     arm_reg_t SLS;          // Отображение состояния линий USB шины
     arm_reg_t SIS;          // Флаги событий контроллера SLAVE
@@ -965,7 +977,7 @@ typedef struct
     arm_reg_t SFN_L;        // Номер фрейма (мл. часть)
     arm_reg_t SFN_H;        // Номер фрейма (ст. часть)
     unsigned gap6 [9];
-    
+
     EndPointFifoRegs_t SEPF [4];
 
     arm_reg_t HSCR;         // Общее управление для контроллера USB интерфейса
@@ -1783,8 +1795,8 @@ typedef struct
 /*
  * CONTROL1: регистр управления №1 приёмников
  */
-#define ARM_ARINC429R_CONTROL1_CH_EN(n) (1 << (((n) & 7) + 0))  /* Разрешение работы канала n (1..8) */
-#define ARM_ARINC429R_CONTROL1_CLK(n) (1 << (((n) & 7) + 14))  /* Скорость приёма данных для канала n (1..8): 1 - 12,5 кГц, 0 - 100 кГц. */
+#define ARM_ARINC429R_CONTROL1_CH_EN(n) (1 << (((n) & 7) + 0))  /* Разрешение работы канала n (0..7) */
+#define ARM_ARINC429R_CONTROL1_CLK(n) (1 << (((n) & 7) + 14))  /* Скорость приёма данных для канала n (0..7): 1 - 12,5 кГц, 0 - 100 кГц. */
 #define ARM_ARINC429R_CONTROL1_DIV_LO(n) (((n) & 0xf) << 28)  /* Делитель частоты ядра до 1 МГц. Содержит младшие 4 разряда значения, на которое необходимо поделить частоту ядра, чтобы получить 1 МГц. */
 
 /*
@@ -1831,7 +1843,7 @@ typedef struct
 /*
  * CHANNEL: Регистр номера канала приёмников
  */
-#define ARM_ARINC429R_CHANNEL(n) ((n) & 7)  /* Бит выбора канала n (1..8) */
+#define ARM_ARINC429R_CHANNEL(n) ((n) & 7)  /* Бит выбора канала n (0..7) */
 
 /*
  * CONTROL1, CONTROL2: регистры управления передатчиков
@@ -1909,7 +1921,7 @@ typedef struct
     volatile uint16_t    R_CFG;
     volatile uint16_t    X_CFG;
     volatile uint16_t    G_CFG_LOW;
-	volatile uint16_t    G_CFG_HI;
+    volatile uint16_t    G_CFG_HI;
     volatile uint16_t    IMR;
     volatile uint16_t    IFR;
     volatile uint16_t    MDIO_CTRL;
@@ -1921,9 +1933,9 @@ typedef struct
     volatile uint16_t    STAT;
     volatile uint16_t    spare0;
     volatile uint16_t    PHY_CTRL;
-    volatile uint16_t    PHY_STAT;   
+    volatile uint16_t    PHY_STAT;
 } __attribute__ ((packed)) ETH_t;
- 
+
 #define ARM_ETH             ((volatile ETH_t *) ARM_ETH_REG_BASE)
 #define ARM_ETH_RX_FIFO     *((arm_reg_t *) ARM_ETH_BUF_BASE)
 #define ARM_ETH_TX_FIFO     *((arm_reg_t *) (ARM_ETH_BUF_BASE + 0x4))
@@ -2075,16 +2087,16 @@ typedef struct
 #define ARM_ETH_PHY_FX_VALID    (1 << 8)
 #define ARM_ETH_PHY_MDO         (1 << 9)
 #define ARM_ETH_PHY_MDINT       (1 << 10)
- 
- 
+
+
  /* Поле управления передачи пакета - 32-разрядное целое - длина пакета в байтах */
- 
+
  /* Поле состояния передачи пакета - 32-разрядное целое */
  #define ARM_ETH_PKT_RCOUNT(x)		((x) << 16)
  #define ARM_ETH_PKT_RL				(1 << 20)
  #define ARM_ETH_PKT_LC				(1 << 21)
  #define ARM_ETH_PKT_UR				(1 << 22)
- 
+
  /* Поле состояния приёма пакета - 32-разрядное целое */
  #define ARM_ETH_PKT_LENGTH(x)		((x) & 0xFFFF)
  #define ARM_ETH_PKT_PF_ERR			(1 << 16)
@@ -2098,7 +2110,7 @@ typedef struct
  #define ARM_ETH_PKT_MCA_ERR		(1 << 24)
  #define ARM_ETH_PKT_BCA_ERR		(1 << 25)
  #define ARM_ETH_PKT_UCA_ERR		(1 << 24)
- 
+
 /*------------------------------------------------------------------------
  * Макроопределения для возможности указания привязки сигналов к контактам
  * из target.cfg
