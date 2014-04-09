@@ -502,6 +502,41 @@ _arch_interrupt_ (void)
 		} else
 			break;
 #endif
+#ifdef ELVEES_MC0428
+		/* Read readme-mc0428.txt for interrupt numbers. */
+		if (pending & ST_IM_COMPARE) {
+			/* Use number 24 for COMPARE interrupt. */
+			irq = 24;
+			status &= ~ST_IM_COMPARE;
+			mips_write_c0_register (C0_STATUS, status);
+		} else if (pending & ST_IM_QSTR0) {
+			/* QSTR0 interrupt: 0..24. */
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			if (irq < 0)
+				break;
+			MC_MASKR0 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR1) {
+			/* QSTR1 interrupt: 25..40. */
+			irq = 25 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			if (irq < 25)
+				break;
+			MC_MASKR1 &= ~(1 << (irq - 25));
+		} else if (pending & ST_IM_QSTR2) {
+			/* QSTR2 interrupt: 41..56. */
+			irq = 41 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			if (irq < 41)
+				break;
+			MC_MASKR2 &= ~(1 << (irq - 41));
+		} else if (pending & ST_IM_QSTR3) {
+			/* QSTR3 interrupt: 57..88. */
+			irq = 57 + 31 - mips_count_leading_zeroes (MC_QSTR3 & MC_MASKR3);
+			if (irq < 57)
+				break;
+			MC_MASKR3 &= ~(1 << (irq - 57));
+		} else
+			break;
+#endif
+
 		if (irq >= ARCH_INTERRUPTS)
 			break;
 
@@ -655,6 +690,26 @@ arch_intr_allow (int irq)
 	} else {
 		/* QSTR4 interrupt: 68..97. */
 		MC_MASKR4 |= 1 << (irq-68);
+	}
+#endif
+#ifdef ELVEES_MC0428
+	if (irq == 24) {
+		/* Use irq number 24 for COMPARE interrupt. */
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		status |= ST_IM_COMPARE;
+		mips_write_c0_register (C0_STATUS, status);
+	} else if (irq < 25) {
+		/* QSTR0 interrupt: 0..24. */
+		MC_MASKR0 |= 1 << irq;
+	} else if (irq < 41) {
+		/* QSTR1 interrupt: 25..40. */
+		MC_MASKR1 |= 1 << (irq-25);
+	} else if (irq < 57) {
+		/* QSTR2 interrupt: 41..56. */
+		MC_MASKR2 |= 1 << (irq-41);
+	} else if (irq < 89) {
+		/* QSTR3 interrupt: 57..88. */
+		MC_MASKR3 |= 1 << (irq-57);
 	}
 #endif
 }

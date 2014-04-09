@@ -92,6 +92,16 @@
 #define ARCH_INTERRUPTS		(23+8+32+5+30)
 #endif
 
+#ifdef ELVEES_MC0428
+/*
+ * 25 interrupts linked to MASKR0[24:0] register.
+ * 16 interrupts linked to MASKR1[15:0] register.
+ * 16 interrupts linked to MASKR2[15:0] register.
+ * 32 interrupts linked to MASKR3[31:0] register.
+ */
+#define ARCH_INTERRUPTS		(25+16+16+32) /* 79 interrupts */
+#endif
+
 /*
  * Type for saving task stack context.
  */
