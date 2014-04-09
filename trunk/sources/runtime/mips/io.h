@@ -16,10 +16,6 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-#ifdef ELVEES_MC0428
-#define ELVEES_NVCOM01M 1
-#endif
-
 #ifdef ELVEES_NVCOM01M
 #define ELVEES_NVCOM01 1
 #endif
@@ -58,6 +54,11 @@
 #ifdef ELVEES_MC0226
 #   define ELVEES	1
 #   include <runtime/mips/io-mc0226.h>
+#   include <runtime/mips/io-elvees.h>
+#endif
+#ifdef ELVEES_MC0428
+#   define ELVEES	1
+#   include <runtime/mips/io-mc0428.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
 
@@ -127,6 +128,9 @@
 #endif
 #ifdef ELVEES_MC0226
 #   define MIPS_FSPACE		24	/* for Elvees MC0226 */
+#endif
+#ifdef ELVEES_MC0428
+#   define MIPS_FSPACE		24	/* for Elvees MC-0428 */
 #endif
 #ifndef MIPS_FSPACE
 #   define MIPS_FSPACE		16	/* default minimum */
