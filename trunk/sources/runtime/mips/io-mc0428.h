@@ -16,10 +16,11 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-#ifndef _IO_NVCOM01_H
-#define _IO_NVCOM01_H
+#ifndef _IO_MC0428_H
+#define _IO_MC0428_H
 
 #define MC_R(a)		*(volatile unsigned*)(0xB82F0000 + (a))
+#define MC_A(a)		(volatile unsigned*)(0xB82F0000 + (a))
 
 /*
  * Регистры DMA MEM(0-3)
@@ -72,31 +73,46 @@
 #define MC_RUN_USB(n)	MC_R (0xC814+(n<<6))	/* Управление состоянием бита RUN */
 
 /*
- * Регистры DMA MFBSP(0-3)
+ * Регистры DMA MFBSP(0-1)
  */
-#define MC_CSR_MFBSP_RX(n)	MC_R (0x7800+(n<<6))	/* Управление и состояние */
-#define MC_CP_MFBSP_RX(n)	MC_R (0x7804+(n<<6))	/* Указатель цепочки */
-#define MC_IR_MFBSP_RX(n)	MC_R (0x7808+(n<<6))	/* Индекс */
-#define MC_RUN_MFBSP_RX(n)	MC_R (0x780C+(n<<6))	/* Управления состоянием бита RUN */
+//#if 0
+#define MC_CSR_MFBSP_TX(n)	MC_R (0x8800+(n<<12))	/* Управление и состояние */
+#define MC_CP_MFBSP_TX(n)	MC_R (0x8804+(n<<12))	/* Указатель цепочки */
+#define MC_IR_MFBSP_TX(n)	MC_R (0x8808+(n<<12))	/* Индекс */
+#define MC_RUN_MFBSP_TX(n)	MC_R (0x880C+(n<<12))	/* Управления состоянием бита RUN */
+//#else
+#define _MC_CSR_MFBSP_TX(n)	MC_A (0x8800)	/* Управление и состояние */
+#define _MC_CP_MFBSP_TX(n)	MC_A (0x8804)	/* Указатель цепочки */
+#define _MC_IR_MFBSP_TX(n)	MC_A (0x8808)	/* Индекс */
+#define _MC_RUN_MFBSP_TX(n)	MC_A (0x880C)	/* Управления состоянием бита RUN */
+//#endif
 
-#define MC_CSR_MFBSP_TX(n)	MC_R (0x7C00+(n<<6))	/* Управление и состояние */
-#define MC_CP_MFBSP_TX(n)	MC_R (0x7C04+(n<<6))	/* Указатель цепочки */
-#define MC_IR_MFBSP_TX(n)	MC_R (0x7C08+(n<<6))	/* Индекс */
-#define MC_RUN_MFBSP_TX(n)	MC_R (0x7C0C+(n<<6))	/* Управления состоянием бита RUN */
+//#if 0
+#define MC_CSR_MFBSP_RX(n)	MC_R (0x8840+(n<<12))	/* Управление и состояние */
+#define MC_CP_MFBSP_RX(n)	MC_R (0x8844+(n<<12))	/* Указатель цепочки */
+#define MC_IR_MFBSP_RX(n)	MC_R (0x8848+(n<<12))	/* Индекс */
+#define MC_RUN_MFBSP_RX(n)	MC_R (0x884C+(n<<12))	/* Управления состоянием бита RUN */
+//#else
+#define _MC_CSR_MFBSP_RX(n)	MC_A (0x8840)	/* Управление и состояние */
+#define _MC_CP_MFBSP_RX(n)	MC_A (0x8844)	/* Указатель цепочки */
+#define _MC_IR_MFBSP_RX(n)	MC_A (0x8848)	/* Индекс */
+#define _MC_RUN_MFBSP_RX(n)	MC_A (0x884C)	/* Управления состоянием бита RUN */
+//#endif
 
 /*
  * Регистры I2C
  */
-#define MC_I2C_PRER	MC_R (0x2000)	/* Предделитель частоты */
-#define MC_I2C_CTR	MC_R (0x2004)	/* Управление */
-#define MC_I2C_TXR	MC_R (0x2008)	/* Передача данных */
-#define MC_I2C_RXR	MC_R (0x200C)	/* Прием данных */
-#define MC_I2C_CR	MC_R (0x2010)	/* Команды */
-#define MC_I2C_SR	MC_R (0x2014)	/* Состояние */
-#define MC_I2C_PR_CNT	MC_R (0x2018)	/* Счетчик предделителя частоты */
+#define MC_I2C_PRER	MC_R (0x3800)	/* Предделитель частоты */
+#define MC_I2C_CTR	MC_R (0x3804)	/* Управление */
+#define MC_I2C_TXR	MC_R (0x3808)	/* Передача данных */
+#define MC_I2C_RXR	MC_R (0x380C)	/* Прием данных */
+#define MC_I2C_CR	MC_R (0x3810)	/* Команды */
+#define MC_I2C_SR	MC_R (0x3814)	/* Состояние */
+#define MC_I2C_PR_CNT	MC_R (0x3818)	/* Счетчик предделителя частоты */
+#define MC_I2C_SYNC	MC_R (0x381C)	/* Регистр синхронизации */
 
 /*
- * Регистры UART0, UART1
+ * Регистры UART
  */
 #define MC_RBR		MC_R (0x3000)	/* Приемный буферный регистр */
 #define MC_THR		MC_R (0x3000)	/* Передающий буферный регистр */
@@ -112,60 +128,46 @@
 #define MC_DLM		MC_R (0x3004)	/* Регистр делителя старший */
 #define MC_SCLR		MC_R (0x3014)	/* Регистр предделителя (scaler) */
 
-#define MC_RBR1		MC_R (0x3800)	/* Приемный буферный регистр */
-#define MC_THR1		MC_R (0x3800)	/* Передающий буферный регистр */
-#define MC_IER1		MC_R (0x3804)	/* Регистр разрешения прерываний */
-#define MC_IIR1		MC_R (0x3808)	/* Регистр идентификации прерывания */
-#define MC_FCR1		MC_R (0x3808)	/* Регистр управления FIFO */
-#define MC_LCR1		MC_R (0x380C)	/* Регистр управления линией */
-#define MC_MCR1		MC_R (0x3810)	/* Регистр управления модемом */
-#define MC_LSR1		MC_R (0x3814)	/* Регистр состояния линии */
-#define MC_MSR1		MC_R (0x3818)	/* Регистр состояния модемом */
-#define MC_SPR1		MC_R (0x381C)	/* Регистр Scratch Pad */
-#define MC_DLL1		MC_R (0x3800)	/* Регистр делителя младший */
-#define MC_DLM1		MC_R (0x3804)	/* Регистр делителя старший */
-#define MC_SCLR1	MC_R (0x3814)	/* Регистр предделителя (scaler) */
-
 /*
  * Регистры интервального таймера IT0, IT1
  */
-#define MC_ITCSR	MC_R (0xD000)	/* Управление */
-#define MC_ITPERIOD	MC_R (0xD004)	/* Период работы таймера */
-#define MC_ITCOUNT	MC_R (0xD008)	/* Счетчик */
-#define MC_ITSCALE	MC_R (0xD00C)	/* Предделитель */
+#define MC_ITCSR	MC_R (0x5000)	/* Управление */
+#define MC_ITPERIOD	MC_R (0x5004)	/* Период работы таймера */
+#define MC_ITCOUNT	MC_R (0x5008)	/* Счетчик */
+#define MC_ITSCALE	MC_R (0x500C)	/* Предделитель */
 
-#define MC_ITCSR1	MC_R (0xD020)	/* Управление */
-#define MC_ITPERIOD1	MC_R (0xD024)	/* Период работы таймера */
-#define MC_ITCOUNT1	MC_R (0xD028)	/* Счетчик */
-#define MC_ITSCALE1	MC_R (0xD02C)	/* Предделитель */
+#define MC_ITCSR1	MC_R (0x5020)	/* Управление */
+#define MC_ITPERIOD1	MC_R (0x5024)	/* Период работы таймера */
+#define MC_ITCOUNT1	MC_R (0x5028)	/* Счетчик */
+#define MC_ITSCALE1	MC_R (0x502C)	/* Предделитель */
 
 /*
  * Регистры WDT
  */
-#define MC_WTCSR	MC_R (0xD010)	/* Управление */
-#define MC_WTPERIOD	MC_R (0xD014)	/* Период работы таймера */
-#define MC_WTCOUNT	MC_R (0xD018)	/* Счетчик */
-#define MC_WTSCALE	MC_R (0xD01C)	/* Предделитель */
+#define MC_WTCSR	MC_R (0x5010)	/* Управление */
+#define MC_WTPERIOD	MC_R (0x5014)	/* Период работы таймера */
+#define MC_WTCOUNT	MC_R (0x5018)	/* Счетчик */
+#define MC_WTSCALE	MC_R (0x501C)	/* Предделитель */
 
 /*
- * Регистры MFBSP(0-3)
+ * Регистры MFBSP(0-1)
  */
-#define MC_MFBSP_TX(n)		MC_R (0x7000+(n<<8))   /* Буфер передачи данных */
-#define MC_MFBSP_RX(n)		MC_R (0x7000+(n<<8))   /* Буфер приема данных */
-#define MC_MFBSP_CSR(n)		MC_R (0x7004+(n<<8))   /* Управление и состояние */
-#define MC_MFBSP_DIR(n)		MC_R (0x7008+(n<<8))   /* Управление направлением
+#define MC_MFBSP_TX(n)		MC_R (0x8000+(n<<12))   /* Буфер передачи данных */
+#define MC_MFBSP_RX(n)		MC_R (0x8000+(n<<12))   /* Буфер приема данных */
+#define MC_MFBSP_CSR(n)		MC_R (0x8004+(n<<12))   /* Управление и состояние */
+#define MC_MFBSP_DIR(n)		MC_R (0x8008+(n<<12))   /* Управление направлением
 							* порта ввода-вывода */
-#define MC_MFBSP_GPIO_DR(n)	MC_R (0x700C+(n<<8))   /* Данные порта ввода-вывода */
-#define MC_MFBSP_TCTR(n)	MC_R (0x7010+(n<<8))   /* Управление передатчиком */
-#define MC_MFBSP_RCTR(n)	MC_R (0x7014+(n<<8))   /* Управление приёмником */
-#define MC_MFBSP_TSR(n)		MC_R (0x7018+(n<<8))   /* Состояние передатчика */
-#define MC_MFBSP_RSR(n)		MC_R (0x701C+(n<<8))   /* Состояние приёмника */
-#define MC_MFBSP_TCTR_RATE(n)	MC_R (0x7020+(n<<8))   /* Управление темпом передачи данных */
-#define MC_MFBSP_RCTR_RATE(n)	MC_R (0x7024+(n<<8))   /* Управление темпом приёма данных */
-#define MC_MFBSP_TSTART(n)	MC_R (0x7028+(n<<8))   /* Запуск/останов передатчика без изменения настроек передатчика */
-#define MC_MFBSP_RSTART(n)	MC_R (0x702C+(n<<8))   /* Запуск/останов передатчика без изменения настроек приёмника */
-#define MC_MFBSP_EMERG(n)	MC_R (0x7030+(n<<8))   /* Регистр аварийного управления портом */
-#define MC_MFBSP_IMASK(n) 	MC_R (0x7034+(n<<8))   /* Регистр маски прерываний от порта */
+#define MC_MFBSP_GPIO_DR(n)	MC_R (0x800C+(n<<12))   /* Данные порта ввода-вывода */
+#define MC_MFBSP_TCTR(n)	MC_R (0x8010+(n<<12))   /* Управление передатчиком */
+#define MC_MFBSP_RCTR(n)	MC_R (0x8014+(n<<12))   /* Управление приёмником */
+#define MC_MFBSP_TSR(n)		MC_R (0x8018+(n<<12))   /* Состояние передатчика */
+#define MC_MFBSP_RSR(n)		MC_R (0x801C+(n<<12))   /* Состояние приёмника */
+#define MC_MFBSP_TCTR_RATE(n)	MC_R (0x8020+(n<<12))   /* Управление темпом передачи данных */
+#define MC_MFBSP_RCTR_RATE(n)	MC_R (0x8024+(n<<12))   /* Управление темпом приёма данных */
+#define MC_MFBSP_TSTART(n)	MC_R (0x8028+(n<<12))   /* Запуск/останов передатчика без изменения настроек передатчика */
+#define MC_MFBSP_RSTART(n)	MC_R (0x802C+(n<<12))   /* Запуск/останов передатчика без изменения настроек приёмника */
+#define MC_MFBSP_EMERG(n)	MC_R (0x8030+(n<<12))   /* Регистр аварийного управления портом */
+#define MC_MFBSP_IMASK(n) 	MC_R (0x8034+(n<<12))   /* Регистр маски прерываний от порта */
  
 /*
  * Регистры VPIN
@@ -256,11 +258,13 @@
 #define MC_MASKR0	MC_R (0x4010)	/* Маска прерываний */
 #define MC_QSTR0	MC_R (0x4014)	/* Запросы прерываний от IT, RTT, WDT,
 					 * VPOUT, VPIN, ETHERNET MAC, USB,
-					 * PMSC, UART, nIRQ[3:0] */
+					 * PMSC (PCI), UART, nIRQ[3:0] */
 #define MC_MASKR1	MC_R (0x4018)	/* Маска прерываний от DMA MEM */
 #define MC_QSTR1	MC_R (0x401C)	/* Запросы прерываний от DMA MEM */
-#define MC_MASKR2	MC_R (0x4020)	/* Маска прерываний от MFBSP */
-#define MC_QSTR2	MC_R (0x4024)	/* Запросы прерываний от MFBSP */
+#define MC_MASKR2	MC_R (0x4020)	/* Маска прерываний от SRIO */
+#define MC_QSTR2	MC_R (0x4024)	/* Запросы прерываний от SRIO */
+#define MC_MASKR3	MC_R (0x4028)	/* Маска прерываний от MFBSP и SWIC */
+#define MC_QSTR3	MC_R (0x402C)	/* Запросы прерываний от MFBSP и SWIC */
 #define MC_IRQM		MC_R (0x4030)	/* Режимы внешних прерываний nIRQ[3:0] */
 
 /*
@@ -270,4 +274,4 @@
 #define MC_INT_EN_MCC	MC_R (0xFFF4)	/* Разрешение прерывания от MCC */
 #define MC_INT_RST_MCC	MC_R (0xFFF8)	/* Сброс прерывания от MCC */
 
-#endif /* _IO_NVCOM01_H */
+#endif /* _IO_MC0428_H */

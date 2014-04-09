@@ -111,6 +111,14 @@
 #define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
 #endif
 
+#ifdef ELVEES_MC0428
+#define ST_IM_QSTR0	0x00000400	/* от IT0, IT1, WDT, VPOUT, VPIN, ENET, MBR, PMCh, I2C, UART, nIRQ[3:0] */
+#define ST_IM_QSTR1	0x00000800	/* от DMA MEM */
+#define ST_IM_QSTR2	0x00001000	/* от SRIO */
+#define ST_IM_QSTR3	0x00002000	/* от SWIC, MFBSP */
+#define ST_IM_DSP	0x00004000	/* от DSP */
+#define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
+#endif
 
 /*
  * Сause register.
@@ -569,6 +577,123 @@
 #define MC_MASKR4_SRQ0		(1 << 0)	/* Запрос обслуживания от порта MFBSP0 */
 #endif
 
+#ifdef ELVEES_MC0428
+/* QSTR0 / MASKR0 */
+#define MC_MASKR0_I2C		(1 << 23)	/* Прерывание от I2C */
+#define MC_MASKR0_IT		(1 << 22)	/* от таймера IT */
+#define MC_MASKR0_RTT		(1 << 21)	/* от таймера RTT */
+#define MC_MASKR0_WDT		(1 << 20)	/* от таймера WDT */
+#define MC_MASKR0_VPOUT_TX	(1 << 19)	/* от канала DMA VPOUT */
+#define MC_MASKR0_VPOUT		(1 << 18)	/* от контроллера VPOUT */
+#define MC_MASKR0_VPIN_RX	(1 << 17)	/* от канала DMA VPIN */
+#define MC_MASKR0_VPIN		(1 << 16)	/* от контроллера VPIN */
+#define MC_MASKR0_ETH_DMA_TX	(1 << 15)	/* от DMA передачи Ethernet */
+#define MC_MASKR0_ETH_DMA_RX	(1 << 14)	/* от DMA приёма Ethernet */
+#define MC_MASKR0_ETH_TX_FRAME	(1 << 13)	/* от передатчика Ethernet */
+#define MC_MASKR0_ETH_RX_FRAME	(1 << 12)	/* от приёмника Ethernet */
+#define MC_MASKR0_USB_EP4	(1 << 11)	/* от передатчика USB end point 4 */
+#define MC_MASKR0_USB_EP3	(1 << 10)	/* от приёмника USB end point 3 */
+#define MC_MASKR0_USB_EP2	(1 << 9)	/* от передатчика USB end point 2 */
+#define MC_MASKR0_USB_EP1	(1 << 8)	/* от приёмника USB end point 1 */
+#define MC_MASKR0_USB		(1 << 7)	/* Прерывание от USB */
+#define MC_MASKR0_PMSC_MASTER (1 << 6)	/* Прерывание от PMSC_MASTER (PCI) */
+#define MC_MASKR0_PMSC_MBR	(1 << 5)	/* Прерывание от PMSC_MBR (PCI) */
+#define MC_MASKR0_UART		(1 << 4)	/* Прерывание от UART */
+#define MC_MASKR0_IRQ3		(1 << 3)	/* Внешнее прерывание nIRQ3 */
+#define MC_MASKR0_IRQ2		(1 << 2)	/* Внешнее прерывание nIRQ2 */
+#define MC_MASKR0_IRQ1		(1 << 1)	/* Внешнее прерывание nIRQ1 */
+#define MC_MASKR0_IRQ0		(1 << 0)	/* Внешнее прерывание nIRQ0 */
+/* QSTR1 / MASKR1 */
+#define MC_MASKR1_DMAMEM_CH17	(1 << 15)	/* от канала DMA MEM_CH17 */
+#define MC_MASKR1_DMAMEM_CH16	(1 << 14)	/* от канала DMA MEM_CH16 */
+#define MC_MASKR1_DMAMEM_CH15	(1 << 13)	/* от канала DMA MEM_CH15 */
+#define MC_MASKR1_DMAMEM_CH14	(1 << 12)	/* от канала DMA MEM_CH14 */
+#define MC_MASKR1_DMAMEM_CH13	(1 << 11)	/* от канала DMA MEM_CH13 */
+#define MC_MASKR1_DMAMEM_CH12	(1 << 10)	/* от канала DMA MEM_CH12 */
+#define MC_MASKR1_DMAMEM_CH11	(1 << 9)	/* от канала DMA MEM_CH11 */
+#define MC_MASKR1_DMAMEM_CH10	(1 << 8)	/* от канала DMA MEM_CH10 */
+#define MC_MASKR1_DMAMEM_CH07	(1 << 7)	/* от канала DMA MEM_CH07 */
+#define MC_MASKR1_DMAMEM_CH06	(1 << 6)	/* от канала DMA MEM_CH06 */
+#define MC_MASKR1_DMAMEM_CH05	(1 << 5)	/* от канала DMA MEM_CH05 */
+#define MC_MASKR1_DMAMEM_CH04	(1 << 4)	/* от канала DMA MEM_CH04 */
+#define MC_MASKR1_DMAMEM_CH03	(1 << 3)	/* от канала DMA MEM_CH03 */
+#define MC_MASKR1_DMAMEM_CH02	(1 << 2)	/* от канала DMA MEM_CH02 */
+#define MC_MASKR1_DMAMEM_CH01	(1 << 1)	/* от канала DMA MEM_CH01 */
+#define MC_MASKR1_DMAMEM_CH00	(1 << 0)	/* от канала DMA MEM_CH00 */
+/* QSTR2 / MASKR2 */
+#define MC_MASKR2_SRIO1_MCE_DEC	(1 << 15)	/* В SRIO1 принял символ Multicast-Event. 
+											   Повторяет состояние бита MCE_DEC регистра LPU_CSR */
+#define MC_MASKR2_SRIO1_RESET_DEVICE_CMD (1 << 14)	/* В SRIO1 поступили 4 команды Reset-Device Command. 
+													Повторяет состояние бита RESET_DEVICE_CMD регистра LPU_CSR */
+#define MC_MASKR2_SRIO1_PORT_ERROR (1 << 13) /* LPU SRIO1 находится в нерабочем состоянии из-за 
+											   обнаружения невосстанавливаемой ошибки. 
+											   Повторяет состояние бита PORT_ERROR регистра ERROR_STATUS_CSR */
+#define MC_MASKR2_SRIO1_MPU_TX	(1 << 12)	/* Прерывание от MPU_TX SRIO1 */
+#define MC_MASKR2_SRIO1_MPU_RX	(1 << 11)	/* Прерывание от MPU_RX SRIO1 */
+#define MC_MASKR2_SRIO1_LSU		(1 << 10)	/* Прерывание от LSU SRIO1 */
+#define MC_MASKR2_SRIO1_DOORBELL (1 << 9)	/* В SRIO1 поступил пакет типа DOORBELL */
+#define MC_MASKR2_SRIO1_PWRITE	(1 << 8)	/* В SRIO1 поступил пакет типа PORT_WRITE */
+
+#define MC_MASKR2_SRIO0_MCE_DEC	(1 << 7)	/* В SRIO0 принял символ Multicast-Event. 
+											   Повторяет состояние бита MCE_DEC регистра LPU_CSR */
+#define MC_MASKR2_SRIO0_RESET_DEVICE_CMD (1 << 6)	/* В SRIO0 поступили 4 команды Reset-Device Command. 
+													Повторяет состояние бита RESET_DEVICE_CMD регистра LPU_CSR */
+#define MC_MASKR2_SRIO0_PORT_ERROR (1 << 5)	/* LPU SRIO0 находится в нерабочем состоянии из-за 
+											   обнаружения невосстанавливаемой ошибки. 
+											   Повторяет состояние бита PORT_ERROR регистра ERROR_STATUS_CSR */
+#define MC_MASKR2_SRIO0_MPU_TX	(1 << 4)	/* Прерывание от MPU_TX SRIO0 */
+#define MC_MASKR2_SRIO0_MPU_RX	(1 << 3)	/* Прерывание от MPU_RX SRIO0 */
+#define MC_MASKR2_SRIO0_LSU		(1 << 2)	/* Прерывание от LSU SRIO0 */
+#define MC_MASKR2_SRIO0_DOORBELL (1 << 1)	/* В SRIO0 поступил пакет типа DOORBELL */
+#define MC_MASKR2_SRIO0_PWRITE	(1 << 0)	/* В SRIO0 поступил пакет типа PORT_WRITE */
+/* QSTR3 / MASKR3 */
+#define MC_MASKR3_SW_TX_DAT_CH1 (1 << 31) /* Прерывание от канала DMA SW_TX_DAT_CH1 */
+#define MC_MASKR3_SW_TX_DES_CH1 (1 << 30) /* Прерывание от канала DMA SW_TX_DES_CH1 */
+#define MC_MASKR3_SW_RX_DAT_CH1 (1 << 29) /* Прерывание от канала DMA SW_RX_DAT_CH1 */
+#define MC_MASKR3_SW_RX_DES_CH1 (1 << 28) /* Прерывание от канала DMA SW_RX_DES_CH1 */
+/* Unused (1 << 27) */
+#define MC_MASKR3_SW_TIME1		(1 << 26) /* Прерывание от SWIC1 при получении маркер времени 
+										     или распределенного прерывания */
+#define MC_MASKR3_SW_ERR1		(1 << 25) /* Прерывание от SWIC1 при ошибке в канале */
+#define MC_MASKR3_SW_LINK1		(1 << 24) /* Прерывание от SWIC1 при установлении соединения */
+
+#define MC_MASKR3_SW_TX_DAT_CH0 (1 << 23) /* Прерывание от канала DMA SW_TX_DAT_CH0 */
+#define MC_MASKR3_SW_TX_DES_CH0 (1 << 22) /* Прерывание от канала DMA SW_TX_DES_CH0 */
+#define MC_MASKR3_SW_RX_DAT_CH0 (1 << 21) /* Прерывание от канала DMA SW_RX_DAT_CH0 */
+#define MC_MASKR3_SW_RX_DES_CH0 (1 << 20) /* Прерывание от канала DMA SW_RX_DES_CH0 */
+/* Unused (1 << 19) */
+#define MC_MASKR3_SW_TIME0		(1 << 18) /* Прерывание от SWIC0 при получении маркер времени 
+										     или распределенного прерывания */
+#define MC_MASKR3_SW_ERR0		(1 << 17) /* Прерывание от SWIC0 при ошибке в канале */
+#define MC_MASKR3_SW_LINK0		(1 << 16) /* Прерывание от SWIC0 при установлении соединения */
+/* Unused (1 << 14) and (1 << 15) */
+#define MC_MASKR3_MFBSP_RX_CH1	(1 << 13) /* Прерывание от канала DMA порта MFBSP1 при приеме данных */
+#define MC_MASKR3_MFBSP_TX_CH1	(1 << 12) /* Прерывание от канала DMA порта MFBSP1 при передаче данных */
+/* Unused (1 << 11) */
+#define MC_MASKR3_MFBSP_RXBUF1 (1 << 10) /* Формируется, если порт MFBSP1 включен на прием данных (в одном из режимов), 
+										   а число 64-х разрядных слов в буфере приёма больше чем RLEV 
+										   (RLEV устанавливается в регистре состояния приёмника RSR) */
+#define MC_MASKR3_MFBSP_TXBUF1 (1 << 9)	 /* Формируется, если порт MFBSP1 включен на передачу данных (в одном из режимов), 
+										   а число 64-х разрядных слов, находящихся в буфере  передачи меньше, 
+										   либо равно TLEV (TLEV устанавливается в регистре состояния передатчика TSR) */
+#define MC_MASKR3_SRQ1		(1 << 8)	 /* Запрос обслуживания от порта MFBSP1.
+										   Формируется, если порт выключен (LEN=0, SPI_I2S_EN=0), 
+										   а на выводах LACK или LCLK присутствует сигнал высокого уровня */
+/* Unused (1 << 6) and (1 << 7) */
+#define MC_MASKR3_MFBSP_RX_CH0 (1 << 5)	/* Прерывание от канала DMA порта MFBSP0 при приеме данных */
+#define MC_MASKR3_MFBSP_TX_CH0 (1 << 4)	/* Прерывание от канала DMA порта MFBSP0 при передаче данных */
+/* Unused (1 << 3) */
+#define MC_MASKR3_MFBSP_RXBUF0 (1 << 2)	/* Формируется, если порт MFBSP0 включен на прием данных (в одном из режимов), 
+										   а число 64-х разрядных слов в буфере приёма больше чем RLEV 
+										   (RLEV устанавливается в регистре состояния приёмника RSR) */
+#define MC_MASKR3_MFBSP_TXBUF0 (1 << 1)	/* Формируется, если порт MFBSP0 включен на передачу данных (в одном из режимов), 
+										   а число 64-х разрядных слов, находящихся в буфере  передачи меньше, 
+										   либо равно TLEV (TLEV устанавливается в регистре состояния передатчика TSR) */
+#define MC_MASKR3_SRQ0		(1 << 0)	/* Запрос обслуживания от порта MFBSP0.
+										   Формируется, если порт выключен (LEN=0, SPI_I2S_EN=0), 
+										   а на выводах LACK или LCLK присутствует сигнал высокого уровня */
+#endif
+
 /*
  * Системный регистр CLKEN
  */
@@ -635,7 +760,7 @@
 #define MC_SDRCON_INIT		(1 << 31)	/* Initialize SDRAM, 2 usec */
 #endif
 
-#if defined(ELVEES_NVCOM01) || defined (ELVEES_MC24R2) || defined (ELVEES_MCT02)
+#if defined(ELVEES_NVCOM01) || defined (ELVEES_MC24R2) || defined (ELVEES_MCT02) || defined(ELVEES_MC0428)
 #define MC_SDRCON_RFR(nsec,khz)	(((nsec*khz+999999)/1000000) << 16)
 						/* Refresh period */
 #define MC_SDRCON_CL_2		(2 << 4)	/* CAS latency 2 cycles */
