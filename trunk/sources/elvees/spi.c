@@ -8,6 +8,9 @@
 #if defined(ELVEES_NVCOM01M)
 #   define IRQ_SHIFT        3
 #   define SPI_IRQ(port_id)    (41 + ((port_id) << IRQ_SHIFT))
+#elif defined(ELVEES_MC0428)
+#   define IRQ_SHIFT        3
+#   define SPI_IRQ(port_id)    (62 + ((port_id) << IRQ_SHIFT))
 #elif defined(ELVEES_MC24R2)
 #   define IRQ_SHIFT        2
 #   define SPI_IRQ(port_id)    (30 + ((port_id) << IRQ_SHIFT))
