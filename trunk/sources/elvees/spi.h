@@ -16,6 +16,7 @@
 
 struct _elvees_spim_t {
     spimif_t        spimif;
+    mutex_t         irq_lock;
     unsigned        port;
     unsigned        last_freq;
     unsigned        last_bits;

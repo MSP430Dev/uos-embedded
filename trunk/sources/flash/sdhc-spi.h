@@ -9,8 +9,8 @@
 // их проверить.
 //
 
-#ifndef __SD_SPI_H__
-#define __SD_SPI_H__
+#ifndef __SDHC_SPI_H__
+#define __SDHC_SPI_H__
 
 #include <flash/flash-interface.h>
 #include <spi/spi-master-interface.h>

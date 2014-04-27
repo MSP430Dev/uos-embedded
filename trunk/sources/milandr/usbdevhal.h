@@ -1,5 +1,5 @@
-#ifndef __USB_DEV_HAL_H__
-#define __USB_DEV_HAL_H__
+#ifndef __MILANDR_USB_DEV_HAL_H__
+#define __MILANDR_USB_DEV_HAL_H__
 
 #include <mem/mem.h>
 

@@ -192,7 +192,7 @@ void hiddev_output_report (hiddev_t *h, unsigned rpt_id, const uint8_t *report)
     memcpy (h->in_rpt[rpt_id], report, h->in_rpt_sz[rpt_id]);
     h->in_rpt_ready[rpt_id] = 1;
     mutex_unlock (h->lock);
-    usbdev_send (h->usb, 1, h->in_rpt[rpt_id], h->in_rpt_sz[rpt_id]);
+    usbdev_send (h->usb, 3, h->in_rpt[rpt_id], h->in_rpt_sz[rpt_id]);
 }
 
 void hiddev_input_report (hiddev_t *h, unsigned rpt_id, uint8_t *report)

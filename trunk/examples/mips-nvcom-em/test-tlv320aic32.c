@@ -3,6 +3,8 @@
  */
 #include <runtime/lib.h>
 #include <stream/stream.h>
+#include <kernel/uos.h>
+#include <elvees/i2c.h>
 #include "uda1380.h"
 
 #define I2C_SPEED       100		/* in KBits/s */
@@ -10,7 +12,7 @@
 #define I2C_READ_OP	1
 #define SLAVE_ADDR	0x30
 
-#define MFBSP_CHANNEL   2
+#define MFBSP_CHANNEL   3
 
 
 #define WAVE_FORMAT_PCM 0x0001
@@ -31,9 +33,12 @@ typedef struct __attribute__((packed))
     uint16_t    wBitsPerSample;
 } wave_fmt_t;
 
+/*
 static int wave_fmt_valid = 0;
 static wave_fmt_t wave_fmt;
+*/
 
+elvees_i2c_t i2c;
 
 void i2c_init()
 {
@@ -62,26 +67,24 @@ uint8_t i2c_read(uint8_t flags)
     return MC_I2C_RXR;
 }
 
-void uda1380_write_reg(uint8_t addr, uint16_t val)
+void tlv320_write_reg(uint8_t addr, uint8_t val)
 {
     i2c_write(SLAVE_ADDR, MC_I2C_STA);
     i2c_write(addr, 0);
-    i2c_write(val >> 8, 0);
-    i2c_write(val & 0xFF, MC_I2C_NACK | MC_I2C_STO);
+    i2c_write(val, MC_I2C_NACK | MC_I2C_STO);
 }
 
-uint16_t uda1380_read_reg(uint8_t addr)
+uint8_t tlv320_read_reg(uint8_t addr)
 {
     uint16_t value = 0;
     i2c_write(SLAVE_ADDR, MC_I2C_STA);
     i2c_write(addr, 0);
     i2c_write(SLAVE_ADDR | I2C_READ_OP, MC_I2C_STA);
-    value = i2c_read(0);
-    value <<= 8;
-    value |= i2c_read(MC_I2C_NACK | MC_I2C_STO);
+    value = i2c_read(MC_I2C_NACK | MC_I2C_STO);
     return value;
 }
 
+#if 0
 void uda1380_init()
 {
     uint8_t pll;
@@ -239,20 +242,59 @@ void play_wave(void *file)
         p = parse_next_chunk((chunk_hdr_t *) p);
     }
 }
-
+#endif
 
 extern void _etext();
 extern unsigned __data_start, _edata;
 
+
+ARRAY (task_space, 0x400);	/* Memory for task stack */
+
+
+static inline void tlv320_write_reg2(uint8_t addr, uint8_t val)
+{
+    miic_t *c = (miic_t *)&i2c;
+    uint8_t tx_mes[] = {addr, val};
+    miic_transaction(c, SLAVE_ADDR, tx_mes, 2, 0, 0);
+}
+
+static inline uint8_t tlv320_read_reg2(uint8_t addr)
+{
+    uint8_t value = 0;
+    miic_t *c = (miic_t *)&i2c;
+    miic_transaction(c, SLAVE_ADDR, &addr, 1, &value, 1);
+    return value;
+}
+
+void task (void *arg)
+{
+    elvees_i2c_init(&i2c, I2C_SPEED);
+    int i;
+    for (i = 0; i < 25; ++i)
+        debug_printf("Register %2d: %02X\n", i, tlv320_read_reg2(i));
+    debug_printf("Switching register page\n");
+    tlv320_write_reg2(0, 1);
+    for (i = 0; i < 25; ++i)
+        debug_printf("Register %2d: %02X\n", i, tlv320_read_reg2(i));
+    for (;;);
+}
+
 void uos_init(void)
 {
-	debug_printf ("\n\nTesting UDA1380...\n");
-	/* Configure 16 Mbyte of external Flash memory at nCS3. */
-	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
+	debug_printf ("\n\nTesting TLV320AIC32...\n");
 
-	unsigned char *p = (unsigned char *)&_etext;  /* Flash image pointer */
-	p += (&_edata - &__data_start) << 2;
+	//unsigned char *p = (unsigned char *) 0xa0000000;  /* Wave file */
 
-    for (;;)
-        play_wave(p);
+    //for (;;)
+    //    play_wave(p);
+    
+    /*
+    i2c_init();
+    int i;
+    for (i = 0; i < 25; ++i)
+        debug_printf("Register %2d: %02X\n", i, tlv320_read_reg(i));
+    for (;;);
+    */
+    
+    task_create (task, "task", "task", 1, task_space, sizeof (task_space));
 }

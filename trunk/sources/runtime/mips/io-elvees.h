@@ -695,6 +695,12 @@
 #endif
 
 /*
+ * Системный регистр IRQM
+ */
+#define MC_IRQM_MODE(n)     ((1 << (n)) << 8)
+#define MC_IRQM_NULL(n)     (1 << (n))
+
+/*
  * Системный регистр CLKEN
  */
 #define MC_CLKEN_MCC		(1 << 31)	/* Включение тактовой частоты MCC */

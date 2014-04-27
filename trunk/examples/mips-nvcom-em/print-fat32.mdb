@@ -1,0 +1,3 @@
+source mem_nvcom02t.cfg 
+loadelf print-fat32.elf
+run

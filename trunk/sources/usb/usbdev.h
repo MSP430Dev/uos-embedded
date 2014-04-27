@@ -81,6 +81,8 @@
 #define EP_STATE_NACK               0x100
 #define EP_STATE_STALL              0x200
 
+#define EP_WAIT_IN_STATES           0x070
+
 struct _usbdev_t;
 struct _usbdev_hal_t;
 typedef struct _usbdev_t usbdev_t;
@@ -110,14 +112,15 @@ typedef int  (*usbdev_in_avail_func_t) (unsigned ep);
 
 // Функция установки конечной точки в состояние ожидания приёма пакета от хоста.
 // Конечная точка должна принимать все входящие пакеты, как OUT, так и SETUP.
-typedef void (*usbdev_ep_wait_out_func_t) (unsigned ep);
+typedef void (*usbdev_ep_wait_out_func_t) (unsigned ep, int ack);
 
 // Функция установки конечной точки в состояние ожидания выдачи пакета хосту.
 // ep - номер конечной точки.
 // pid - PID пакета для выдачи (PID_DATA0 или PID_DATA1).
 // data - указатель на буфер с данными пакета.
 // size - размер буфера с данными.
-typedef void (*usbdev_ep_wait_in_func_t) (unsigned ep, int pid, const void *data, int size);
+// last - признак последнего пакета в текущей передаче
+typedef void (*usbdev_ep_wait_in_func_t) (unsigned ep, int pid, const void *data, int size, int last);
 
 // Функция установки конечной точки в состояние STALL.
 // ep - номер конечной точки.
@@ -201,6 +204,7 @@ struct __attribute__ ((packed)) _usbdev_t
     
     mem_pool_t *            pool;
     usbdev_hal_t *          hal;
+    mutex_t *               hal_lock;
     
     ep_out_t                ep_out [USBDEV_NB_ENDPOINTS];
     ep_in_t                 ep_in [USBDEV_NB_ENDPOINTS];
@@ -211,6 +215,8 @@ struct __attribute__ ((packed)) _usbdev_t
     
     usbdev_ack_t            ack_handlers [USBDEV_NB_ENDPOINTS] [2];
     void *                  ack_handler_tags [USBDEV_NB_ENDPOINTS] [2];
+    
+    int                     first_device_descr;
     
     // Statistics
     unsigned                rx_discards;
@@ -232,7 +238,7 @@ struct __attribute__ ((packed)) _usbdev_t
 // в момент инициализации аппаратного драйвера. Функция передаёт в 
 // параметре hal в стек структуру с функциями, которые затем будут 
 // вызываться стеком.
-void usbdevhal_bind (usbdev_t *u, usbdev_hal_t *hal);
+void usbdevhal_bind (usbdev_t *u, usbdev_hal_t *hal, mutex_t *hal_mutex);
 
 // Эту функцию должен вызвать аппаратный драйвер по событию сброса шины USB.
 void usbdevhal_reset (usbdev_t *u);

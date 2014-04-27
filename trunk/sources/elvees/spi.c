@@ -235,6 +235,7 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
 
     cs_activate(spi->port, cs_num, mode & SPI_MODE_CS_HIGH);
 
+    mutex_lock_irq (&spi->irq_lock, SPI_IRQ(spi->port), 0, 0);
     // Запускаем DMA на приём и на выдачу
     MC_IR_MFBSP_RX(spi->port) = (unsigned) spi->dma_rxbuf & 0x1FFFFFFF;
     MC_CSR_MFBSP_RX(spi->port) = MC_DMA_CSR_WN(0) | 
@@ -243,8 +244,9 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     MC_CSR_MFBSP_TX(spi->port) = MC_DMA_CSR_WN(0) | 
         MC_DMA_CSR_WCX((msg->word_count >> 1) - 1) | MC_DMA_CSR_RUN;
 
-    mutex_wait(&spimif->lock);
+    mutex_wait(&spi->irq_lock);
     MC_CSR_MFBSP_RX(spi->port);
+    mutex_unlock(&spi->irq_lock);
 
     if (msg->word_count & 1) {
         // Нечётное число слов в передаче -
@@ -431,11 +433,6 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
 int spim_init(elvees_spim_t *spi, unsigned port, unsigned io_mode)
 {
     memset(spi, 0, sizeof(elvees_spim_t));
-
-#ifndef SPI_NO_DMA
-    mutex_lock_irq (&spi->spimif.lock, SPI_IRQ(port), 0, 0);
-    mutex_unlock(&spi->spimif.lock);
-#endif
 
     spi->port = port;
     spi->spimif.trx = trx;

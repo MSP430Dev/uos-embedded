@@ -1,0 +1,4 @@
+source mem_nvcom02t.cfg 
+loadelf test-tlv320aic32.elf
+loadbin wave.wav 0xa0000000
+run

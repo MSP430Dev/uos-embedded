@@ -12,6 +12,7 @@ stream_t debug = { &debug_interface };
 int
 debug_printf (const char *fmt, ...)
 {
+#ifndef NDEBUG
 	va_list	args;
 	int err;
 
@@ -19,6 +20,9 @@ debug_printf (const char *fmt, ...)
 	err = vprintf (&debug, fmt, args);
 	va_end (args);
 	return err;
+#else
+    return 0;
+#endif
 }
 
 int
