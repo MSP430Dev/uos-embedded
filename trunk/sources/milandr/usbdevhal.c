@@ -59,13 +59,13 @@ static void mldr_ep_attr (unsigned ep, int dir, unsigned attr, int max_size, int
     }
 }
 
-static void mldr_ep_wait_out (unsigned ep)
+static void mldr_ep_wait_out (unsigned ep, int ack)
 {
 //debug_printf ("ep_wait_out, ep = %d\n", ep);
     ARM_USB->SEPS[ep].CTRL = ARM_USB_EPEN | ARM_USB_EPRDY;
 }
 
-static void mldr_ep_wait_in (unsigned ep, int pid, const void *data, int size)
+static void mldr_ep_wait_in (unsigned ep, int pid, const void *data, int size, int last)
 {
 //debug_printf ("ep_wait_in, ep = %d, pid = %d, data @ %p, size = %d\n", ep, pid, data, size);
     const unsigned char *p = data;
@@ -211,7 +211,7 @@ void mldr_usbdev_init (usbdev_t *owner, int io_prio, mem_pool_t *pool, mutex_t *
     mem = pool;
     io_lock = m;
     
-    usbdevhal_bind (usbdev, &hal);
+    usbdevhal_bind (usbdev, &hal, m);
 
     //power on the module
     ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_USB;
