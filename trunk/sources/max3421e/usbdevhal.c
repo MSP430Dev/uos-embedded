@@ -3,20 +3,20 @@
 #include "usbdevhal.h"
 #include "max3421e.h"
 
-#define EP_DIR_IN   0
-#define EP_DIR_OUT  1
-
 static usbdev_t *usbdev;
 static mutex_t *io_lock;
 static mem_pool_t *mem;
 static spimif_t *spim;
 static spi_message_t msg;
 static int irqn;
-static uint8_t spi_buf[USBDEV_EP0_MAX_SIZE + 1] __attribute__((aligned(8)));
-static int calibrate_fifo0;
+static uint8_t spi_buf[65] __attribute__((aligned(8)));
+//static int calibrate_fifo0;
 static uint8_t epien;
 
-static ep_state_t ep_state [USBDEV_MAX_EP_NB];
+static ep0_state_t ep0_state;
+static ep1out_state_t ep1out_state;
+static ep2in_state_t ep2in_state;
+static ep3in_state_t ep3in_state;
 
 ARRAY (io_stack, 1500);
 
@@ -93,24 +93,25 @@ static void set_addr (unsigned addr)
 
 static void ep_attr (unsigned ep, int dir, unsigned attr, int max_size, int interval)
 {
-    ep_state_t *eps = &ep_state[ep];
-
 //debug_printf ("ep_attr, ep = %d, dir = %d, attr = 0x%X, max_size = %d\n", ep, dir, attr, max_size);
     switch (attr & EP_ATTR_TRANSFER_MASK) {
     case EP_ATTR_CONTROL:
-
+        assert (0); // Точки типа CONTROL не поддерживаются микросхемой (кроме EP0)
     break;
     case EP_ATTR_ISOCH:
         // TODO
     break;
     case EP_ATTR_BULK:
-        // TODO
-    break;
     case EP_ATTR_INTR:
         if (dir == USBDEV_DIR_IN) {
-            eps->max_size[USBDEV_DIR_IN] = max_size;
+            assert(ep == 2 || ep == 3); // Только EP2 и EP3 могут иметь направление IN
+            if (ep == 2) ep2in_state.max_size = max_size;
+            else ep3in_state.max_size = max_size;
         } else {
-            eps->max_size[USBDEV_DIR_OUT] = max_size;
+            assert(ep == 1); // Только EP1 может иметь направление OUT
+            ep1out_state.max_size = max_size;
+            epien |= OUT1BAVIE;
+            write_reg(EPIEN, epien);
         }
     break;
     }
@@ -121,32 +122,32 @@ static void ep_wait_out (unsigned ep, int ack)
 //debug_printf ("ep_wait_out, ep = %d, ack = %d\n", ep, ack);
     if (ack) {
         ack_stat();
-        ep_state[ep].out_ack_pending = 1;
+        ep0_state.out_ack_pending = 1;
     }
+    if (ep == 1)
+        write_reg(EPIRQ, OUT1BAVIRQ);
 }
 
 static void ep_wait_in (unsigned ep, int pid, const void *data, int size, int last)
 {
 //debug_printf ("ep_wait_in, ep = %d, pid = %d, data @ %p, size = %d\n", ep, pid, data, size);
-    if (ep_state[ep].in_transfers > 1)
-        return;
 
     if (ep == 0) {
         if (size == 0) {
             ack_stat();
-            ep_state[0].in_ack_pending = 1;
+            ep0_state.in_ack_pending = 1;
         } else {
             while (!(read_stat() & IN0BAVIRQ));
             memcpy(&spi_buf[1], data, size);
             write_data(EP0FIFO, size + 1);
             write_reg(EP0BC, size);
-            ep_state[0].in_transfers = 1;
-            ep_state[0].in_bytes[0] = size;
+            ep0_state.in_transfers = 1;
+            ep0_state.in_bytes = size;
             epien |= IN0BAVIE;
-            ep_state[0].in_packet_num++;
+            ep0_state.in_packet_num++;
             if (last) {
-                ep_state[0].last_in_packet_num = ep_state[0].in_packet_num;
-                ep_state[0].in_packet_num = 0;
+                ep0_state.last_in_packet_num = ep0_state.in_packet_num;
+                ep0_state.in_packet_num = 0;
             }
         }
         return;
@@ -155,28 +156,26 @@ static void ep_wait_in (unsigned ep, int pid, const void *data, int size, int la
         memcpy(&spi_buf[1], data, size);
         write_data(EP2INFIFO, size + 1);
         write_reg(EP2INBC, size);
+        ep2in_state.in_bytes[ep2in_state.in_transfers++] = size;
         epien |= IN2BAVIE;
-        ep_state[2].in_transfers = 1;
     } else if (ep == 3) {
         while (!(read_stat() & IN3BAVIRQ));
         memcpy(&spi_buf[1], data, size);
-        read_reg(EP3INBC);
         write_data(EP3INFIFO, size + 1);
         write_reg(EP3INBC, size);
+        ep3in_state.in_transfers = 1;
+        ep3in_state.in_bytes = size;
         epien |= IN3BAVIE;
-        ep_state[3].in_transfers = 1;
     } else {
         return;
     }
-    ep_state[ep].in_bytes[0] = size;
-    //ep_state[ep].in_bytes[ep_state[ep].in_transfers++] = size;
     write_reg(EPIEN, epien);
 }
 
 static void ep_stall (unsigned ep, int dir)
 {
 //debug_printf ("STALL EP%d\n", ep);
-    if (dir == EP_DIR_IN) {
+    if (dir == USBDEV_DIR_IN) {
         if (ep == 0)
             write_reg(EPSTALLS, STLSTAT | STLEP0IN | STLEP0OUT);
         if (ep == 2) write_reg(EPSTALLS, STLEP2IN);
@@ -190,27 +189,18 @@ static void ep_stall (unsigned ep, int dir)
 
 static int in_avail_bytes (unsigned ep)
 {
-    /*
-    uint8_t bit;
-    
-    if (ep == 0) bit = IN0BAVIRQ;
-    else if (ep == 2) bit = IN2BAVIRQ;
-    else if (ep == 3) bit = IN3BAVIRQ;
-    else return 0;
-    
-debug_printf("in_avail_bytes, EPIRQ = %02X\n", read_reg(EPIRQ));
-    if (read_reg(EPIRQ) & bit)
-        return ep_state[ep].max_size[EP_DIR_OUT];
-    return 0;
-    */
-
     int res = 0;
-
-    if (ep_state[ep].in_transfers < 1)
-        res = ep_state[ep].max_size[EP_DIR_OUT];
-        
+    if (ep == 0) {
+        if (ep0_state.in_transfers < 1)
+            res = ep0_state.max_size;
+    } else if (ep == 2) {
+        if (ep2in_state.in_transfers < 2)
+            res = ep2in_state.max_size;
+    } else if (ep == 3) {
+        if (ep3in_state.in_transfers < 1)
+            res = ep3in_state.max_size;
+    }
 //debug_printf ("in_avail_bytes EP%d returns %d\n", ep, res);
-
     return res;
 }
 
@@ -225,14 +215,16 @@ static usbdev_hal_t hal = {
 
 static void usb_bus_reset ()
 {
-    ep_state[0].max_size[EP_DIR_IN] = ep_state[0].max_size[EP_DIR_OUT] = USBDEV_EP0_MAX_SIZE;
-    ep_state[0].in_transfers = 0;
+    ep0_state.max_size = USBDEV_EP0_MAX_SIZE;
+    ep0_state.in_transfers = 0;
+    ep2in_state.in_transfers = 0;
+    ep3in_state.in_transfers = 0;
     
     //URESDNIE doesn't change its value on USB reset
     epien = SUDAVIE | OUT0BAVIE;
     write_reg(USBIEN, URESDNIE | NOVBUSIE);
     write_reg(EPIEN,  epien);
-    calibrate_fifo0 = 1;
+    //calibrate_fifo0 = 1;
     write_data(EP0FIFO, USBDEV_EP0_MAX_SIZE + 1);
 }
 
@@ -249,7 +241,6 @@ static void chip_reset ()
 
 static void usb_interrupt (void *arg)
 {
-    //static int ep;
     uint8_t usbirq;
     uint8_t epirq;
     
@@ -287,12 +278,12 @@ static void usb_interrupt (void *arg)
         
         if (epirq & epien & SUDAVIRQ) {
 //debug_printf("SETUP data\n");
-            if (ep_state[0].in_ack_pending) {
+            if (ep0_state.in_ack_pending) {
                 usbdevhal_in_done (usbdev, 0, 0);
-                ep_state[0].in_ack_pending = 0;
+                ep0_state.in_ack_pending = 0;
             }
-            ep_state[0].last_in_packet_num = 0;
-            ep_state[0].in_transfers = 0;
+            ep0_state.last_in_packet_num = 0;
+            ep0_state.in_transfers = 0;
             /*
             if (calibrate_fifo0) {
 debug_printf("IGNORE FIRST PACKET\n");
@@ -320,66 +311,63 @@ debug_printf("IGNORE FIRST PACKET\n");
         
         if (epirq & epien & IN0BAVIRQ) {
 //debug_printf("IN0BAV\n");
-            if (ep_state[0].in_transfers) {
+            if (ep0_state.in_transfers) {
                 epien &= ~IN0BAVIE;
-                ep_state[0].in_transfers = 0;
-                usbdevhal_in_done (usbdev, 0, ep_state[0].in_bytes[0]);
-//debug_printf("packet_num = %d\n", ep_state[0].in_packet_num);
-                if ((ep_state[0].last_in_packet_num == 1) && ep_state[0].out_ack_pending) {
+                ep0_state.in_transfers = 0;
+                usbdevhal_in_done (usbdev, 0, ep0_state.in_bytes);
+                if ((ep0_state.last_in_packet_num == 1) && ep0_state.out_ack_pending) {
                     usbdevhal_out_done (usbdev, 0, USBDEV_TRANSACTION_OUT, 0, 0);
-                    ep_state[0].out_ack_pending = 0;
-                    ep_state[0].last_in_packet_num = 0;
+                    ep0_state.out_ack_pending = 0;
+                    ep0_state.last_in_packet_num = 0;
                 }
                 write_reg(EPIEN, epien);
-                /*
-                ep_state[0].in_bytes[0] = ep_state[0].in_bytes[1];
-                if (!--ep_state[0].in_transfers) {
-                    epien &= ~IN0BAVIE;
+            }
+        }
+        
+        if (epirq & epien & IN2BAVIRQ) {
+//debug_printf("IN2BAV\n");
+            if (ep2in_state.in_transfers) {
+                ep2in_state.in_transfers--;
+                usbdevhal_in_done (usbdev, 2, ep2in_state.in_bytes[0]);
+                ep2in_state.in_bytes[0] = ep2in_state.in_bytes[1];
+                if (ep2in_state.in_transfers == 0) {
+                    epien &= ~IN2BAVIE;
                     write_reg(EPIEN, epien);
                 }
-                */
             }
         }
 
         if (epirq & epien & IN3BAVIRQ) {
 //debug_printf("IN3BAV\n");
-            //if (ep_state[3].in_transfers) {
-                epien &= ~IN3BAVIE;
-                ep_state[3].in_transfers = 0;
-                usbdevhal_in_done (usbdev, 3, ep_state[3].in_bytes[0]);
-                if (ep_state[3].out_ack_pending) {
-debug_printf("EP3 out ack pending\n");
-                    usbdevhal_out_done (usbdev, 3, USBDEV_TRANSACTION_OUT, 0, 0);
-                    ep_state[3].out_ack_pending = 0;
-                }
-                write_reg(EPIEN, epien);
-                /*
-                ep_state[0].in_bytes[0] = ep_state[0].in_bytes[1];
-                if (!--ep_state[0].in_transfers) {
-                    epien &= ~IN0BAVIE;
-                    write_reg(EPIEN, epien);
-                }
-                */
-            //}
+            epien &= ~IN3BAVIE;
+            ep3in_state.in_transfers = 0;
+            usbdevhal_in_done (usbdev, 3, ep3in_state.in_bytes);
+            write_reg(EPIEN, epien);
         }
         
         if (epirq & epien & OUT0BAVIRQ) {
 //debug_printf("OUT0BAV\n");
-            if ((ep_state[0].last_in_packet_num > 1) && ep_state[0].out_ack_pending) {
-                //write_reg(EPIRQ, OUT0BAVIRQ);
+            if ((ep0_state.last_in_packet_num > 1) && ep0_state.out_ack_pending) {
                 usbdevhal_out_done (usbdev, 0, USBDEV_TRANSACTION_OUT, 0, 0);
-                ep_state[0].out_ack_pending = 0;
-                ep_state[0].last_in_packet_num = 0;
+                ep0_state.out_ack_pending = 0;
+                ep0_state.last_in_packet_num = 0;
             } else {
                 unsigned size = read_reg(EP0BC);
                 read_data(EP0FIFO, size + 1);
-                write_reg(EPIRQ, OUT0BAVIRQ);
                 usbdevhal_out_done (usbdev, 0, USBDEV_TRANSACTION_OUT, &spi_buf[1], size);
-                if (ep_state[0].in_ack_pending) {
+                write_reg(EPIRQ, OUT0BAVIRQ);
+                if (ep0_state.in_ack_pending) {
                     usbdevhal_in_done (usbdev, 0, 0);
-                    ep_state[0].in_ack_pending = 0;
+                    ep0_state.in_ack_pending = 0;
                 }
             }
+        }
+        
+        if (epirq & epien & OUT1BAVIRQ) {
+//debug_printf("OUT1BAV\n");
+            unsigned size = read_reg(EP1OUTBC);
+            read_data(EP1OUTFIFO, size + 1);
+            usbdevhal_out_done (usbdev, 1, USBDEV_TRANSACTION_OUT, &spi_buf[1], size);
         }
     }
 }

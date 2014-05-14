@@ -10,7 +10,7 @@ TESTS		+= test-dcache.bin #test-tcl.bin
 #TESTS		+= dhrystone.bin linpack.bin whetstone.bin #livermore.bin
 #TESTS		+= coremark.bin
 TESTS       += test-flash.bin test-sdhc-fast.bin print-fat32.bin
-TESTS		+= test-max3421e.bin test-hid.bin
+TESTS		+= test-usbdev.bin test-hid.bin
 
 ifneq (,$(findstring NVCOM,$(CFLAGS)))
 TESTS           += test-mac.bin test-eth.bin

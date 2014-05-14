@@ -3,7 +3,6 @@
 
 #include <runtime/lib.h>
 #include <kernel/uos.h>
-#include <mem/mem-queue.h>
 #include "usb_const.h"
 #include "usb_struct.h"
 #include "usbdev_dfl_settings.h"
@@ -83,6 +82,17 @@
 
 #define EP_WAIT_IN_STATES           0x070
 
+//
+// Коды возврата для функций-обработчиков событий устройства,
+// интерфейса или конечной точки.
+// Данные коды сообщают стеку USB, в какое состояние нужно перевести
+// конечную точку (в случае функции-обработчика для устройства или 
+// интерфейса - конечную точку 0) после возврата из обработчика.
+//
+#define USBDEV_ACK      0
+#define USBDEV_NACK     1
+#define USBDEV_STALL    2
+
 struct _usbdev_t;
 struct _usbdev_hal_t;
 typedef struct _usbdev_t usbdev_t;
@@ -129,7 +139,7 @@ typedef void (*usbdev_ep_stall_func_t) (unsigned ep, int dir);
 
 // Прототип функции-обработчика запросов, специфичных для класса.
 // Обработчик регистрируется в стеке вызовом usbdev_set_class_handler.
-typedef void (*usbdev_specific_t) (usbdev_t *u, void *tag, usb_setup_pkt_t *setup_pkt, unsigned char **data, int *size);
+typedef int (*usbdev_specific_t) (usbdev_t *u, void *tag, usb_setup_pkt_t *setup_pkt, unsigned char **data, int *size);
 
 typedef void (*usbdev_ack_t) (usbdev_t *u, unsigned ep, int dir, void *tag);
 
@@ -151,21 +161,17 @@ struct _usbdev_hal_t
 // Endpoint control structure
 //
 typedef struct _ep_out_t {
-    mutex_t         lock;           // Мьютекс для синхронизации доступа
     int             state;          // Состояние конечной точки
     int             attr;           // Атрибуты конечной точки, взятые из 
                                     // дескриптора конечной точки
     int             max_size;       // Максимальный размер передачи
     int             interval;       // Интервал (для изохронных конечных точек)
-    mem_queue_t     rxq;            // Приёмная очередь
-    int             rxq_depth;      // Глубина приёмной очереди
     
     usbdev_specific_t   specific_handler;
     void *              specific_tag;
 } ep_out_t;
 
 typedef struct _ep_in_t {
-    mutex_t         lock;           // Мьютекс для синхронизации доступа
     int             state;          // Состояние конечной точки
     int             attr;           // Атрибуты конечной точки, взятые из 
                                     // дескриптора конечной точки
@@ -202,9 +208,9 @@ struct __attribute__ ((packed)) _usbdev_t
     unsigned                cur_conf;
     unsigned                usb_addr;
     
-    mem_pool_t *            pool;
     usbdev_hal_t *          hal;
     mutex_t *               hal_lock;
+    mem_pool_t *            pool;
     
     ep_out_t                ep_out [USBDEV_NB_ENDPOINTS];
     ep_in_t                 ep_in [USBDEV_NB_ENDPOINTS];
@@ -267,8 +273,7 @@ void usbdev_set_iface_specific_handler (usbdev_t *u, unsigned if_n, usbdev_speci
 void usbdev_set_ep_specific_handler (usbdev_t *u, unsigned ep_n, int dir, usbdev_specific_t handler, void *tag);
 void usbdev_set_ack_handler (usbdev_t *u, unsigned ep_n, int dir, usbdev_ack_t handler, void *tag);
 void usbdev_remove_ack_handler (usbdev_t *u, unsigned ep_n, int dir);
-void usbdev_set_rx_queue_depth (usbdev_t *u, unsigned ep_n, int depth);
-void usbdev_send (usbdev_t *u, unsigned ep_n, const void *data, int size);
+void usbdev_ack_in (usbdev_t *u, unsigned ep_n, const void *data, int size);
 int  usbdev_recv (usbdev_t *u, unsigned ep_n, void *data, int size);
 
 #endif

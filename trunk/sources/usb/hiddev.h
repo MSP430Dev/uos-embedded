@@ -43,6 +43,7 @@ struct _hiddev_t
     mutex_t *           lock;
     usbdev_t *          usb;
     unsigned            if_n;
+    unsigned            ep_n;
     mem_pool_t *        pool;
     
     uint8_t *           rpt_desc[HIDDEV_NB_REPORTS];
@@ -66,19 +67,28 @@ struct _hiddev_t
     hiddev_set_protocol_handler_t   set_prt;
 };
 
-void hiddev_init (hiddev_t *h, usbdev_t *u, unsigned if_n, mem_pool_t *pool, mutex_t *m);
+void hiddev_init (hiddev_t *h, usbdev_t *u, unsigned if_n,
+    unsigned ep_n, mem_pool_t *pool, mutex_t *m);
 
 void hiddev_set_idle_rate (hiddev_t *h, unsigned rate);
 void hiddev_set_protocol (hiddev_t *h, uint8_t protocol);
 
-void hiddev_set_report_handler (hiddev_t *h, hiddev_set_report_handler_t handler);
-void hiddev_set_idle_handler (hiddev_t *h, hiddev_set_idle_handler_t handler);
-void hiddev_set_protocol_handler (hiddev_t *h, hiddev_set_protocol_handler_t handler);
+void hiddev_set_report_handler (hiddev_t *h,
+    hiddev_set_report_handler_t handler);
+void hiddev_set_idle_handler (hiddev_t *h,
+    hiddev_set_idle_handler_t handler);
+void hiddev_set_protocol_handler (hiddev_t *h,
+    hiddev_set_protocol_handler_t handler);
 
-void hiddev_set_report_desc (hiddev_t *h, unsigned rpt_id, uint8_t *rpt_desc, unsigned desc_size, unsigned in_rpt_size, unsigned out_rpt_size, unsigned feature_rpt_size);
-void hiddev_set_physical_desc (hiddev_t *h, unsigned rpt_id, uint8_t *phys_desc, unsigned desc_size);
+void hiddev_set_report_desc (hiddev_t *h, unsigned rpt_id, 
+    uint8_t *rpt_desc, unsigned desc_size, unsigned in_rpt_size,
+    unsigned out_rpt_size, unsigned feature_rpt_size);
+    
+void hiddev_set_physical_desc (hiddev_t *h, unsigned rpt_id,
+    uint8_t *phys_desc, unsigned desc_size);
 
-void hiddev_output_report (hiddev_t *h, unsigned rpt_id, const uint8_t *report);
+void hiddev_output_report (hiddev_t *h, unsigned rpt_id,
+    const uint8_t *report);
 void hiddev_input_report (hiddev_t *h, unsigned rpt_id, uint8_t *report);
 
 #endif

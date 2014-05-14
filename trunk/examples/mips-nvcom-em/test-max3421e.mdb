@@ -1,3 +1,0 @@
-source mem_nvcom02t.cfg 
-loadelf test-max3421e.elf
-run
