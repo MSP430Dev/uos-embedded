@@ -45,8 +45,6 @@ static void mldr_ep_attr (unsigned ep, int dir, unsigned attr, int max_size, int
         // TODO
     break;
     case EP_ATTR_BULK:
-        // TODO
-    break;
     case EP_ATTR_INTR:
         if (dir == USBDEV_DIR_IN) {
             eps->max_size[USBDEV_DIR_IN] = max_size;

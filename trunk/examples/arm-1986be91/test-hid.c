@@ -224,7 +224,7 @@ void uos_init (void)
     usbdev_add_config_desc (&usb, &config_descriptor);
     usbdev_set_string_table (&usb, usb_strings);
     
-    hiddev_init (&hid, &usb, 0, &pool, &usb_lock);
+    hiddev_init (&hid, &usb, 0, config_descriptor.ep.bEndpointAddress, &pool, &usb_lock);
     hiddev_set_report_desc (&hid, 0, mouse_report, sizeof (mouse_report), 3, 0, 0);
     //hiddev_output_report (&hid, 0, out_rep);
     
