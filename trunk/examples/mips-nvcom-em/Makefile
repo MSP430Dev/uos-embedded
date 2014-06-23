@@ -13,7 +13,7 @@ TESTS       += test-flash.bin test-sdhc-fast.bin print-fat32.bin
 TESTS		+= test-usbdev.bin test-hid.bin
 
 ifneq (,$(findstring NVCOM,$(CFLAGS)))
-TESTS           += test-mac.bin test-eth.bin
+TESTS       += test-mac.bin test-eth.bin test-eth-mdb.bin
 TESTS		+= test-tcp-serv.bin test-tcp-client.bin
 TESTS		+= test-udp-serv.bin test-udp-client.bin
 TESTS       += test-i2c.bin test-i2c-ad7416.bin test-uda1380.bin

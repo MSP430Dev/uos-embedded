@@ -383,6 +383,20 @@ void uos_init (void)
 {
 	/* Configure 16 Mbyte of external Flash memory at nCS3. */
 	MC_CSCON3 = MC_CSCON_WS (4);		/* Wait states  */
+    
+	/* Выделяем место для динамической памяти */
+	extern unsigned __bss_end[];
+#ifdef ELVEES_DATA_SDRAM
+	/* Динамическая память в SDRAM */
+	if (((unsigned) __bss_end & 0xF0000000) == 0x80000000)
+		mem_init (&pool, (unsigned) __bss_end, 0x82000000);
+	else
+		mem_init (&pool, (unsigned) __bss_end, 0xa2000000);
+#else
+	/* Динамическая память в CRAM */
+	extern unsigned _estack[];
+	mem_init (&pool, (unsigned) __bss_end, (unsigned) _estack - 256);
+#endif
 
 	mem_init (&pool, SDRAM_START, SDRAM_START + SDRAM_SIZE);
 	timer_init (&timer, KHZ, 50);
