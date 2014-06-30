@@ -221,7 +221,7 @@ _restore_regs_: .globl _restore_regs_
 		.set mips0
 
 #---------------------------------------
-# TLB refill vector at 0xBFC00200
+# TLB refill vector at 0x....0200
 #
 		.org	0x0200
 _pagefault_vector_: .globl _pagefault_vector_
@@ -236,7 +236,7 @@ _pagefault_vector_: .globl _pagefault_vector_
 		nop
 
 #---------------------------------------
-# Exception vector at 0xBFC00380
+# Exception vector at 0x....0380
 #
 		.org	0x0380
 _exception_vector_: .globl _exception_vector_
@@ -281,7 +281,7 @@ _exception_vector_: .globl _exception_vector_
 		.set mips0
 
 #---------------------------------------
-# Interrupt vector at 0xBFC00400
+# Interrupt vector at 0x....0400
 #
 		.org	0x0400
 _interrupt_vector_: .globl _interrupt_vector_

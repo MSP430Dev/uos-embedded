@@ -274,4 +274,31 @@
 #define MC_INT_EN_MCC	MC_R (0xFFF4)	/* Разрешение прерывания от MCC */
 #define MC_INT_RST_MCC	MC_R (0xFFF8)	/* Сброс прерывания от MCC */
 
+/*
+ * Регистры контроллера PCI
+ */
+#define MC_PCI_DEVICE_VENDOR_ID        MC_R (0xf000)     /* Идентификация устройства */
+#define MC_PCI_STATUS_COMMAND          MC_R (0xf004)     /* Состояние и управление */
+#define MC_PCI_CLASS_REVISION          MC_R (0xf008)     /* Регистр кода */
+#define MC_PCI_LATENCY_TIMER           MC_R (0xf00c)     /* Таймер времени передачи (MLT) */
+#define MC_PCI_BAR0                    MC_R (0xf010)     /* Базовый адрес 0 */
+#define MC_PCI_BAR1                    MC_R (0xf014)     /* Базовый адрес 1 */
+#define MC_PCI_SUBSYSTEM_VENDOR_ID     MC_R (0xf02c)     /* Идентификация подсистемы */
+#define MC_PCI_INTERRUPT_LINE          MC_R (0xf03c)     /* Код прерывания */
+#define MC_PCI_IR_TARGET               MC_R (0xf040)     /* Регистр адреса памяти в режиме Target */
+#define MC_PCI_SEM                     MC_R (0xf044)     /* Семафор */
+#define MC_PCI_MBR                     MC_R (0xf048)     /* Почтовый ящик */
+#define MC_PCI_CSR_PCI                 MC_R (0xf04C)     /* Управление шиной PCI */
+#define MC_PCI_CSR_MASTER              MC_R (0xf050)     /* Состояние и управление обменом в режиме Master */
+#define MC_PCI_IR_MASTER               MC_R (0xf054)     /* Индексный регистр адреса памяти при обмене в режиме Master */
+#define MC_PCI_AR_PCI                  MC_R (0xf058)     /* Адресный регистр PCI */
+#define MC_PCI_QSTR_PCI                MC_R (0xf05C)     /* Системные прерывания */
+#define MC_PCI_MASKR_PCI               MC_R (0xf060)     /* Маскирование прерываний */
+#define MC_PCI_STATUS_MASTER           MC_R (0xf064)     /* Регистр состояния обмена с шиной PCI в режиме Master */
+#define MC_PCI_TMR_PCI                 MC_R (0xf068)     /* Регистр параметров */
+#define MC_PCI_CSR_WIN                 MC_R (0xf06c)     /* Регистр управления обменом с PCI через адресное окно */
+#define MC_PCI_MBR_CPU                 MC_R (0xf070)     /* Регистр почтового ящика CPU */
+
+#define MC_PCI_WIN                     ((volatile unsigned *)(0xbb000000))
+
 #endif /* _IO_MC0428_H */

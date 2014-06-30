@@ -709,6 +709,7 @@
 #define MC_CLKEN_EMAC		(1 << 20)	/* Включение тактовой частоты EMAC */
 #define MC_CLKEN_VPOUT		(1 << 19)	/* Включение тактовой частоты VPOUT */
 #define MC_CLKEN_VPIN		(1 << 18)	/* Включение тактовой частоты VPIN */
+#define MC_CLKEN_PMSC       (1 << 16)   /* Включение тактовой частоты PCI */
 #define MC_CLKEN_DMA_MEM	(1 << 12)	/* Включение тактовой частоты DMA_MEM */
 #define MC_CLKEN_MFBSP		(1 << 8)	/* Включение тактовой частоты MFBSP 1-3 */
 #define MC_CLKEN_DSP1		(1 << 5)	/* Включение тактовой частоты DSP1 */
@@ -1351,45 +1352,145 @@
  */
 
 /*
- * Состояние и управление 
+ * Состояние и управление (STATUS/COMMAND)
  */
-#define  MC_PCI_COMMAND_MEMORY		0x00000002	/* Разрешение выполнения команд обмена данными с памятью */
-#define  MC_PCI_COMMAND_MASTER		0x00000004	/* Разрешение работы на шине PCI в режиме задатчика */
-#define  MC_PCI_COMMAND_PARITY		0x00000040	/* Разрешение формирование сигнала PERR */
-#define  MC_PCI_STATUS_PARITY		0x01000000	/* Признак выдачи или приема сигнала PERR в режиме Master */
-#define  MC_PCI_STATUS_DEVSEL_MASK	0x06000000	/* DEVSEL timing = 01 (medium) */
-#define  MC_PCI_STATUS_TARGET_ABORT	0x10000000	/* Признак завершения обмена по условию Target-abort */
-#define  MC_PCI_STATUS_MASTER_ABORT	0x20000000	/* Признак завершения обмена по условию Master-abort */
-#define  MC_PCI_STATUS_DETECTED_PARITY	0x80000000	/* Ошибка четности при приме данных из PCI */
-
-/* 
- * Управление шиной PCI 
- */
-#define  MC_PCI_CSR_PCI_INTA		0x00000001	/* Формирование прерывания INTA */
-#define  MC_PCI_CSR_PCI_WN(n)		((n) << 1)	/* Уровень FIFO записи в память, исходно 8 */
-#define  MC_PCI_CSR_PCI_TESTPERR	0x00000040	/* Принудительное формирование сигнала nPERR */
-#define  MC_PCI_CSR_PCI_TESTPAR		0x00000080	/* Инвертирование сигнала PAR */
-#define  MC_PCI_CSR_PCI_MLTOVER		0x00010000	/* Признак срабатывания Latency Timer */
-#define  MC_PCI_CSR_PCI_NOTRDY		0x00020000	/* Признак отсутствия сигнала TRDY */
-#define  MC_PCI_CSR_PCI_DISCONNECT	0x00040000	/* Признак требования разъединения */
-#define  MC_PCI_CSR_PCI_RETRY		0x00080000	/* Признак требования повтора */
-#define  MC_PCI_CSR_PCI_NOGNT		0x00100000	/* Признак отсутствия сигнала nGNT */
-#define  MC_PCI_CSR_PCI_TARGET_ABORT	0x10000000	/* Признак окончания обмена с Target-Abort */
-#define  MC_PCI_CSR_PCI_MASTER_ABORT	0x20000000	/* Признак окончания обмена с Master-Abort */
+#define MC_PCI_COMMAND_MEMORY		    0x00000002	/* Разрешение выполнение в режиме Target команд Memory Read, Memory Write */
+#define MC_PCI_COMMAND_MASTER		    0x00000004	/* Разрешение работы на шине PCI в режиме Master  */
+#define MC_PCI_COMMAND_PARITY		    0x00000040	/* Разрешение формирование сигнала PERR */
+#define MC_PCI_COMMAND_IDISABLE	        0x00000400	/* Запрещение формирования сигнала прерывания */
+#define MC_PCI_STATUS_ISTATUS  	        0x00080000	/* Наличие незамаскированных прерываний */
+#define MC_PCI_STATUS_FASTB2B  	        0x00800000	/* Отражает способность PMSC выполнять транзакции типа  “Fast Back-to-Back” */
+#define MC_PCI_STATUS_PARITY		    0x01000000	/* Признак выдачи или приема сигнала PERR в режиме Master */
+#define MC_PCI_STATUS_DEVSEL_MASK	    0x06000000	/* DEVSEL timing = 01 (medium) */
+#define MC_PCI_STATUS_SIG_TARGET_ABORT  0x08000000	/* Signaled Target Abort */
+#define MC_PCI_STATUS_TARGET_ABORT	    0x10000000	/* Признак завершения обмена по условию Target-abort */
+#define MC_PCI_STATUS_MASTER_ABORT	    0x20000000	/* Признак завершения обмена по условию Master-abort */
+#define MC_PCI_STATUS_DETECTED_PARITY	0x80000000	/* Ошибка четности при приме данных из PCI */
 
 /*
- * Состояние и управление обменом в режиме Master 
+ * Latency Timer
  */
-#define  MC_PCI_CSR_MASTER_RUN		0x00000001	/* Состояние работы канала DMA */
-#define  MC_PCI_CSR_MASTER_CMD		0x0000001e	/* Тип команды обмена в режиме Master */
-#define  MC_PCI_CSR_MASTER_IOREAD	0x00000004	/* I/O Read */
-#define  MC_PCI_CSR_MASTER_IOWRITE	0x00000006	/* I/O Write */
-#define  MC_PCI_CSR_MASTER_MEMREAD	0x0000000c	/* Memory Read */
-#define  MC_PCI_CSR_MASTER_MEMWRITE	0x0000000e	/* Memory Write */
-#define  MC_PCI_CSR_MASTER_CFGREAD	0x00000014	/* Configuration Read */
-#define  MC_PCI_CSR_MASTER_CFGWRITE	0x00000016	/* Configuration Write */
-#define  MC_PCI_CSR_MASTER_DONE		0x00008000	/* Признак завершения передачи */
-#define  MC_PCI_CSR_MASTER_WC(n)	((n) << 16)	/* Счетчик слов DMA обмена */
+#define MC_PCI_MLT(x)               ((x) << 8)  /* Время в тактах PCLK, отведенное для выполнения транзакции в режиме Master. */
 
+/*
+ * Interrupt Line
+ */
+#define MC_PCI_INTR_LINE(x)         (x)
+#define MC_PCI_GET_INTR_PIN(r)      (((r) >> 8) & 0xFF)
+#define MC_PCI_GET_MIN_GNT(r)       (((r) >> 16) & 0xFF)
+#define MC_PCI_GET_MIN_LAT(r)       (((r) >> 24) & 0xFF)
+
+/* 
+ * Управление шиной PCI (CSR_PCI)
+ */
+#ifdef ELVEES_MC0428
+
+#define MC_PCI_CSR_PCI_WNT(n)       (n)         /* Количество слов, которое должно накопиться в буфере WFIFO для передачи
+                                                   очередной порции данных в коммутатор SWITCH в режиме Target */
+#define MC_PCI_CSR_PCI_SEL_TS_LAT   0x00000010  /* Разрешение изменения параметра ”Target Subsequent Latency” */
+#define MC_PCI_CSR_PCI_SEL_TI_LAT   0x00000020  /* Разрешение изменения параметра ”Target Initial Latency” */
+#define MC_PCI_CSR_PCI_TEST_PERR    0x00000040  /* Режим формирования выходного сигнала nPERR */
+#define MC_PCI_CSR_PCI_TEST_PAR     0x00000080  /* Режим формирования выходного сигнала PAR */
+#define MC_PCI_CSR_PCI_TS_LAT(n)    ((n) << 8)  /* Target Subsequent Latency в тактах PCLK */
+#define MC_PCI_CSR_PCI_TI_LAT(n)    ((n) << 12) /* Target Initial Latency в тактах PCLK */
+#define MC_PCI_CSR_PCI_TGT_PAR_STOP 0x00010000  /* Разрешение завершения транзакции в режиме Target установкой признака Signaled Target Abort */
+#define MC_PCI_CSR_PCI_TGT_DPEA     0x00040000  /* Устанавливается в 1 в режиме Target, если в фазе адреса обнаружена ошибка чётности */
+#define MC_PCI_CSR_PCI_TGT_DPED     0x00080000  /* Устанавливается в 1, если обнаружена ошибка чётности в фазе данных 
+                                                   при выполнении записи на шине PCI в режиме Target */
+#define MC_PCI_CSR_PCI_MST_PAR_STOP 0x00100000  /* Разрешение прекращения передачи блока данных и формирования прерывания MASTER _ERROR */
+#define MC_PCI_CSR_PCI_MST_DPEWR    0x00400000  /* Обнаружен низкий уровень сигнала nPERR при выполнении записи на шине PCI в режиме Master */
+#define MC_PCI_CSR_PCI_MST_DPERD    0x00800000  /* Обнаружена ошибка чётности при выполнении чтения на шине PCI в режиме Master */
+#define MC_PCI_CSR_PCI_MST_BREAK    0x01000000  /* Программный останов передачи блока данных */
+#define MC_PCI_CSR_PCI_BREAK_DONE   0x02000000  /* Состояние признака Break Done в регистре CSR_MASTER */
+#define MC_PCI_CSR_PCI_NO_GNT       0x04000000  /* Состояние признака No Gnt в регистре STATUS_MASTER */
+#define MC_PCI_CSR_PCI_NO_TRDY      0x08000000  /* Состояние признака No Trdy в регистре STATUS_MASTER */
+#define MC_PCI_CSR_PCI_TGT_ABORT    0x10000000  /* Состояние признака Received Target Abort в регистре Status/Command */
+#define MC_PCI_CSR_PCI_MST_ABORT    0x20000000  /* Состояние признака Reсeived Master Abort в регистре Status/Command */
+#define MC_PCI_CSR_PCI_WR_PAR_ERR   0x40000000  /* Ошибка при выполнении записи на шине PCI. */
+#define MC_PCI_CSR_PCI_RD_PAR_ERR   0x80000000  /* Ошибка при выполнении чтения на шине PCI. */
+
+#else
+
+#define MC_PCI_CSR_PCI_INTA		    0x00000001	/* Формирование прерывания INTA */
+#define MC_PCI_CSR_PCI_WN(n)		((n) << 1)	/* Уровень FIFO записи в память, исходно 8 */
+#define MC_PCI_CSR_PCI_TESTPERR	    0x00000040	/* Принудительное формирование сигнала nPERR */
+#define MC_PCI_CSR_PCI_TESTPAR		0x00000080	/* Инвертирование сигнала PAR */
+#define MC_PCI_CSR_PCI_MLTOVER		0x00010000	/* Признак срабатывания Latency Timer */
+#define MC_PCI_CSR_PCI_NOTRDY		0x00020000	/* Признак отсутствия сигнала TRDY */
+#define MC_PCI_CSR_PCI_DISCONNECT	0x00040000	/* Признак требования разъединения */
+#define MC_PCI_CSR_PCI_RETRY		0x00080000	/* Признак требования повтора */
+#define MC_PCI_CSR_PCI_NOGNT		0x00100000	/* Признак отсутствия сигнала nGNT */
+#define MC_PCI_CSR_PCI_TARGET_ABORT	0x10000000	/* Признак окончания обмена с Target-Abort */
+#define MC_PCI_CSR_PCI_MASTER_ABORT	0x20000000	/* Признак окончания обмена с Master-Abort */
+
+#endif
+
+/*
+ * Состояние и управление обменом в режиме Master (CSR_MASTER)
+ */
+#define MC_PCI_CSR_MASTER_RUN		    0x00000001	/* Состояние работы канала DMA */
+#define MC_PCI_CSR_MASTER_CMD		    0x0000001e	/* Тип команды обмена в режиме Master */
+#define MC_PCI_CSR_MASTER_IOREAD	    0x00000004	/* I/O Read */
+#define MC_PCI_CSR_MASTER_IOWRITE	    0x00000006	/* I/O Write */
+#define MC_PCI_CSR_MASTER_MEMREAD	    0x0000000c	/* Memory Read */
+#define MC_PCI_CSR_MASTER_MEMWRITE	    0x0000000e	/* Memory Write */
+#define MC_PCI_CSR_MASTER_CFGREAD	    0x00000014	/* Configuration Read */
+#define MC_PCI_CSR_MASTER_CFGWRITE	    0x00000016	/* Configuration Write */
+#define MC_PCI_CSR_MASTER_SEL_IRD_LAT   0x00000020  /* Разрешение изменения параметра  ”nIRDY Latency” */
+#define MC_PCI_CSR_MASTER_SEL_MS_LAT    0x00000040  /* Разрешение изменения параметра  ”Master Subsequent Latency” */
+#define MC_PCI_CSR_MASTER_SEL_MI_LAT    0x00000080  /* Разрешение изменения параметра  ”Master Initial Latency” */
+#define MC_PCI_CSR_MASTER_WNM(n)        ((n) << 8)  /* Количество слов, которое должно накопиться в буфере WFIFO 
+                                                       для передачи очередной порции данных в коммутатор SWITCH 
+                                                       в режиме Master. */
+#define MC_PCI_CSR_MASTER_WINDOW        0x00001000  /* Индикатор выполнения обмена через адресное окно. */
+#define MC_PCI_CSR_MASTER_BREAK_DONE    0x00002000  /* Индикатор выполнения программного останова передачи блока данных. */
+#define MC_PCI_CSR_MASTER_FATAL_ERR     0x00004000  /* Индикатор останова передачи  блока данных по фатальной ошибке. */
+#define MC_PCI_CSR_MASTER_DONE		    0x00008000	/* Признак завершения передачи */
+#define MC_PCI_CSR_MASTER_WC(n)	        ((n) << 16)	/* Счетчик слов DMA обмена */
+
+/*
+ * STATUS_MASTER
+ */
+#define MC_PCI_STATUS_MASTER_WCC(n)     (n)             /* Текущий размер блока данных */
+#define MC_PCI_STATUS_MASTER_RUN        0x00010000      /* Состояние признака RUN в регистре CSR_MASTER */
+#define MC_PCI_STATUS_MASTER_TRDY_OUT   0x00100000      /* Транзакция завершена с признаком TRDY OUT */
+#define MC_PCI_STATUS_MASTER_IRDY_OUT   0x00200000      /* Транзакция завершена с признаком IRDY OUT */
+#define MC_PCI_STATUS_MASTER_TIMEOUT    0x00400000      /* Транзакция завершена с признаком Timeout */
+#define MC_PCI_STATUS_MASTER_RETRY      0x00800000      /* Транзакция завершена с признаком Retry */
+#define MC_PCI_STATUS_MASTER_DISCONN    0x01000000      /* Транзакция завершена с признаком Disconnect */
+#define MC_PCI_STATUS_MASTER_BREAK_DONE 0x02000000      /* Состояние признака Break Done в регистре CSR_MASTER */
+#define MC_PCI_STATUS_MASTER_NO_GNT     0x04000000      /* Признак отсутствия сигнала nGNT в течение 4095 тактов 
+                                                           шины PCI после установки сигнала nREQ */
+#define MC_PCI_STATUS_MASTER_NO_TRDY    0x08000000      /* Транзакция завершена с признаком NO TRDY */
+#define MC_PCI_STATUS_MASTER_TARGET_ABORT   0x10000000  /* Состояние признака Received Target Abort в регистре Status/Command */
+#define MC_PCI_STATUS_MASTER_MASTER_ABORT   0x20000000  /* Состояние признака Reсeived Master Abort в регистре Status/Command */
+#define MC_PCI_STATUS_MASTER_WR_PAR_ERR     0x40000000  /* Ошибка при выполнении записи на шине PCI. */
+#define MC_PCI_STATUS_MASTER_RD_PAR_ERR     0x80000000  /* Ошибка при выполнении чтения на шине PCI. */
+
+/*
+ * TMR_PCI
+ */
+#define MC_PCI_TMR_PCI_IRD_LAT(n)       (n)             /* nIRDY Latency  в тактах PCLK */
+#define MC_PCI_TMR_PCI_MS_LAT(n)        ((n) << 4)      /* Master Subsequent Latency в тактах PCLK */
+#define MC_PCI_TMR_PCI_MI_LAT(n)        ((n) << 8)      /* Master Initial Latency в тактах PCLK */
+#define MC_PCI_TMR_PCI_WATERMARK(n)     ((n) << 16)     /* Пороговое значение для формирования прерывания WMARK */
+
+/*
+ * CSR_WIN
+ */
+#define MC_PCI_CSR_WIN_CMD		        0x0000001e	/* Тип команды при обмене через адресное окно */
+#define MC_PCI_CSR_WIN_IOREAD	        0x00000004	/* I/O Read */
+#define MC_PCI_CSR_WIN_IOWRITE	        0x00000006	/* I/O Write */
+#define MC_PCI_CSR_WIN_MEMREAD	        0x0000000c	/* Memory Read */
+#define MC_PCI_CSR_WIN_MEMWRITE	        0x0000000e	/* Memory Write */
+#define MC_PCI_CSR_WIN_CFGREAD	        0x00000014	/* Configuration Read */
+#define MC_PCI_CSR_WIN_CFGWRITE	        0x00000016	/* Configuration Write */
+#define MC_PCI_CSR_WIN_SEL_NCBE         0x00000020  /* Выбор nCBE */
+#define MC_PCI_CSR_WIN_SEL_ADR          0x00000040  /* Выбор адреса */
+#define MC_PCI_CSR_WIN_SEL_MIL          0x00000080  /* Выбор параметра ”Master Initial Latency” */
+#define MC_PCI_CSR_WIN_MIL_WIN(n)       ((n) << 12) /* Значение ”Master Initial Latency”в тактах PCLK */
+#define MC_PCI_CSR_WIN_MASK_DPE         0x00010000  /* Разрешение формирования  прерывания  MASTER _ERROR */
+#define MC_PCI_CSR_WIN_NCBE_WIN(n)      ((n) << 20) /* если SEL_nCBE=1, то состояние этого поля передается на выводы nCBE[3:0] в фазе данных */
+#define MC_PCI_CSR_WIN_AR_WIN(n)        ((n) << 24) /* если SEL_ ADR=1, то состояние этого поля передается на выводы AD[31:24] в фазе адреса */
 
 #endif /* _IO_ELVEES_H */
