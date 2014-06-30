@@ -56,9 +56,6 @@ void main_test ()
 			if (memcmp (p->payload, data_pattern, packet_size) != 0)
 				nerr++;
             nb_of_received++;
-            if ((nb_of_received == nb_of_packets) ||
-                timer_passed(&timer, time0, delay * nb_of_packets * 2))
-                break;
 			buf_free (p);
 			continue;
 		}
@@ -70,6 +67,11 @@ void main_test ()
                 netif_output (&eth.netif, p, 0, 0);
             } else debug_printf("no mem\n");
         }
+        
+        if ((nb_of_received == nb_of_packets) ||
+            timer_passed(&timer, time0, delay * nb_of_packets * 2))
+            break;
+
 		timer_delay (&timer, delay);
 	}
     
