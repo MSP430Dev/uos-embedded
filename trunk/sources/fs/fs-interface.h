@@ -91,6 +91,18 @@ fs_size_to_end_of_file(fs_entry_t *entry)
     return entry->size - entry->cur_pos;
 }
 
+static inline filsiz_t __attribute__((always_inline))
+fs_size_to_end_of_cache(fs_entry_t *entry)
+{
+    unsigned ret = 0;
+    if (entry->cache_valid) {
+        ret = entry->cache_size - (entry->cache_p - entry->cache_data);
+        if (fs_size_to_end_of_file(entry) < ret)
+            ret = fs_size_to_end_of_file(entry);
+    }
+    return ret;
+}
+
 static inline int __attribute__((always_inline))
 fs_at_end(fs_entry_t *entry)
 {

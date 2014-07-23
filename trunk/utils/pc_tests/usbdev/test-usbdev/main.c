@@ -162,6 +162,7 @@ void do_test(int up, int bulk, unsigned packet_size)
     double seconds;
     unsigned trx_size = 0, cum_trx_size = 0;
     unsigned bad_data = 0;
+    int work_mode = 0;
 
     if (bulk && !up)
         packet_size -= packet_size % bulk_in_size;
@@ -197,7 +198,10 @@ void do_test(int up, int bulk, unsigned packet_size)
         if (!up) {
             for (i = 0; i < packet_size; ++i)
                 if (databuf[i] != v++) {
-                    bad_data++;
+                    if (work_mode) {
+                        bad_data++;
+                        work_mode = 1;
+                    }
                     v = databuf[i] + 1;
                 }
         }
@@ -229,11 +233,6 @@ void usage()
     printf ("\n\nNote:");
     printf ("\nFor BULK IN transmission (rx) <packet_size> will be");
     printf ("\ntruncated to be multiply of endpoint maximum size.");
-    printf ("\nValue of \"bad_data\" can be not equal 0 at the beginning");
-    printf ("\nof the test. And this is not an error. This could happen");
-    printf ("\ndue to using static variables on board. If bad_data is");
-    printf ("\nincreasing during test this points out to some problems");
-    printf ("\nin data transmission.");
     printf ("\n");
 }
 

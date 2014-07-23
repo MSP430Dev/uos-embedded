@@ -6,6 +6,7 @@
 #include <mem/mem.h>
 #include <fs/fat.h>
 #include <fs/fat-private.h>
+#include <elvees/i2c.h>
 
 #define FAT_MAX_BYTES_PER_SECTOR    512
 
@@ -51,6 +52,37 @@ uint8_t buf[512] __attribute__((aligned(8)));
 uint8_t boot_sector[512] __attribute__((aligned(8)));
 fat_fs_t fat;
 
+
+#define I2C_SPEED       100		/* in KBits/s */
+
+#define I2C_READ_OP	1
+#define SLAVE_ADDR	0x30
+
+#define MFBSP_CHANNEL   3
+
+#define WAVE_FORMAT_PCM 0x0001
+
+typedef struct
+{
+    uint8_t     ckID[4];
+    uint32_t    cksize;
+} chunk_hdr_t;
+
+typedef struct __attribute__((packed))
+{
+    uint16_t    wFormatTag;
+    uint16_t    nChannels;
+    uint32_t    nSamplesPerSec;
+    uint32_t    nAvgBytesPerSec;
+    uint16_t    nBlockAlign;
+    uint16_t    wBitsPerSample;
+} wave_fmt_t;
+
+wave_fmt_t wave_fmt;
+
+elvees_i2c_t i2c;
+
+
 /* software breakpoint */
 #define STOP            asm volatile("nop"); \
                         asm volatile("nop"); \
@@ -60,6 +92,196 @@ fat_fs_t fat;
                         asm volatile("nop"); \
                         asm volatile("nop"); \
                         asm volatile("nop")
+                        
+                        
+static inline void tlv320_write_reg(uint8_t addr, uint8_t val)
+{
+    miic_t *c = (miic_t *)&i2c;
+    uint8_t tx_mes[] = {addr, val};
+    miic_transaction(c, SLAVE_ADDR, tx_mes, 2, 0, 0);
+}
+
+static inline uint8_t tlv320_read_reg(uint8_t addr)
+{
+    uint8_t value = 0;
+    miic_t *c = (miic_t *)&i2c;
+    miic_transaction(c, SLAVE_ADDR, &addr, 1, &value, 1);
+    return value;
+}
+
+void tlv320_init()
+{
+    tlv320_write_reg(0x03, 0x91);
+    tlv320_write_reg(0x04, 0x24);
+    tlv320_write_reg(0x05, 0x04);
+    tlv320_write_reg(0x06, 0xF0);
+    tlv320_write_reg(0x07, 0x8A);
+    tlv320_write_reg(0x0F, 0x20);
+    tlv320_write_reg(0x10, 0x20);
+    tlv320_write_reg(0x13, 0x00);
+    tlv320_write_reg(0x16, 0x00);
+    tlv320_write_reg(0x19, 0x00);
+    tlv320_write_reg(0x20, 0x18);
+    tlv320_write_reg(0x21, 0x18);
+    tlv320_write_reg(0x2B, 0xAF);
+    tlv320_write_reg(0x2C, 0xAF);
+    tlv320_write_reg(0x2D, 0x2F);
+    tlv320_write_reg(0x2E, 0x2F);
+    tlv320_write_reg(0x2F, 0xAF);
+    tlv320_write_reg(0x33, 0x0C);
+    tlv320_write_reg(0x34, 0x2F);
+    tlv320_write_reg(0x35, 0x2F);
+    tlv320_write_reg(0x36, 0xAF);
+    tlv320_write_reg(0x3A, 0x0C);
+    tlv320_write_reg(0x3E, 0x2F);
+    tlv320_write_reg(0x3F, 0x2F);
+    tlv320_write_reg(0x40, 0xAF);
+    tlv320_write_reg(0x41, 0x0C);
+    tlv320_write_reg(0x45, 0x2F);
+    tlv320_write_reg(0x46, 0x2F);
+    tlv320_write_reg(0x47, 0xAF);
+    tlv320_write_reg(0x48, 0x0C);
+    tlv320_write_reg(0x49, 0x2F);
+    tlv320_write_reg(0x4A, 0x2F);
+    tlv320_write_reg(0x4B, 0xAF);
+    tlv320_write_reg(0x4C, 0x2F);
+    tlv320_write_reg(0x4D, 0x2F);
+    tlv320_write_reg(0x4E, 0xAF);
+    tlv320_write_reg(0x4F, 0x08);
+    tlv320_write_reg(0x50, 0x2F);
+    tlv320_write_reg(0x51, 0x2F);
+    tlv320_write_reg(0x52, 0xAF);
+    tlv320_write_reg(0x56, 0x08);
+    tlv320_write_reg(0x5A, 0x2F);
+    tlv320_write_reg(0x5B, 0x2F);
+    tlv320_write_reg(0x5C, 0xAF);
+    tlv320_write_reg(0x5D, 0x08);
+    
+    tlv320_write_reg(0x25, 0xC0);
+    tlv320_write_reg(0x33, 0x0D);
+    tlv320_write_reg(0x41, 0x0D);
+    tlv320_write_reg(0x56, 0x09);
+    tlv320_write_reg(0x5D, 0x09);
+    tlv320_write_reg(0x2B, 0x2F);
+    tlv320_write_reg(0x2C, 0x2F);
+}
+
+void init_i2s(int port)
+{
+    MC_CLKEN |= MC_CLKEN_MFBSP;
+
+    MC_MFBSP_CSR(port) = MC_MFBSP_SPI_I2S_EN;
+
+    MC_MFBSP_DIR(port) = MC_MFBSP_RCLK_DIR | MC_MFBSP_TCLK_DIR | 
+        MC_MFBSP_TCS_DIR | MC_MFBSP_RCS_DIR | MC_MFBSP_TD_DIR;
+
+	MC_MFBSP_RCTR(port) = 0;    // Пока не используем приёмник
+
+    MC_MFBSP_TCTR_RATE(port) = 
+        MC_MFBSP_TCLK_RATE(KHZ / (2 * 32 * wave_fmt.nSamplesPerSec / 1000) - 1) |
+        MC_MFBSP_TCS_RATE(15);
+
+	MC_MFBSP_TCTR(port) = MC_MFBSP_TNEG | MC_MFBSP_TDEL |
+        MC_MFBSP_TWORDCNT(0) | MC_MFBSP_TCSNEG | MC_MFBSP_TMBF |
+        MC_MFBSP_TWORDLEN(15) | MC_MFBSP_TPACK | MC_MFBSP_TSWAP |
+        MC_MFBSP_TCS_CONT | MC_MFBSP_TCLK_CONT;
+
+    MC_MFBSP_TSTART(port) = 1;
+}
+
+void tx_dma(int port, void *buf, int size)
+{
+    int sz;
+    unsigned addr = (unsigned) buf;
+    do {
+        sz = (size < 0x80000) ? size : 0x80000;
+        MC_IR_MFBSP_TX(port) = mips_virtual_addr_to_physical(addr);
+        MC_CSR_MFBSP_TX(port) = MC_DMA_CSR_WN(0) | 
+            MC_DMA_CSR_WCX(sz / 8 - 1) | MC_DMA_CSR_RUN;
+        while (MC_RUN_MFBSP_TX(port) & 1);
+        size -= sz;
+        addr += sz;
+    } while (size > 0);
+}
+
+void play_wave(fs_entry_t *file)
+{
+    chunk_hdr_t *hdr;
+    uint8_t id[5] = {0, 0, 0, 0, 0};
+    unsigned limit;
+    fsif_t *fs = file->fs;
+    
+    fs->open(file);
+    fs->update_cache(file);
+    hdr = (chunk_hdr_t *) file->cache_p;
+    if (memcmp(hdr->ckID, "RIFF", 4) != 0) {
+        debug_printf ("Not a RIFF file!\n");
+        fs->close(file);
+        return;
+    }
+    
+    fs->advance(file, sizeof(chunk_hdr_t));
+    if (memcmp(file->cache_p, "WAVE", 4) != 0) {
+        debug_printf ("Not a WAVE file!\n");
+        fs->close(file);
+        return;
+    }
+    
+    fs->advance(file, 4);
+    hdr = (chunk_hdr_t *) file->cache_p;
+    memcpy(id, hdr->ckID, 4);
+
+    if (memcmp(hdr->ckID, "fmt ", 4) == 0) {
+        memcpy(&wave_fmt, hdr + 1, sizeof(wave_fmt_t));
+    } else {
+        debug_printf("Expected \"fmt \" chunk!\n");
+        fs->close(file);
+        return;
+    }
+    
+    fs->advance(file, sizeof(chunk_hdr_t) + hdr->cksize);
+    hdr = (chunk_hdr_t *) file->cache_p;
+    /*
+    if (memcmp(hdr->ckID, "data", 4) == 0) {
+        debug_printf("\nPlaying wave file...");
+        fs->advance(file, sizeof(chunk_hdr_t));
+        elvees_i2c_init(&i2c, I2C_SPEED);
+        init_i2s(MFBSP_CHANNEL);
+        tlv320_init();
+        while (!fs_at_end(file)) {
+            fs->update_cache(file);
+            limit = fs_size_to_end_of_cache(file);
+            tx_dma(MFBSP_CHANNEL, file->cache_p, limit);
+            fs->advance(file, limit);
+        }
+    }
+    */
+    
+    unsigned char *psdram = (unsigned char *)0xa0000000;
+    if (memcmp(hdr->ckID, "data", 4) == 0) {
+        debug_printf("\nCopying file into SDRAM...");
+        fs->advance(file, sizeof(chunk_hdr_t));
+        while (!fs_at_end(file)) {
+            fs->update_cache(file);
+            limit = fs_size_to_end_of_cache(file);
+            memcpy(psdram, file->cache_p, limit);
+            fs->advance(file, limit);
+            psdram += limit;
+        }
+    }
+    debug_printf(" done\n");
+    
+    elvees_i2c_init(&i2c, I2C_SPEED);
+    init_i2s(MFBSP_CHANNEL);
+    tlv320_init();
+    
+    debug_printf("\nPlaying wave file...");
+
+    tx_dma(MFBSP_CHANNEL, (void *) 0xa0000000, (unsigned)psdram & 0x3FFFFFF);
+    
+    fs->close(file);
+    debug_printf(" done\n");
+}
                         
 char *partition_type_to_string(uint8_t type)
 {
@@ -333,6 +555,24 @@ fs_entry_t *selected_entry(fsif_t *fs, fs_entry_t *dir, int selected)
     return 0;
 }
 
+void print_text(fs_entry_t *file)
+{
+    fsif_t *fs = file->fs;
+    unsigned limit;
+    unsigned i;
+    
+    debug_printf("\n");
+    fs->open(file);
+    while (!fs_at_end(file)) {
+        fs->update_cache(file);
+        limit = fs_size_to_end_of_cache(file);
+        for (i = 0; i < limit; ++i)
+            debug_printf("%c", file->cache_p[i]);
+        fs->advance(file, limit);
+    };
+    fs->close(file);
+}
+
 char cur_path[1024];
 
 void browse(fsif_t *fs)
@@ -381,6 +621,20 @@ void browse(fsif_t *fs)
                         strcat((unsigned char *)cur_path, (unsigned char *)"/");
                     strcat((unsigned char *)cur_path, (unsigned char *)cur_dir->name);
                 }
+            } else {
+                unsigned char *pdot = strrchr((unsigned char *)sel_entry->name, '.');
+                if (pdot) {
+                    if (strcmp(pdot, (unsigned char *)".txt") == 0 || strcmp(pdot, (unsigned char *)".c") == 0 ||
+                        strcmp(pdot, (unsigned char *)".cpp") == 0 || strcmp(pdot, (unsigned char *)".h") == 0 ||
+                        strcmp(pdot, (unsigned char *)".TXT") == 0 || strcmp(pdot, (unsigned char *)".C") == 0 ||
+                        strcmp(pdot, (unsigned char *)".CPP") == 0 || strcmp(pdot, (unsigned char *)".H") == 0)
+                    {
+                        print_text(sel_entry);
+                    } else if (strcmp(pdot, (unsigned char *)".wav") == 0 || strcmp(pdot, (unsigned char *)".WAV") == 0) {
+                        play_wave(sel_entry);
+                    }
+                }
+                getchar(out);
             }
         }
     }

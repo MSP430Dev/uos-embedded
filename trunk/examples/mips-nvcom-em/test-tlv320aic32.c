@@ -5,7 +5,6 @@
 #include <stream/stream.h>
 #include <kernel/uos.h>
 #include <elvees/i2c.h>
-#include "uda1380.h"
 
 #define I2C_SPEED       100		/* in KBits/s */
 
@@ -33,80 +32,84 @@ typedef struct __attribute__((packed))
     uint16_t    wBitsPerSample;
 } wave_fmt_t;
 
-/*
+
+ARRAY (task_space, 0x400);	/* Memory for task stack */
+
 static int wave_fmt_valid = 0;
 static wave_fmt_t wave_fmt;
-*/
 
 elvees_i2c_t i2c;
 
-void i2c_init()
+static inline void tlv320_write_reg(uint8_t addr, uint8_t val)
 {
-	MC_I2C_CTR = MC_I2C_PRST;
-	MC_I2C_CTR = MC_I2C_EN;
-	MC_I2C_PRER = KHZ / (5 * I2C_SPEED) - 1;
+    miic_t *c = (miic_t *)&i2c;
+    uint8_t tx_mes[] = {addr, val};
+    miic_transaction(c, SLAVE_ADDR, tx_mes, 2, 0, 0);
 }
 
-void i2c_write(uint8_t data, uint8_t flags)
+static inline uint8_t tlv320_read_reg(uint8_t addr)
 {
-	MC_I2C_TXR = data;
-	MC_I2C_CR = MC_I2C_SND | flags;
-	while (MC_I2C_SR & MC_I2C_TIP);
-	if (MC_I2C_SR & MC_I2C_AL)
-		debug_printf ("Arbitration lost\n");
-    mdelay(1);
-}
-
-uint8_t i2c_read(uint8_t flags)
-{
-    MC_I2C_CR = MC_I2C_RCV | flags;
-	while (MC_I2C_SR & MC_I2C_TIP);
-	if (MC_I2C_SR & MC_I2C_AL)
-		debug_printf ("Arbitration lost\n");
-    mdelay(1);
-    return MC_I2C_RXR;
-}
-
-void tlv320_write_reg(uint8_t addr, uint8_t val)
-{
-    i2c_write(SLAVE_ADDR, MC_I2C_STA);
-    i2c_write(addr, 0);
-    i2c_write(val, MC_I2C_NACK | MC_I2C_STO);
-}
-
-uint8_t tlv320_read_reg(uint8_t addr)
-{
-    uint16_t value = 0;
-    i2c_write(SLAVE_ADDR, MC_I2C_STA);
-    i2c_write(addr, 0);
-    i2c_write(SLAVE_ADDR | I2C_READ_OP, MC_I2C_STA);
-    value = i2c_read(MC_I2C_NACK | MC_I2C_STO);
+    uint8_t value = 0;
+    miic_t *c = (miic_t *)&i2c;
+    miic_transaction(c, SLAVE_ADDR, &addr, 1, &value, 1);
     return value;
 }
 
-#if 0
-void uda1380_init()
+void tlv320_init()
 {
-    uint8_t pll;
-    uint16_t value;
-
-    i2c_init();
-
-    uda1380_write_reg(UDA1380_RESET, 0); // UDA1380 software reset
-
-    if (wave_fmt.nSamplesPerSec < 12500) pll = 0;
-    else if (wave_fmt.nSamplesPerSec < 25000) pll = 1;
-    else if (wave_fmt.nSamplesPerSec < 50000) pll = 2;
-    else pll = 3;
-
-    uda1380_write_reg(UDA1380_CLK, R00_PLL(pll) | R00_DAC_CLK | 
-        R00_ADC_CLK | R00_EN_INT | R00_EN_DAC | R00_EN_DEC | R00_EN_DAC);
-
-    uda1380_write_reg(UDA1380_PM, R02_PON_PLL | R02_PON_HP |
-        R02_PON_DAC | R02_PON_BIAS);
-
-    value = uda1380_read_reg(UDA1380_DEEMP);
-    uda1380_write_reg(UDA1380_DEEMP, value & ~R13_MTM);
+    tlv320_write_reg(0x03, 0x91);
+    tlv320_write_reg(0x04, 0x24);
+    tlv320_write_reg(0x05, 0x04);
+    tlv320_write_reg(0x06, 0xF0);
+    tlv320_write_reg(0x07, 0x8A);
+    tlv320_write_reg(0x0F, 0x20);
+    tlv320_write_reg(0x10, 0x20);
+    tlv320_write_reg(0x13, 0x00);
+    tlv320_write_reg(0x16, 0x00);
+    tlv320_write_reg(0x19, 0x00);
+    tlv320_write_reg(0x20, 0x18);
+    tlv320_write_reg(0x21, 0x18);
+    tlv320_write_reg(0x2B, 0xAF);
+    tlv320_write_reg(0x2C, 0xAF);
+    tlv320_write_reg(0x2D, 0x2F);
+    tlv320_write_reg(0x2E, 0x2F);
+    tlv320_write_reg(0x2F, 0xAF);
+    tlv320_write_reg(0x33, 0x0C);
+    tlv320_write_reg(0x34, 0x2F);
+    tlv320_write_reg(0x35, 0x2F);
+    tlv320_write_reg(0x36, 0xAF);
+    tlv320_write_reg(0x3A, 0x0C);
+    tlv320_write_reg(0x3E, 0x2F);
+    tlv320_write_reg(0x3F, 0x2F);
+    tlv320_write_reg(0x40, 0xAF);
+    tlv320_write_reg(0x41, 0x0C);
+    tlv320_write_reg(0x45, 0x2F);
+    tlv320_write_reg(0x46, 0x2F);
+    tlv320_write_reg(0x47, 0xAF);
+    tlv320_write_reg(0x48, 0x0C);
+    tlv320_write_reg(0x49, 0x2F);
+    tlv320_write_reg(0x4A, 0x2F);
+    tlv320_write_reg(0x4B, 0xAF);
+    tlv320_write_reg(0x4C, 0x2F);
+    tlv320_write_reg(0x4D, 0x2F);
+    tlv320_write_reg(0x4E, 0xAF);
+    tlv320_write_reg(0x4F, 0x08);
+    tlv320_write_reg(0x50, 0x2F);
+    tlv320_write_reg(0x51, 0x2F);
+    tlv320_write_reg(0x52, 0xAF);
+    tlv320_write_reg(0x56, 0x08);
+    tlv320_write_reg(0x5A, 0x2F);
+    tlv320_write_reg(0x5B, 0x2F);
+    tlv320_write_reg(0x5C, 0xAF);
+    tlv320_write_reg(0x5D, 0x08);
+    
+    tlv320_write_reg(0x25, 0xC0);
+    tlv320_write_reg(0x33, 0x0D);
+    tlv320_write_reg(0x41, 0x0D);
+    tlv320_write_reg(0x56, 0x09);
+    tlv320_write_reg(0x5D, 0x09);
+    tlv320_write_reg(0x2B, 0x2F);
+    tlv320_write_reg(0x2C, 0x2F);
 }
 
 
@@ -186,7 +189,7 @@ void do_play(void *snd_data, unsigned size)
     }
 
     init_i2s(MFBSP_CHANNEL);
-    uda1380_init();
+    tlv320_init();
 
     debug_printf("Playing wave, size = %d... ", size);
     tx_dma(MFBSP_CHANNEL, snd_data, size);
@@ -242,41 +245,28 @@ void play_wave(void *file)
         p = parse_next_chunk((chunk_hdr_t *) p);
     }
 }
-#endif
-
-extern void _etext();
-extern unsigned __data_start, _edata;
 
 
-ARRAY (task_space, 0x400);	/* Memory for task stack */
 
 
-static inline void tlv320_write_reg2(uint8_t addr, uint8_t val)
-{
-    miic_t *c = (miic_t *)&i2c;
-    uint8_t tx_mes[] = {addr, val};
-    miic_transaction(c, SLAVE_ADDR, tx_mes, 2, 0, 0);
-}
-
-static inline uint8_t tlv320_read_reg2(uint8_t addr)
-{
-    uint8_t value = 0;
-    miic_t *c = (miic_t *)&i2c;
-    miic_transaction(c, SLAVE_ADDR, &addr, 1, &value, 1);
-    return value;
-}
 
 void task (void *arg)
 {
+    unsigned char *p = (unsigned char *) 0xa0000000;  /* Wave file */
+    
     elvees_i2c_init(&i2c, I2C_SPEED);
+    /*
     int i;
-    for (i = 0; i < 25; ++i)
-        debug_printf("Register %2d: %02X\n", i, tlv320_read_reg2(i));
+    for (i = 0; i < 0x70; ++i)
+        debug_printf("Register %2X: %02X\n", i, tlv320_read_reg(i));
     debug_printf("Switching register page\n");
-    tlv320_write_reg2(0, 1);
+    tlv320_write_reg(0, 1);
     for (i = 0; i < 25; ++i)
-        debug_printf("Register %2d: %02X\n", i, tlv320_read_reg2(i));
-    for (;;);
+        debug_printf("Register %2X: %02X\n", i, tlv320_read_reg(i));
+    */
+    
+    for (;;)
+        play_wave(p);
 }
 
 void uos_init(void)

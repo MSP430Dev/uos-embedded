@@ -105,8 +105,8 @@ void fat_update_cache(fs_entry_t *entry)
     if (!entry->cache_valid) {
         if (flash_read(fat->flashif, 
             fat->first_data_sec + ((e->cur_clus & 0x0FFFFFFF) - 2) * fat->sec_per_clus + e->cur_sec,
-            entry->cache_data, entry->cache_size) != FLASH_ERR_OK) {
-                RETURN(fat, FS_ERR_IO);
+                entry->cache_data, entry->cache_size) != FLASH_ERR_OK) {
+                    RETURN(fat, FS_ERR_IO);
         }
         entry->cache_valid = 1;
     }
@@ -140,49 +140,63 @@ unsigned fat_advance(fs_entry_t *entry, unsigned offset)
     if (offset == 0)
         return 0;
     
-    unsigned cur_offset = 0;
+    unsigned init_offset = offset;
     if (entry->attr & FS_ATTR_DIRECTORY) {
         if (offset & 0x1f)
             RETURN2(fat, FS_ERR_BAD_ARG, 0);
         if (*(entry->cache_p) == 0)
             RETURN2(fat, FS_ERR_EOF, 0);
         do {
-            cur_offset += 32;
+            offset -= 32;
             entry->cur_pos += 32;
             entry->cache_p += 32;
             if (entry->cur_pos % fat->bytes_per_sec == 0) {
                 move_to_next_sector(fat, e);
                 if (GET_LAST_ERROR(fat) != FS_ERR_OK)
-                    return cur_offset;
+                    return init_offset - offset;
             }
             fat_update_cache(entry);
             if (GET_LAST_ERROR(fat) != FS_ERR_OK)
-                return cur_offset;
+                return init_offset - offset;
             if (entry->cache_data[entry->cur_pos % fat->bytes_per_sec] == 0)
-                return cur_offset;
-        } while (cur_offset < offset);
+                return init_offset - offset;
+        } while (offset);
     } else {
         if (entry->cur_pos >= entry->size)
             return 0;
-        unsigned bytes_to_end_of_sec;
-        unsigned bytes_to_end_of_file;
+        
+        unsigned bytes_to_end_of_sec = fat->bytes_per_sec - entry->cur_pos % fat->bytes_per_sec;
+        unsigned bytes_to_end_of_file = entry->size - entry->cur_pos;
         do {
-            bytes_to_end_of_sec = fat->bytes_per_sec - entry->cur_pos % fat->bytes_per_sec;
-            bytes_to_end_of_file = entry->size - entry->cur_pos;
             if (bytes_to_end_of_file < bytes_to_end_of_sec) {
-                cur_offset += bytes_to_end_of_file;
-                entry->cur_pos = entry->size;
-                return cur_offset;
+                if (offset <= bytes_to_end_of_file) {
+                    entry->cur_pos += offset;
+                    entry->cache_p += offset;
+                    return init_offset;
+                } else {
+                    entry->cur_pos = entry->size;
+                    entry->cache_p += bytes_to_end_of_file;
+                    offset -= bytes_to_end_of_file;
+                    return init_offset - offset;
+                }
+            } else {
+                if (offset < bytes_to_end_of_sec) {
+                    entry->cur_pos += offset;
+                    entry->cache_p += offset;
+                    return init_offset;
+                } else {
+                    move_to_next_sector(fat, e);
+                    if (GET_LAST_ERROR(fat) != FS_ERR_OK)
+                        return init_offset - offset;
+                    entry->cur_pos += bytes_to_end_of_sec;
+                    offset -= bytes_to_end_of_sec;
+                    bytes_to_end_of_file -= bytes_to_end_of_sec;
+                    bytes_to_end_of_sec = fat->bytes_per_sec;
+                }
             }
-            move_to_next_sector(fat, e);
-            if (GET_LAST_ERROR(fat) != FS_ERR_OK)
-                return cur_offset;
-            entry->cur_pos += bytes_to_end_of_sec;
-            cur_offset += bytes_to_end_of_sec;
-            bytes_to_end_of_sec = fat->bytes_per_sec;
-        } while (cur_offset < offset);
+        } while (offset);
     }
-    return cur_offset;
+    return init_offset - offset;
 }
 
 static void *
@@ -432,7 +446,7 @@ void fat_fs_init(fat_fs_t *fat, mem_pool_t *pool,
     fat->fsif.delete = fat_delete;
     fat->fsif.change = fat_change;
     fat->fsif.move = fat_move;
-    fat->fsif.close = fat_open;
+    fat->fsif.open = fat_open;
     fat->fsif.close = fat_close;
     fat->fsif.update_cache = fat_update_cache;
     fat->fsif.flush_cache = fat_flush_cache;
