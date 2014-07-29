@@ -30,6 +30,7 @@ struct _flashif_t
     int (* read)(flashif_t *flash, unsigned page_num,
         void *data, unsigned size);
     unsigned (*min_address)(flashif_t *flash);
+    int (* flush)(flashif_t *flash);
 };
 
 static inline __attribute__((always_inline)) 
@@ -98,6 +99,14 @@ int flash_write(flashif_t *flash, unsigned page_num,
                 void *data, unsigned size)
 {
     return flash->write(flash, page_num, data, size);
+}
+
+static inline __attribute__((always_inline))
+int flash_flush(flashif_t *flash)
+{
+    if (flash->flush)
+        return flash->flush(flash);
+    else return FLASH_ERR_NOT_SUPP;
 }
 
 static inline __attribute__((always_inline))

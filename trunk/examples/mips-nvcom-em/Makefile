@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-hid
+TEST		= test-eth-mdb
 TESTS		+= test-debug.bin test-task.bin test-timer.bin test-uart.bin
 TESTS		+= philosophers.bin test-ram.bin
 TESTS           += test-latency.bin test-tswitch.bin #test-fpu.bin
@@ -29,7 +29,7 @@ OUTS		= $(TESTS:%.bin=%.elf)
 SREC		= $(TESTS:%.bin=%.srec)
 DIS		    = $(TESTS:%.bin=%.dis)
 
-all:		$(OUTS) $(TESTS) $(SREC) #$(DIS)
+all:		$(OUTS) $(TESTS) $(SREC) $(DIS)
 		$(SIZE) *.elf
 
 $(OUTS) $(TESTS): startup.o libuos.a

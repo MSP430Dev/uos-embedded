@@ -425,6 +425,8 @@ init_multiple_op(sdhc_spi_t *m, unsigned page_num, int read, uint8_t **pr1)
     int res;
     uint8_t *r1;
     
+debug_printf("page_num = %d\n", page_num);
+    
     memset(m->databuf, 0xFF, 16);
     if (read)
         m->databuf[0] = CMD_READ_MULTIPLE_BLOCK;
@@ -821,6 +823,39 @@ sd_write(flashif_t *flash, unsigned page_num,
 
 }
 
+//
+// Корректное завершение всех операций записи и чтения.
+//
+static int 
+sd_flush(flashif_t *flash)
+{
+    int res = FLASH_ERR_OK;
+    sdhc_spi_t *m = (sdhc_spi_t *) flash;
+
+    mutex_lock(&flash->lock);
+
+    switch (m->state) {
+    case SDHC_STATE_MULTIREAD:
+        // Карта сейчас в режиме многоблочного чтения, переводим
+        // её сначала в нормальный режим
+        res = stop_multiple_read(m);
+        if (res != FLASH_ERR_OK)
+            break;
+        m->state = SDHC_STATE_IDLE;
+    break;
+        
+    case SDHC_STATE_MULTIWRITE:
+        res = stop_multiple_write(m);
+        if (res != FLASH_ERR_OK)
+            break;
+        m->state = SDHC_STATE_IDLE;
+    break;
+    }
+
+    mutex_unlock(&flash->lock);
+    return res;
+}
+
 void sd_spi_init(sdhc_spi_t *m, spimif_t *s, unsigned mode)
 {
     m->spi = s;
@@ -831,6 +866,7 @@ void sd_spi_init(sdhc_spi_t *m, spimif_t *s, unsigned mode)
     f->erase_sectors = sd_erase_sectors;
     f->write = sd_write;
     f->read = sd_read;
+    f->flush = sd_flush;
 
     m->msg.mode = (mode & 0xFF07) | SPI_MODE_NB_BITS(8);
 }
