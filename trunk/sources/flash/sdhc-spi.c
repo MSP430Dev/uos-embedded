@@ -425,8 +425,6 @@ init_multiple_op(sdhc_spi_t *m, unsigned page_num, int read, uint8_t **pr1)
     int res;
     uint8_t *r1;
     
-debug_printf("page_num = %d\n", page_num);
-    
     memset(m->databuf, 0xFF, 16);
     if (read)
         m->databuf[0] = CMD_READ_MULTIPLE_BLOCK;
