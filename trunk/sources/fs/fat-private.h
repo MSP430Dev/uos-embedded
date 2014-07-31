@@ -101,7 +101,6 @@ typedef struct __attribute__((packed)) _fat_long_ent_t
 typedef struct _fat_fs_entry_t
 {
     fs_entry_t  fs_entry;
-    uint32_t    cached_sec;
     uint32_t    first_clus;
     uint32_t    parent_clus;
     uint32_t    parent_pos;
@@ -112,5 +111,17 @@ typedef struct _fat_fs_entry_t
 
 int common_check_fat_bs(fat32_bs_t *bs32);
 uint8_t check_fat_type(void *bs);
+
+void do_fat_close(fs_entry_t *entry);
+void do_fat_free_fs_entry(fs_entry_t *entry);
+fs_entry_t *do_fat_get_root(fsif_t *fs);
+void do_fat_seek_start(fs_entry_t *entry);
+void do_fat_open(fs_entry_t *entry);
+void do_fat_update_cache(fs_entry_t *entry);
+void do_fat_flush_cache(fs_entry_t *entry);
+unsigned do_fat_advance(fs_entry_t *entry, unsigned offset);
+fs_entry_t *do_fat_first_child(fs_entry_t *entry);
+fs_entry_t *do_fat_next_child(fs_entry_t *entry);
+
 
 #endif

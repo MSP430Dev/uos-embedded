@@ -1,6 +1,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <stream/stream.h>
+#include <uart/uart.h>
 #include <elvees/spi.h>
 #include <flash/sdhc-spi.h>
 #include <mem/mem.h>
@@ -39,12 +40,16 @@ typedef struct __attribute__((packed)) _partition_t
 
 #define SPI_NUM     0
 
-#define out &debug
+
+uart_t uart;
+//#define out &debug
+#define out &uart
 
 const char *flash_name = "SD over SPI";
 sdhc_spi_t flash;
 
 ARRAY (stack, 1000);
+ARRAY (player_stack, 1000);
 elvees_spim_t spi;
 mem_pool_t pool;
 
@@ -52,6 +57,17 @@ uint8_t buf[512] __attribute__((aligned(8)));
 uint8_t boot_sector[512] __attribute__((aligned(8)));
 fat_fs_t fat;
 
+
+#define PLAYER_IDLE     0
+#define PLAYER_COPYING  1
+#define PLAYER_PLAYING  2
+#define PLAYER_PAUSED   3
+#define PLAYER_ERROR    4
+
+#define CMD_NO_CMD      0
+#define CMD_OPEN        1
+#define CMD_START_STOP  2
+#define CMD_PAUSE       3
 
 #define I2C_SPEED       100		/* in KBits/s */
 
@@ -81,6 +97,12 @@ typedef struct __attribute__((packed))
 wave_fmt_t wave_fmt;
 
 elvees_i2c_t i2c;
+mutex_t player_mutex;
+unsigned player_state = PLAYER_IDLE;
+fs_entry_t *player_file = 0;
+unsigned player_size;
+unsigned player_pos;
+unsigned short player_command;
 
 
 /* software breakpoint */
@@ -189,22 +211,21 @@ void init_i2s(int port)
     MC_MFBSP_TSTART(port) = 1;
 }
 
-void tx_dma(int port, void *buf, int size)
+void start_tx_dma(int port, void *buf, int size)
 {
-    int sz;
     unsigned addr = (unsigned) buf;
-    do {
-        sz = (size < 0x80000) ? size : 0x80000;
-        MC_IR_MFBSP_TX(port) = mips_virtual_addr_to_physical(addr);
-        MC_CSR_MFBSP_TX(port) = MC_DMA_CSR_WN(0) | 
-            MC_DMA_CSR_WCX(sz / 8 - 1) | MC_DMA_CSR_RUN;
-        while (MC_RUN_MFBSP_TX(port) & 1);
-        size -= sz;
-        addr += sz;
-    } while (size > 0);
+    if (size > 0x80000) size = 0x80000;
+    MC_IR_MFBSP_TX(port) = mips_virtual_addr_to_physical(addr);
+    MC_CSR_MFBSP_TX(port) = MC_DMA_CSR_WN(0) | 
+        MC_DMA_CSR_WCX(size / 8 - 1) | MC_DMA_CSR_RUN;
 }
 
-void play_wave(fs_entry_t *file)
+int tx_dma_is_running(int port)
+{
+    return (MC_RUN_MFBSP_TX(port) & 1);
+}
+
+void start_play_wave(fs_entry_t *file)
 {
     chunk_hdr_t *hdr;
     uint8_t id[5] = {0, 0, 0, 0, 0};
@@ -238,7 +259,7 @@ void play_wave(fs_entry_t *file)
         fs->close(file);
         return;
     }
-    
+
     fs->advance(file, sizeof(chunk_hdr_t) + hdr->cksize);
     hdr = (chunk_hdr_t *) file->cache_p;
     /*
@@ -259,7 +280,8 @@ void play_wave(fs_entry_t *file)
     
     unsigned char *psdram = (unsigned char *)0xa0000000;
     if (memcmp(hdr->ckID, "data", 4) == 0) {
-        debug_printf("\nCopying file into SDRAM...");
+        //debug_printf("\nCopying file into SDRAM...");
+        player_state = PLAYER_COPYING;
         fs->advance(file, sizeof(chunk_hdr_t));
         while (!fs_at_end(file)) {
             fs->update_cache(file);
@@ -269,18 +291,83 @@ void play_wave(fs_entry_t *file)
             psdram += limit;
         }
     }
-    debug_printf(" done\n");
+    //debug_printf(" done\n");
     
     elvees_i2c_init(&i2c, I2C_SPEED);
     init_i2s(MFBSP_CHANNEL);
     tlv320_init();
     
-    debug_printf("\nPlaying wave file...");
+    //debug_printf("\nPlaying wave file...");
 
-    tx_dma(MFBSP_CHANNEL, (void *) 0xa0000000, (unsigned)psdram & 0x3FFFFFF);
+    //tx_dma(MFBSP_CHANNEL, (void *) 0xa0000000, (unsigned)psdram & 0x3FFFFFF);
     
     fs->close(file);
-    debug_printf(" done\n");
+    //debug_printf(" done\n");
+}
+
+void player(void *arg)
+{
+    unsigned sz;
+        
+    mutex_lock(&player_mutex);
+    
+    for (;;) {
+        mutex_wait(&player_mutex);
+        do {
+            switch (player_command) {
+            case CMD_OPEN:
+                start_play_wave(player_file);
+                // Intentionally no break
+            case CMD_START_STOP:
+                if ((player_state == PLAYER_IDLE || player_state == PLAYER_COPYING) && player_file != 0) {
+                    player_size = player_file->size;
+                    sz = (player_size < 0x8000) ? player_size : 0x8000;
+                    start_tx_dma(MFBSP_CHANNEL, (void *) 0xa0000000, sz);
+                    player_pos = sz;
+                    player_size -= sz;
+                    player_state = PLAYER_PLAYING;
+                } else if (player_state == PLAYER_PLAYING) {
+                    MC_RUN_MFBSP_TX(MFBSP_CHANNEL) = 0;
+                    while (tx_dma_is_running(MFBSP_CHANNEL));
+                    player_state = PLAYER_IDLE;
+                } else if (player_state == PLAYER_PAUSED) {
+                    sz = (player_size < 0x8000) ? player_size : 0x8000;
+                    start_tx_dma(MFBSP_CHANNEL, (void *) 0xa0000000, sz);
+                    player_pos += sz;
+                    player_size -= sz;
+                    player_state = PLAYER_PLAYING;                    
+                }
+                player_command = CMD_NO_CMD;
+                break;
+            case CMD_PAUSE:
+                if (player_state == PLAYER_PLAYING) {
+                    MC_RUN_MFBSP_TX(MFBSP_CHANNEL) = 0;
+                    while (tx_dma_is_running(MFBSP_CHANNEL));
+                    player_state = PLAYER_PAUSED;
+                } else if (player_state == PLAYER_PAUSED) {
+                    sz = (player_size < 0x8000) ? player_size : 0x8000;
+                    start_tx_dma(MFBSP_CHANNEL, (void *) 0xa0000000, sz);
+                    player_pos += sz;
+                    player_size -= sz;
+                    player_state = PLAYER_PLAYING;
+                }
+                player_command = CMD_NO_CMD;
+                break;
+            default:
+                if (player_state == PLAYER_PLAYING && !tx_dma_is_running(MFBSP_CHANNEL)) {
+                    if (player_size == 0) {
+                        player_state = PLAYER_IDLE;
+                    } else {
+                        sz = (player_size < 0x8000) ? player_size : 0x8000;
+                        start_tx_dma(MFBSP_CHANNEL, (void *) (0xa0000000 + player_pos), sz);
+                        player_pos += sz;
+                        player_size -= sz;
+                    }
+                }
+                break;
+            }
+        } while (player_state == PLAYER_COPYING || player_state == PLAYER_PLAYING);
+    }
 }
                         
 char *partition_type_to_string(uint8_t type)
@@ -579,6 +666,8 @@ void browse(fsif_t *fs)
 {
     fs_entry_t *cur_dir = fs->get_root(fs);
     fs_entry_t *sel_entry;
+    int cur_line;
+    
     strcpy((unsigned char *)cur_path, (unsigned char *)"/");
     
     unsigned short c;
@@ -588,6 +677,17 @@ void browse(fsif_t *fs)
         printf(out, "\33[H\33\[2J");
         printf(out, "%s:\n\n", cur_path);
         nb_entries = list_dir(fs, cur_dir, cur_menu);
+        cur_line = nb_entries;
+        for (; cur_line < 39; cur_line++)
+            printf(out, "\n");
+        printf(out, "PLAYER: ");
+        if (player_state == PLAYER_IDLE)         printf(out, "STOPPED ");
+        else if (player_state == PLAYER_COPYING) printf(out, "COPYING ");
+        else if (player_state == PLAYER_PLAYING) printf(out, "PLAYING ");
+        else if (player_state == PLAYER_PAUSED)  printf(out, "PAUSED  ");
+        else if (player_state == PLAYER_ERROR)   printf(out, "ERROR!  ");
+        printf(out, "%s ", player_file ? player_file->name : "<no file>");
+        printf(out, "(s-start/stop, p-pause)\n");
         c = getchar(out);
         if (c == 0x1b) {
             c = getchar(out);
@@ -621,6 +721,7 @@ void browse(fsif_t *fs)
                         strcat((unsigned char *)cur_path, (unsigned char *)"/");
                     strcat((unsigned char *)cur_path, (unsigned char *)cur_dir->name);
                 }
+                getchar(out);
             } else {
                 unsigned char *pdot = strrchr((unsigned char *)sel_entry->name, '.');
                 if (pdot) {
@@ -630,12 +731,21 @@ void browse(fsif_t *fs)
                         strcmp(pdot, (unsigned char *)".CPP") == 0 || strcmp(pdot, (unsigned char *)".H") == 0)
                     {
                         print_text(sel_entry);
+                        getchar(out);
                     } else if (strcmp(pdot, (unsigned char *)".wav") == 0 || strcmp(pdot, (unsigned char *)".WAV") == 0) {
-                        play_wave(sel_entry);
+                        player_file = sel_entry;
+                        player_state = PLAYER_COPYING;
+                        player_command = CMD_OPEN;
+                        mutex_signal(&player_mutex, 0);
                     }
                 }
-                getchar(out);
             }
+        } else if (c == 's') {
+            player_command = CMD_START_STOP;
+            mutex_signal(&player_mutex, 0);
+        } else if (c == 'p') {
+            player_command = CMD_PAUSE;
+            mutex_signal(&player_mutex, 0);
         }
     }
 }
@@ -739,6 +849,8 @@ void uos_init (void)
 {
 	debug_printf("\n\nSD card format printer\n\n");
     
+    uart_init(out, 0, 90, KHZ, 115200);
+    
 	/* Выделяем место для динамической памяти */
 	extern unsigned __bss_end[];
 #ifdef ELVEES_DATA_SDRAM
@@ -756,5 +868,6 @@ void uos_init (void)
     spim_init(&spi, SPI_NUM, SPI_MOSI_OUT | SPI_SS0_OUT | SPI_SS1_OUT | SPI_SS0_OUT | SPI_TSCK_OUT);
     sd_spi_init(&flash, (spimif_t *)&spi, SPI_MODE_CS_NUM(1));
 	
-	task_create (task, &flash, "task", 1, stack, sizeof (stack));
+	task_create (task, &flash, "task", 10, stack, sizeof (stack));
+    task_create (player, 0, "player", 5, player_stack, sizeof(player_stack));
 }
