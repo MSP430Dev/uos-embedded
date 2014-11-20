@@ -461,7 +461,6 @@ _arch_interrupt_ (void)
 		} else
 			break;
 #endif
-
 #ifdef ELVEES_MCT02
 		/* Read readme-mct02.txt for interrupt numbers. */
 		if (pending & ST_IM_COMPARE) {
@@ -499,6 +498,46 @@ _arch_interrupt_ (void)
 			if (irq < 68)
 				break;
 			MC_MASKR4 &= ~(1 << (irq - 68));
+		} else
+			break;
+#endif
+#ifdef ELVEES_MCT03P
+		/* Read readme-mct02.txt for interrupt numbers. */
+		if (pending & ST_IM_COMPARE) {
+			/* Use number 19 for COMPARE interrupt. */
+			irq = 19;
+			status &= ~ST_IM_COMPARE;
+			mips_write_c0_register (C0_STATUS, status);
+		} else if (pending & ST_IM_QSTR0) {
+			/* QSTR0 interrupt: 0..22. */
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			if (irq < 0)
+				break;
+			MC_MASKR0 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR1) {
+			/* QSTR1 interrupt: 23..34. */
+			irq = 23 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			if (irq < 23)
+				break;
+			MC_MASKR1 &= ~(1 << (irq - 23));
+		} else if (pending & ST_IM_QSTR2) {
+			/* QSTR2 interrupt: 35..66. */
+			irq = 35 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			if (irq < 35)
+				break;
+			MC_MASKR2 &= ~(1 << (irq - 35));
+		} else if (pending & ST_IM_QSTR3) {
+			/* QSTR3 interrupt: 67..74. */
+			irq = 67 + 31 - mips_count_leading_zeroes (MC_QSTR3 & MC_MASKR3);
+			if (irq < 67)
+				break;
+			MC_MASKR3 &= ~(1 << (irq - 67));
+		} else if (pending & ST_IM_QSTR4) {
+			/* QSTR4 interrupt: 75..88. */
+			irq = 75 + 31 - mips_count_leading_zeroes (MC_QSTR4 & MC_MASKR4);
+			if (irq < 75)
+				break;
+			MC_MASKR4 &= ~(1 << (irq - 75));
 		} else
 			break;
 #endif
@@ -670,6 +709,29 @@ arch_intr_allow (int irq)
 	}
 #endif
 #ifdef ELVEES_MCT02
+	if (irq == 19) {
+		/* Use irq number 19 for COMPARE interrupt. */
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		status |= ST_IM_COMPARE;
+		mips_write_c0_register (C0_STATUS, status);
+	} else if (irq < 23) {
+		/* QSTR0 interrupt: 0..22. */
+		MC_MASKR0 |= 1 << irq;
+	} else if (irq < 31) {
+		/* QSTR1 interrupt: 23..30. */
+		MC_MASKR1 |= 1 << (irq-23);
+	} else if (irq < 63) {
+		/* QSTR2 interrupt: 31..62. */
+		MC_MASKR2 |= 1 << (irq-31);
+	} else if (irq < 68) {
+		/* QSTR3 interrupt: 63..67. */
+		MC_MASKR3 |= 1 << (irq-63);
+	} else {
+		/* QSTR4 interrupt: 68..97. */
+		MC_MASKR4 |= 1 << (irq-68);
+	}
+#endif
+#ifdef ELVEES_MCT03P
 	if (irq == 19) {
 		/* Use irq number 19 for COMPARE interrupt. */
 		unsigned status = mips_read_c0_register (C0_STATUS);

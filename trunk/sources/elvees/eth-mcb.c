@@ -17,6 +17,9 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+
+#if defined(ELVEES_MCB03)
+
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <kernel/internal.h>
@@ -780,3 +783,5 @@ eth_mcb_init (eth_mcb_t *u, const char *name, int prio, mem_pool_t *pool,
     u->mcb_irq_tx.handler_lock = &u->tx_lock;
     mcb_register_interrupt_handler (&u->mcb_irq_tx);
 }
+
+#endif

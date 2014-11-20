@@ -91,7 +91,7 @@ uos_post_init ()
  * then create the idle task, and run the OS.
  * The idle task uses the default system stack.
  */
-int
+int __attribute__ ((weak))
 main (void)
 {
 	/* Create the idle task. */

@@ -16,6 +16,9 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+
+#if defined(ELVEES_NVCOM01) || defined(ELVEES_NVCOM01M) || defined(ELVEES_NVCOM02)
+
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <kernel/internal.h>
@@ -727,3 +730,5 @@ eth_init (eth_t *u, const char *name, int prio, mem_pool_t *pool,
 	/* Create receive task. */
 	task_create (eth_receiver, u, "eth-rx", prio+1, u->stack, sizeof (u->stack));
 }
+
+#endif

@@ -9,6 +9,8 @@
  */
 #include <elvees/lport.h>
 
+#ifdef ELVEES_MC24
+
 ARRAY (stack_irq, 1000);
 
 void
@@ -386,4 +388,6 @@ void lport_debug_print (lport_t *l)
 
 	debug_puts ("\n*****LPORT***CONFIG*****\n\n");
 }
+#endif
+
 #endif

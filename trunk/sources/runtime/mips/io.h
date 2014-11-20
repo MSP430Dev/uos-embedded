@@ -51,6 +51,11 @@
 #   include <runtime/mips/io-mct02.h>
 #   include <runtime/mips/io-elvees.h>
 #endif
+#ifdef ELVEES_MCT03P
+#   define ELVEES	1
+#   include <runtime/mips/io-mct02.h>
+#   include <runtime/mips/io-elvees.h>
+#endif
 #ifdef ELVEES_MC0226
 #   define ELVEES	1
 #   include <runtime/mips/io-mc0226.h>
@@ -125,6 +130,9 @@
 #endif
 #ifdef ELVEES_MCT02
 #   define MIPS_FSPACE		24	/* for Elvees MCT02-01 */
+#endif
+#ifdef ELVEES_MCT03P
+#   define MIPS_FSPACE		24	/* for Elvees MCT-03P */
 #endif
 #ifdef ELVEES_MC0226
 #   define MIPS_FSPACE		24	/* for Elvees MC0226 */
@@ -268,7 +276,7 @@ do {								\
 static void inline __attribute__ ((always_inline))
 mips_intr_disable (int *x)
 {
-#if defined (ELVEES_MCT02)
+#if defined (ELVEES_MCT02) || defined(ELVEES_MCT03P)
 	asm volatile ("nop");
 	asm volatile ("nop");
 	asm volatile ("nop");

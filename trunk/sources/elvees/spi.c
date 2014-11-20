@@ -14,6 +14,9 @@
 #elif defined(ELVEES_MC24R2)
 #   define IRQ_SHIFT        2
 #   define SPI_IRQ(port_id)    (30 + ((port_id) << IRQ_SHIFT))
+#elif defined(ELVEES_MCT03P)
+#   define IRQ_SHIFT        3
+#   define SPI_IRQ(port_id)    (80 + ((port_id) << IRQ_SHIFT))
 #endif
 
 

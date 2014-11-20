@@ -3,6 +3,8 @@
 #include <kernel/internal.h>
 #include <elvees/i2c.h>
 
+#if defined(ELVEES_NVCOM01)
+
 #define I2C_IRQ     23
 
 
@@ -112,3 +114,4 @@ void elvees_i2c_init (elvees_i2c_t *i2c, uint32_t rate)
     i2c_reset(i2c);
 }
 
+#endif

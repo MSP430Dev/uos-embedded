@@ -36,6 +36,7 @@ static void ack_stat()
     spim_trx(spim, &msg);
 }
 
+/*
 static void write_reg_ack(uint8_t addr, uint8_t value)
 {
     msg.word_count = 2;
@@ -43,6 +44,7 @@ static void write_reg_ack(uint8_t addr, uint8_t value)
     spi_buf[1] = value;
     spim_trx(spim, &msg);
 }
+*/
 
 static void write_reg(uint8_t addr, uint8_t value)
 {

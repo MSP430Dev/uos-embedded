@@ -111,6 +111,15 @@
 #define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
 #endif
 
+#ifdef ELVEES_MCT03P
+#define ST_IM_QSTR0	0x00000400	/* от IT, RTT, WDT, UART[3:0], nIRQ[3:0] */
+#define ST_IM_QSTR1	0x00000800	/* от DMA MEM */
+#define ST_IM_QSTR2	0x00001000	/* от SWIC */
+#define ST_IM_QSTR3	0x00002000	/* от контроллера Хэмминга */
+#define ST_IM_QSTR4	0x00004000	/* от MFBSP */
+#define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
+#endif
+
 #ifdef ELVEES_MC0428
 #define ST_IM_QSTR0	0x00000400	/* от IT0, IT1, WDT, VPOUT, VPIN, ENET, MBR, PMCh, I2C, UART, nIRQ[3:0] */
 #define ST_IM_QSTR1	0x00000800	/* от DMA MEM */
@@ -576,6 +585,84 @@
 #define MC_MASKR4_MFBSP_RX0	(1 << 1)	/* готовность MFBSP0 к выдаче по DMA */
 #define MC_MASKR4_SRQ0		(1 << 0)	/* Запрос обслуживания от порта MFBSP0 */
 #endif
+
+
+#ifdef ELVEES_MCT03P
+#define MC_MASKR0_MCC		(1 << 31)	/* Прерывание от МСС */
+#define MC_MASKR0_IT		(1 << 22)	/* от таймера IT */
+#define MC_MASKR0_RTT		(1 << 21)	/* от таймера RTT */
+#define MC_MASKR0_WDT		(1 << 20)	/* от таймера WDT */
+#define MC_MASKR0_UART3		(1 << 7)	/* Прерывание от UART3 */
+#define MC_MASKR0_UART2		(1 << 6)	/* Прерывание от UART2 */
+#define MC_MASKR0_UART1		(1 << 5)	/* Прерывание от UART1 */
+#define MC_MASKR0_UART0		(1 << 4)	/* Прерывание от UART0 */
+#define MC_MASKR0_IRQ3		(1 << 3)	/* Внешнее прерывание nIRQ3 */
+#define MC_MASKR0_IRQ2		(1 << 2)	/* Внешнее прерывание nIRQ2 */
+#define MC_MASKR0_IRQ1		(1 << 1)	/* Внешнее прерывание nIRQ1 */
+#define MC_MASKR0_IRQ0		(1 << 0)	/* Внешнее прерывание nIRQ0 */
+/* QSTR1 */
+#define MC_MASKR1_DMAMEM_CH13	(1 << 11)	/* от канала DMA MEM_CH13 */
+#define MC_MASKR1_DMAMEM_CH12	(1 << 10)	/* от канала DMA MEM_CH12 */
+#define MC_MASKR1_DMAMEM_CH11	(1 << 9)	/* от канала DMA MEM_CH11 */
+#define MC_MASKR1_DMAMEM_CH10	(1 << 8)	/* от канала DMA MEM_CH10 */
+#define MC_MASKR1_DMAMEM_CH3	(1 << 3)	/* от канала DMA MEM_CH3 */
+#define MC_MASKR1_DMAMEM_CH2	(1 << 2)	/* от канала DMA MEM_CH2 */
+#define MC_MASKR1_DMAMEM_CH1	(1 << 1)	/* от канала DMA MEM_CH1 */
+#define MC_MASKR1_DMAMEM_CH0	(1 << 0)	/* от канала DMA MEM_CH0 */
+/* QSTR2 */
+#define MC_MASKR2_SW3_TX_DT_CH0	(1 << 31)
+#define MC_MASKR2_SW3_TX_DS_CH0	(1 << 30)
+#define MC_MASKR2_SW3_RX_DT_CH0	(1 << 29)
+#define MC_MASKR2_SW3_RX_DS_CH0	(1 << 28)
+// 27
+#define MC_MASKR2_SW3_LINK	(1 << 26)
+#define MC_MASKR2_SW3_TIME	(1 << 25)
+#define MC_MASKR2_SW3_ERR	(1 << 24)
+#define MC_MASKR2_SW2_TX_DT_CH0	(1 << 23)
+#define MC_MASKR2_SW2_TX_DS_CH0	(1 << 22)
+#define MC_MASKR2_SW2_RX_DT_CH0	(1 << 21)
+#define MC_MASKR2_SW2_RX_DS_CH0	(1 << 20)
+// 19
+#define MC_MASKR2_SW2_LINK	(1 << 18)
+#define MC_MASKR2_SW2_TIME	(1 << 17)
+#define MC_MASKR2_SW2_ERR	(1 << 16)
+#define MC_MASKR2_SW1_TX_DT_CH0	(1 << 15)
+#define MC_MASKR2_SW1_TX_DS_CH0	(1 << 14)
+#define MC_MASKR2_SW1_RX_DT_CH0	(1 << 13)
+#define MC_MASKR2_SW1_RX_DS_CH0	(1 << 12)
+// 11
+#define MC_MASKR2_SW1_LINK	(1 << 10)
+#define MC_MASKR2_SW1_TIME	(1 << 9)
+#define MC_MASKR2_SW1_ERR	(1 << 8)
+#define MC_MASKR2_SW0_TX_DT_CH0	(1 << 7)
+#define MC_MASKR2_SW0_TX_DS_CH0	(1 << 6)
+#define MC_MASKR2_SW0_RX_DT_CH0	(1 << 5)
+#define MC_MASKR2_SW0_RX_DS_CH0	(1 << 4)
+// 3
+#define MC_MASKR2_SW0_LINK	(1 << 2)
+#define MC_MASKR2_SW0_TIME	(1 << 1)
+#define MC_MASKR2_SW0_ERR	(1 << 0)
+
+/* QSTR4 */
+
+#define MC_MASKR4_DMA_MFBSP3	(1 << 15)	/* от канала DMA порта MFBSP3 */
+#define MC_MASKR4_MFBSP_TX3	(1 << 14)	/* готовность MFBSP3 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX3	(1 << 13)	/* готовность MFBSP3 к выдаче по DMA */
+#define MC_MASKR4_SRQ3		(1 << 12)	/* Запрос обслуживания от порта MFBSP3 */
+#define MC_MASKR4_DMA_MFBSP2	(1 << 11)	/* от канала DMA порта MFBSP2 */
+#define MC_MASKR4_MFBSP_TX2	(1 << 10)	/* готовность MFBSP2 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX2	(1 << 9)	/* готовность MFBSP2 к выдаче по DMA */
+#define MC_MASKR4_SRQ2		(1 << 8)	/* Запрос обслуживания от порта MFBSP2 */
+#define MC_MASKR4_DMA_MFBSP1	(1 << 7)	/* от канала DMA порта MFBSP1 */
+#define MC_MASKR4_MFBSP_TX1	(1 << 6)	/* готовность MFBSP1 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX1	(1 << 5)	/* готовность MFBSP1 к выдаче по DMA */
+#define MC_MASKR4_SRQ1		(1 << 4)	/* Запрос обслуживания от порта MFBSP1 */
+#define MC_MASKR4_DMA_MFBSP0	(1 << 3)	/* от канала DMA порта MFBSP0 */
+#define MC_MASKR4_MFBSP_TX0	(1 << 2)	/* готовность MFBSP0 к приёму по DMA */
+#define MC_MASKR4_MFBSP_RX0	(1 << 1)	/* готовность MFBSP0 к выдаче по DMA */
+#define MC_MASKR4_SRQ0		(1 << 0)	/* Запрос обслуживания от порта MFBSP0 */
+#endif
+
 
 #ifdef ELVEES_MC0428
 /* QSTR0 / MASKR0 */

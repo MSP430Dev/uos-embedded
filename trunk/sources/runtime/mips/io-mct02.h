@@ -122,20 +122,37 @@
 #define MC_WTSCALE	MC_R (0x501C)	/* Предделитель */
 
 /*
- * Регистры MFBSP(0-3)
+ * Регистры MFBSP(0-1) MCT03P
  */
-#define MC_MFBSP_TX(n)		MC_R (0x7000+(n<<8))   /* Буфер передачи данных */
-#define MC_MFBSP_RX(n)		MC_R (0x7000+(n<<8))   /* Буфер приема данных */
-#define MC_MFBSP_CSR(n)		MC_R (0x7004+(n<<8))   /* Управление и состояние */
-#define MC_MFBSP_DIR(n)		MC_R (0x7008+(n<<8))   /* Управление направлением
+#define MC_MFBSP_TX(n)		MC_R (0x8000+(n<<8))   /* Буфер передачи данных */
+#define MC_MFBSP_RX(n)		MC_R (0x8000+(n<<8))   /* Буфер приема данных */
+#define MC_MFBSP_CSR(n)		MC_R (0x8004+(n<<8))   /* Управление и состояние */
+#define MC_MFBSP_DIR(n)		MC_R (0x8008+(n<<8))   /* Управление направлением
 							* порта ввода-вывода */
-#define MC_MFBSP_GPIO_DR(n)	MC_R (0x700C+(n<<8))   /* Данные порта ввода-вывода */
-#define MC_MFBSP_TCTR(n)	MC_R (0x7010+(n<<8))   /* Управление передатчиком */
-#define MC_MFBSP_RCTR(n)	MC_R (0x7014+(n<<8))   /* Управление приёмником */
-#define MC_MFBSP_TSR(n)		MC_R (0x7018+(n<<8))   /* Состояние передатчика */
-#define MC_MFBSP_RSR(n)		MC_R (0x701C+(n<<8))   /* Состояние приёмника */
-#define MC_MFBSP_TCTR_RATE(n)	MC_R (0x7020+(n<<8))   /* Управление темпом передачи данных */
-#define MC_MFBSP_RCTR_RATE(n)	MC_R (0x7024+(n<<8))   /* Управление темпом приёма данных */
+#define MC_MFBSP_GPIO_DR(n)	MC_R (0x800C+(n<<8))   /* Данные порта ввода-вывода */
+#define MC_MFBSP_TCTR(n)	MC_R (0x8010+(n<<8))   /* Управление передатчиком */
+#define MC_MFBSP_RCTR(n)	MC_R (0x8014+(n<<8))   /* Управление приёмником */
+#define MC_MFBSP_TSR(n)		MC_R (0x8018+(n<<8))   /* Состояние передатчика */
+#define MC_MFBSP_RSR(n)		MC_R (0x801C+(n<<8))   /* Состояние приёмника */
+#define MC_MFBSP_TCTR_RATE(n)	MC_R (0x8020+(n<<8))   /* Управление темпом передачи данных */
+#define MC_MFBSP_RCTR_RATE(n)	MC_R (0x8024+(n<<8))   /* Управление темпом приёма данных */
+#define MC_MFBSP_TSTART(n)	MC_R (0x8028+(n<<8))   /* Запуск/останов передатчика без изменения настроек передатчика */
+#define MC_MFBSP_RSTART(n)	MC_R (0x802C+(n<<8))   /* Запуск/останов передатчика без изменения настроек приёмника */
+#define MC_MFBSP_EMERG(n)	MC_R (0x8030+(n<<8))   /* Регистр аварийного управления портом */
+#define MC_MFBSP_IMASK(n) 	MC_R (0x8034+(n<<8))   /* Регистр маски прерываний от порта */
+
+/*
+ * Регистры DMA MFBSP(0-1) MCT03P
+ */
+#define MC_CSR_MFBSP_RX(n)	MC_R (0x8840+(n<<12))	/* Управление и состояние */
+#define MC_CP_MFBSP_RX(n)	MC_R (0x8844+(n<<12))	/* Указатель цепочки */
+#define MC_IR_MFBSP_RX(n)	MC_R (0x8848+(n<<12))	/* Индекс */
+#define MC_RUN_MFBSP_RX(n)	MC_R (0x884C+(n<<12))	/* Управления состоянием бита RUN */
+
+#define MC_CSR_MFBSP_TX(n)	MC_R (0x8800+(n<<12))	/* Управление и состояние */
+#define MC_CP_MFBSP_TX(n)	MC_R (0x8804+(n<<12))	/* Указатель цепочки */
+#define MC_IR_MFBSP_TX(n)	MC_R (0x8808+(n<<12))	/* Индекс */
+#define MC_RUN_MFBSP_TX(n)	MC_R (0x880C+(n<<12))	/* Управления состоянием бита RUN */
 
 /*
  * Регистры порта внешней памяти MPORT

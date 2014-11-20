@@ -4,6 +4,8 @@
  * осуществляться только с помощью функций mcb_read_reg/mcb_write_reg.
  * Для разъяснений см. Руководство пользователя на микросхему 1892ХД1Я, п. 5.3.
  */
+#if defined(ELVEES_MCB) || defined(ELVEES_MCB03)
+
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #ifdef ELVEES_MCB01
@@ -114,5 +116,7 @@ void mcb_register_interrupt_handler (mcb_intr_handler_t *ih)
     MCB_MBA_MASK1 |= ih->mask1;
     mutex_unlock (&interrupt_mutex);
 }
+
+#endif
 
 #endif

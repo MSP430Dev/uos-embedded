@@ -16,6 +16,9 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
+
+#if defined(ELVEES_MCB) || defined(ELVEES_MCB03)
+
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <elvees/pci.h>
@@ -315,3 +318,6 @@ int pci_mem_write (unsigned addr, unsigned *data, unsigned nwords)
 		return 0;
 	return 1;
 }
+
+
+#endif

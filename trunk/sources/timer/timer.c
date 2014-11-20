@@ -70,6 +70,10 @@
 #   define TIMER_IRQ		22	/* Interval Timer interrupt */
 #endif
 
+#if ELVEES_MCT03P
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
 #if ELVEES_MC0428
 #   define TIMER_IRQ		22	/* Interval Timer interrupt */
 #endif

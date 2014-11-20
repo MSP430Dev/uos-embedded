@@ -1,3 +1,5 @@
+#if defined(ELVEES_MCB03)
+
 #include <runtime/lib.h>
 #include <elvees/mcb-03.h>
 #include <elvees/spw-mcb.h>
@@ -741,3 +743,4 @@ void spw_init (spw_t *u, int port, unsigned mbit_per_sec)
     PDEBUG ("spw_init done, channel %d\n", u->port);
 }
 
+#endif
