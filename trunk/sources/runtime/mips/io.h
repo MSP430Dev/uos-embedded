@@ -16,7 +16,7 @@
  * uses of the text contained in this file.  See the accompanying file
  * "COPY-UOS.txt" for details.
  */
-#ifdef ELVEES_NVCOM01M
+#ifdef ELVEES_NVCOM02T
 #define ELVEES_NVCOM01 1
 #endif
 

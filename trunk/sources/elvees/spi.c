@@ -5,7 +5,7 @@
 
 #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 
-#if defined(ELVEES_NVCOM01M)
+#if defined(ELVEES_NVCOM02T)
 #   define IRQ_SHIFT        3
 #   define SPI_IRQ(port_id)    (41 + ((port_id) << IRQ_SHIFT))
 #elif defined(ELVEES_MC0428)
