@@ -115,7 +115,8 @@ unsigned short player_command;
                         asm volatile("nop"); \
                         asm volatile("nop")
                         
-                        
+      
+#ifndef ELVEES_MC24R2                  
 static inline void tlv320_write_reg(uint8_t addr, uint8_t val)
 {
     miic_t *c = (miic_t *)&i2c;
@@ -208,7 +209,11 @@ void init_i2s(int port)
         MC_MFBSP_TWORDLEN(15) | MC_MFBSP_TPACK | MC_MFBSP_TSWAP |
         MC_MFBSP_TCS_CONT | MC_MFBSP_TCLK_CONT;
 
+#ifdef ELVEES_MC24R2
+    MC_MFBSP_TCTR(port) |= MC_MFBSP_TEN;
+#else
     MC_MFBSP_TSTART(port) = 1;
+#endif
 }
 
 void start_tx_dma(int port, void *buf, int size)
@@ -293,6 +298,7 @@ void start_play_wave(fs_entry_t *file)
     }
     //debug_printf(" done\n");
     
+
     elvees_i2c_init(&i2c, I2C_SPEED);
     init_i2s(MFBSP_CHANNEL);
     tlv320_init();
@@ -369,6 +375,7 @@ void player(void *arg)
         } while (player_state == PLAYER_COPYING || player_state == PLAYER_PLAYING);
     }
 }
+#endif // ELVEES_MC24R2
                         
 char *partition_type_to_string(uint8_t type)
 {
@@ -869,5 +876,7 @@ void uos_init (void)
     sd_spi_init(&flash, (spimif_t *)&spi, SPI_MODE_CS_NUM(1));
 	
 	task_create (task, &flash, "task", 10, stack, sizeof (stack));
+#ifndef ELVEES_MC24R2
     task_create (player, 0, "player", 5, player_stack, sizeof(player_stack));
+#endif // ELVEES_MC24R2
 }

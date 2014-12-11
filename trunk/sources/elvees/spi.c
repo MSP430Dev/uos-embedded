@@ -19,6 +19,41 @@
 #   define SPI_IRQ(port_id)    (80 + ((port_id) << IRQ_SHIFT))
 #endif
 
+static inline void start_rx(int port)
+{
+#if defined(ELVEES_MC24R2)
+    MC_MFBSP_RCTR(port) |= MC_MFBSP_REN;
+#else
+    MC_MFBSP_RSTART(port) = 1;
+#endif
+}
+
+static inline void stop_rx(int port)
+{
+#if defined(ELVEES_MC24R2)
+    MC_MFBSP_RCTR(port) &= ~MC_MFBSP_REN;
+#else
+    MC_MFBSP_RSTART(port) = 0;
+#endif
+}
+
+static inline void start_tx(int port)
+{
+#if defined(ELVEES_MC24R2)
+    MC_MFBSP_TCTR(port) |= MC_MFBSP_TEN;
+#else
+    MC_MFBSP_TSTART(port) = 1;
+#endif
+}
+
+static inline void stop_tx(int port)
+{
+#if defined(ELVEES_MC24R2)
+    MC_MFBSP_TCTR(port) &= ~MC_MFBSP_TEN;
+#else
+    MC_MFBSP_TSTART(port) = 0;
+#endif
+}
 
 static inline void
 cs_activate(int port, int cs_num, int cs_high)
@@ -43,8 +78,8 @@ init_hw(elvees_spim_t *spi, unsigned freq, unsigned bits_per_word,
     unsigned cs_num, unsigned mode)
 {
     if (freq != spi->last_freq) {
-        MC_MFBSP_RSTART(spi->port) = 0;
-        MC_MFBSP_TSTART(spi->port) = 0;
+        stop_rx(spi->port);
+        stop_tx(spi->port);
 
         // Максимальная частота, поддерживаемая контроллером - половина
         // частоты процессора
@@ -67,8 +102,8 @@ init_hw(elvees_spim_t *spi, unsigned freq, unsigned bits_per_word,
         return SPI_ERR_BAD_CS;
     }
     if (mode != spi->last_mode) {
-        MC_MFBSP_RSTART(spi->port) = 0;
-        MC_MFBSP_TSTART(spi->port) = 0;
+        stop_rx(spi->port);
+        stop_tx(spi->port);
 
         if (mode & SPI_MODE_CPOL) {
             MC_MFBSP_RCTR(spi->port) |= MC_MFBSP_RNEG;
@@ -97,8 +132,8 @@ init_hw(elvees_spim_t *spi, unsigned freq, unsigned bits_per_word,
         spi->last_mode = mode;
     }
     if (bits_per_word != spi->last_bits) {
-        MC_MFBSP_RSTART(spi->port) = 0;
-        MC_MFBSP_TSTART(spi->port) = 0;
+        stop_rx(spi->port);
+        stop_tx(spi->port);
 
         if (bits_per_word > 32) {
             debug_printf ("SPI Master %d: too many bits per word: %d\n",
@@ -113,8 +148,8 @@ init_hw(elvees_spim_t *spi, unsigned freq, unsigned bits_per_word,
         spi->last_bits = bits_per_word;
     }
 
-    MC_MFBSP_RSTART(spi->port) = 1;
-    MC_MFBSP_TSTART(spi->port) = 1;
+    start_rx(spi->port);
+    start_tx(spi->port);
 
     return SPI_ERR_OK;
 }
