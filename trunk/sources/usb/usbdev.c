@@ -358,7 +358,7 @@ void usbdevhal_out_done (usbdev_t *u, unsigned ep, int trans_type, void *data, i
     if ((trans_type == USBDEV_TRANSACTION_SETUP) && 
         ((epo->attr & EP_ATTR_TRANSFER_MASK) == EP_ATTR_CONTROL) &&
         epo->state != EP_STATE_WAIT_SETUP) {
-debug_printf ("bad_trans 0: %d\n", trans_type);
+//debug_printf ("bad_trans 0: %d\n", trans_type);
         u->rx_bad_trans++;
         epo->state = EP_STATE_WAIT_SETUP;
     }
@@ -367,7 +367,7 @@ debug_printf ("bad_trans 0: %d\n", trans_type);
     case EP_STATE_WAIT_SETUP:
         assert ((epo->attr & EP_ATTR_TRANSFER_MASK) == EP_ATTR_CONTROL);
         if (trans_type != USBDEV_TRANSACTION_SETUP) {
-debug_printf ("bad_trans 1: %d\n", trans_type);
+//debug_printf ("bad_trans 1: %d\n", trans_type);
             u->rx_bad_trans++;
             u->hal->ep_wait_out (ep, 0);
             break;
@@ -386,7 +386,7 @@ debug_printf ("bad_trans 1: %d\n", trans_type);
             memcpy (&setup, data, size);
             if (setup_data != 0)
                 mem_free (setup_data);
-            setup_data = mem_alloc_dirty (u->pool, size);
+            setup_data = mem_alloc_dirty (u->pool, psetup->wLength);
 //debug_printf ("============= setup_data @ %p\n", setup_data);
             if (! setup_data) {
 //debug_printf("no memory!\n");
@@ -404,7 +404,7 @@ debug_printf ("bad_trans 1: %d\n", trans_type);
     case EP_STATE_SETUP_DATA_OUT:
         assert ((epo->attr & EP_ATTR_TRANSFER_MASK) == EP_ATTR_CONTROL);
         if (trans_type != USBDEV_TRANSACTION_OUT) {
-debug_printf ("bad_trans 2\n");
+//debug_printf ("bad_trans 2\n");
             u->rx_bad_trans++;
             epo->state = EP_STATE_WAIT_SETUP;
             u->hal->ep_stall (ep, USBDEV_DIR_OUT);
@@ -424,7 +424,7 @@ debug_printf ("bad_trans 2\n");
     case EP_STATE_WAIT_OUT:
         assert ((epo->attr & EP_ATTR_TRANSFER_MASK) != EP_ATTR_CONTROL);
         if (trans_type != USBDEV_TRANSACTION_OUT) {
-debug_printf ("bad_trans 3\n");
+//debug_printf ("bad_trans 3\n");
             u->rx_bad_trans++;
             u->hal->ep_stall (ep, USBDEV_DIR_OUT);
             break;
@@ -475,7 +475,7 @@ debug_printf ("bad_trans 3\n");
         break;
         
     default:
-debug_printf ("bad_trans 4\n");
+//debug_printf ("bad_trans 4\n");
         u->rx_bad_trans++;
         break;
     }
