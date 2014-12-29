@@ -224,6 +224,9 @@ void *msp430_get_stack_pointer ()
 	return x;
 }
 
+#define set_stack_pointer(x) msp430_set_stack_pointer(x)
+#define get_stack_pointer(x) msp430_get_stack_pointer(x)
+
 #ifdef __cplusplus
     #define sfrb_(x,x_) \
 	    extern "C" volatile unsigned char x asm(#x_)
