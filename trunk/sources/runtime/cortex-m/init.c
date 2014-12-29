@@ -33,8 +33,11 @@ _init_ (void)
 {
 	unsigned long *src, *dest, *limit;
 	
+// Disable interrupts
 #if defined (ARM_CORTEX_M1)
-	arm_set_primask(1);		// Disable interrupts
+	arm_set_primask(1);
+#else
+	arm_set_basepri (64);
 #endif
 
 #if defined (ARM_1986BE9) || defined (ARM_1986BE1)
@@ -191,8 +194,6 @@ generator will not work properly
 	while (dest < limit)
 		*dest++ = 0;
 		
-	arm_set_basepri (64);
-
 	/* Initialize priority of exceptions.
 	 * Only faults and SVC are permitted when interrupts are disabled
 	 * (priority level = 0).  All other interrupts have level 64. */
