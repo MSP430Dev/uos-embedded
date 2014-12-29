@@ -23,7 +23,13 @@ task_t *task_current;			/* current running task */
 task_t *task_idle;			/* background system task */
 mutex_irq_t mutex_irq [ARCH_INTERRUPTS]; /* interrupt handlers */
 
-static ARRAY (task_idle_data, sizeof(task_t) + sizeof(long));
+#ifndef IDLE_TASK_STACKSZ
+#define IDLE_TASK_STACKSZ   256
+#endif
+
+#define ALIGNED_IDLE_TASK_STACKSZ ((IDLE_TASK_STACKSZ + sizeof(void *) - 1) & ~(sizeof(void *) - 1))
+
+static ARRAY (task_idle_data, sizeof(task_t) + ALIGNED_IDLE_TASK_STACKSZ - sizeof(void *));
 bool_t task_need_schedule;
 
 /*
@@ -96,7 +102,8 @@ main (void)
 {
 	/* Create the idle task. */
 	task_idle = (task_t*) task_idle_data;
-	task_idle->stack[0] = STACK_MAGIC;
+	memset (task_idle->stack, STACK_MAGIC, ALIGNED_IDLE_TASK_STACKSZ);
+	assert (STACK_GUARD (task_idle));
 	task_idle->name = "idle";
 	list_init (&task_idle->item);
 	list_init (&task_idle->slaves);
@@ -115,7 +122,10 @@ main (void)
 	
 	/* Additional machine-dependent initialization */
 	uos_post_init ();
-	
+
+	/* Move stack pointer to task_idle stack area */
+	set_stack_pointer (&task_idle->stack[ALIGNED_IDLE_TASK_STACKSZ]);
+
 	/* Switch to the most priority task. */
 	assert (task_current == task_idle);
 	task_schedule ();

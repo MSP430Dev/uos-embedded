@@ -173,6 +173,9 @@ unsigned int i386_get_stack_segment ()
         return x;
 }
 
+#define set_stack_pointer(x) i386_set_stack_pointer(x)
+#define get_stack_pointer(x) i386_get_stack_pointer(x)
+
 /*
  * Disable and restore the hardware interrupts,
  * saving the interrupt enable flag into the supplied variable.

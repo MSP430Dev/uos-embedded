@@ -171,6 +171,9 @@ void *mips_get_stack_pointer ()
 	return x;
 }
 
+#define set_stack_pointer(x) mips_set_stack_pointer(x)
+#define get_stack_pointer(x) mips_get_stack_pointer(x)
+
 /*
  * Read C0 coprocessor register.
  */

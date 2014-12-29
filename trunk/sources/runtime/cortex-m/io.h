@@ -49,6 +49,9 @@ void *arm_get_stack_pointer ()
 	return x;
 }
 
+#define set_stack_pointer(x) arm_set_stack_pointer(x)
+#define get_stack_pointer(x) arm_get_stack_pointer(x)
+
 /*
  * Handle any register R0-R14.
  */

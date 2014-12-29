@@ -190,6 +190,8 @@ generator will not work properly
 	limit = &__bss_end;
 	while (dest < limit)
 		*dest++ = 0;
+		
+	arm_set_basepri (64);
 
 	/* Initialize priority of exceptions.
 	 * Only faults and SVC are permitted when interrupts are disabled

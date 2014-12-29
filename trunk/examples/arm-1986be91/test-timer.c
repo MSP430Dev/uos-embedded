@@ -5,6 +5,7 @@
 #include <runtime/lib.h>
 #include <kernel/uos.h>
 #include <timer/timer.h>
+#include <kernel/internal.h>
 
 ARRAY (task, 1000);
 timer_t timer;
@@ -12,8 +13,8 @@ timer_t timer;
 void hello (void *arg)
 {
 	for (;;) {
-		debug_printf ("%s: msec = %d\n",
-			arg, timer_milliseconds (&timer));
+		debug_printf ("%s: msec = %d, idle task available stack %d\n",
+			arg, timer_milliseconds (&timer), task_stack_avail(task_idle));
 		mutex_wait (&timer.decisec);
 	}
 }
