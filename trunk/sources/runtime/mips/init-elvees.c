@@ -28,6 +28,7 @@ extern int main ();
  * _init_ is called from startup.S.
  * Attribute "naked" skips function prologue.
  */
+
 void __attribute ((noreturn))_init_ (void)
 {
 	unsigned *dest, *limit;
@@ -98,6 +99,9 @@ void __attribute ((noreturn))_init_ (void)
 		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2
 #endif
 #ifdef ELVEES_MCT02
+		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2 | ST_IM_QSTR3 | ST_IM_QSTR4
+#endif
+#ifdef ELVEES_MCT03P
 		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2 | ST_IM_QSTR3 | ST_IM_QSTR4
 #endif
 #ifdef ELVEES_MC0428
@@ -235,6 +239,28 @@ void __attribute ((noreturn))_init_ (void)
 
 	/* Fixed mapping. */
 	MC_CSR = MC_CSR_FM;
+
+	MC_MASKR0 = 0;
+	MC_MASKR1 = 0;
+	MC_MASKR2 = 0;
+	MC_MASKR3 = 0;
+	MC_MASKR4 = 0;
+#endif
+
+#ifdef ELVEES_MCT03P
+	/* Clock: enable only core. */
+	MC_CLKEN = MC_CLKEN_CORE | MC_CLKEN_CPU | MC_CLKEN_CORE2;
+
+	/* Clock multiply from CLKIN to KHZ. */
+	MC_CRPLL = (1 << 15) | MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
+		   (1 << 7) | MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
+
+	/* Fixed mapping. */
+	MC_CSR = MC_CSR_FM;
+
+#ifdef ELVEES_VECT_CRAM
+	MC_CSR |= MC_CSR_TR;
+#endif
 
 	MC_MASKR0 = 0;
 	MC_MASKR1 = 0;

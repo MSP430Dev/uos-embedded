@@ -281,6 +281,7 @@ copy /Y %CUR_SRC_DIR%\drain-input.c %CUR_DST_DIR%\drain-input.c
 copy /Y %CUR_SRC_DIR%\gets.c %CUR_DST_DIR%\gets.c
 copy /Y %CUR_SRC_DIR%\pipe.c %CUR_DST_DIR%\pipe.c
 copy /Y %CUR_SRC_DIR%\pipe.h %CUR_DST_DIR%\pipe.h
+copy /Y %CUR_SRC_DIR%\printf.c %CUR_DST_DIR%\printf.c
 copy /Y %CUR_SRC_DIR%\puts.c %CUR_DST_DIR%\puts.c
 copy /Y %CUR_SRC_DIR%\scanf.c %CUR_DST_DIR%\scanf.c
 copy /Y %CUR_SRC_DIR%\snprintf.c %CUR_DST_DIR%\snprintf.c
