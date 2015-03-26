@@ -13,7 +13,12 @@
 #   define SSP3_RX_DMA     9
 #endif
 
+#define FIFO_SIZE   (8 - 1)
+#define MAX_DMA_TRANSFERS   1024
+
+#ifndef SPI_NO_DMA
 DMA_Data_t dma_prim[8] __attribute__((aligned(1024)));
+#endif
 
 static inline int
 init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mode)
@@ -29,6 +34,8 @@ init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mod
             spi->last_freq = 0;
             return SPI_ERR_BAD_FREQ;
         }
+        
+        //*real_freq = KHZ * 1000 / 2 / (1 + div);
 
         reg->CR0 = (reg->CR0 & ~ARM_SSP_CR0_SCR(0xFF)) | ARM_SSP_CR0_SCR(div);
         spi->last_freq = freq;
@@ -67,8 +74,7 @@ init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mod
     return SPI_ERR_OK;
 }
 
-#ifdef SPI_NO_DMA
-static int trx(spimif_t *spimif, spi_message_t *msg)
+static inline int trx_no_dma(spimif_t *spimif, spi_message_t *msg, unsigned bits_per_word, unsigned cs_num, unsigned mode)
 {
     milandr_spim_t      *spi = (milandr_spim_t *) spimif;
     SSP_t               *reg = spi->reg;
@@ -77,21 +83,9 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     uint16_t            *rxp_16bit;
     uint16_t            *txp_16bit;
     unsigned            i, j;
-    unsigned            bits_per_word = SPI_MODE_GET_NB_BITS(msg->mode);
-    unsigned            cs_num = SPI_MODE_GET_CS_NUM(msg->mode);
-    unsigned            mode = SPI_MODE_GET_MODE(msg->mode);
-    int                 res;
-
-    mutex_lock(&spimif->lock);
-
-    res = init_hw(spi, msg->freq, bits_per_word, mode);
-    if (res != SPI_ERR_OK) {
-        mutex_unlock(&spimif->lock);
-        return res;
-    }
 
     // Прочищаем входную FIFO
-    for (j = 0; j < 8; ++j) reg->DR;
+    for (j = 0; j < FIFO_SIZE + 1; ++j) reg->DR;
 
     // Активируем CS
     // Если функция cs_control не установлена, то считаем, что для выборки 
@@ -106,7 +100,7 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
         i = 0;
         while (i < msg->word_count) {
             while (!(reg->SR & ARM_SSP_SR_TFE));
-            for (j = 0; j < 8; ++j) {
+            for (j = 0; j < FIFO_SIZE; ++j) {
                 if (txp_8bit)
                     reg->DR = *txp_8bit++;
                 else
@@ -124,9 +118,7 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
                 }
             }
         }
-
         while (reg->SR & ARM_SSP_SR_BSY);
-
         if (rxp_8bit) {
             while (rxp_8bit - (uint8_t *) msg->rx_data < msg->word_count) {
                 while (reg->SR & ARM_SSP_SR_RNE) {
@@ -142,7 +134,7 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
         i = 0;
         while (i < msg->word_count) {
             while (!(reg->SR & ARM_SSP_SR_TFE));
-            for (j = 0; j < 8; ++j) {
+            for (j = 0; j < FIFO_SIZE; ++j) {
                 if (txp_16bit) {
                     reg->DR = *txp_16bit++;
                 } else {
@@ -172,7 +164,8 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
             }
         }
     } else {
-        mutex_unlock(&spimif->lock);
+        if (!(mode & SPI_MODE_CS_HOLD) && spi->cs_control)
+            spi->cs_control(spi->port, cs_num, !(mode & SPI_MODE_CS_HIGH));
         return SPI_ERR_BAD_BITS;
     }
 
@@ -182,9 +175,30 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     if (!(mode & SPI_MODE_CS_HOLD) && spi->cs_control)
         spi->cs_control(spi->port, cs_num, !(mode & SPI_MODE_CS_HIGH));
         
-    mutex_unlock(&spimif->lock);
-
     return SPI_ERR_OK;
+}
+
+#ifdef SPI_NO_DMA
+static int trx(spimif_t *spimif, spi_message_t *msg)
+{
+    unsigned            bits_per_word = SPI_MODE_GET_NB_BITS(msg->mode);
+    unsigned            cs_num = SPI_MODE_GET_CS_NUM(msg->mode);
+    unsigned            mode = SPI_MODE_GET_MODE(msg->mode);
+    int res;
+    
+    mutex_lock(&spimif->lock);
+    
+    res = init_hw((milandr_spim_t *)spimif, msg->freq, bits_per_word, mode);
+    if (res != SPI_ERR_OK) {
+        mutex_unlock(&spimif->lock);
+        return res;
+    }
+
+    res = trx_no_dma(spimif, msg, bits_per_word, cs_num, mode);
+    
+    mutex_unlock(&spimif->lock);
+    
+    return res;
 }
 #else
 static int trx(spimif_t *spimif, spi_message_t *msg)
@@ -195,8 +209,102 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     unsigned            cs_num = SPI_MODE_GET_CS_NUM(msg->mode);
     unsigned            mode = SPI_MODE_GET_MODE(msg->mode);
     int                 res;
+    unsigned            dmacr;
+    unsigned            byte_width = (bits_per_word > 8) + 1;
+    unsigned            rest = msg->word_count;
+    unsigned            curp = 0;
+    unsigned            portion;
+    
+    
+    //if (msg->word_count < 20)
+    //    return trx_no_dma(spimif, msg);
 
     mutex_lock(&spimif->lock);
+    
+    res = init_hw(spi, msg->freq, bits_per_word, mode);
+    if (res != SPI_ERR_OK) {
+        mutex_unlock(&spimif->lock);
+        return res;
+    }
+    
+    // Вычисляем по эмпирической формуле, что лучше: использовать DMA или нет.
+    if (msg->word_count < ((msg->freq / bits_per_word / KHZ) >> 1)) {
+        res = trx_no_dma(spimif, msg, bits_per_word, cs_num, mode);
+        mutex_unlock(&spimif->lock);
+        return res;
+    }
+
+    // Активируем CS
+    // Если функция cs_control не установлена, то считаем, что для выборки 
+    // устройства используется вывод FSS, и он работает автоматически
+    if (spi->cs_control)
+        spi->cs_control(spi->port, cs_num, mode & SPI_MODE_CS_HIGH);
+        
+    mutex_lock_irq (&spi->irq_lock, DMA_IRQn, 0, 0);
+    
+    while (rest > 0) {
+        if (msg->tx_data) {
+            portion = (rest < 1024) ? rest : 1024;
+            dma_prim[spi->tx_dma_nb].SOURCE_END_POINTER = (unsigned) msg->tx_data + (curp + portion - 1) * byte_width;
+        } else {
+            portion = (rest < (SPI_DMA_BUFSZ & 0xFFFFFFFE)) ? rest : (SPI_DMA_BUFSZ & 0xFFFFFFFE);
+            dma_prim[spi->tx_dma_nb].SOURCE_END_POINTER = (unsigned) spi->zeroes + (portion - 1) * byte_width;
+        }
+        
+        if (msg->rx_data) {
+            dma_prim[spi->rx_dma_nb].DEST_END_POINTER = (unsigned) msg->rx_data + (curp + portion - 1) * byte_width;
+            dma_prim[spi->rx_dma_nb].CONTROL =
+            		ARM_DMA_DST_INC(byte_width - 1) |
+            		ARM_DMA_DST_SIZE(byte_width - 1) |
+            		ARM_DMA_SRC_INC(ARM_DMA_ADDR_NOINC) |
+            		ARM_DMA_SRC_SIZE(byte_width - 1) |
+                    ARM_DMA_RPOWER(1) | ARM_DMA_TRANSFERS(portion) | ARM_DMA_BASIC;
+
+            ARM_DMA->CHNL_REQ_MASK_CLR = ARM_DMA_SELECT(spi->rx_dma_nb);
+            ARM_DMA->CHNL_USEBURST_CLR = ARM_DMA_SELECT(spi->rx_dma_nb);
+            dmacr = ARM_SSP_DMACR_RX;
+        }
+        
+        dma_prim[spi->tx_dma_nb].CONTROL =
+        		ARM_DMA_DST_INC(ARM_DMA_ADDR_NOINC) |
+        		ARM_DMA_DST_SIZE(byte_width - 1) |
+        		ARM_DMA_SRC_INC(byte_width - 1) |
+        		ARM_DMA_SRC_SIZE(byte_width - 1) |
+        		ARM_DMA_SRC_PROT(1) | ARM_DMA_DST_PROT(1) |
+                ARM_DMA_RPOWER(1) | ARM_DMA_TRANSFERS(portion) | ARM_DMA_BASIC;
+                
+        ARM_DMA->CHNL_REQ_MASK_CLR = ARM_DMA_SELECT(spi->tx_dma_nb);
+        ARM_DMA->CHNL_USEBURST_CLR = ARM_DMA_SELECT(spi->tx_dma_nb);
+        
+        dmacr |= ARM_SSP_DMACR_TX;
+        reg->DMACR = dmacr;
+        
+        while (1) {
+            ARM_GPIOD->DATA |= (1 << 10);
+            mutex_wait(&spi->irq_lock);
+            if ((dma_prim[spi->tx_dma_nb].CONTROL & 7) != ARM_DMA_BASIC)
+                reg->DMACR &= ~ARM_SSP_DMACR_TX;
+            if ((dma_prim[spi->rx_dma_nb].CONTROL & 7) != ARM_DMA_BASIC)
+                reg->DMACR &= ~ARM_SSP_DMACR_RX;
+            if (reg->DMACR == 0) {
+                ARM_DMA->CHNL_ENABLE_SET = ARM_DMA_SELECT(spi->rx_dma_nb) | ARM_DMA_SELECT(spi->tx_dma_nb);
+                ARM_GPIOD->DATA &= ~(1 << 10);
+                break;
+            }
+            ARM_GPIOD->DATA &= ~(1 << 10);
+        }
+        
+        curp += portion;
+        rest -= portion;
+    }
+        
+    mutex_unlock(&spi->irq_lock);    
+    
+    // Деактивируем CS
+    // Если функция cs_control не установлена, то считаем, что для выборки 
+    // устройства используется вывод FSS, и он работает автоматически
+    if (!(mode & SPI_MODE_CS_HOLD) && spi->cs_control)
+        spi->cs_control(spi->port, cs_num, !(mode & SPI_MODE_CS_HIGH));
 
     mutex_unlock(&spimif->lock);
 
@@ -212,6 +320,26 @@ int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func cs
     spi->port = port;
     spi->spimif.trx = trx;
     spi->cs_control = csc;
+    
+
+#ifndef SPI_NO_DMA
+#ifdef ARM_1986BE1
+    ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2 | ARM_PER_CLOCK_SSP3 | ARM_PER_CLOCK_DMA;
+#else
+    ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2 | ARM_PER_CLOCK_DMA;
+#endif
+    memset(spi->zeroes, 0, SPI_DMA_BUFSZ);
+#ifdef ARM_1986BE1
+    ARM_RSTCLK->PER_CLOCK &= ~(ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2 | ARM_PER_CLOCK_SSP3);
+#else
+    ARM_RSTCLK->PER_CLOCK &= ~(ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2);
+#endif
+    ARM_DMA->CONFIG = ARM_DMA_ENABLE | ARM_DMA_CFG_CH_PROT1;
+    ARM_DMA->CHNL_ENABLE_SET = 0xFFFFFFFF;
+    ARM_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;
+    ARM_DMA->CHNL_PRI_ALT_CLR = 0xFFFFFFFF;
+    ARM_DMA->CTRL_BASE_PTR = (unsigned) dma_prim;
+#endif
     
     if (port == 0) {
         ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1;
@@ -247,6 +375,10 @@ int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func cs
         return SPI_ERR_BAD_PORT;
     }
 
+#ifndef SPI_NO_DMA    
+    dma_prim[spi->rx_dma_nb].SOURCE_END_POINTER = (unsigned) &spi->reg->DR;
+    dma_prim[spi->tx_dma_nb].DEST_END_POINTER = (unsigned) &spi->reg->DR;
+#endif
     
     spi->reg->CR0 = ARM_SSP_CR0_FRF_SPI;
     spi->reg->CPSR = 2;

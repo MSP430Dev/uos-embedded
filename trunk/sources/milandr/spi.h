@@ -4,7 +4,7 @@
 #include <spi/spi-master-interface.h>
 
 #ifndef SPI_DMA_BUFSZ
-#define SPI_DMA_BUFSZ   4096
+#define SPI_DMA_BUFSZ   512
 #endif
 
 typedef void (* spi_cs_control_func)(unsigned port, unsigned cs_num, int level);
@@ -21,6 +21,8 @@ struct _milandr_spim_t {
 #ifndef SPI_NO_DMA
     uint8_t             tx_dma_nb;
     uint8_t             rx_dma_nb;
+    mutex_t             irq_lock;
+    uint8_t             zeroes[SPI_DMA_BUFSZ];
 #endif
 };
 typedef struct _milandr_spim_t milandr_spim_t;
