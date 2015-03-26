@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-dac-dma
+TEST		= test-flash
 TESTS		= test-debug.hex test-lcd.hex test-task-lcd.hex tetris.hex
 TESTS		+= test-timer.hex test-timer-lcd.hex test-latency.hex test-tswitch.hex
 TESTS		+= phil-lcd.hex test-user-timer.hex phil-uart.hex test-can.hex
