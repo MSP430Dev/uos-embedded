@@ -280,7 +280,6 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
         reg->DMACR = dmacr;
         
         while (1) {
-            ARM_GPIOD->DATA |= (1 << 10);
             mutex_wait(&spi->irq_lock);
             if ((dma_prim[spi->tx_dma_nb].CONTROL & 7) != ARM_DMA_BASIC)
                 reg->DMACR &= ~ARM_SSP_DMACR_TX;
@@ -288,10 +287,8 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
                 reg->DMACR &= ~ARM_SSP_DMACR_RX;
             if (reg->DMACR == 0) {
                 ARM_DMA->CHNL_ENABLE_SET = ARM_DMA_SELECT(spi->rx_dma_nb) | ARM_DMA_SELECT(spi->tx_dma_nb);
-                ARM_GPIOD->DATA &= ~(1 << 10);
                 break;
             }
-            ARM_GPIOD->DATA &= ~(1 << 10);
         }
         
         curp += portion;

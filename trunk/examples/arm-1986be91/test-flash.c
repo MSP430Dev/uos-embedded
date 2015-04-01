@@ -173,15 +173,14 @@ void init_pins()
 {
     ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_GPIOD;
     
-    // 10-й бит - для отладки
-    ARM_GPIOD->ANALOG |= (1 << 2) | (1 << 3) | (1 << 5) | (1 << 6) | (1 << 10);
+    ARM_GPIOD->ANALOG |= (1 << 2) | (1 << 3) | (1 << 5) | (1 << 6);
     ARM_GPIOD->FUNC = (ARM_GPIOD->FUNC & 
-        ~(ARM_FUNC_MASK(2) | ARM_FUNC_MASK(3) | ARM_FUNC_MASK(5) | ARM_FUNC_MASK(6) | ARM_FUNC_MASK(10))) | 
-        ARM_FUNC_ALT(2) | ARM_FUNC_PORT(3) | ARM_FUNC_ALT(5) | ARM_FUNC_ALT(6) | ARM_FUNC_PORT(10);
-    ARM_GPIOD->PWR |= ARM_PWR_FASTEST(3) | ARM_PWR_FASTEST(5) | ARM_PWR_FASTEST(6) | ARM_PWR_FASTEST(10);
+        ~(ARM_FUNC_MASK(2) | ARM_FUNC_MASK(3) | ARM_FUNC_MASK(5) | ARM_FUNC_MASK(6))) | 
+        ARM_FUNC_ALT(2) | ARM_FUNC_PORT(3) | ARM_FUNC_ALT(5) | ARM_FUNC_ALT(6);
+    ARM_GPIOD->PWR |= ARM_PWR_FASTEST(3) | ARM_PWR_FASTEST(5) | ARM_PWR_FASTEST(6);
 
 	ARM_GPIOD->DATA = (1 << 3);
-	ARM_GPIOD->OE |= (1 << 3) | (1 << 10);
+	ARM_GPIOD->OE |= (1 << 3);
 }
 
 void spi_cs_control(unsigned port, unsigned cs_num, int level)
