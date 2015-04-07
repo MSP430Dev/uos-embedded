@@ -16,10 +16,6 @@
 #define FIFO_SIZE   (8 - 1)
 #define MAX_DMA_TRANSFERS   1024
 
-#ifndef SPI_NO_DMA
-DMA_Data_t dma_prim[8] __attribute__((aligned(1024)));
-#endif
-
 static inline int
 init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mode)
 {
@@ -64,7 +60,7 @@ init_hw(milandr_spim_t *spi, unsigned freq, unsigned bits_per_word, unsigned mod
                 spi->port, bits_per_word);
             return SPI_ERR_BAD_BITS;
         }
-        reg->CR0 = (reg->CR0 & ~ARM_SSP_CR0_DSS(0xF)) | ARM_SSP_CR0_DSS(bits_per_word);
+        reg->CR0 = (reg->CR0 & ~ARM_SSP_CR0_DSS(16)) | ARM_SSP_CR0_DSS(bits_per_word);
 
         spi->last_bits = bits_per_word;
     }
@@ -83,9 +79,6 @@ static inline int trx_no_dma(spimif_t *spimif, spi_message_t *msg, unsigned bits
     uint16_t            *rxp_16bit;
     uint16_t            *txp_16bit;
     unsigned            i, j;
-
-    // Прочищаем входную FIFO
-    for (j = 0; j < FIFO_SIZE + 1; ++j) reg->DR;
 
     // Активируем CS
     // Если функция cs_control не установлена, то считаем, что для выборки 
@@ -126,6 +119,9 @@ static inline int trx_no_dma(spimif_t *spimif, spi_message_t *msg, unsigned bits
                     rxp_8bit++;
                 }
             }
+        } else {
+            // Прочищаем входную FIFO
+            for (j = 0; j < FIFO_SIZE + 1; ++j) reg->DR;
         }
     } else if (bits_per_word > 8 && bits_per_word <= 16) {
         rxp_16bit = (uint16_t *) msg->rx_data;
@@ -162,6 +158,9 @@ static inline int trx_no_dma(spimif_t *spimif, spi_message_t *msg, unsigned bits
                     rxp_16bit++;
                 }
             }
+        } else {
+            // Прочищаем входную FIFO
+            for (j = 0; j < FIFO_SIZE + 1; ++j) reg->DR;
         }
     } else {
         if (!(mode & SPI_MODE_CS_HOLD) && spi->cs_control)
@@ -209,15 +208,11 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     unsigned            cs_num = SPI_MODE_GET_CS_NUM(msg->mode);
     unsigned            mode = SPI_MODE_GET_MODE(msg->mode);
     int                 res;
-    unsigned            dmacr;
+    unsigned            dmacr = 0;
     unsigned            byte_width = (bits_per_word > 8) + 1;
     unsigned            rest = msg->word_count;
     unsigned            curp = 0;
     unsigned            portion;
-    
-    
-    //if (msg->word_count < 20)
-    //    return trx_no_dma(spimif, msg);
 
     mutex_lock(&spimif->lock);
     
@@ -233,7 +228,7 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
         mutex_unlock(&spimif->lock);
         return res;
     }
-
+    
     // Активируем CS
     // Если функция cs_control не установлена, то считаем, что для выборки 
     // устройства используется вывод FSS, и он работает автоматически
@@ -245,19 +240,20 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
     while (rest > 0) {
         if (msg->tx_data) {
             portion = (rest < 1024) ? rest : 1024;
-            dma_prim[spi->tx_dma_nb].SOURCE_END_POINTER = (unsigned) msg->tx_data + (curp + portion - 1) * byte_width;
+            spi->dma_prim[spi->tx_dma_nb].SOURCE_END_POINTER = (unsigned) msg->tx_data + (curp + portion - 1) * byte_width;
         } else {
-            portion = (rest < (SPI_DMA_BUFSZ & 0xFFFFFFFE)) ? rest : (SPI_DMA_BUFSZ & 0xFFFFFFFE);
-            dma_prim[spi->tx_dma_nb].SOURCE_END_POINTER = (unsigned) spi->zeroes + (portion - 1) * byte_width;
+            portion = (rest * byte_width < (SPI_DMA_BUFSZ & 0xFFFFFFFE)) ? rest : (SPI_DMA_BUFSZ / byte_width);
+            spi->dma_prim[spi->tx_dma_nb].SOURCE_END_POINTER = (unsigned) spi->zeroes + (portion - 1) * byte_width;
         }
         
         if (msg->rx_data) {
-            dma_prim[spi->rx_dma_nb].DEST_END_POINTER = (unsigned) msg->rx_data + (curp + portion - 1) * byte_width;
-            dma_prim[spi->rx_dma_nb].CONTROL =
+            spi->dma_prim[spi->rx_dma_nb].DEST_END_POINTER = (unsigned) msg->rx_data + (curp + portion - 1) * byte_width;
+            spi->dma_prim[spi->rx_dma_nb].CONTROL =
             		ARM_DMA_DST_INC(byte_width - 1) |
             		ARM_DMA_DST_SIZE(byte_width - 1) |
             		ARM_DMA_SRC_INC(ARM_DMA_ADDR_NOINC) |
             		ARM_DMA_SRC_SIZE(byte_width - 1) |
+            		ARM_DMA_SRC_PROT(1) | ARM_DMA_DST_PROT(1) |
                     ARM_DMA_RPOWER(1) | ARM_DMA_TRANSFERS(portion) | ARM_DMA_BASIC;
 
             ARM_DMA->CHNL_REQ_MASK_CLR = ARM_DMA_SELECT(spi->rx_dma_nb);
@@ -265,14 +261,14 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
             dmacr = ARM_SSP_DMACR_RX;
         }
         
-        dma_prim[spi->tx_dma_nb].CONTROL =
+        spi->dma_prim[spi->tx_dma_nb].CONTROL =
         		ARM_DMA_DST_INC(ARM_DMA_ADDR_NOINC) |
         		ARM_DMA_DST_SIZE(byte_width - 1) |
         		ARM_DMA_SRC_INC(byte_width - 1) |
         		ARM_DMA_SRC_SIZE(byte_width - 1) |
         		ARM_DMA_SRC_PROT(1) | ARM_DMA_DST_PROT(1) |
                 ARM_DMA_RPOWER(1) | ARM_DMA_TRANSFERS(portion) | ARM_DMA_BASIC;
-                
+
         ARM_DMA->CHNL_REQ_MASK_CLR = ARM_DMA_SELECT(spi->tx_dma_nb);
         ARM_DMA->CHNL_USEBURST_CLR = ARM_DMA_SELECT(spi->tx_dma_nb);
         
@@ -281,16 +277,15 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
         
         while (1) {
             mutex_wait(&spi->irq_lock);
-            if ((dma_prim[spi->tx_dma_nb].CONTROL & 7) != ARM_DMA_BASIC)
+            if ((spi->dma_prim[spi->tx_dma_nb].CONTROL & 7) != ARM_DMA_BASIC)
                 reg->DMACR &= ~ARM_SSP_DMACR_TX;
-            if ((dma_prim[spi->rx_dma_nb].CONTROL & 7) != ARM_DMA_BASIC)
+            if ((spi->dma_prim[spi->rx_dma_nb].CONTROL & 7) != ARM_DMA_BASIC)
                 reg->DMACR &= ~ARM_SSP_DMACR_RX;
             if (reg->DMACR == 0) {
                 ARM_DMA->CHNL_ENABLE_SET = ARM_DMA_SELECT(spi->rx_dma_nb) | ARM_DMA_SELECT(spi->tx_dma_nb);
                 break;
             }
         }
-        
         curp += portion;
         rest -= portion;
     }
@@ -310,27 +305,24 @@ static int trx(spimif_t *spimif, spi_message_t *msg)
 #endif
 
 
-int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func csc)
+int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func csc, DMA_Data_t *dma_prim)
 {
     memset(spi, 0, sizeof(milandr_spim_t));
     
     spi->port = port;
     spi->spimif.trx = trx;
     spi->cs_control = csc;
-    
 
+    unsigned per_clock = ARM_RSTCLK->PER_CLOCK;
+    
 #ifndef SPI_NO_DMA
+
 #ifdef ARM_1986BE1
     ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2 | ARM_PER_CLOCK_SSP3 | ARM_PER_CLOCK_DMA;
 #else
     ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2 | ARM_PER_CLOCK_DMA;
 #endif
-    memset(spi->zeroes, 0, SPI_DMA_BUFSZ);
-#ifdef ARM_1986BE1
-    ARM_RSTCLK->PER_CLOCK &= ~(ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2 | ARM_PER_CLOCK_SSP3);
-#else
-    ARM_RSTCLK->PER_CLOCK &= ~(ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_SSP2);
-#endif
+    spi->dma_prim = dma_prim;
     ARM_DMA->CONFIG = ARM_DMA_ENABLE | ARM_DMA_CFG_CH_PROT1;
     ARM_DMA->CHNL_ENABLE_SET = 0xFFFFFFFF;
     ARM_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;
@@ -339,7 +331,7 @@ int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func cs
 #endif
     
     if (port == 0) {
-        ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP1;
+        ARM_RSTCLK->PER_CLOCK = per_clock | ARM_PER_CLOCK_SSP1 | ARM_PER_CLOCK_DMA;
         ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG1(7)) |
             ARM_SSP_CLOCK_EN1 | ARM_SSP_CLOCK_BRG1(0);
         spi->reg = ARM_SSP1;
@@ -348,7 +340,7 @@ int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func cs
         spi->rx_dma_nb = SSP1_RX_DMA;
 #endif // !SPI_NO_DMA
     } else if (port == 1) {
-        ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP2;
+        ARM_RSTCLK->PER_CLOCK = per_clock | ARM_PER_CLOCK_SSP2 | ARM_PER_CLOCK_DMA;
         ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG2(7)) |
             ARM_SSP_CLOCK_EN2 | ARM_SSP_CLOCK_BRG2(0);
         spi->reg = ARM_SSP2;
@@ -359,7 +351,7 @@ int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func cs
 
 #ifdef ARM_1986BE1
     } else if (port == 2) {
-        ARM_RSTCLK->PER_CLOCK |= ARM_PER_CLOCK_SSP3;
+        ARM_RSTCLK->PER_CLOCK = per_clock | ARM_PER_CLOCK_SSP3 | ARM_PER_CLOCK_DMA;
         ARM_RSTCLK->SSP_CLOCK = (ARM_RSTCLK->SSP_CLOCK & ~ARM_SSP_CLOCK_BRG3(7)) |
             ARM_SSP_CLOCK_EN3 | ARM_SSP_CLOCK_BRG3(0);
         spi->reg = ARM_SSP3;

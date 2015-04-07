@@ -22,6 +22,9 @@
     sdhc_spi_t flash;
 #endif
 
+#ifndef SPI_NO_DMA
+DMA_Data_t dma_prim[8] __attribute__((aligned(1024)));
+#endif
 
 #define SPI_FREQUENCY   20000000
 
@@ -185,7 +188,6 @@ void init_pins()
 
 void spi_cs_control(unsigned port, unsigned cs_num, int level)
 {
-//debug_printf("level %d\n", level);
     if (level)
         ARM_GPIOD->DATA |= (1 << 3);
     else
@@ -200,7 +202,11 @@ void uos_init (void)
 	
 	timer_init(&timer, KHZ, 1);
 	
-    milandr_spim_init(&spi, 1, spi_cs_control);
+#ifdef SPI_NO_DMA
+    milandr_spim_init(&spi, 1, spi_cs_control, 0);
+#else
+    milandr_spim_init(&spi, 1, spi_cs_control, dma_prim);
+#endif
     
 #if defined(M25PXX)
     m25pxx_init(&flash, (spimif_t *)&spi, SPI_FREQUENCY, SPI_MODE_CS_NUM(1));
