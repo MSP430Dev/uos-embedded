@@ -82,6 +82,20 @@
                                    признак SVP_GSR_CONL */
 
 /*
+ * EGCR – extended global configuration register, 16 R/W, default 0x0000
+ */
+#define SVP_EGCR     SVP_REG_ADDR (0x50)
+
+#define SVP_UCTN(n) (n)         /* количество тактов шины, на которое будет
+                                   скорректирован входной сигнал при
+                                   использовании пользовательской коррекции - 1 */
+#define SVP_UCE     (1 << 4)    /* включение пользовательских установок
+                                   коррекции входного сигнала */
+#define SVP_SFC_NO_CORR     (0 << 5)    /* входной сигнал без коррекции */
+#define SVP_SFC_CORR_ZERO   (1 << 5)    /* урезание нуля */
+#define SVP_SFC_CORR_ONE    (2 << 5)    /* урезание единицы */
+
+/*
  * GSR – global status register, 16 R
  * IER – interrupt enable register, 16 R/W
  */
