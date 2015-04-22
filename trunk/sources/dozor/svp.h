@@ -1,41 +1,201 @@
+/*
+ * SVP Controller driver.
+ *
+ * Copyright (C) 2015 Dmitry Podkhvatilin <vatilin@gmail.com>
+ *
+ * This file is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * You can redistribute this file and/or modify it under the terms of the GNU
+ * General Public License (GPL) as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your discretion) any later version.
+ * See the accompanying file "COPYING.txt" for more details.
+ *
+ * As a special exception to the GPL, permission is granted for additional
+ * uses of the text contained in this file.  See the accompanying file
+ * "COPY-UOS.txt" for details.
+ */
 #ifndef _SVP_H_
 #define _SVP_H_
 
+//
+//                       Драйвер контроллера СВП
+//
+//    Данный драйвер обеспечивает взаимодействие вычислительного контроллера
+// с контроллером интерфейса СВП. Драйвер предоставляет наиболее общие
+// функции взаимодействия с контроллером СВП в вариантах подключения по
+// параллельной шине и по SPI.
+//    Дополнительные возможности контроллера СВП могут быть задействованы
+// "напрямую" через его регистры. Состав регистров контроллера (и, соответственно,
+// состав его функций) зависит от версии контроллера и описан в отдельном
+// заголовочном файле для каждой версии. Самая свежая версия контроллера СВП
+// описана в файле svp-reg.h, остальные - в файлах с именами вида svp-reg-xx.h,
+// где xx - обозначение версии контроллера.
+// Нужный заголовочный файл будет подключен в проект, если определён макрос
+// вида SVP_VER_XX, где XX - версия контроллера. Например, для версии
+// С1 макрос имеет имя SVP_VER_C1. Если никакой макрос с версией контроллера
+// не определён, то будет подключен заголовочный файл для последней на
+// текущий момент версии контроллера СВП.
+//
+//                      Использование драйвера СВП
+//
+// 1) Необходимо объявить переменную типа структуры драйвера СВП.
+// Здесь возможны варианты.
+//    а) Если планируется работа с контроллером СВП только по параллельной
+//    шине, то структура драйвера объявляется как:
+//
+//      svpb_t svp;
+//
+//    либо
+//
+//      SVP_T svp;
+//
+//    где svp - имя структуры драйвера.
+//
+//    В первом случае могут использоваться для чтения и записи из/в
+//    контроллер только функции с именами вида svpb_*. Здесь ограничение
+//    именно только на функции чтения/записи, остальные функции могут
+//    использоваться без ограничений.
+//
+//    Во втором случае для чтения/записи можно использовать так функции
+//    svpb_*, так и функции svp_* (они равнозначны). Но обязательно должен
+//    быть определён глобальный макрос SVP_BUS_ONLY. Данный вариант
+//    является предпочтительным.
+//
+//    б) Если планируется работа с контроллером СВП только по SPI,
+//    то структура драйвера объявляется как:
+//
+//      svps_t svp;
+//
+//    либо
+//
+//      SVP_T svp;
+//
+//    где svp - имя структуры драйвера.
+//
+//    В первом случае могут использоваться для чтения и записи из/в
+//    контроллер только функции с именами вида svps_*. Здесь ограничение
+//    именно только на функции чтения/записи, остальные функции могут
+//    использоваться без ограничений.
+//
+//    Во втором случае для чтения/записи можно использовать так функции
+//    svps_*, так и функции svp_* (они равнозначны). Но обязательно должен
+//    быть определён глобальный макрос SVP_SPI_ONLY. Данный вариант
+//    является предпочтительным.
+//
+//    При работе с SPI необходимо учитывать, что данный драйвер работает
+//    только с драйверами SPI, наследующими интерфейс spimif_t (см.
+//    заголовочный файл spi/spi-master-interface.h). Структура драйвера
+//    SPI должна быть объявлена, проинициализирована, и затем указатель
+//    на неё должен быть передан в параметре функции инициализации СВП.
+//
+//    в) Если планируется работа с контроллером СВП и по параллельной шине
+//    и по SPI (это нужно, скорее всего, только в тестовых целях), то
+//    необходимо объявить две структуры:
+//       svpb_t svpb;
+//       svps_t svps;
+//    Также необходимо отдельно их проинициализировать, и использовать
+//    для режима связи по параллельной шине только функции чтения/записи
+//    вида svpb_*, а по SPI - только функции svps_*.
+//
+// Резюме. В большинстве практических применений рекомендуется для
+// работы по параллельной шине объявить глобальный для проекта макрос
+// SVP_BUS_ONLY, для работы по SPI - макрос SVP_SPI_ONLY; объявить
+// переменную драйвера с помощью строки: SVP_T svp; использовать функции
+// чтения/записи с именами svp_* (svp_read32, svp_write32 и т.д.).
+//
+// 2) Необходимо проинициализировать драйвер СВП с помощью функции
+// svpb_init при работе по параллельной шине или с помощью функции
+// svps_init при работе по SPI.
+//
+// 3) Для инициализации и старта узла можно использовать функции
+// svp_init_node и svp_start, которые выполняют приемлемый для большинства
+// применений способ старта узла СВП. Иную последовательность
+// старта узла можно реализовать, обращаясь к регистрам контроллера СВП
+// с помощью функций svp_read*, svp_write*.
+//
+// 4) Доступ к памяти контроллера СВП при работе по параллельной шине
+// может быть осуществлён так с помощью функций чтения/записи
+// svp_read* и svp_write*, так и напрямую в адресное пространство
+// контроллера СВП. Во втором случае необходимо помнить, что
+// контроллер СВП имеет 16-разрядную шину данных и, соответственно,
+// достоверными при чтении и записи являются только младшие два
+// байта из четырёх для 32-разрядного процессора. (Здесь, конечно,
+// могут быть ньюансы, связанные со особенностями схемотехники
+// платы; описан наиболее вероятный сценарий подключений микросхемы).
+// Прямое обращение в память контроллера СВП в общем случае не даст
+// никакого выигрыша при одиночных чтениях/записях 2-байтовых или
+// 4-байтовых слов (они написаны достаточно эффективно в данном драйвере),
+// но может дать существенный выигрыш в быстродействии и объёме
+// используемой оперативной памяти при чтении/записи длинных массивов
+// данных за счёт избежания лишнего копирования. Кроме того, на некоторых
+// процессорах могут быть эффективно применены каналы прямого доступа
+// в память (ПДП, DMA).
+//
+
 #include <spi/spi-master-interface.h>
 
+// Разный состав регистров для микросхемы версии 1 (версия блока C1) и
+// более поздних версий.
 #if defined(SVP_VER_C1)
 #include <dozor/svp-reg-c1.h>
 #else
 #include <dozor/svp-reg.h>
 #endif
 
+// Максимальное количество узлов в сети СВП.
 #define SVP_MAX_NODES   64
+// Максимальное количество режимов сети СВП.
+// Режим 0 не используется.
 #define SVP_MAX_MODES   16
 
+// Общая часть драйвера СВП для работы по параллельной шине и SPI.
 typedef struct _svp_generic_t svp_generic_t;
+
+// Тип указателя на функцию обработчик прерываний от контроллера СВП.
 typedef void (*svp_int_handler_t) (svp_generic_t *);
 
+//
+// Общая часть драйвера для работы по параллельной шине и SPI.
+//
 struct _svp_generic_t
 {
+    // Мьютекс для синхронизации доступа.
     mutex_t lock;
+    // Признак работы по SPI (если 1, иначе - по параллельной шине).
     int over_spi;
+    // Номер прерывания от контроллера СВП.
     int irq;
+    // Указатель на обработчик прерываний.
     svp_int_handler_t int_handler;
 };
 
+//
+// Структура драйвера СВП при подключении по параллельной шине.
+//
 typedef struct _svpb_t
 {
-    svp_generic_t   svp_gen;
-    uint32_t        base_addr;
+    svp_generic_t   svp_gen;    // Общая часть драйвера СВП.
+    uint32_t        base_addr;  // Начальный адрес адресного пространства 
+                                // контроллера СВП.
 } svpb_t;
 
+//
+// Структура драйвера СВП при подключении по SPI.
+//
 typedef struct _svps_t
 {
-    svp_generic_t   svp_gen;
-    spimif_t       *spi;            // Указатель на драйвер SPI
-    spi_message_t   msg;            // Сообщение SPI
+    svp_generic_t   svp_gen;    // Общая часть драйвера СВП.
+    spimif_t       *spi;        // Указатель на драйвер SPI
+    spi_message_t   msg;        // Сообщение SPI
 } svps_t;
 
+//
+// Обобщённый тип структуры драйвера СВП, который раскрывается в 
+// варианты для подключения по параллельной шине или по шине SPI
+// в зависимости от управляющих макросов.
+//
 #if defined(SVP_BUS_ONLY)
 typedef svpb_t SVP_T;
 #elif defined(SVP_SPI_ONLY)
@@ -44,104 +204,224 @@ typedef svps_t SVP_T;
 typedef void SVP_T;
 #endif
 
-
+//
+// Допустимые скорости обмена по шине СВП.
+//
 enum
 {
-    SVP_10MBIT,
-    SVP_5MBIT,
-    SVP_3_33_MBIT,
-    SVP_2_5_MBIT,
-    SVP_2_MBIT,
-    SVP_1_67_MBIT,
-    SVP_1_43_MBIT,
-    SVP_1_25_MBIT,
-    SVP_1_11_MBIT,
-    SVP_1_MBIT
+    SVP_10MBIT,     // 10 Мбит/с
+    SVP_5MBIT,      // 5 Мбит/с
+    SVP_3_33_MBIT,  // 3,33 Мбит/с
+    SVP_2_5_MBIT,   // 2,5 Мбит/с
+    SVP_2_MBIT,     // 2 Мбит/с
+    SVP_1_67_MBIT,  // 1,67 Мбит/с
+    SVP_1_43_MBIT,  // 1,42 Мбит/с
+    SVP_1_25_MBIT,  // 1,25 Мбит/с
+    SVP_1_11_MBIT,  // 1,11 Мбит/с
+    SVP_1_MBIT      // 1 Мбит/с
 };
 
+//
+// Установки размера кластера СВП (максимального количества 
+// абонентов СВП).
+//
 enum
 {
-    SVP_CLUSTER_16,
-    SVP_CLUSTER_32,
-    SVP_CLUSTER_64
+    SVP_CLUSTER_16,     // 16 узлов
+    SVP_CLUSTER_32,     // 32 узла
+    SVP_CLUSTER_64      // 64 узла
 };
 
+//
+// Начальные установки для инициализации узла СВП.
+//
 typedef struct _svp_init_params_t
 {
     struct {
-    unsigned    node_id         : 6;
-    unsigned    preamble_len    : 8;
-    unsigned    speed           : 4;
-    unsigned    cluster_size    : 2;
-    int         master          : 1;
+    unsigned    node_id         : 6;    // Номер узла.
+    unsigned    preamble_len    : 8;    // Длина преамбулы.
+    unsigned    speed           : 4;    // Скорость обмена (значение из перечисления).
+    unsigned    cluster_size    : 2;    // Размер кластера (значение из перечисления).
+    int         master          : 1;    // Признак ведущего узла во время старта.
     } __attribute__((packed));
     
-    unsigned    cycle_duration;
-    unsigned    medl_id;
-    medl_t      *medl;
-    unsigned    medl_size;
+    unsigned    cycle_duration;         // Длина цикла кластера в тактах шины.
+    unsigned    medl_id;                // Идентификатор расписания.
+    medl_t      *medl;                  // Указатель на расписание.
+    unsigned    medl_size;              // Размер массива с расписанием.
+    
 #if !defined(SVP_VER_C1)
+    // SPDR - время стартового ожидания для ведущего узла в тактах шины.
     unsigned        spdr;
+    // Таблица режимов.
     cluster_mode_t  mode_table[SVP_MAX_MODES];
+    // Таблица задержек распространения сигнала.
     uint8_t         delay_table[SVP_MAX_NODES/2];
+    // Режим, в котором запускаются ведущие узлы.
     uint8_t         start_mode;
+    // Режим, в который переходят ведущие узлы после старта.
     uint8_t         pref_mode;
 #endif
 } svp_init_params_t;
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Функции чтения/записи для контроллера, подключенного по параллельной шине.
+//
+/////////////////////////////////////////////////////////////////////////////
 
+// Инициализация драйвера СВП.
+//  svp         - драйвер СВП.
+//  base_addr   - начало адресного пространства контроллера СВП.
 void        svpb_init (svpb_t *svp, uint32_t base_addr);
 
+// Чтение 16-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 static inline uint16_t  svpb_read16 (svpb_t *svp, uint16_t addr)
 { return *((volatile uint16_t *) (svp->base_addr + (addr << 1))); }
 
+// Чтение 32-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 uint32_t    svpb_read32 (svpb_t *svp, uint16_t addr);
+
+// Чтение массива данных.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
+//  buf         - буфер, в которой необходимо положить считанный массив.
+//  size        - размер массива в байтах.
 void        svpb_read_array (svpb_t *svp, uint16_t addr, void *buf, int size);
 
+// Запись 16-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 static inline void      svpb_write16 (svpb_t *svp, uint16_t addr, uint16_t data)
 { *((volatile uint16_t *) (svp->base_addr + (addr << 1))) = data; }
 
+// Запись 32-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 void        svpb_write32 (svpb_t *svp, uint16_t addr, uint32_t data);
+
+// Запись массива данных.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
+//  buf         - буфер с записываемыми данными.
+//  size        - размер массива в байтах.
 void        svpb_write_array (svpb_t *svp, uint16_t addr, const void *buf, int size);
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Функции чтения/записи для контроллера, подключенного по SPI.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// Инициализация драйвера СВП.
+//  svp         - драйвер СВП.
+//  spim        - драйвер SPI.
+//  freq_hz     - битовая скорость по SPI.
 void        svps_init (svps_t *svp, spimif_t *spim, unsigned freq_hz);
+
+// Чтение 16-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 uint16_t    svps_read16 (svps_t *svp, uint16_t addr);
+
+// Чтение 32-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 uint32_t    svps_read32 (svps_t *svp, uint16_t addr);
+
+// Чтение массива данных.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
+//  buf         - буфер, в которой необходимо положить считанный массив.
+//  size        - размер массива в байтах.
 void        svps_read_array (svps_t *svp, uint16_t addr, void *buf, int size);
+
+// Запись 16-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 void        svps_write16 (svps_t *svp, uint16_t addr, uint16_t data);
+
+// Запись 32-разрядного слова.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
 void        svps_write32 (svps_t *svp, uint16_t addr, uint32_t data);
+
+// Запись массива данных.
+//  svp         - драйвер СВП.
+//  addr        - адрес слова.
+//  buf         - буфер с записываемыми данными.
+//  size        - размер массива в байтах.
 void        svps_write_array (svps_t *svp, uint16_t addr, const void *buf, int size);
 
 
 #if defined(SVP_BUS_ONLY)
-#define svp_read16 svpb_read16
-#define svp_read32 svpb_read32
-#define svp_read_array svpb_read_array
-#define svp_write16 svpb_write16
-#define svp_write32 svpb_write32
-#define svp_write_array svpb_write_array
+// Если выбран режим работы только по параллельной шине, то
+// функции svp_* равнозначны функциям svpb_*
+#   define svp_read16 svpb_read16
+#   define svp_read32 svpb_read32
+#   define svp_read_array svpb_read_array
+#   define svp_write16 svpb_write16
+#   define svp_write32 svpb_write32
+#   define svp_write_array svpb_write_array
 #elif defined(SVP_SPI_ONLY)
-#define svp_read16 svps_read16
-#define svp_read32 svps_read32
-#define svp_read_array svps_read_array
-#define svp_write16 svps_write16
-#define svp_write32 svps_write32
-#define svp_write_array svps_write_array
+// Если выбран режим работы только по SPI, то
+// функции svp_* равнозначны функциям svps_*
+#   define svp_read16 svps_read16
+#   define svp_read32 svps_read32
+#   define svp_read_array svps_read_array
+#   define svp_write16 svps_write16
+#   define svp_write32 svps_write32
+#   define svp_write_array svps_write_array
 #else
-uint16_t    svp_read16 (SVP_T *psvp, uint16_t addr);
-uint32_t    svp_read32 (SVP_T *psvp, uint16_t addr);
-void        svp_read_array (SVP_T *psvp, uint16_t addr, void *buf, int size);
-void        svp_write16 (SVP_T *psvp, uint16_t addr, uint16_t data);
-void        svp_write32 (SVP_T *psvp, uint16_t addr, uint32_t data);
-void        svp_write_array (SVP_T *psvp, uint16_t addr, const void *buf, int size);
+// Если допускается работы и по параллельной шине, и по SPI, то
+// функции svp_* имеют свою реализацию в файле svp_generic.c
+uint16_t svp_read16 (SVP_T *psvp, uint16_t addr);
+uint32_t svp_read32 (SVP_T *psvp, uint16_t addr);
+void     svp_read_array (SVP_T *psvp, uint16_t addr, void *buf, int size);
+void     svp_write16 (SVP_T *psvp, uint16_t addr, uint16_t data);
+void     svp_write32 (SVP_T *psvp, uint16_t addr, uint32_t data);
+void     svp_write_array (SVP_T *psvp, uint16_t addr, const void *buf, int size);
 #endif
 
-void        svp_set_int_handler (SVP_T *psvp, int irq, svp_int_handler_t ih, int positive);
-void        svp_unset_int_handler (SVP_T *psvp);
-void        svp_reset (SVP_T *psvp);
-void        svp_init_node (SVP_T *svp, svp_init_params_t *params);
-void        svp_start (SVP_T *svp);
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Функции, доступные при любом подключении контроллера.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// Установка обработчика прерываний.
+// psvp         - драйвер СВП.
+// irq          - номер прерывания от контроллера СВП.
+// ih           - указатель на функцию обработчика прерываний.
+// positive     - активный уровень прерывания: при positive == 0 - низкий,
+//                иначе высокий.
+void svp_set_int_handler (SVP_T *psvp, int irq, svp_int_handler_t ih, int positive);
+
+// Отключения обработчика прерываний.
+// psvp         - драйвер СВП.
+void svp_unset_int_handler (SVP_T *psvp);
+
+// Программный сброс контроллера СВП.
+// psvp         - драйвер СВП.
+void svp_reset (SVP_T *psvp);
+
+// Инициализация узла СВП. Узел инициализируется, но не
+// запускается. Запуск осуществляется функцией svp_start.
+// psvp         - драйвер СВП.
+// params       - указатель на структуру начальных параметров.
+void svp_init_node (SVP_T *psvp, svp_init_params_t *params);
+
+// Запуск узла СВП. Узел должен быть предварительно
+// проинициализирован, например, с помощью функции svp_init_node.
+// psvp         - драйвер СВП.
+void svp_start (SVP_T *psvp);
 
 #endif /* _SVP_H_ */
 
