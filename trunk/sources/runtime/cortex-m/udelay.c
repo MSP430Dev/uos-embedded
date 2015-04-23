@@ -94,9 +94,9 @@ void udelay (unsigned usec)
 	unsigned load = ARM_SYSTICK->LOAD & 0xFFFFFF;
 	unsigned now = ARM_SYSTICK->VAL & 0xFFFFFF;
 #ifdef SETUP_HCLK_HSI
-	unsigned final = now - usec * 8;
+	unsigned final = now - usec * 8 + 42;
 #else
-	unsigned final = now - usec * (KHZ / 1000);
+	unsigned final = now - usec * (KHZ / 1000) + 42;
 #endif
 	for (;;) {
 		ctrl = ARM_SYSTICK->CTRL;
