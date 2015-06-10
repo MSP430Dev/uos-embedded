@@ -9,6 +9,7 @@
 #define FS_ERR_EOF              -5
 #define FS_ERR_BAD_ARG          -6
 #define FS_ERR_BAD_STATE        -7
+#define FS_ERR_PROHIBITED       -8
 
 typedef uint32_t filsiz_t;
 #define FS_INFINITE_SIZE    0xFFFFFFFF
@@ -43,6 +44,7 @@ typedef struct __attribute__((packed)) _fs_entry_t
     uint8_t  minute;
     uint8_t  second;
     uint32_t attr;
+    uint32_t parent_pos;
 
     uint8_t *   cache_data __attribute__((aligned(8)));
     uint8_t *   cache_p;

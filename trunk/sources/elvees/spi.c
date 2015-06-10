@@ -494,6 +494,12 @@ int spim_init(elvees_spim_t *spi, unsigned port, unsigned io_mode)
     MC_MFBSP_RCTR(spi->port) = MC_MFBSP_RMODE | MC_MFBSP_RCLK_CP | 
         MC_MFBSP_RCS_CP | MC_MFBSP_RMBF;
     MC_MFBSP_TCTR(spi->port) = MC_MFBSP_TMODE | MC_MFBSP_TMBF | MC_MFBSP_SS_DO;
+    
+#ifdef SPI_NO_DMA
+	spi->spimif.data_align = 0;
+#else
+	spi->spimif.data_align = 7;
+#endif
 
     return 0;
 }

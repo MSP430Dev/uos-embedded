@@ -1,4 +1,4 @@
-source mem_nvcom02t.cfg 
+source mem_mc0428.cfg 
 loadelf test-sdhc-fast.elf
 run
 show sdhc_found

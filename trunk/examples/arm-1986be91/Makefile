@@ -2,7 +2,7 @@ TARGET		= $(CURDIR)
 OS		= $(shell cd ../..; pwd)
 include target.cfg
 
-TEST		= test-timer
+TEST		= test-fat32-fw
 ifeq (,$(findstring USEC_TIMER,$(CFLAGS)))
 TESTS		= test-debug.hex test-lcd.hex test-task-lcd.hex tetris.hex
 TESTS		+= test-timer.hex test-timer-lcd.hex test-latency.hex test-tswitch.hex
@@ -10,7 +10,7 @@ TESTS		+= phil-lcd.hex test-user-timer.hex phil-uart.hex test-can.hex
 TESTS		+= test-mac.hex test-eth.hex test-tcp.hex test-udp.hex test-telnetd.hex
 TESTS		+= test-led.hex test-iwdt.hex test-dma.hex test-irq.hex 
 TESTS		+= test-usbdev.hex test-hid.hex test-adc.hex usb-loader.hex
-TESTS		+= test-flash.hex test-dac-dma.hex
+TESTS		+= test-flash.hex test-dac-dma.hex test-fat32-fw.hex
 else
 TESTS		+= test-timer.hex test-user-timer.hex
 endif

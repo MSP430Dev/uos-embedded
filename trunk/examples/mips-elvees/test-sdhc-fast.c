@@ -134,7 +134,7 @@ void uos_init (void)
     timer_init(&timer, KHZ, 1);
 
     spim_init(&spi, SPI_NUM, SPI_MOSI_OUT | SPI_SS0_OUT | SPI_SS1_OUT | SPI_SS0_OUT | SPI_TSCK_OUT);
-    sd_spi_init(&flash, (spimif_t *)&spi, SPI_MODE_CS_NUM(1));
+    sd_spi_init(&flash, (spimif_t *)&spi, SPI_MODE_CS_NUM(0));
 	
 	task_create (hello, &flash, "hello", 1, task, sizeof (task));
 }

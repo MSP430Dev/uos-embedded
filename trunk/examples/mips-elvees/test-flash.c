@@ -8,6 +8,7 @@
 #define SDHC_SPI
 
 #define SPI_NUM     0
+#define SPI_CS_NUM  0
 
 #if defined(M25PXX)
     #include <flash/m25pxx.h>
@@ -39,6 +40,8 @@ void hello (void *arg)
     unsigned i, j;
     int cnt = 0;
     unsigned long t0, t1;
+    
+    debug_printf("Checking SD\n");
 
     if (flash_connect(f) == FLASH_ERR_OK)
         debug_printf("Found %s, size: %u Kb, nb pages: %u, page size: %d b\n\
@@ -59,6 +62,9 @@ void hello (void *arg)
             t1 - t0, 1000 * (int)(flash_size(f) / (t1 - t0)));
     }
     else debug_printf("FAIL!\n");
+    
+    // DEBUG
+    f->nb_sectors = 16;
 
     debug_printf("Checking erasure... 00%%");
     t0 = timer_milliseconds(&timer);
@@ -172,6 +178,8 @@ void hello (void *arg)
 void uos_init (void)
 {
 	debug_printf("\n\nTesting %s\n", flash_name);
+	
+	MC_CLKEN	= 0xffffffff;
     
     timer_init(&timer, KHZ, 1);
 
@@ -181,7 +189,7 @@ void uos_init (void)
 #elif defined(AT45DBXX)
     at45dbxx_init(&flash, (spimif_t *)&spi, SPI_FREQUENCY, SPI_MODE_CS_NUM(1));
 #elif defined(SDHC_SPI)
-    sd_spi_init(&flash, (spimif_t *)&spi, SPI_MODE_CS_NUM(1));
+    sd_spi_init(&flash, (spimif_t *)&spi, SPI_MODE_CS_NUM(SPI_CS_NUM));
 #endif
 	
 	task_create (hello, &flash, "hello", 1, task, sizeof (task));

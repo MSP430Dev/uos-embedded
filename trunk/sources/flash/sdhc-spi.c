@@ -523,7 +523,7 @@ do_write_one_page(sdhc_spi_t *m, void *data, unsigned size)
     // используем вспомогательный буфер databuf
     size = flash_page_size((flashif_t*)m) - size;
     m->msg.tx_data = m->databuf;
-    if (size > 0) memset(m->databuf, 0xFF, sizeof(m->databuf));
+    if (size > 0) memset(m->databuf, 0, sizeof(m->databuf));
     while (size > 0) {
         m->msg.word_count = (sizeof(m->databuf) < size) ?
             sizeof(m->databuf) : size;
@@ -671,6 +671,8 @@ sd_read(flashif_t *flash, unsigned page_num, void *data, unsigned size)
     uint8_t *cur_ptr = data;
     unsigned cur_size;
     
+    if (size == 0) return FLASH_ERR_OK;
+    
     mutex_lock(&flash->lock);
     
     do {
@@ -755,6 +757,8 @@ sd_write(flashif_t *flash, unsigned page_num,
     int exit = 0;
     uint8_t *cur_ptr = data;
     unsigned cur_size;
+    
+    if (size == 0) return FLASH_ERR_OK;
 
     mutex_lock(&flash->lock);
 
@@ -865,6 +869,7 @@ void sd_spi_init(sdhc_spi_t *m, spimif_t *s, unsigned mode)
     f->write = sd_write;
     f->read = sd_read;
     f->flush = sd_flush;
+    f->data_align = s->data_align;
 
     m->msg.mode = (mode & 0xFF07) | SPI_MODE_NB_BITS(8);
 }

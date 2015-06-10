@@ -62,6 +62,9 @@ void hello (void *arg)
             t1 - t0, 1000 * (int)(flash_size(f) / (t1 - t0)));
     }
     else debug_printf("FAIL!\n");
+    
+    // DEBUG
+    f->nb_sectors = 2;
 
     debug_printf("Checking erasure... 00%%");
     t0 = timer_milliseconds(&timer);

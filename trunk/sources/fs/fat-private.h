@@ -16,6 +16,12 @@
 #define FAT_LAST_LONG_ENTRY     0x40
 #define FAT_LONG_LEN_MASK       0x3F
 
+#define FAT_FSINFO_LEAD_SIG     0x41615252
+#define FAT_FSINFO_STRUC_SIG    0x61417272
+#define FAT_FSINFO_TRAIL_SIG    0xAA550000
+
+#define FAT32_FILE_END			0x0FFFFFFF
+
 
 typedef struct __attribute__((packed)) _fat16_bs_t
 {
@@ -71,6 +77,17 @@ typedef struct __attribute__((packed)) _fat32_bs_t
     uint8_t     vol_lab[11];
     uint8_t     file_sys_type[8];
 } fat32_bs_t;
+
+typedef struct __attribute__((packed)) _fat32_fsinfo_t
+{
+    uint32_t    lead_sig;
+    uint32_t    reserved1[120];
+    uint32_t    struc_sig;
+    uint32_t    free_count;
+    uint32_t    nxt_free;
+    uint32_t    reserved2[3];
+    uint32_t    trail_sig;
+} fat32_fsinfo_t;
 
 typedef struct __attribute__((packed)) _fat_dir_ent_t
 {

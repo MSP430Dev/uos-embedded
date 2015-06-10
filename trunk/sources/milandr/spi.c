@@ -312,7 +312,8 @@ int milandr_spim_init(milandr_spim_t *spi, unsigned port, spi_cs_control_func cs
     spi->port = port;
     spi->spimif.trx = trx;
     spi->cs_control = csc;
-
+	spi->spimif.data_align = 1;
+	
     unsigned per_clock = ARM_RSTCLK->PER_CLOCK;
     
 #ifndef SPI_NO_DMA

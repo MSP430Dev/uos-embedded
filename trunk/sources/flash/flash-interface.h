@@ -18,6 +18,7 @@ struct _flashif_t
     unsigned    nb_pages_in_sector;
     unsigned    page_size;
     int         direct_read;
+    unsigned	data_align;
     
     // required
     int (* connect)(flashif_t *flash);
@@ -75,6 +76,12 @@ uint64_t flash_size(flashif_t *flash)
     return (uint64_t)flash->page_size * flash_nb_pages(flash);
 }
 
+static inline __attribute__((always_inline)) 
+unsigned flash_data_align(flashif_t *flash)
+{
+    return flash->data_align;
+}
+
 static inline __attribute__((always_inline))
 int flash_connect(flashif_t *flash)
 {
@@ -125,6 +132,5 @@ unsigned flash_min_address(flashif_t *flash)
         return flash->min_address(flash);
     else return FLASH_ERR_NOT_SUPP;
 }
-
 
 #endif
