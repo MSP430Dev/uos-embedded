@@ -7,20 +7,6 @@
 
 static inline int fat_write_sector(fat32_fw_t *fat, unsigned sector, unsigned size)
 {
-    /*
-    if (fat->cached_sector_size && sector != fat->cached_sector)
-        if (flash_write(fat->flashif, sector, fat->sector, fat->cached_sector_size) != FLASH_ERR_OK)
-            return FS_ERR_IO;
-    */
-/*
-static unsigned prev_sec;
-if (sector != ++prev_sec) {
-    debug_printf("seq fail: sector = %d, prev_sec = %d\n", sector, prev_sec);
-    prev_sec = sector;
-}
-*/
-//debug_printf("fat_write_sector %d\n", sector);
-    
     if (flash_write(fat->flashif, sector, fat->sector, size) != FLASH_ERR_OK)
         return FS_ERR_IO;
         
@@ -32,7 +18,6 @@ if (sector != ++prev_sec) {
 
 static inline int fat_read_sector(fat32_fw_t *fat, unsigned sector)
 {
-//debug_printf("fat_read_sector %d\n", sector);
     if (fat->cached_sector == sector)
         return FS_ERR_OK;
         
@@ -103,7 +88,7 @@ void fat32_fw_format(fat32_fw_t *fat, unsigned nb_sectors, const char * volume_i
         fat->last_error = FS_ERR_IO;
         return;
     }
-    
+
     memset(fat->sector, 0, FAT_SECTOR_SIZE);
 
     fat32_bs_t *boot_sector = (fat32_bs_t *)fat->sector;
@@ -225,9 +210,9 @@ static void fs_entry_to_dir_ent(fat_dir_ent_t *de, fat32_fw_entry_t *fw_ent)
     for (j = i; j < 8; ++j) {
         de->name[i] = ' ';
     }
-    if (i < 8) i++;
+    if (entry->name[i] == '.') i++;
     for (j = 0; j < 3; ++j) {
-        if (i >= strlen((uint8_t *)entry->name)) break;
+        if ((i + j) >= strlen((uint8_t *)entry->name)) break;
         de->name[8+j] = entry->name[i+j];
     }
 
@@ -268,27 +253,21 @@ static void dir_ent_to_fs_entry(fat32_fw_entry_t *fw_ent, fat_dir_ent_t *de)
     fw_ent->first_clus = de->fst_clus_lo | (de->fst_clus_hi << 16);
 }
 
-void fat32_fw_create(fat32_fw_t *fat, fs_entry_t *entry)
+unsigned fat32_fw_nb_entries(fat32_fw_t *fat)
 {
-    fat_dir_ent_t *e;
-    unsigned nb_sec;
-    
-    if (fat->cur_dir_entry.mode) {
-        fat->last_error = FS_ERR_PROHIBITED;
-        return; 
-    }
-
-    if (fat->nb_entries == FAT_SECTOR_SIZE / sizeof(fat_dir_ent_t) * FAT_SEC_PER_CLUSTER) {
-        fat->last_error = FS_ERR_EOF;
-        return;
-    } else if (fat->nb_entries == 0) {
+	fat_dir_ent_t *e;
+	unsigned nb_sec;
+	
+	fat->last_error = FS_ERR_OK;
+	
+	if (fat->nb_entries == 0) {
         // Если корневая директория ещё не читалась, то делаем это сейчас,
         // для того чтобы найти первую свободную запись в ней.
         nb_sec = fat->rsvd_sec_cnt + 2 * fat->fat_sz32;
         unsigned sec_in_clus = 0;
         while (sec_in_clus < FAT_SEC_PER_CLUSTER) {
             fat->last_error = fat_read_sector(fat, nb_sec);
-            if (fat->last_error != FS_ERR_OK) return;
+            if (fat->last_error != FS_ERR_OK) return 0;
 
             e = (fat_dir_ent_t *) fat->sector;
             while ((e->name[0] != 0) && ((uint8_t *)e - (uint8_t *)fat->sector < FAT_SECTOR_SIZE)) {
@@ -302,22 +281,35 @@ void fat32_fw_create(fat32_fw_t *fat, fs_entry_t *entry)
         }
 
         if (sec_in_clus == FAT_SEC_PER_CLUSTER) {    // Корневая директория заполнена,
-            fat->last_error = FS_ERR_EOF;       // больше записывать нельзя
-            return;
+            fat->last_error = FS_ERR_EOF;            // больше записывать нельзя
         }
-    } else {
-        // Номер свободной записи в корневой директории мы уже знаем,
-        // так что читаем сразу нужный сектор.
-        nb_sec = fat->rsvd_sec_cnt + 2 * fat->fat_sz32 + (fat->nb_entries >> (FAT_SECTOR_SIZE_POW - 5));
-        fat->last_error = fat_read_sector(fat, nb_sec);
-        if (fat->last_error != FS_ERR_OK) return;
-
-        e = (fat_dir_ent_t *) fat->sector + (fat->nb_entries & (FAT_SECTOR_SIZE / sizeof(fat_dir_ent_t) - 1));
     }
+    
+    return fat->nb_entries;
+}
+
+void fat32_fw_create(fat32_fw_t *fat, fs_entry_t *entry)
+{
+    fat_dir_ent_t *e;
+    unsigned nb_sec;
+    
+    if (fat->cur_dir_entry.mode) {
+        fat->last_error = FS_ERR_PROHIBITED;
+        return; 
+    }
+    
+    fat32_fw_nb_entries(fat);
+    if (fat->last_error != FS_ERR_OK) return;
+
+	nb_sec = fat->rsvd_sec_cnt + 2 * fat->fat_sz32 + (fat->nb_entries >> (FAT_SECTOR_SIZE_POW - 5));
+	fat->last_error = fat_read_sector(fat, nb_sec);
+	if (fat->last_error != FS_ERR_OK) return;
+
+	e = (fat_dir_ent_t *) fat->sector + (fat->nb_entries & (FAT_SECTOR_SIZE / sizeof(fat_dir_ent_t) - 1));
     
     memcpy(&fat->cur_dir_entry, entry, sizeof(fs_entry_t));
     fat->cur_dir_entry.base.name = fat->name_buf;
-    memcpy(fat->cur_dir_entry.base.name, entry->name, 11);
+    memcpy(fat->cur_dir_entry.base.name, entry->name, 12);
     fat->cur_dir_entry.first_clus = fat->nxt_free;
     fs_entry_to_dir_ent(e, &fat->cur_dir_entry);
 
@@ -347,6 +339,55 @@ void fat32_fw_open(fat32_fw_t *fat, int file_mode)
     }
 
     fat->cur_dir_entry.mode = file_mode;
+}
+
+void fat32_fw_seek_start(fat32_fw_t *fat)
+{
+    if (fat->cur_dir_entry.mode == 0) {
+        fat->last_error = FS_ERR_PROHIBITED;
+        return;
+    }
+
+	fat->cur_dir_entry.base.cur_pos = 0;
+	fat->cur_dir_entry.cur_sector = fat->rsvd_sec_cnt + 2 * fat->fat_sz32 +
+		((fat->cur_dir_entry.first_clus - 2) << FAT_SEC_PER_CLUSTER_POW);
+
+	fat->last_error = FS_ERR_OK;
+}
+
+void fat32_fw_advance(fat32_fw_t *fat, filsiz_t size)
+{
+    if (fat->cur_dir_entry.mode == 0) {
+        fat->last_error = FS_ERR_PROHIBITED;
+        return;
+    }
+
+	if (fat->cur_dir_entry.mode == O_READ && 
+		fat->cur_dir_entry.base.size <= fat->cur_dir_entry.base.cur_pos + size) {
+			fat->last_error = FS_ERR_EOF;
+			fat->cur_dir_entry.base.cur_pos = fat->cur_dir_entry.base.size;
+			return;
+	}
+	
+	if (fat->cur_dir_entry.mode == O_WRITE && 
+		(fat->cur_dir_entry.first_clus + 
+		((fat->cur_dir_entry.base.cur_pos + size + FAT_SECTOR_SIZE * FAT_SEC_PER_CLUSTER - 1)  >> 
+		(FAT_SECTOR_SIZE_POW + FAT_SEC_PER_CLUSTER_POW)) - 1) > fat->tot_clus) {
+			fat->last_error = FS_ERR_EOF;
+			fat->cur_dir_entry.base.cur_pos = (fat->tot_clus - fat->cur_dir_entry.first_clus + 1) << 
+				(FAT_SECTOR_SIZE_POW + FAT_SEC_PER_CLUSTER_POW);
+			fat->cur_dir_entry.base.size = fat->cur_dir_entry.base.cur_pos;
+			return;
+	}
+
+	fat->cur_dir_entry.base.cur_pos += size;
+	fat->cur_dir_entry.cur_sector = fat->rsvd_sec_cnt + 2 * fat->fat_sz32 +
+		((fat->cur_dir_entry.first_clus - 2) << FAT_SEC_PER_CLUSTER_POW) +
+		(fat->cur_dir_entry.base.cur_pos >> FAT_SECTOR_SIZE_POW);
+	if (fat->cur_dir_entry.base.size < fat->cur_dir_entry.base.cur_pos)
+		fat->cur_dir_entry.base.size = fat->cur_dir_entry.base.cur_pos;
+
+	fat->last_error = FS_ERR_OK;
 }
 
 filsiz_t fat32_fw_read(fat32_fw_t *fat, void *data, filsiz_t size)
@@ -407,6 +448,8 @@ void fat32_fw_write(fat32_fw_t *fat, void *data, filsiz_t size)
     uint8_t *p = (uint8_t *)data;
     memcpy((uint8_t *)fat->sector + sector_offset, data, cur_size);
     fat->cur_dir_entry.base.cur_pos += cur_size;
+	if (fat->cur_dir_entry.base.size < fat->cur_dir_entry.base.cur_pos)
+		fat->cur_dir_entry.base.size = fat->cur_dir_entry.base.cur_pos;
     if (cur_size < bytes_to_end_of_sector) {
         fat->cached_sector_size = sector_offset + cur_size;
         fat->last_error = FS_ERR_OK;
@@ -443,6 +486,8 @@ void fat32_fw_write(fat32_fw_t *fat, void *data, filsiz_t size)
             fat->cached_sector_size = cur_size;
         }
         fat->cur_dir_entry.base.cur_pos += cur_size;
+        if (fat->cur_dir_entry.base.size < fat->cur_dir_entry.base.cur_pos)
+			fat->cur_dir_entry.base.size = fat->cur_dir_entry.base.cur_pos;
     }
     
     fat->last_error = FS_ERR_OK;
@@ -460,10 +505,10 @@ void fat32_fw_close(fat32_fw_t *fat)
         }
         
         // 2. Записать в FAT признак конца файла.
-        unsigned last_cluster = ((fat->cur_dir_entry.cur_sector - fat->rsvd_sec_cnt - 2 * fat->fat_sz32) >>
-            FAT_SEC_PER_CLUSTER_POW) + 2;
-        if ((fat->cur_dir_entry.base.cur_pos & (FAT_SECTOR_SIZE * FAT_SEC_PER_CLUSTER - 1)) == 0)
-            last_cluster--;
+        unsigned last_cluster = ((fat->cur_dir_entry.first_clus + 
+			(fat->cur_dir_entry.base.size >> FAT_SECTOR_SIZE_POW) +
+			FAT_SECTOR_SIZE * FAT_SEC_PER_CLUSTER - 1) >>
+            FAT_SEC_PER_CLUSTER_POW) - 1 + 2;
 
         unsigned last_cluster_fat_sec = fat->rsvd_sec_cnt + (last_cluster >> (FAT_SECTOR_SIZE_POW - 2));
 
@@ -484,7 +529,7 @@ void fat32_fw_close(fat32_fw_t *fat)
 
         fat_dir_ent_t *e = (fat_dir_ent_t *) fat->sector +
             ((fat->nb_entries - 1) & ((FAT_SECTOR_SIZE >> 5) - 1));
-        e->file_size = fat->cur_dir_entry.base.cur_pos;
+        e->file_size = fat->cur_dir_entry.base.size;
 
         fat->last_error = fat_write_sector(fat, nb_sec, FAT_SECTOR_SIZE);
         if (fat->last_error != FS_ERR_OK) return;
@@ -505,11 +550,14 @@ void fat32_fw_close(fat32_fw_t *fat)
         if (fat->last_error != FS_ERR_OK) return;
         fat->last_error = fat_write_sector(fat, 7, FAT_SECTOR_SIZE);
         if (fat->last_error != FS_ERR_OK) return;
-
-        fat->cur_dir_entry.base.size = fat->cur_dir_entry.base.cur_pos;
     }
 
     fat->cur_dir_entry.mode = 0;
+    
+    if (flash_flush(fat->flashif) != FLASH_ERR_OK) {
+        fat->last_error = FS_ERR_IO;
+        return;
+    }
 
     fat->last_error = FS_ERR_OK;
 }

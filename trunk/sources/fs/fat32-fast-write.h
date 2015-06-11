@@ -46,7 +46,7 @@ typedef struct _fat32_fw_t
     uint32_t            nxt_free;
     uint32_t            cur_parent_pos;
     fat32_fw_entry_t    cur_dir_entry;
-    char                name_buf[12];
+    char                name_buf[16];
     uint32_t            cached_sector;
     uint32_t            cached_sector_size;
     uint32_t            sector[FAT_SECTOR_SIZE / 4] __attribute__((aligned(8)));
@@ -72,6 +72,17 @@ void fat32_fw_init(fat32_fw_t *fat, flashif_t * flash);
 void fat32_fw_format(fat32_fw_t *fat, unsigned nb_sectors, const char * volume_id);
 
 //
+// Подсчёт файлов в корневой директории. (Поскольку в FAT32 Fast Write 
+// используется только корневая директория, без иерархии, то число файлов
+// в файловой системе равно числу файлов в корневой директории). Необходимо
+// помнить, что даже если пользовательских файлов в системе, то всегда 
+// существует запись с атрибутом VOLUME_ID, содержащая название тома FAT32.
+// Таким образом, данная функция при нормальном завершении возвращает
+// число, большее или равное 1.
+//
+unsigned fat32_fw_nb_entries(fat32_fw_t *fat);
+
+//
 // Создание нового файла. Файл всегда создаётся в конце корневой директории.
 // Информация об атрибутах файла передаётся в параметре entry.
 //
@@ -83,6 +94,16 @@ void fat32_fw_create(fat32_fw_t *fat, fs_entry_t *entry);
 //     file_mode == O_WRITE  - на запись
 //
 void fat32_fw_open(fat32_fw_t *fat, int file_mode);
+
+//
+// Промотка на начало файла
+//
+void fat32_fw_seek_start(fat32_fw_t *fat);
+
+//
+// Промотка файла вперёд
+//
+void fat32_fw_advance(fat32_fw_t *fat, filsiz_t size);
 
 //
 // Запись очередной порции данных в последний файл.
