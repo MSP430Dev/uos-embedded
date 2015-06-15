@@ -505,10 +505,9 @@ void fat32_fw_close(fat32_fw_t *fat)
         }
         
         // 2. Записать в FAT признак конца файла.
-        unsigned last_cluster = ((fat->cur_dir_entry.first_clus + 
-			(fat->cur_dir_entry.base.size >> FAT_SECTOR_SIZE_POW) +
-			FAT_SECTOR_SIZE * FAT_SEC_PER_CLUSTER - 1) >>
-            FAT_SEC_PER_CLUSTER_POW) - 1 + 2;
+        unsigned last_cluster = fat->cur_dir_entry.first_clus + 
+			((fat->cur_dir_entry.base.size + FAT_SECTOR_SIZE * FAT_SEC_PER_CLUSTER - 1) >> 
+			(FAT_SECTOR_SIZE_POW + FAT_SEC_PER_CLUSTER_POW)) - 1;
 
         unsigned last_cluster_fat_sec = fat->rsvd_sec_cnt + (last_cluster >> (FAT_SECTOR_SIZE_POW - 2));
 
