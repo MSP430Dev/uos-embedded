@@ -5,7 +5,8 @@
 
 //#define M25PXX
 //#define AT45DBXX
-#define SDHC_SPI
+//#define SDHC_SPI
+#define S25FL
 
 #define SPI_NUM     0
 #define SPI_CS_NUM  0
@@ -22,9 +23,13 @@
     #include <flash/sdhc-spi.h>
     const char *flash_name = "SD over SPI";
     sdhc_spi_t flash;
+#elif defined(S25FL)
+    #include <flash/s25fl.h>
+    const char *flash_name = "S25FL";
+    s25fl_t flash;
 #endif
 
-#define SPI_FREQUENCY   5000000
+#define SPI_FREQUENCY   40000000
 
 #define ERASE_SECTOR    5
 
@@ -190,6 +195,8 @@ void uos_init (void)
     at45dbxx_init(&flash, (spimif_t *)&spi, SPI_FREQUENCY, SPI_MODE_CS_NUM(1));
 #elif defined(SDHC_SPI)
     sd_spi_init(&flash, (spimif_t *)&spi, SPI_MODE_CS_NUM(SPI_CS_NUM));
+#elif defined(S25FL)
+    s25fl_init(&flash, (spimif_t *)&spi, SPI_FREQUENCY, SPI_MODE_CS_NUM(0));
 #endif
 	
 	task_create (hello, &flash, "hello", 1, task, sizeof (task));

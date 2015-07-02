@@ -33,6 +33,10 @@
 #   define TIMER_IRQ		22	/* Interval Timer interrupt */
 #endif
 
+#if ELVEES_MC30SF6
+#   define TIMER_IRQ		22	/* Interval Timer interrupt */
+#endif
+
 #define MSEC_PER_TICK	100	/* Период таймера в миллисекундах */
 #define CS3_WAIT_STATES	3	/* Такты ожидания для flash-памяти на CS3 */
 

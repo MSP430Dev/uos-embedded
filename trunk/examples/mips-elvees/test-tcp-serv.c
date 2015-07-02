@@ -166,7 +166,7 @@ void uos_init (void)
 	eth_init (eth, "eth0", 80, &pool, arp, my_macaddr);
 #endif
 
-	unsigned char my_ip[] = { 11, 11, 11, 10 };
+	unsigned char my_ip[] = { 191, 167, 1, 20 };
 	route_add_netif (&ip, &route, my_ip, 24, &eth->netif);
 	
 	task_create (tcp_task, 0, "tcp", 20,
