@@ -17,6 +17,9 @@
 #elif defined(ELVEES_MCT03P)
 #   define IRQ_SHIFT        3
 #   define SPI_IRQ(port_id)    (80 + ((port_id) << IRQ_SHIFT))
+#elif defined(ELVEES_MC30SF6)
+#   define IRQ_SHIFT        2
+#   define SPI_IRQ(port_id)    (50 + ((port_id) << IRQ_SHIFT))
 #endif
 
 static inline void start_rx(int port)

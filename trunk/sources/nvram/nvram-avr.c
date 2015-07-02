@@ -2,7 +2,7 @@
 #include <kernel/uos.h>
 #include <nvram/nvram.h>
 
-#ifdef __AVR_ATmega2561__
+#if defined(__AVR_ATmega2561__) || defined(__AVR_ATmega2560__)
 #	define NVRAM_IRQ		29	/* EEPROM write complete */
 #endif
 #if defined (__AVR_ATmega128__) || \

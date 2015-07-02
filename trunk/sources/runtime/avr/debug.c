@@ -110,11 +110,12 @@ void
 debug_puts (const char *p)
 {
 	unsigned char c, x;
-
+	
 	x = SREG;
 	asm volatile ("cli");
 	for (;;) {
-		c = readb ((int) p);
+		//c = readb ((int) p);
+		c = *p;
 		if (! c)
 			break;
 		debug_putchar (0, c);

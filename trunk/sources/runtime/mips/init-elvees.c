@@ -107,6 +107,9 @@ void __attribute ((noreturn))_init_ (void)
 #ifdef ELVEES_MC0428
 		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2 | ST_IM_QSTR3
 #endif
+#ifdef ELVEES_MC30SF6
+		| ST_IM_QSTR0 | ST_IM_QSTR1 | ST_IM_QSTR2 | ST_IM_QSTR3
+#endif
 		);
 
 #if defined (ENABLE_ICACHE) || defined (ENABLE_DCACHE)
@@ -252,8 +255,8 @@ void __attribute ((noreturn))_init_ (void)
 	MC_CLKEN = MC_CLKEN_CORE | MC_CLKEN_CPU | MC_CLKEN_CORE2;
 
 	/* Clock multiply from CLKIN to KHZ. */
-	MC_CRPLL = (1 << 15) | MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
-		   (1 << 7) | MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
+	MC_CRPLL = MC_CRPLL_MPORT | MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
+		   MC_CRPLL_CORE | MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
 
 	/* Fixed mapping. */
 	MC_CSR = MC_CSR_FM;
@@ -276,6 +279,27 @@ void __attribute ((noreturn))_init_ (void)
 	/* Clock multiply from CLKIN to KHZ. */
 	MC_CRPLL = MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
 		   MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
+
+	/* Fixed mapping. */
+	MC_CSR = MC_CSR_FM;
+
+#ifdef ELVEES_VECT_CRAM
+	MC_CSR |= MC_CSR_TR;
+#endif
+
+	MC_MASKR0 = 0;
+	MC_MASKR1 = 0;
+	MC_MASKR2 = 0;
+	MC_MASKR3 = 0;
+#endif
+
+#ifdef ELVEES_MC30SF6
+	/* Clock: enable only core. */
+	MC_CLKEN = MC_CLKEN_CORE | MC_CLKEN_CPU | MC_CLKEN_CORE2;
+
+	/* Clock multiply from CLKIN to KHZ. */
+	MC_CRPLL = MC_CRPLL_MPORT | MC_CRPLL_CLKSEL_CORE (KHZ*2/ELVEES_CLKIN) |
+		   MC_CRPLL_CORE | MC_CRPLL_CLKSEL_MPORT (MPORT_KHZ*2/ELVEES_CLKIN);
 
 	/* Fixed mapping. */
 	MC_CSR = MC_CSR_FM;

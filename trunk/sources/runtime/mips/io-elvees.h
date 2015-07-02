@@ -129,6 +129,15 @@
 #define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
 #endif
 
+#ifdef ELVEES_MC30SF6
+#define ST_IM_QSTR0	0x00000400	/* от SPW, IT0, IT1, WDT, EMAC, USB, SPI, UART[1:0], nIRQ[3:0] */
+#define ST_IM_QSTR1	0x00000800	/* от DMA MEM */
+#define ST_IM_QSTR2	0x00001000	/* от SPFMIC, MFBSP */
+#define ST_IM_QSTR3	0x00002000	/* от контроллера Хэмминга */
+#define ST_IM_DSP	0x00004000	/* от DSP */
+#define ST_IM_COMPARE	0x00008000	/* от таймера 0 */
+#endif
+
 /*
  * Сause register.
  */
@@ -781,6 +790,98 @@
 										   а на выводах LACK или LCLK присутствует сигнал высокого уровня */
 #endif
 
+#if defined(ELVEES_MC30SF6)
+/* QSTR0 */
+#define MC_MASKR0_SPW7              (1 << 30)   /* от GigaSpWR */
+#define MC_MASKR0_SPW6              (1 << 29)   /* от GigaSpWR */
+#define MC_MASKR0_SPW5              (1 << 28)   /* от GigaSpWR */
+#define MC_MASKR0_SPW4              (1 << 27)   /* от GigaSpWR */
+#define MC_MASKR0_SPW3              (1 << 26)   /* от GigaSpWR */
+#define MC_MASKR0_SPW2              (1 << 25)   /* от GigaSpWR */
+#define MC_MASKR0_SPW1              (1 << 24)   /* от GigaSpWR */
+#define MC_MASKR0_SPW0              (1 << 23)   /* от GigaSpWR */
+#define MC_MASKR0_IT1               (1 << 22)   /* от таймера IT1 */
+#define MC_MASKR0_IT0               (1 << 21)   /* от таймера IT0 */
+#define MC_MASKR0_WDT               (1 << 20)   /* от таймера WDT */
+#define MC_MASKR0_SPW_TX_DAT        (1 << 19)   /* Прерывание от канала DMA GigaSpWR_TX_DAT_CH */
+#define MC_MASKR0_SPW_TX_DES        (1 << 18)   /* Прерывание от канала DMA GigaSpWR_TX_DES_CH */
+#define MC_MASKR0_SPW_RX_DAT        (1 << 17)   /* Прерывание от канала DMA GigaSpWR_RX_DAT_CH */
+#define MC_MASKR0_SPW_RX_DES        (1 << 16)   /* Прерывание от канала DMA GigaSpWR_RX_DES_CH */
+#define MC_MASKR0_EMAC_DMA_TX       (1 << 15)   /* Прерывание от канала DMA Ethernet по завершению передачи данных */
+#define MC_MASKR0_EMAC_DMA_RX       (1 << 14)   /* Прерывание от канала DMA Ethernet по завершению приёма данных */
+#define MC_MASKR0_EMAC_TX_FRAME     (1 << 13)   /* Прерывание от канала DMA Ethernet по завершению попытки передачи пакета */
+#define MC_MASKR0_EMAC_RX_FRAME     (1 << 12)   /* Прерывание от канала DMA Ethernet по завершению попытки передачи пакета */
+#define MC_MASKR0_USB_EP4           (1 << 11)   /* Прерывание от End Point 4 USB */
+#define MC_MASKR0_USB_EP3           (1 << 10)   /* Прерывание от End Point 3 USB */
+#define MC_MASKR0_USB_EP2           (1 << 9)    /* Прерывание от End Point 2 USB */
+#define MC_MASKR0_USB_EP1           (1 << 8)    /* Прерывание от End Point 1 USB */
+#define MC_MASKR0_USB               (1 << 7)    /* Прерывание от USB */
+#define MC_MASKR0_SPI               (1 << 6)    /* Прерывание от SPI */
+#define MC_MASKR0_UART1             (1 << 5)    /* Прерывание от UART1 */
+#define MC_MASKR0_UART0             (1 << 4)    /* Прерывание от UART0 */
+#define MC_MASKR0_IRQ3              (1 << 3)    /* Внешнее прерывание nIRQ3 */
+#define MC_MASKR0_IRQ2              (1 << 2)    /* Внешнее прерывание nIRQ2 */
+#define MC_MASKR0_IRQ1              (1 << 1)    /* Внешнее прерывание nIRQ1 */
+#define MC_MASKR0_IRQ0              (1 << 0)    /* Внешнее прерывание nIRQ0 */
+/* QSTR1 */
+#define MC_MASKR1_DMAMEM_CH17       (1 << 15)   /* от канала DMA MEM_CH17 */
+#define MC_MASKR1_DMAMEM_CH16       (1 << 14)   /* от канала DMA MEM_CH16 */
+#define MC_MASKR1_DMAMEM_CH15       (1 << 13)   /* от канала DMA MEM_CH15 */
+#define MC_MASKR1_DMAMEM_CH14       (1 << 12)   /* от канала DMA MEM_CH14 */
+#define MC_MASKR1_DMAMEM_CH13       (1 << 11)   /* от канала DMA MEM_CH13 */
+#define MC_MASKR1_DMAMEM_CH12       (1 << 10)   /* от канала DMA MEM_CH12 */
+#define MC_MASKR1_DMAMEM_CH11       (1 << 9)    /* от канала DMA MEM_CH11 */
+#define MC_MASKR1_DMAMEM_CH10       (1 << 8)    /* от канала DMA MEM_CH10 */
+#define MC_MASKR1_DMAMEM_CH7        (1 << 7)    /* от канала DMA MEM_CH7 */
+#define MC_MASKR1_DMAMEM_CH6        (1 << 6)    /* от канала DMA MEM_CH6 */
+#define MC_MASKR1_DMAMEM_CH5        (1 << 5)    /* от канала DMA MEM_CH5 */
+#define MC_MASKR1_DMAMEM_CH4        (1 << 4)    /* от канала DMA MEM_CH4 */
+#define MC_MASKR1_DMAMEM_CH3        (1 << 3)    /* от канала DMA MEM_CH3 */
+#define MC_MASKR1_DMAMEM_CH2        (1 << 2)    /* от канала DMA MEM_CH2 */
+#define MC_MASKR1_DMAMEM_CH1        (1 << 1)    /* от канала DMA MEM_CH1 */
+#define MC_MASKR1_DMAMEM_CH0        (1 << 0)    /* от канала DMA MEM_CH0 */
+/* QSTR2 */
+#define MC_MASKR2_SPFMIC_TX_DAT_CH1 (1 << 25)   /* от канала DMA SPFMIC_TX_DAT_CH1 */
+#define MC_MASKR2_SPFMIC_TX_DES_CH1 (1 << 24)   /* от канала DMA SPFMIC_TX_DES_CH1 */
+#define MC_MASKR2_SPFMIC_RX_DAT_CH1 (1 << 23)   /* от канала DMA SPFMIC_RX_DAT_CH1 */
+#define MC_MASKR2_SPFMIC_RX_DES_CH1 (1 << 22)   /* от канала DMA SPFMIC_RX_DES_CH1 */
+#define MC_MASKR2_SPFMIC1           (1 << 21)   /* от контроллера SPFMIC1 */
+#define MC_MASKR2_SPFMIC_TX_DAT_CH0 (1 << 20)   /* от канала DMA SPFMIC_TX_DAT_CH0 */
+#define MC_MASKR2_SPFMIC_TX_DES_CH0 (1 << 19)   /* от канала DMA SPFMIC_TX_DES_CH0 */
+#define MC_MASKR2_SPFMIC_RX_DAT_CH0 (1 << 18)   /* от канала DMA SPFMIC_RX_DAT_CH0 */
+#define MC_MASKR2_SPFMIC_RX_DES_CH0 (1 << 17)   /* от канала DMA SPFMIC_RX_DES_CH0 */
+#define MC_MASKR2_SPFMIC0           (1 << 16)   /* от контроллера SPFMIC0 */
+#define MC_MASKR2_DMA_MFBSP3        (1 << 15)   /* от канала DMA порта MFBSP3 */
+#define MC_MASKR2_MFBSP_TX3         (1 << 14)   /* готовность MFBSP3 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX3         (1 << 13)   /* готовность MFBSP3 к выдаче по DMA */
+#define MC_MASKR2_SRQ3              (1 << 12)   /* Запрос обслуживания от порта MFBSP3 */
+#define MC_MASKR2_DMA_MFBSP2        (1 << 11)   /* от канала DMA порта MFBSP2 */
+#define MC_MASKR2_MFBSP_TX2         (1 << 10)   /* готовность MFBSP2 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX2         (1 << 9)    /* готовность MFBSP2 к выдаче по DMA */
+#define MC_MASKR2_SRQ2              (1 << 8)    /* Запрос обслуживания от порта MFBSP2 */
+#define MC_MASKR2_DMA_MFBSP1        (1 << 7)    /* от канала DMA порта MFBSP1 */
+#define MC_MASKR2_MFBSP_TX1         (1 << 6)    /* готовность MFBSP1 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX1         (1 << 5)    /* готовность MFBSP1 к выдаче по DMA */
+#define MC_MASKR2_SRQ1              (1 << 4)    /* Запрос обслуживания от порта MFBSP1 */
+#define MC_MASKR2_DMA_MFBSP0        (1 << 3)    /* от канала DMA порта MFBSP0 */
+#define MC_MASKR2_MFBSP_TX0         (1 << 2)    /* готовность MFBSP0 к приёму по DMA */
+#define MC_MASKR2_MFBSP_RX0         (1 << 1)    /* готовность MFBSP0 к выдаче по DMA */
+#define MC_MASKR2_SRQ0              (1 << 0)    /* Запрос обслуживания от порта MFBSP0 */
+/* QSTR3 */
+#define MC_MASKR3_HM_ACC            (1 << 31)   /* по контролю кода Хэмминга от ACC */
+#define MC_MASKR3_HM_DDR1           (1 << 13)   /* по контролю кода Хэмминга от DDR_PORT1 */
+#define MC_MASKR3_HM_DDR0           (1 << 12)   /* по контролю кода Хэмминга от DDR_PORT0 */
+#define MC_MASKR3_HM_DSP1           (1 << 9)    /* по контролю кода Хэмминга от DSP1 */
+#define MC_MASKR3_HM_DSP0           (1 << 8)    /* по контролю кода Хэмминга от DSP0 */
+#define MC_MASKR3_HM_MPORT          (1 << 7)    /* по контролю кода Хэмминга от MPORT */
+#define MC_MASKR3_HM_DCACHE         (1 << 5)    /* по контролю кода Хэмминга от DCACHE */
+#define MC_MASKR3_HM_ICACHE         (1 << 4)    /* по контролю кода Хэмминга от ICACHE */
+#define MC_MASKR3_HM_CRAM3          (1 << 3)    /* по контролю кода Хэмминга от CRAM3 */
+#define MC_MASKR3_HM_CRAM2          (1 << 2)    /* по контролю кода Хэмминга от CRAM2 */
+#define MC_MASKR3_HM_CRAM1          (1 << 1)    /* по контролю кода Хэмминга от CRAM1 */
+#define MC_MASKR3_HM_CRAM0          (1 << 0)    /* по контролю кода Хэмминга от CRAM0 */
+#endif
+
 /*
  * Системный регистр IRQM
  */
@@ -810,9 +911,13 @@
 /*
  * Системный регистр CR_PLL
  */
-#define MC_CRPLL_DSP		(1 << 23)	/* Выбор тактовой частоты PLL_DSP */
+#define MC_CRPLL_DDR	    	(1 << 31)	/* Выбор тактовой частоты PLL_DDR */
+#define MC_CRPLL_CLKSEL_DDR(n)	((n) << 24)	/* Коэффициент частоты PLL_DDR */
+#define MC_CRPLL_DSP	    	(1 << 23)	/* Выбор тактовой частоты PLL_DSP */
 #define MC_CRPLL_CLKSEL_DSP(n)	((n) << 16)	/* Коэффициент частоты PLL_DSP */
+#define MC_CRPLL_MPORT          (1 << 15)   /* Выбор MPORT PLL (не для всех процессоров) */
 #define MC_CRPLL_CLKSEL_MPORT(n) ((n) << 8)	/* Коэффициент частоты PLL_MPORT */
+#define MC_CRPLL_CORE           (1 << 7)    /* Выбор CORE PLL (не для всех процессоров) */
 #define MC_CRPLL_CLKSEL_CORE(n) (n)		/* Коэффициент частоты PLL_CORE */
 
 /*
@@ -840,7 +945,7 @@
 #define MC_SDRCON_PS_2048	(2 << 0)	/* Page size 2048 */
 #define MC_SDRCON_PS_4096	(3 << 0)	/* Page size 4096 */
 
-#if defined(ELVEES_MC24) || defined(ELVEES_MC0226)
+#if defined(ELVEES_MC24) || defined(ELVEES_MC0226) || defined(ELVEES_MC30SF6)
 #define MC_SDRCON_RFR(nsec,khz)	((((nsec)*(khz)+999999)/1000000) << 4)
 						/* Refresh period */
 #define MC_SDRCON_BL_1		(0 << 16)	/* Bursh length 1 */
@@ -1579,5 +1684,63 @@
 #define MC_PCI_CSR_WIN_MASK_DPE         0x00010000  /* Разрешение формирования  прерывания  MASTER _ERROR */
 #define MC_PCI_CSR_WIN_NCBE_WIN(n)      ((n) << 20) /* если SEL_nCBE=1, то состояние этого поля передается на выводы nCBE[3:0] в фазе данных */
 #define MC_PCI_CSR_WIN_AR_WIN(n)        ((n) << 24) /* если SEL_ ADR=1, то состояние этого поля передается на выводы AD[31:24] в фазе адреса */
+
+
+/*
+ * Встроенный контроллер USB (USBIC)
+ */
+
+/*
+ * CSR_USB
+ */
+#define MC_USB_CLR_EP1_FIFO         (1 << 0)
+#define MC_USB_CLR_EP2_FIFO         (1 << 1)
+#define MC_USB_CLR_EP3_FIFO         (1 << 2)
+#define MC_USB_CLR_EP4_FIFO         (1 << 3)
+#define MC_USB_SUSPEND              (1 << 4)
+#define MC_USB_DMA_EN               (1 << 6)
+#define MC_USB_INTERNAL_LOOP        (1 << 8)
+
+/*
+ * INT_CSR
+ */
+#define MC_USB_EP1_EMPTY            (1 << 0)
+#define MC_USB_EP2_FULL             (1 << 1)
+#define MC_USB_EP3_EMPTY            (1 << 2)
+#define MC_USB_EP4_FULL             (1 << 3)
+#define MC_USB_VENDOR_SET_FEAT      (1 << 4)
+#define MC_USB_VENDOR_REQ           (1 << 5)
+#define MC_USB_CRC16_ERR            (1 << 6)
+#define MC_USB_BUSY                 (1 << 7)
+#define MC_USB_RESET                (1 << 8)
+#define MC_USB_NCDWORD_EP2          (1 << 9)
+#define MC_USB_NCDWORD_EP4          (1 << 10)
+#define MC_USB_RX_ERR               (1 << 11)
+#define MC_USB_ADDRESSED            (1 << 12)
+#define MC_USB_CONFIGURED           (1 << 13)
+#define MC_USB_HALTED               (1 << 14)
+
+/*
+ * CSP_EP при записи
+ */
+#define MC_USB_EP_MAX_PACKET(n)     (n)
+#define MC_USB_EP_IN                (1 << 9)
+#define MC_USB_EP_OUT               (1 << 10)
+#define MC_USB_EP_INT               (0 << 12)
+#define MC_USB_EP_ISO               (1 << 12)
+#define MC_USB_EP_BULK              (2 << 12)
+
+/*
+ * CSP_EP при чтении, (r) - значение регистра
+ */
+#define MC_USB_EP_MAX_PACKET_RD(r)  ((r) & 0x1FF)
+/* 9-13 биты - то же, что и при записи */
+#define MC_USB_EP_LEVEL(r)          (((r) >> 14) & 0x1FF)
+#define MC_USB_EP_FULL              (1 << 23)
+#define MC_USB_EP_EMPTY             (1 << 24)
+#define MC_USB_EP_FULL64            (1 << 23)
+#define MC_USB_EP_EMPTY64           (1 << 24)
+
+ 
 
 #endif /* _IO_ELVEES_H */

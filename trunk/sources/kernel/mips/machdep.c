@@ -575,7 +575,39 @@ _arch_interrupt_ (void)
 		} else
 			break;
 #endif
-
+#ifdef ELVEES_MC30SF6
+		if (pending & ST_IM_COMPARE) {
+			/* Use number 90 for COMPARE interrupt. */
+			irq = 90;
+			status &= ~ST_IM_COMPARE;
+			mips_write_c0_register (C0_STATUS, status);
+		} else if (pending & ST_IM_QSTR0) {
+			/* QSTR0 interrupt: 0..30. */
+			irq = 31 - mips_count_leading_zeroes (MC_QSTR0 & MC_MASKR0);
+			if (irq < 0)
+				break;
+			MC_MASKR0 &= ~(1 << irq);
+		} else if (pending & ST_IM_QSTR1) {
+			/* QSTR1 interrupt: 31..46. */
+			irq = 31 + 31 - mips_count_leading_zeroes (MC_QSTR1 & MC_MASKR1);
+			if (irq < 31)
+				break;
+			MC_MASKR1 &= ~(1 << (irq - 31));
+		} else if (pending & ST_IM_QSTR2) {
+			/* QSTR2 interrupt: 47..73. */
+			irq = 47 + 31 - mips_count_leading_zeroes (MC_QSTR2 & MC_MASKR2);
+			if (irq < 47)
+				break;
+			MC_MASKR2 &= ~(1 << (irq - 47));
+		} else if (pending & ST_IM_QSTR3) {
+			/* QSTR3 interrupt: 73..105. */
+			irq = 73 + 31 - mips_count_leading_zeroes (MC_QSTR3 & MC_MASKR3);
+			if (irq < 73)
+				break;
+			MC_MASKR3 &= ~(1 << (irq - 73));
+		} else
+			break;
+#endif
 		if (irq >= ARCH_INTERRUPTS)
 			break;
 
@@ -772,6 +804,26 @@ arch_intr_allow (int irq)
 	} else if (irq < 89) {
 		/* QSTR3 interrupt: 57..88. */
 		MC_MASKR3 |= 1 << (irq-57);
+	}
+#endif
+#ifdef ELVEES_MC30SF6
+	if (irq == 90) {
+		/* Use irq number 90 for COMPARE interrupt. */
+		unsigned status = mips_read_c0_register (C0_STATUS);
+		status |= ST_IM_COMPARE;
+		mips_write_c0_register (C0_STATUS, status);
+	} else if (irq < 31) {
+		/* QSTR0 interrupt: 0..30. */
+		MC_MASKR0 |= 1 << irq;
+	} else if (irq < 47) {
+		/* QSTR1 interrupt: 31..46. */
+		MC_MASKR1 |= 1 << (irq-31);
+	} else if (irq < 74) {
+		/* QSTR2 interrupt: 47..73. */
+		MC_MASKR2 |= 1 << (irq-47);
+	} else {
+		/* QSTR3 interrupt: 74..105. */
+		MC_MASKR3 |= 1 << (irq-74);
 	}
 #endif
 }

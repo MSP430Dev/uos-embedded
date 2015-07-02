@@ -33,6 +33,7 @@ typedef char jmp_buf [30]; /* not implemented yet */
 /*
  * Reading from flash memory.
  */
+ /*
 #undef FETCH_BYTE
 #undef FETCH_WORD
 #undef FETCH_LONG
@@ -41,6 +42,7 @@ typedef char jmp_buf [30]; /* not implemented yet */
 #define FETCH_WORD(p) readw ((int) (p))
 #define FETCH_LONG(p) readl ((int) (p))
 #define FETCH_PTR(p) ((void*)readw ((int) (p)))
+*/
 
 #define __tmp_reg__	"r0"
 #define __zero_reg__	"r1"

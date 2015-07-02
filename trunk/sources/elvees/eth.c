@@ -17,7 +17,7 @@
  * "COPY-UOS.txt" for details.
  */
 
-#if defined(ELVEES_NVCOM01) || defined(ELVEES_NVCOM02T) || defined(ELVEES_NVCOM02)
+#if defined(ELVEES_NVCOM01) || defined(ELVEES_NVCOM02T) || defined(ELVEES_NVCOM02) || defined(ELVEES_MC30SF6)
 
 #include <runtime/lib.h>
 #include <kernel/uos.h>

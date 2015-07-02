@@ -5,7 +5,18 @@
  * Time is correct for KHZ up to 20000.
  * Warning: max value is 255 microseconds.
  */
-void udelay (small_uint_t usec)
+ 
+#if 0
+void udelay (volatile small_uint_t usec)
+{
+    small_uint_t portion = 12;
+    while (usec >= portion)
+        usec -= portion;
+}
+ 
+#else
+
+void udelay (volatile small_uint_t usec)
 {
 	do {
 		/* Two ticks for decrement and branch */
@@ -65,3 +76,4 @@ void udelay (small_uint_t usec)
 #endif
 	} while (--usec);
 }
+#endif

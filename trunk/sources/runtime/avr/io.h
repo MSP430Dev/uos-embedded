@@ -382,7 +382,8 @@
 		: );					\
 	t; })
 
-#if FLASHEND > 0x1FFFF
+#if 0 
+FLASHEND > 0x1FFFF
 #	define readb(addr)	readb_far(addr)
 #	define readw(addr)	readw_far(addr)
 #	define readl(addr)	readl_far(addr)

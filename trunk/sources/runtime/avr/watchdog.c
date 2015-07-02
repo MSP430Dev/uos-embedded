@@ -19,7 +19,7 @@
 
 void watchdog_enable (int timeout)
 {
-#ifdef __AVR_ATmega2561__
+#if defined(__AVR_ATmega2561__) || defined(__AVR_ATmega2560__)
         asm volatile (
 	"	in __tmp_reg__, __SREG__ \n"
 	"	cli \n"
@@ -46,7 +46,7 @@ void watchdog_enable (int timeout)
 
 void watchdog_disable (void)
 {
-#ifdef __AVR_ATmega2561__
+#if defined(__AVR_ATmega2561__) || defined(__AVR_ATmega2560__)
       	asm volatile (
 	"	in __tmp_reg__, __SREG__ \n"
 	"	push r16 \n"
